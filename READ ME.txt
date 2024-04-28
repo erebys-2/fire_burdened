@@ -1,0 +1,51 @@
+
+SET UP:
+
+    Download the following if you haven't already:
+    1. Python, 
+    2. Pygame, 
+
+        To install Pygame I think it was 
+        Win + R, type "cmd", enter, then paste: "python3 -m pip install -U pygame"
+
+    3. Visual Studio Code or some other IDE, 
+
+        Download the microsoft python extension, then go into settings and 
+	search "Execute in File Dir", set it as enable.
+
+        The second part is important or else the next time 
+	you open VS code you will be hit with file not found errors...
+        why this is not a default setting eludes me.
+
+	Personally I use VS code with Kevin Rose's python indent extension, 
+	VS code for python is unuseable without it.
+
+
+This zip file has the directories in right places.
+
+To run, open game_window.py and hit the run button in the upper right corner.
+
+The controls are WAD to move, I to melee, O to shoot, S to roll, and ALT to sprint.
+The direction of the melee attack depends on if you're falling or rising.
+I while falling will do a downstrike, I while rising will do an upstrike.
+I while rolling will do a crit.
+You can jump and roll in mid air too.
+
+Holding ALT increases your speed, but your stamina regeneration rate is lowered.
+Holding O will deplete some initial stamina then continuously charge up how
+many projectiles you shoot. You shoot when you lift the key.
+
+Currently you can see how much damage you dealt to enemies on the terminal.
+
+========================================================================================
+Note: This file also contains a level editor, it is jank asf.
+Keep an eye on the terminal when you run it.
+The tiles with numbers are essentially pointers to background art and will
+not display if on the main layer. X to show grid, WS to change levels,
+AD to move around, L to increment layers.
+
+Also: I started this game by following a youtube tutorial on how to make a platormer game
+in pygame by Coding with Russ. Both the core of the game and the level editor probably have
+some resemblance, but the code has since deviated. There is some spaghetti in this code.
+
+

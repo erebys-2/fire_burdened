@@ -1,0 +1,141 @@
+import pygame
+pygame.init()
+import os
+#music player class used for both playing music and sfx
+#There will be one instance for each level/ location
+#probably another for each enemy/ the player
+class music_player():
+    
+    def __init__(self, sfx_list):
+        pygame.mixer.init()
+        
+        #all sfx files for the game will be in one directory, 
+        #whenever you instantiate a music player you need to pass in an 'sfx_list'
+        #containing the names of the sound effects you want to use for that instantiation
+        #(loading in every sound effect every time would be inefficient)
+        
+        #ex. (instantiation name) = music_player([(sfx list)])
+        
+        #to play a sound is just: (instantiation name).play_sound((instantiation name).sfx[(index)])
+        
+        #index is index in the list of sfx's representing a specific one
+        
+        #finding out where to play sounds in the files might be challenging, usually if you want to find
+        #a signal that only happens once per action, look for an update action method
+        
+        #also check the particles file for things like explosions, in there you'd probably want to play_sound
+        #in the constructor
+        
+        #see https://www.pygame.org/docs/ref/mixer.html#pygame.mixer
+        #and https://www.youtube.com/watch?v=xdkY6yhEccA
+        
+        self.sfx = []
+        for sound in sfx_list:
+            sfx = pygame.mixer.Sound(f'sfx/{sound}')
+            self.sfx.append(sfx)
+        
+        self.channel_count = 8
+        self.channel_list = []
+        pygame.mixer.set_num_channels(self.channel_count)
+        for i in range(self.channel_count):
+            channel = pygame.mixer.Channel(i)
+            self.channel_list.append(channel)
+        # pygame.mixer.set_reserved(1)
+        # self.reserved_channel = pygame.mixer.Channel(self.channel_count)
+
+        self.concurrent_sounds = 0
+
+        self.equalization_regime = {
+            0: 10,
+            1: 9,
+            2: 9,
+            3: 8,
+            4: 8,
+            5: 7,
+            6: 7,
+            7: 6,
+            8: 6
+        }
+        #self.SONG_END = pygame.USEREVENT + 1
+        self.playing_music = False
+        
+            
+    #--------------------------------------------------------------------equalizing-----------------------------------------
+    def auto_equalize(self, channel_count):
+        #check how many channels are being used
+        self.concurrent_sounds = 0
+        for channel in self.channel_list: 
+            if channel.get_busy():
+                self.concurrent_sounds += 1
+                
+        #linear volume adjustment based on num channels used
+        #pygame cannot test if there's music playing across different instances
+        # num = 0
+        # if pygame.mixer.music.get_busy: #also factor in music
+        #     num = 1
+            #print("there is music playing")
+        self.set_vol_all_channels(self.equalization_regime[self.concurrent_sounds] - 2) #self.equalization_regime[self.concurrent_sounds] 
+                
+        #when too many sounds are trying to play (espcially during a bullet spam) free up one channel   
+        #works 9 times out of 10?    
+        if self.concurrent_sounds == channel_count:
+            self.channel_list[0].stop()
+        
+        #print(self.concurrent_sounds)
+        
+
+    #-------------------------------------------------------------------------playing sounds---------------------------------
+
+    def play_song(self, file_name):
+        if not pygame.mixer.music.get_busy():
+            pygame.mixer.music.load(f'music/{file_name}')
+            pygame.mixer.music.play()
+        else:
+            pygame.mixer.music.stop()
+        #print(pygame.mixer.music.get_busy())
+        
+        
+    def play_sound(self, sound):
+        self.auto_equalize(self.channel_count)
+        pygame.mixer.Sound.play(sound)
+
+        
+    def stop_sound(self):
+        pygame.mixer.stop()
+    
+    #---------------------------------------------------------------------setting volume------------------------------------------    
+    #volume levels 0-10
+    
+    #music has its own channels, or maybe it doesn't ??
+    def set_music_vol(self, level):
+        if level < 10: 
+            pygame.mixer.music.set_volume(level*0.1)
+        elif level == 10:
+            pygame.mixer.music.set_volume(0.9921875)
+
+    #for channels
+    def set_channel_vol(self, channel, level):
+        if level < 10: 
+            channel.set_volume(level*0.1)
+        elif level == 10:
+            channel.set_volume(0.9921875)
+            
+    def set_vol_all_channels(self, level):
+        #print(level)
+        for channel in self.channel_list: 
+            if channel.get_busy():
+                self.set_channel_vol(channel, level)
+                
+    #for specific sounds
+    def set_sound_vol(self, sound, level):
+        if level < 10: 
+            pygame.mixer.Sound.set_volume(sound, level*0.1)
+        elif level == 10:
+            pygame.mixer.Sound.set_volume(sound, 0.9921875)
+        
+#uncomment to test this particular file
+# m_player = music_player(['roblox_oof.wav'])
+# # m_player.play_song('newsong15')
+# m_player.set_sfx_vol(m_player.sfx[0], 10)
+# m_player.play_sound(m_player.sfx[0]) #if you paste this underneath, you end up playing it at the same time
+# input('any key to exit')
