@@ -283,13 +283,13 @@ class enemy_32wide(pygame.sprite.Sprite):
                 #make sure to not get pushed into blocks        
                 if tile[1].colliderect(self.rect.x , self.rect.y , self.width//2 , self.height*0.8):     #+ self.height//4
                     if self.rect.x <= tile[1].right:
-                        dx = 8
+                        dx += 8
                     self.on_ground = False
                     self.in_air = True
                     self.jump = False 
                 elif tile[1].colliderect(self.rect.x + self.width//2, self.rect.y , self.width//2 , self.height*0.8):     #+ self.height//4
                     if self.rect.right > tile[1].x:
-                        dx = -8
+                        dx += -8
                     self.on_ground = False
                     self.in_air = True
                     self.jump = False    

@@ -8,16 +8,29 @@ from particle import particle_
 
 class World():
     def __init__(self):
-        self.solids = []
         self.coords = []
+        self.fg = []
+        self.solids = []
         self.bg1 = []
         self.bg2 = []
         self.bg3 = []
         self.bg4 = []
         self.bg5 = []
         self.bg6 = []
-        self.fg = []
 
+        self.lvl_data_list = [
+            self.coords,
+            self.fg,
+            self.solids,
+            self.bg1,
+            self.bg2,
+            self.bg3,
+            self.bg4,
+            self.bg5,
+            self.bg6
+        ]
+        
+        
         self.tileList = []
         self.t_set_index = 0
         tile_set_types = ['standard', 'bg_oversized']
@@ -41,23 +54,17 @@ class World():
             self.tileList.append(temp_list)
     
     def clear_data(self):
-        self.solids*=0
-        self.coords*=0
-        self.bg1*=0
-        self.bg2*=0
-        self.bg3*=0
-        self.bg4*=0
-        self.bg5*=0
-        self.bg6*=0
-        self.fg*=0
+        for lvl_data in self.lvl_data_list:
+            lvl_data *= 0
 
-    def process_data(self, data, bg1_data, bg2_data, bg3_data, bg4_data, bg5_data, bg6_data, fg_data, coord_data, the_sprite_group, screenW, screenH, level_transitions):
+    def process_data(self, level_data_list, the_sprite_group, screenW, screenH, level_transitions):
         self.clear_data()
-        self.process_coords(coord_data, screenW, screenH, self.coords)
+        self.process_coords(level_data_list[0], screenW, screenH, self.lvl_data_list[0])
         enemy0_id = 0
         transition_index = 0
         transition_data = []
-        for y, row in enumerate(data):
+        #processing interactable layer
+        for y, row in enumerate(level_data_list[2]):
             for x, tile in enumerate(row):
                 if tile >= 0:
                     img = self.tileList[0][tile]
@@ -87,14 +94,11 @@ class World():
                         the_sprite_group.enemy0_group.add(enemy0)#for enemy-enemy collisions/ anti stacking
                         enemy0_id += 1
             
-        #load bg stuff
-        self.process_bg(bg6_data, self.bg6, the_sprite_group)
-        self.process_bg(bg5_data, self.bg5, the_sprite_group)
-        self.process_bg(bg4_data, self.bg4, the_sprite_group)
-        self.process_bg(bg3_data, self.bg3, the_sprite_group)
-        self.process_bg(bg2_data, self.bg2, the_sprite_group)
-        self.process_bg(bg1_data, self.bg1, the_sprite_group)
-        self.process_bg(fg_data, self.fg, the_sprite_group)
+        #load bg
+        for i in range(len(self.lvl_data_list) -3):
+            self.process_bg(level_data_list[i+3], self.lvl_data_list[i+3], the_sprite_group)
+        #load fg
+        self.process_bg(level_data_list[1], self.lvl_data_list[1], the_sprite_group)
 
 
     def process_coords(self, data, screenW, screenH, rtrn_list):

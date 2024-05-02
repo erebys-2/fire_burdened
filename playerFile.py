@@ -725,7 +725,7 @@ class player(pygame.sprite.Sprite):
             p_screen.blit(pygame.transform.flip(self.image2, self.flip, False), self.BP_rect)
         
         # pygame.draw.rect(p_screen, (0,255,0), self.atk_rect_scaled)
-        # pygame.draw.rect(p_screen, (0,0,255), self.rect)
+        #pygame.draw.rect(p_screen, (0,0,255), self.rect)
         
         if self.flicker == False:
             p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)

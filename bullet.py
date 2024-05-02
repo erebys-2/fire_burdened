@@ -124,7 +124,7 @@ class bullet_(pygame.sprite.Sprite):
             #self.kill()
         
         #border collisions
-        if self.rect.x > 1120 or self.rect.x < -320 or self.rect.y > 480 or self.rect.y < 0:
+        if self.rect.right > 640 + 160 or self.rect.x < -160 or self.rect.y > 480 or self.rect.y < 0:
             self.Active = False
             #self.kill()
         

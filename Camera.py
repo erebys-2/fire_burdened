@@ -47,6 +47,8 @@ class Camera():
         elif player_rect.right > self.rect.right and self.x_coord2 < world_limit[0] - (screenW//2 + 64) and player_rect.right < self.x_coord2 + screenW//2: 
             player_rect.x -= 1
             self.scrollx += 1
+        else:
+            self.scrollx = 0
             
             
         #I am delirious, but the player can be loaded into any part of the level now and the camera will immediately autocorrect

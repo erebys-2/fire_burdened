@@ -18,8 +18,8 @@ import gc
 #setting the screen-----------------------------------------------------------
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
-flags = pygame.SHOWN #windowed mode
-#flags = pygame.DOUBLEBUF|pygame.FULLSCREEN #full screen mode
+#flags = pygame.SHOWN #windowed mode
+flags = pygame.DOUBLEBUF|pygame.FULLSCREEN #full screen mode
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)
 
 pygame.display.set_caption('game window')
@@ -79,15 +79,39 @@ damage = 0
 scroll_x = 0
 enemy_collision = False
 
-world_data = []
+fg_data = []
 coord_data = []
+world_data = []
 bg1_data = []
 bg2_data = []
 bg3_data = []
 bg4_data = []
 bg5_data = []
 bg6_data = []
-fg_data = []
+
+level_data_list = [
+	coord_data,
+	fg_data,
+	world_data,
+	bg1_data,
+	bg2_data,
+	bg3_data,
+	bg4_data,
+	bg5_data,
+	bg6_data
+]
+
+level_data_dict = {
+	0: 'coord_data',
+	1: 'fg_data',
+	2: 'data',
+	3: 'bg1_data',
+	4: 'bg2_data',
+	5: 'bg3_data',
+	6: 'bg4_data',
+	7: 'bg5_data',
+	8: 'bg6_data'
+}
 
 world = World()
 #instantiate status bars
@@ -120,44 +144,28 @@ type_out = True
 
 #methods--------------
 
-def draw_bg(screen, type_, bg_color):
-	if type_ == 'none':
-		screen.fill(bg_color)
+def draw_bg(screen, gradient_type, bg_color):
+    #sets gradients here, can probably turn into a dictionary w/ tuples
+	if gradient_type == 'none':
 		R = 0
 		G = 0
 		B = 0
-	elif type_ == 'sunset':
+	elif gradient_type == 'sunset':
 		R = -1
 		G = -1
 		B = 1
-	elif type_ == 'rain':
+	elif gradient_type == 'rain':
 		R = -1
 		G = 1
 		B = 2
-	if type_ != 'none':
+	
+	#drawing bg color
+	if gradient_type != 'none':
 		for i in range(SCREEN_HEIGHT//32):
 			pygame.draw.rect(screen, [bg_color[0]+ i*R, bg_color[1]+i*G, bg_color[2] + i*B], ((0,i*32), (SCREEN_WIDTH,(i+1)*32)))
-			#aaline(surface, color, start_pos, end_pos) 
-
-def draw_filter(screen, type_, bg_color):
-	if type_ == 'none':
+	else:
 		screen.fill(bg_color)
-		R = 0
-		G = 0
-		B = 0
-	elif type_ == 'sunset':
-		R = -1
-		G = -1
-		B = 1
-	elif type_ == 'rain':
-		R = 0
-		G = 3
-		B = 10
-	if type_ != 'none':
-		for i in range(SCREEN_HEIGHT//32):
-			filter_color = pygame.Color((bg_color[0]+ i*R), (bg_color[1]+i*G), (bg_color[2] + i*B), [0])
-			filter_color.a = 0
-			pygame.draw.rect(screen, filter_color, ((0,i*32), (SCREEN_WIDTH,(i+1)*32)))
+
 
 #instantiating player-------------------------------------------------------------------
 #player0 = player(64, 127, 5)
@@ -177,23 +185,14 @@ def read_level_data(level, rows, cols, data_, data_str):
 			for y, tile in enumerate(current_row):
 				data_[x][y] = int(tile)
     
-def clear_world_data(world_data, bg1_data, bg2_data, bg3_data, bg4_data, bg5_data, bg6_data, fg_data, coord_data):
-	world_data*=0
-	coord_data*=0
-	bg1_data*=0
-	bg2_data*=0
-	bg3_data*=0
-	bg4_data*=0
-	bg5_data*=0
-	bg6_data*=0
-	fg_data*=0
-    
-def load_level_data(level, world_data, bg1_data, bg2_data, bg3_data, bg4_data, bg5_data, bg6_data, fg_data, coord_data):
-
-	#clear data lists
-	#clear_world_data(world_data, bg1_data, bg2_data, bg3_data, bg4_data, bg5_data, bg6_data, fg_data, coord_data)
+def clear_world_data(level_data_list):
+	for level_data in level_data_list:
+		level_data *= 0
 	
-    #might want to turn this into a dictionary later idk
+    
+def load_level_data(level, level_data_list, level_data_dict):
+	
+    #might want to turn this into a dictionary later
 	if level == 0:
 		BG_color = black
 		gradient_type = 'none'
@@ -223,19 +222,14 @@ def load_level_data(level, world_data, bg1_data, bg2_data, bg3_data, bg4_data, b
 		level_transitions = []
 		player_en = True
 
-	read_level_data(level, rows, cols, coord_data, 'coord_data')
-	read_level_data(level, rows, cols, world_data, 'data')
-	read_level_data(level, rows, cols, bg1_data, 'bg1_data')
-	read_level_data(level, rows, cols, bg2_data, 'bg2_data')
-	read_level_data(level, rows, cols, bg3_data, 'bg3_data')
-	read_level_data(level, rows, cols, bg4_data, 'bg4_data')
-	read_level_data(level, rows, cols, bg5_data, 'bg5_data')
-	read_level_data(level, rows, cols, bg6_data, 'bg6_data')
-	read_level_data(level, rows, cols, fg_data, 'fg_data')
-	
+	#reading csv files 
+	index = 0
+	for level_data in level_data_list:
+		read_level_data(level, rows, cols, level_data, level_data_dict[index])
+		index += 1
+  
 	#world has self data lists that get cleared each time this is called
-	world.process_data(world_data, bg1_data, bg2_data, bg3_data, bg4_data, bg5_data, bg6_data, fg_data, coord_data, 
-                    	the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_transitions)
+	world.process_data(level_data_list, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_transitions)
 	
 	return [gradient_type, BG_color, player_en]
 
@@ -273,7 +267,7 @@ normal_speed = player0.speed
 
 #load initial level-------------------------------------------------------------------------------------------------
 the_sprite_group.purge_sprite_groups()#does as the name suggests
-color_n_BG = load_level_data(0, world_data, bg1_data, bg2_data, bg3_data, bg4_data, bg5_data, bg6_data, fg_data, coord_data) 
+color_n_BG = load_level_data(0, level_data_list, level_data_dict) 
 
 
 #running the game----------------------------------------------------------------------------------------------------------------------
@@ -307,11 +301,11 @@ while run:
 	#----------------------------------------------------------------------level changing-------------------------------------------------
 	if level != next_level:
 		the_sprite_group.purge_sprite_groups()
-		clear_world_data(world_data, bg1_data, bg2_data, bg3_data, bg4_data, bg5_data, bg6_data, fg_data, coord_data)
+		clear_world_data(level_data_list)
 		world.clear_data()
 		level_transitioning = True
 		level = next_level
-		color_n_BG = load_level_data(level, world_data, bg1_data, bg2_data, bg3_data, bg4_data, bg5_data, bg6_data, fg_data, coord_data)
+		color_n_BG = load_level_data(level, level_data_list, level_data_dict)
 		
 		if move_L:
 			temp_move_L = move_L
@@ -465,6 +459,7 @@ while run:
             '	-UI RELATED-',
             'Enter: Inspect/ Confirm/ New Game from Title',
             'ESC: Exit to Title/ Quit Game from Title - DOES NOT PAUSE GAME',
+            'F: Toggle Fullscreen',
             'C: Show Controls - DOES NOT PAUSE GAME'
 		)
 		text_box_on = text_manager0.disp_text_box(screen, font_larger, text, black, white, (0,0,SCREEN_WIDTH,SCREEN_HEIGHT), 
@@ -574,11 +569,11 @@ while run:
 				if event.key == pygame.K_d:
 					move_R = True
 				if event.key == pygame.K_w and event.key == pygame.K_i and player0.stamina_used + 2 <= player0.stamina:
-					player0.squat = True
+					#player0.squat = True
 					#player0.squat_done = True
 					player0.atk1_alternate = False
 					player0.atk1 = True
-				elif event.key == pygame.K_w and event.key != pygame.K_i and event.key != pygame.K_s:# and player0.in_air == False:# and (player0.action < 5):
+				elif event.key == pygame.K_w:# and player0.in_air == False:# : #and event.key != pygame.K_i and event.key != pygame.K_s
 					
 					if hold_jump == False:
 						hold_jump = True
@@ -621,6 +616,13 @@ while run:
 				m_player.play_song('newsong18.wav')
 			if event.key == pygame.K_c:
 				show_controls_en = True
+			if event.key == pygame.K_f:
+				if flags == pygame.SHOWN: #windowed mode
+					flags = pygame.DOUBLEBUF|pygame.FULLSCREEN #full screen mode
+					screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)
+				else:
+					flags = pygame.SHOWN #windowed mode
+					screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)
 			# if event.key == pygame.K_l and player0.action < 5:
 			# 	if level < 2:
 			# 		next_level = level + 1
