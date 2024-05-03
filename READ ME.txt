@@ -1,3 +1,26 @@
+===============================================================
+NO FILES MAY BE REDISTRIBUTED WITHOUT EXPLICIT PERMISSION.
+ASSETS MAY NOT BE REUSED.
+CODE MAY BE REFERENCED AND REPURPOSED.
+===============================================================
+
+Description:
+Fire Burdened is a combat platformer with gameplay emphasis on very short range melee and high maneuverability
+built in Python using the Pygame Library.
+
+I have set up infrastructure to build a metroidvania, namely the ability to transition into levels of 
+various sizes non-linearly and having multiple transitions per level, however it is unlikely that this game will be 
+fully realized into one since my vision for it doesn't require such a large world.
+
+Currently there are 2 conjoined debugging levels that loop back to one another.
+
+Disclaimer:
+This is my first major coding project outside of school assignments so there will be some jank and spaghetti (bad code).
+Now and then I go back and try to clean up older code as I learn better coding.
+
+Live Dev Log: 
+https://docs.google.com/document/d/1DKHFFTGyHRi6FeIa0QXCALuBxQLR8XExPAktH98XHok/edit?usp=sharing
+
 
 SET UP:
 
@@ -35,17 +58,23 @@ Holding ALT increases your speed, but your stamina regeneration rate is lowered.
 Holding O will deplete some initial stamina then continuously charge up how
 many projectiles you shoot. You shoot when you lift the key.
 
-Currently you can see how much damage you dealt to enemies on the terminal.
-
 ========================================================================================
-Note: This file also contains a level editor, it is jank asf.
+Insiprations:
+-Momodora: Reverie Under the Moonlight
+-Undertale
+-Hollowknight
+-Dark Souls
+
+Special Thanks:
+-Coding with Russ for a good base/ tutorial to jump off from
+-r/Pygame for inspiration
+
+Note: This file also contains a level editor, it is user hostile.
 Keep an eye on the terminal when you run it.
 The tiles with numbers are essentially pointers to background art and will
 not display if on the main layer. X to show grid, WS to change levels,
 AD to move around, L to increment layers.
 
-Also: I started this game by following a youtube tutorial on how to make a platormer game
-in pygame by Coding with Russ. Both the core of the game and the level editor probably have
-some resemblance, but the code has since deviated. There is some spaghetti in this code.
+
 
 
