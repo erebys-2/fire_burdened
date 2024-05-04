@@ -643,7 +643,7 @@ while run:
 				else:
 					run = False
 				next_level = 0
-				player0 = player(32, 128, 4, 600, 6, 0, 0)
+				player0 = player(32, 128, 4, 6, 6, 0, 0)
 				player_new_x = 32
 				player_new_y = 32
     

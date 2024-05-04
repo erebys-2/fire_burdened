@@ -316,7 +316,7 @@ class player(pygame.sprite.Sprite):
                 self.extra_recoil = 0
                 
                 self.shoot_recoil = False
-            print(dx)
+            #print(dx)
             
             #self.vel_y *= 0.5
                 
