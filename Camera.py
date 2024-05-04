@@ -40,11 +40,11 @@ class Camera():
                 
         #basically an edge case detector for when the player goes to the ends of the level
         #when the player is at the left end of the level
-        if player_rect.x < self.rect.x and self.x_coord > screenW//2 -64 and player_rect.right < world_limit[0] - (screenW//2 +64): 
+        if player_rect.x - 16 < self.rect.x and self.x_coord > screenW//2 -64 and player_rect.right - 16 < world_limit[0] - (screenW//2 + 64): 
             player_rect.x += 1
             self.scrollx -= 1
         #when the player is at the right end
-        elif player_rect.right > self.rect.right and self.x_coord2 < world_limit[0] - (screenW//2 + 64) and player_rect.right < self.x_coord2 + screenW//2: 
+        elif player_rect.right - 16 > self.rect.right and self.x_coord2 < world_limit[0] - (screenW//2 + 64) and player_rect.right - 16 < self.x_coord2 + screenW//2: 
             player_rect.x -= 1
             self.scrollx += 1
         else:
@@ -60,7 +60,7 @@ class Camera():
             #tests if the player is beyond the first screen half of the level and if the initial position needs to be set, middle boolean is a limiter
             
             dx = player_rect.x - self.x_coord #adjustment for if the player is not on the right edge
-            dx2 = dx -  (screenW//2 + 32) #adjustment for if the player is on the right edge
+            dx2 = dx - (screenW//2 + 32) #adjustment for if the player is on the right edge
             
             if self.on_r_edge == False: #idk why this is faster?? the camera will lag without this boolean
                 temp_x = player_rect.x #probably has to do with this statement
@@ -70,10 +70,12 @@ class Camera():
             if player_rect.x < world_limit[0] - screenW//2 and self.on_r_edge == False:
                 self.scrollx += dx
                 player_rect.x -= dx
-            elif world_limit[0]-temp_x < screenW//2 + 32:
+               
+            elif world_limit[0] - temp_x < screenW//2 + 32:
                 self.on_r_edge = True
                 player_rect.x -= (dx2 + world_limit[0]-temp_x - 2)
                 self.scrollx += (dx2 + world_limit[0]-temp_x - 2)
+               
                 
             self.set_ini_pos = False
         else:

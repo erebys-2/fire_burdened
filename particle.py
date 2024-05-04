@@ -92,10 +92,10 @@ class particle_(pygame.sprite.Sprite):
             
         if self.particle_type == 'player_down_strike':
             dx += -self.direction * 1
-        
-        
-        #self.rect.x -= ( scrollx)
+
         self.rect.x += (dx - scrollx)
+        
+    
         
     def animate(self):
         #adjust animation speed for different particle types here
@@ -109,7 +109,7 @@ class particle_(pygame.sprite.Sprite):
             'shooter_death': 80,
             'dog_death': 100,
             'player_mvmt': 75,
-            'player_impact': 40
+            'player_impact': 45
         }    
         
         if self.is_bg:

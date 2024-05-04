@@ -63,7 +63,7 @@ class bullet_(pygame.sprite.Sprite):
         
         #player interactions
         if self.bullet_type == '8x8_red':
-            if player_action != 7 and player_action != 8 and player_action != 9:
+            if player_action != 6 and player_action != 7 and player_action != 8 and player_action != 9:
                 if player_rect.colliderect(self.rect):
                     if self.exploded == True:
                         #self.kill()

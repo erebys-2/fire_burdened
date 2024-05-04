@@ -219,6 +219,7 @@ class player(pygame.sprite.Sprite):
                 dx = (self.speed + 1)
             
             if (moveL and self.direction == 1) or (moveR and self.direction == -1):
+                self.rolling = False
                 self.roll_count = self.roll_limit
         #------------------------------------------------------------------------------------------------------------------------------------------------------
         #atk1------------------------------------------------------------------------------------------------------------------------------------
@@ -229,11 +230,15 @@ class player(pygame.sprite.Sprite):
             if (self.frame_index == 0 and 
                 self.rolled_into_wall == False):#fast initial impulse
                 if self.crit:
-                    dx = self.direction *4 *self.speed #21
+                    dx = self.direction *4 *self.speed
                     if self.in_air:
                         self.vel_y += 2
                 else:
-                    dx = self.direction *2 *(self.speed) #14
+                    if moveL or moveR:
+                        multiplier = 2
+                    else:
+                        multiplier = 1
+                    dx = self.direction *multiplier *(self.speed) 
                     if self.action == 8 and self.vel_y <= 25 and self.in_air:
                         self.vel_y += 5
                 #self.screen_shake() #does not work
@@ -288,7 +293,7 @@ class player(pygame.sprite.Sprite):
                 self.atk_rect.height = 0
             #adjusting atk hitbox size
             if self.action != 10:
-                self.atk_rect_scaled  = self.atk_rect.scale_by(0.85)
+                self.atk_rect_scaled  = self.atk_rect.scale_by(0.80)
             else:
                 self.atk_rect_scaled  = self.atk_rect.scale_by(1)
                 if (pygame.time.get_ticks() - self.particle_update > 105) and self.frame_index  < 3:
@@ -311,7 +316,7 @@ class player(pygame.sprite.Sprite):
                 self.extra_recoil = 0
                 
                 self.shoot_recoil = False
-                
+            print(dx)
             
             #self.vel_y *= 0.5
                 
@@ -455,17 +460,20 @@ class player(pygame.sprite.Sprite):
         if self.Alive:
             if x_scroll_en:
                 #print("en")
-                if self.x_coord < screenW//2 - 32:        
+                if self.x_coord < screenW//2 + 16: 
                     self.rect.x += dx
-                elif self.x_coord > world_limit[0] - (screenW//2 + 112):
+                # elif self.x_coord >= world_limit[0] - (screenW//2 - 16) and self.direction == -1 and dx > 0:
+                #     self.rect.x += dx
+                #     print("working")
+                elif self.x_coord >= world_limit[0] - (screenW//2 + 32):
                     self.rect.x += dx
-                else:     
+                else: 
                     self.scrollx = dx
             else:
                 self.rect.x += dx
         else:
             dx = 0
-            self.scrollx
+            #self.scrollx
             
         #adjust hitbox rect during double wide frames that use rect_shift
         if self.action > 6 and self.flip:
@@ -712,7 +720,7 @@ class player(pygame.sprite.Sprite):
                     player_bullet = bullet_(x , y, 20, self.direction, self.scale, 'player_basic')
                     the_sprite_group.player_bullet_group.add(player_bullet)
                 
-                self.extra_recoil = i*7
+                self.extra_recoil = i*3
                 self.charge_built = 0
                 
                 self.roll_count = 3
@@ -755,11 +763,11 @@ class player(pygame.sprite.Sprite):
             #update stamina bar
             #should play a sound when there's no stamina
             if new_action == 7 or new_action == 8:
-                self.stamina_used += 2
-                self.ini_stamina += 2
+                self.stamina_used += 1
+                self.ini_stamina += 1
             if new_action == 9:
-                self.stamina_used += 2
-                self.ini_stamina += 2
+                self.stamina_used += 2.5
+                self.ini_stamina += 2.5
         
         if self.shot_charging == True and self.ini_cost_spent == False:
             self.stamina_used += 1.5

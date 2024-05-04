@@ -13,7 +13,7 @@ class enemy_32wide(pygame.sprite.Sprite):
     #constructors
     def __init__(self, x, y, speed, scale, type, enemy0_id):
         pygame.sprite.Sprite.__init__(self)
-        self.m_player = music_player(['bassdrop2.wav', 'hit.wav', 'roblox2.wav'])
+        self.m_player = music_player(['bassdrop2.wav', 'hit.wav', 'roblox2.wav', 'shoot.wav'])
         self.m_player.set_sound_vol(self.m_player.sfx[0], 7) #looks like you can adjust vol in the constructor
 
         self.player_collision = False
@@ -246,12 +246,14 @@ class enemy_32wide(pygame.sprite.Sprite):
                 self.dmg_multiplier = 4
             elif player_action == 7 or player_action == 8:
                 self.dmg_multiplier = 2
-        else:
-            if (self.rect.x < player_rect.x and self.rect.right > player_rect.right) and not self.rect.colliderect(player_rect):
-                dx = 0
-                #self.update_action(0)
-            elif self.rect.colliderect(player_rect) and (player_action == 0 or player_action == 6):
-                dx += -(self.direction)*8
+        elif (self.rect.colliderect(player_rect.scale_by(0.2)) and (player_action == 0 or player_action == 6)
+              or (self.rect.x < player_rect.x and self.rect.right > player_rect.right 
+                and not (player_action == 10))
+              ):
+            dx = 0
+        elif player_action == 6 and self.rect.colliderect(player_rect):
+            dx = 0
+
         
         #enemy0 collisions
         for enemy0 in the_sprite_group.enemy0_group:
@@ -392,6 +394,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                 x = self.rect.left - 28
             y = self.rect.y + self.height//3 - 4
             enemy_bullet = bullet_(x, y, 8, self.direction, self.scale, '8x8_red')
+            self.m_player.play_sound(self.m_player.sfx[3])
             the_sprite_group.enemy_bullet_group.add(enemy_bullet)
             self.shoot_done = True
             self.shoot = False

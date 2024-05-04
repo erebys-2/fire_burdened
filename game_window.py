@@ -18,8 +18,8 @@ import gc
 #setting the screen-----------------------------------------------------------
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
-#flags = pygame.SHOWN #windowed mode
-flags = pygame.DOUBLEBUF|pygame.FULLSCREEN #full screen mode
+flags = pygame.SHOWN #windowed mode
+#flags = pygame.DOUBLEBUF|pygame.FULLSCREEN #full screen mode
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)
 
 pygame.display.set_caption('game window')
@@ -134,6 +134,7 @@ blue1 = [97, 88, 102]
 orang = [140, 123, 108]
 black = [0,0,0]
 white = [255,255,255]
+white2 = [190,162,178]
 maroonish = [134, 107, 116]
 
 #text manager instance
@@ -201,14 +202,14 @@ def load_level_data(level, level_data_list, level_data_dict):
 		level_transitions = []
 		player_en = False
 	elif level == 1:
-		BG_color = maroonish
+		BG_color = white2
 		gradient_type = 'rain'
 		rows = 15
 		cols = 200
 		level_transitions = [(2, 15*32, 2, 44*32 -2, 288), (2, 15*32, 2, 2, 384)]
 		player_en = True #(transition tile width, transition tile height, level, player new x, player new y)
 	elif level == 2:
-		BG_color = maroonish
+		BG_color = white2
 		gradient_type = 'rain'
 		rows = 15
 		cols = 45
@@ -488,7 +489,7 @@ while run:
 		#	allows player to take damage from different kinds of sprite groups in a single tick (each enemy collision has its own value)
 		#	does not take in account collisions of multiple of the same sprite group in a single tick
 		for enemy in enumerate(hostiles_group):
-			if pygame.sprite.spritecollide(player0, enemy[1], False, collided= pygame.sprite.collide_rect_ratio(0.8)):
+			if pygame.sprite.spritecollide(player0, enemy[1], False, collided= pygame.sprite.collide_rect_ratio(0.75)):
 				enemy_collision = True #this is a 1 tick variable
 				if enemy[1] == the_sprite_group.enemy0_group:
 					damage += 1.5
@@ -589,36 +590,38 @@ while run:
 						player0.squat = True
 						#print("jump")
      
-				if event.key == pygame.K_i and player0.stamina_used + 2 <= player0.stamina and event.key != pygame.K_w:
+				if event.key == pygame.K_i and player0.stamina_used + 1 <= player0.stamina and event.key != pygame.K_w:
 					player0.atk1 = True
 					hold_jump = False
-				elif event.key == pygame.K_i and player0.stamina_used + 2 > player0.stamina:
+				elif event.key == pygame.K_i and player0.stamina_used + 1 > player0.stamina:
 					status_bars.warning = True
 				
-				if event.key == pygame.K_o and player0.stamina_used + 2 <= player0.stamina:
+				if event.key == pygame.K_o and player0.stamina_used + 1.5 <= player0.stamina:
 					player0.shot_charging = True
-				elif event.key == pygame.K_o and player0.stamina_used + 2 > player0.stamina:
+				elif event.key == pygame.K_o and player0.stamina_used + 1.5 > player0.stamina:
 					status_bars.warning = True
 				
-				if event.key == pygame.K_s and player0.roll_count == 0 and player0.stamina_used + 2 <= player0.stamina:
-					#player0.rolling = True
+				if (event.key == pygame.K_s or event.key == pygame.K_SPACE) and player0.stamina_used + 2.5 <= player0.stamina:
 					if hold_roll == False:
 						hold_roll = True
-						hold_roll_update = pygame.time.get_ticks()
+						#hold_roll_update = pygame.time.get_ticks()
 					hold_jump = False
-				elif event.key == pygame.K_s and player0.roll_count == 0 and player0.stamina_used + 2 > player0.stamina:
+				elif (event.key == pygame.K_s or event.key == pygame.K_SPACE) and player0.stamina_used + 2.5 > player0.stamina:
 					status_bars.warning = True
      
 				if event.key == pygame.K_RALT or event.key == pygame.K_LALT:
 					player0.speed = normal_speed + 1
 					player0.sprint = True
-			if event.key == pygame.K_m:
-				m_player.play_song('newsong18.wav')
+
+			#===============================================================UI Related Keys=============================================================
+
+			# if event.key == pygame.K_m:
+			# 	m_player.play_song('newsong18.wav')
 			if event.key == pygame.K_c:
 				show_controls_en = True
 			if event.key == pygame.K_f:
 				if flags == pygame.SHOWN: #windowed mode
-					flags = pygame.DOUBLEBUF|pygame.FULLSCREEN #full screen mode
+					flags = pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN #full screen mode
 					screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)
 				else:
 					flags = pygame.SHOWN #windowed mode
@@ -640,7 +643,7 @@ while run:
 				else:
 					run = False
 				next_level = 0
-				player0 = player(32, 128, 4, 6, 6, 0, 0)
+				player0 = player(32, 128, 4, 600, 6, 0, 0)
 				player_new_x = 32
 				player_new_y = 32
     
@@ -701,7 +704,7 @@ while run:
 					
 			if event.key == pygame.K_i:
 				status_bars.warning = False
-			if event.key == pygame.K_s:#s
+			if (event.key == pygame.K_s or event.key == pygame.K_SPACE):#s
 				status_bars.warning = False
 			if event.key == pygame.K_o:
 				status_bars.warning = False
@@ -734,14 +737,16 @@ while run:
 			else:
 				hold_jump = True
 
-		if hold_roll:
-			if  player0.stamina_used + 2 <= player0.stamina:
+		if hold_roll and (not player0.atk1 or player0.action <= 2):
+			if  player0.stamina_used + 2.5 <= player0.stamina:
 				player0.rolling = True
-			if pygame.time.get_ticks() - hold_roll_time > hold_roll_update or player0.rolled_into_wall:
-				hold_roll_update = pygame.time.get_ticks()
 				hold_roll = False
-			else:
-				hold_roll = True
+    
+			# if pygame.time.get_ticks() - hold_roll_time > hold_roll_update:
+			# 	hold_roll_update = pygame.time.get_ticks()
+			# 	hold_roll = False
+			# else:
+			# 	hold_roll = True
 
 				
 				#print("holding")
