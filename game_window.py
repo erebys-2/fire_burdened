@@ -11,6 +11,7 @@ from Camera import Camera
 from music_player import music_player
 from button import Button
 from textManager import text_manager
+from spriteGroup import sprite_group
 import gc
 #from pygame.locals import *
 
@@ -32,14 +33,6 @@ FPS = 60
 #local variables
 move_L = False
 move_R = False
-
-#[171, 113, 100]#[116, 73, 67]#[102, 69, 67]#[131, 72, 65] #[183, 123, 108]
-#(100,64,58)/ [95, 51, 54] [102, 69, 67]rusty sunset [120, 75, 67]
-#(58,62,110)/(66,62,100) evening
-#(30, 30, 80) darker evening
-#(30, 30, 50) basement gray
-#(7, 8, 13) night
-#jade [119, 121, 124]
 
 hold_jmp_update = pygame.time.get_ticks()
 hold_jmp_time = 1
@@ -101,7 +94,7 @@ level_data_list = [
 	bg6_data
 ]
 
-level_data_dict = {
+level_data_dict = { #names of the corresponding csv files
 	0: 'coord_data',
 	1: 'fg_data',
 	2: 'data',
@@ -136,6 +129,23 @@ black = [0,0,0]
 white = [255,255,255]
 white2 = [190,162,178]
 maroonish = [134, 107, 116]
+reddish =  [200,143,167]
+jade = [119, 121, 124]
+
+#dictionaty for gradients
+gradient_dict = {
+	'none':(0,0,0),
+	'sunset':(-1,-1,1),
+	'rain':(-1,1,2)
+}
+
+#dictionary for level transitions
+level_dict = {
+    0:[black, 'none', 15, 30, [], False],
+    1:[reddish, 'rain', 15, 200, [(2, 15*32, 2, 44*32 -2, 288), (2, 15*32, 2, 2, 384)], True],
+    2:[reddish, 'rain', 15, 45, [(2, 15*32, 1, 199*32 -2, 384), (2, 15*32, 1, 2, 288)], True],
+    3:[orang, 'sunset', 15, 200, [], True] #default case?
+}
 
 #text manager instance
 text_manager0 = text_manager()
@@ -145,34 +155,18 @@ type_out = True
 
 #methods--------------
 
-def draw_bg(screen, gradient_type, bg_color):
-    #sets gradients here, can probably turn into a dictionary w/ tuples
-	if gradient_type == 'none':
-		R = 0
-		G = 0
-		B = 0
-	elif gradient_type == 'sunset':
-		R = -1
-		G = -1
-		B = 1
-	elif gradient_type == 'rain':
-		R = -1
-		G = 1
-		B = 2
-	
+def draw_bg(screen, gradient_dict, gradient_type, bg_color):
+    
+	rgb = gradient_dict[gradient_type]
 	#drawing bg color
 	if gradient_type != 'none':
 		for i in range(SCREEN_HEIGHT//32):
-			pygame.draw.rect(screen, [bg_color[0]+ i*R, bg_color[1]+i*G, bg_color[2] + i*B], ((0,i*32), (SCREEN_WIDTH,(i+1)*32)))
+			pygame.draw.rect(screen, [bg_color[0]+ i*rgb[0], bg_color[1]+i*rgb[1], bg_color[2] + i*rgb[2]], ((0,i*32), (SCREEN_WIDTH,(i+1)*32)))
 	else:
 		screen.fill(bg_color)
+  
 
-
-#instantiating player-------------------------------------------------------------------
-#player0 = player(64, 127, 5)
-
-
-#reading level data-----------------------------------------------------------------------------------------------------------------
+#reading and loading level data-----------------------------------------------------------------------------------------------------------------
 
 def read_level_data(level, rows, cols, data_, data_str):
 
@@ -190,89 +184,38 @@ def clear_world_data(level_data_list):
 	for level_data in level_data_list:
 		level_data *= 0
 	
-    
-def load_level_data(level, level_data_list, level_data_dict):
-	
-    #might want to turn this into a dictionary later
-	if level == 0:
-		BG_color = black
-		gradient_type = 'none'
-		rows = 15
-		cols = 30
-		level_transitions = []
-		player_en = False
-	elif level == 1:
-		BG_color = white2
-		gradient_type = 'rain'
-		rows = 15
-		cols = 200
-		level_transitions = [(2, 15*32, 2, 44*32 -2, 288), (2, 15*32, 2, 2, 384)]
-		player_en = True #(transition tile width, transition tile height, level, player new x, player new y)
-	elif level == 2:
-		BG_color = white2
-		gradient_type = 'rain'
-		rows = 15
-		cols = 45
-		level_transitions = [(2, 15*32, 1, 199*32 -2, 384), (2, 15*32, 1, 2, 288)]
-		player_en = True #-2 to prevent an auto looping level change
-	else:
-		BG_color = orang
-		gradient_type = 'sunset'
-		rows = 15
-		cols = 200
-		level_transitions = []
-		player_en = True
+def load_level_data(level, level_data_list, level_data_dict, level_dict):
+	#level_dict[level]: 0:BG_color, 1:gradient_type, 2:rows, 3:cols, 4:level_transitions, 5:player_en
 
 	#reading csv files 
 	index = 0
 	for level_data in level_data_list:
-		read_level_data(level, rows, cols, level_data, level_data_dict[index])
+		read_level_data(level, level_dict[level][2], level_dict[level][3], level_data, level_data_dict[index])
 		index += 1
   
 	#world has self data lists that get cleared each time this is called
-	world.process_data(level_data_list, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_transitions)
+	world.process_data(level_data_list, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][4])
 	
-	return [gradient_type, BG_color, player_en]
+	return [level_dict[level][1], level_dict[level][0], level_dict[level][5]]# gradient, BG_color, player enable
 
 
-
-#instantiate sprite groups
-class sprite_group():
-    def __init__(self):
-        self.enemy0_group = pygame.sprite.Group()
-        self.enemy_bullet_group = pygame.sprite.Group()
-        self.player_bullet_group = pygame.sprite.Group()
-        self.particle_group = pygame.sprite.Group()
-        self.particle_group_bg = pygame.sprite.Group()
-        self.particle_group_fg = pygame.sprite.Group()
-        self.button_group = pygame.sprite.Group()
-    
-    def purge_sprite_groups(self):
-        self.enemy0_group.empty()
-        self.enemy_bullet_group.empty()
-        self.player_bullet_group.empty()
-        self.particle_group.empty()
-        self.particle_group_bg.empty()
-        self.particle_group_fg.empty()
-        self.button_group.empty()
-
+#instantiate sprite groups=========
 the_sprite_group = sprite_group()
 #create a hostiles group tuple
 hostiles_group = (the_sprite_group.enemy0_group, the_sprite_group.enemy_bullet_group)
 
-
-player0 = player(32, 128, 4, 6, 6, 0, 0)#6368 #5856 #6240
-#a player needs to be instantiated every level, but a dead player can also be instantiated when one isn't needed
+#instantiate player at the start of load
+player0 = player(32, 128, 4, 6, 6, 0, 0)#6368 #5856 #6240 #test coords for camera autocorrect
 #good news is that the player's coordinates can go off screen and currently the camera's auto scroll will eventually correct it
 normal_speed = player0.speed
 
 #load initial level-------------------------------------------------------------------------------------------------
-the_sprite_group.purge_sprite_groups()#does as the name suggests
-color_n_BG = load_level_data(0, level_data_list, level_data_dict) 
+the_sprite_group.purge_sprite_groups()#does as the name suggests at the start of each load of the game
+color_n_BG = load_level_data(0, level_data_list, level_data_dict, level_dict) 
 
 
 #running the game----------------------------------------------------------------------------------------------------------------------
-#https://www.youtube.com/watch?v=XPHDiibNiCM
+#https://www.youtube.com/watch?v=XPHDiibNiCM <- motivational music
 
 run = True
 player_new_x = 32
@@ -306,7 +249,7 @@ while run:
 		world.clear_data()
 		level_transitioning = True
 		level = next_level
-		color_n_BG = load_level_data(level, level_data_list, level_data_dict)
+		color_n_BG = load_level_data(level, level_data_list, level_data_dict, level_dict)
 		
 		if move_L:
 			temp_move_L = move_L
@@ -329,64 +272,24 @@ while run:
 		level_transitioning = False
 	
 	
-	#----------------------------------------------------------------------drawing level------------------------------------------------------------------
-	draw_bg(screen, color_n_BG[0], color_n_BG[1])#this just draws the color
+	#---------------------------------------------------------drawing level and sprites------------------------------------------------------------------
+	draw_bg(screen, gradient_dict, color_n_BG[0], color_n_BG[1])#this just draws the color
 	#camera.draw(screen)#for camera debugging
 	if world.x_scroll_en:
 		camera.auto_correct(player0.rect, world.coords, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
 	world.draw(screen, scroll_x, 0)#this draws the world and scrolls it 
-	#draw_filter(screen, color_n_BG[0], color_n_BG[1])
  
 	player0.animate(the_sprite_group)
-	#if player0.Alive:
 	player0.move(move_L, move_R, world.solids, world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
               	SCREEN_WIDTH, SCREEN_HEIGHT, the_sprite_group)
 	
 	scroll_x = player0.scrollx + camera.scrollx
 
-	for particle in the_sprite_group.particle_group_bg:
-		particle.draw(screen)
-		particle.animate()
-		particle.move(scroll_x)
-		if particle.Active == False:
-			the_sprite_group.particle_group_bg.remove(particle)
-
-	for enemy0 in the_sprite_group.enemy0_group:
-		enemy0.draw(screen)
-		enemy0.animate(the_sprite_group)
-		enemy0.move(player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, player0.frame_index, the_sprite_group)
-		if enemy0.Alive == False:
-			the_sprite_group.enemy0_group.remove(enemy0)
-
-	for enemy_bullet in the_sprite_group.enemy_bullet_group:
-		enemy_bullet.draw(screen)
-		enemy_bullet.animate()
-		enemy_bullet.move(player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, the_sprite_group, player0.direction)
-		if enemy_bullet.Active == False:
-			the_sprite_group.enemy_bullet_group.remove(enemy_bullet)
-    
-	for player_bullet in the_sprite_group.player_bullet_group:
-		player_bullet.draw(screen)
-		player_bullet.animate()
-		player_bullet.move(player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, the_sprite_group, player0.direction)
-		if player_bullet.Active == False:
-			the_sprite_group.player_bullet_group.remove(player_bullet)
-   
-	for particle in the_sprite_group.particle_group:
-		particle.draw(screen)
-		particle.animate()
-		particle.move(scroll_x)
-		if particle.Active == False:
-			the_sprite_group.particle_group.remove(particle)
-    
+	the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, player0.direction)
+	
 	player0.draw(screen)
- 
-	for particle in the_sprite_group.particle_group_fg:
-		particle.draw(screen)
-		particle.animate()
-		particle.move(scroll_x)
-		if particle.Active == False:
-			the_sprite_group.particle_group_fg.remove(particle)
+	
+	the_sprite_group.update_groups_infront_player(screen, scroll_x)
    
 	status_bars.draw(screen, player0.get_status_bars(), font)
  
@@ -395,8 +298,10 @@ while run:
 		pygame.draw.rect(screen, (0,0,0), (0,0,SCREEN_WIDTH,SCREEN_HEIGHT))
  
 	#--------------------------------------------------------------MAIN MENU CODE---------------------------------------------------------------------
+	#this will be difficult to extract from the while loop into a single method
+	#will probably have to create an object for special level overlays: menus and inventories
 	if level == 0: 
-		draw_bg(screen, color_n_BG[0], color_n_BG[1])
+		draw_bg(screen, gradient_dict, color_n_BG[0], color_n_BG[1])
 		if ld_title_screen_en: #execute once signal
 			new_game_img = pygame.image.load('sprites/new_game_btn.png').convert_alpha()
 			quit_img = pygame.image.load('sprites/quit_btn.png').convert_alpha()
@@ -409,7 +314,7 @@ while run:
 			quit_button = Button(SCREEN_WIDTH //2 -64, SCREEN_HEIGHT //2 +128, quit_img, 1)
 			ld_title_screen_en = False
 			#these buttons get purged on level change dw
-
+		#print(ld_title_screen_en)
 		screen.blit(title_screen, ts_rect)
   
 		if start_button.highlight:
@@ -440,6 +345,7 @@ while run:
 			if start_button.clicked or quit_button.clicked:
 				m_player.play_sound(m_player.sfx[1])
 		#you need to add saves and volume controls, and probably control controls too later
+		#next_level = load_title_screen(screen, color_n_BG, ld_title_screen_en, show_controls_en, level)
 	else:
 		ld_title_screen_en = True
 	
@@ -468,7 +374,7 @@ while run:
 		text_speed = 120
  
     #-----------------------------------------------------------------------------------------------------------------------------------------------------------
-    #handling enemy player collisions------------------------------------------------------------------------------------
+    #handling enemy player collisions and death------------------------------------------------------------------------------------
     
 	if player0.hits_tanked >= player0.hp:#killing the player------------------------------------------------
 		player0.Alive = False
@@ -507,7 +413,9 @@ while run:
 			damage = 0
 			
 
-	#update player action for animation
+	#============================================================update player action for animation=======================================================
+	#this is remnant code from following Coding with Russ' tutorial, I wasn't sure how to integrate this into playerFile.py
+	#when I was separating the files (he wrote his whole tutorial game in virtually one single file)
 	if player0.Alive:
 		if (enemy_collision == True or player0.hurting == True):
 			enemy_collision = False
@@ -517,9 +425,6 @@ while run:
 				player0.update_action(11)
 			
 			elif player0.atk1:
-				# if player0.rolling:
-				# 	player0.update_action(9)#rolling
-				# 	player0.atk1_alternate = False
 				if player0.atk1_alternate == True:# and player0.in_air == False:
 					player0.update_action(7)
 				else:
@@ -556,7 +461,9 @@ while run:
 		player0.update_action(6) #dead
 		player0.scrollx = 0
   
-
+	#---------------------------------------------------------------------------------------------------------------------------------------------
+	#-------------------------------------------------------KBD inputs----------------------------------------------------------------------------
+	#---------------------------------------------------------------------------------------------------------------------------------------------
 	for event in pygame.event.get():
 		#quit game
 		if(event.type == pygame.QUIT):
@@ -596,9 +503,9 @@ while run:
 				elif event.key == pygame.K_i and player0.stamina_used + 1 > player0.stamina:
 					status_bars.warning = True
 				
-				if event.key == pygame.K_o and player0.stamina_used + 1.5 <= player0.stamina:
+				if event.key == pygame.K_o and player0.stamina_used + 2 <= player0.stamina:
 					player0.shot_charging = True
-				elif event.key == pygame.K_o and player0.stamina_used + 1.5 > player0.stamina:
+				elif event.key == pygame.K_o and player0.stamina_used + 2 > player0.stamina:
 					status_bars.warning = True
 				
 				if (event.key == pygame.K_s or event.key == pygame.K_SPACE) and player0.stamina_used + 2.5 <= player0.stamina:

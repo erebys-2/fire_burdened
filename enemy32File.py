@@ -1,5 +1,4 @@
 import pygame
-pygame.init()
 import os
 #from game_window import sprite_group
 from bullet import bullet_
@@ -89,7 +88,7 @@ class enemy_32wide(pygame.sprite.Sprite):
 
     #methods----------------------------------------------------------------------------------------
         
-    def move(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, player_frame, the_sprite_group):
+    def move(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list):
         dx = 0
         dy = 0
         moving = False
@@ -109,7 +108,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                 if self.speed_boost != 1:
                     self.speed_boost = 1
                     particle = particle_(self.rect.centerx, self.rect.centery, -self.direction, self.scale, 'player_mvmt', True, 1, False)
-                    the_sprite_group.particle_group.add(particle)
+                    sp_group_list[3].add(particle)
                     self.in_air = True
                     self.vel_y = -8
                     
@@ -167,9 +166,10 @@ class enemy_32wide(pygame.sprite.Sprite):
                     (pygame.time.get_ticks() - self.update_time2 > jump_cooldown)):
                     self.update_time2 = pygame.time.get_ticks()
                     particle = particle_(self.rect.centerx, self.rect.centery, -self.direction, self.scale, 'player_mvmt', True, 1, False)
-                    the_sprite_group.particle_group.add(particle)
+                    sp_group_list[3].add(particle)
                     self.vel_y = -10
                     self.in_air = True
+
 
          
         else:
@@ -221,9 +221,8 @@ class enemy_32wide(pygame.sprite.Sprite):
         
         #player collisions------------------------------------------------------------------------------------------------------------------
         
-        if ((player_action == 7 or player_action == 8 or player_action == 10) and player_frame < 3 and 
-            self.rect.colliderect(player_atk_rect)
-            #pygame.sprite.spritecollide(player_atk_rect, self.rect, False, pygame.sprite.collide_rect_ratio(0.6))
+        if ((player_action == 7 or player_action == 8 or player_action == 10)
+            and self.rect.colliderect(player_atk_rect)
             and self.inundated == False
             ):
            
@@ -232,7 +231,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             y_avg = (self.rect.y + player_atk_rect.bottom)/2
             
             particle = particle_(x_avg, y_avg, -self.direction, self.scale, 'player_impact', True, self.rando_frame, False)
-            the_sprite_group.particle_group_fg.add(particle)
+            sp_group_list[5].add(particle)
             self.m_player.play_sound(self.m_player.sfx[1])
             
             if self.rando_frame < 2:
@@ -256,7 +255,7 @@ class enemy_32wide(pygame.sprite.Sprite):
 
         
         #enemy0 collisions
-        for enemy0 in the_sprite_group.enemy0_group:
+        for enemy0 in sp_group_list[0]:
             if self.rect.colliderect(enemy0.rect) and self.id != enemy0.id:
                 # if self.rect.x > enemy0.rect.x:
                 #     dx += -self.direction
@@ -346,17 +345,17 @@ class enemy_32wide(pygame.sprite.Sprite):
         self.rect.x += (dx - scrollx)
         self.rect.y += dy
     
-    def animate(self, the_sprite_group):
+    def animate(self, sp_group_list):
         
         if self.dead == True:
             self.m_player.play_sound(self.m_player.sfx[0])
-            self.explode(the_sprite_group)
+            self.explode(sp_group_list)
             self.Alive = False
             self.kill()
         
         #colliding with bullet 
         #this is fucked, look into collide rect
-        if (pygame.sprite.spritecollide(self, the_sprite_group.enemy_bullet_group, False)):
+        if (pygame.sprite.spritecollide(self, sp_group_list[1], False)):
             #self.hits_tanked += 5
             self.inundated = True
             # if self.inundated  == True and self.dmg_multiplier != 0:
@@ -366,7 +365,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             self.rect.x += -self.direction * 2
             #print("hit" + str(self.hits_tanked))
             
-        if (pygame.sprite.spritecollide(self, the_sprite_group.player_bullet_group, False)):
+        if (pygame.sprite.spritecollide(self, sp_group_list[2], False)):
             self.inundated = True
             self.hits_tanked += 1
             self.rect.x += -self.direction * 2
@@ -395,7 +394,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             y = self.rect.y + self.height//3 - 4
             enemy_bullet = bullet_(x, y, 8, self.direction, self.scale, '8x8_red')
             self.m_player.play_sound(self.m_player.sfx[3])
-            the_sprite_group.enemy_bullet_group.add(enemy_bullet)
+            sp_group_list[1].add(enemy_bullet)
             self.shoot_done = True
             self.shoot = False
         
@@ -448,13 +447,13 @@ class enemy_32wide(pygame.sprite.Sprite):
                     self.jump = False
                     self.jump_counter = 0
     
-    def explode(self, the_sprite_group):
+    def explode(self, sp_group_list):
         if self.enemy_type == 'shooter':   
             particle = particle_(self.rect.x - self.width//2, self.rect.y - self.height//2, self.direction, self.scale, 'shooter_death', False, 0, False)
-            the_sprite_group.particle_group.add(particle)
+            sp_group_list[3].add(particle)
         elif self.enemy_type == 'dog':
             particle = particle_(self.rect.x - self.width//2, self.rect.y - self.height//2, self.direction, self.scale, 'dog_death', False, 0, False)
-            the_sprite_group.particle_group.add(particle)
+            sp_group_list[3].add(particle)
 
     def draw(self, p_screen):
         #self.animate()

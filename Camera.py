@@ -1,5 +1,4 @@
 import pygame
-pygame.init()
 
 class Camera():
     #rudimentary camera, but it works

@@ -1,5 +1,4 @@
 import pygame
-pygame.init()
 import os
 from music_player import music_player
 '''

@@ -1,5 +1,4 @@
 import pygame
-pygame.init()
 import os
 from bullet import bullet_
 from particle import particle_
@@ -532,9 +531,9 @@ class player(pygame.sprite.Sprite):
             #     unit = -0.05
             # else:
             if self.speed > self.default_speed:
-                unit = -0.14
+                unit = -0.1
             else:
-                unit = -0.21
+                unit = -0.18
             # if self.action >= 7 and self.frame_index <= 1:
             #     unit = 0
             # else:
@@ -702,7 +701,7 @@ class player(pygame.sprite.Sprite):
                 y = int(self.rect.y + 0.25 * self.height)
                 player_bullet = bullet_(x, y, 20, self.direction, self.scale, 'player_basic')
                 the_sprite_group.player_bullet_group.add(player_bullet)
-                self.charge_built -= 1.5
+                self.charge_built -= 2
                 
                 i = 0
                 while self.charge_built - 0.4 > 0:
@@ -770,7 +769,7 @@ class player(pygame.sprite.Sprite):
                 self.ini_stamina += 2.5
         
         if self.shot_charging == True and self.ini_cost_spent == False:
-            self.stamina_used += 1.5
+            self.stamina_used += 2
             self.ini_cost_spent = True
 
                 

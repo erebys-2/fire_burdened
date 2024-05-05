@@ -1,5 +1,4 @@
 import pygame
-pygame.init()
 import os
 from particle import particle_
 from music_player import music_player
@@ -51,7 +50,7 @@ class bullet_(pygame.sprite.Sprite):
         self.height = self.image.get_height()
         
         
-    def move(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, the_sprite_group, player_direction):
+    def move(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list, player_direction):
         dx = 0
         dy = 0
         
@@ -70,7 +69,7 @@ class bullet_(pygame.sprite.Sprite):
                         self.Active = False
                         
                     if self.exploded == False:
-                        self.explode(the_sprite_group)
+                        self.explode(sp_group_list)
                     self.exploded = True
                     # self.Active = False
                     # #self.kill()
@@ -79,7 +78,7 @@ class bullet_(pygame.sprite.Sprite):
                 and player_direction != self.direction
                 and self.deflected == False
                 ):
-                    self.explode(the_sprite_group)
+                    self.explode(sp_group_list)
                     self.m_player.play_sound(self.m_player.sfx[1])
                     self.direction = -self.direction
                     self.deflected = True
@@ -94,7 +93,7 @@ class bullet_(pygame.sprite.Sprite):
         for tile in world_solids:
             if self.rect.colliderect(tile[1]) and tile[2] != 10:
                 self.Active = False
-                self.explode(the_sprite_group)
+                self.explode(sp_group_list)
                 #self.kill()
         
         #enemy collisions
@@ -112,14 +111,14 @@ class bullet_(pygame.sprite.Sprite):
         # a possible solution could be on the enemy end have it iterate thru the bullet list to check each bullet
         # for collisions, but I think this would be noticeably inefficient
         
-        if (pygame.sprite.spritecollide(self, the_sprite_group.enemy0_group, False)):
+        if (pygame.sprite.spritecollide(self, sp_group_list[0], False)):
             #dx +=(self.direction)*64
             if self.exploded == True:
                 #self.kill()
                 self.Active = False
                 
             if self.exploded == False:
-                self.explode(the_sprite_group)
+                self.explode(sp_group_list)
             self.exploded = True
             #self.kill()
         
@@ -130,7 +129,7 @@ class bullet_(pygame.sprite.Sprite):
         
         self.rect.x += (dx - scrollx)
         
-    def explode(self, the_sprite_group):
+    def explode(self, sp_group_list):
         if self.frame_index % 2 == 0:
             frame = 0
         else:
@@ -141,11 +140,11 @@ class bullet_(pygame.sprite.Sprite):
             x_loc = self.rect.right
         if self.bullet_type == 'player_basic':    
             particle = particle_(x_loc, self.rect.y + self.height//2, -self.direction, self.scale, 'player_bullet_explosion', True, frame, False)
-            the_sprite_group.particle_group_fg.add(particle)
+            sp_group_list[5].add(particle)
             self.m_player.play_sound(self.m_player.sfx[0])
         elif self.bullet_type == '8x8_red':
             particle = particle_(x_loc, self.rect.y + self.height//2, -self.direction, self.scale, 'enemy_bullet_explosion', True, frame, False)
-            the_sprite_group.particle_group_fg.add(particle)
+            sp_group_list[5].add(particle)
             self.m_player.play_sound(self.m_player.sfx[0])
         #self.kill()
         

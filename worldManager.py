@@ -1,5 +1,4 @@
 import pygame
-pygame.init()
 import os
 from playerFile import player
 from enemy32File import enemy_32wide
