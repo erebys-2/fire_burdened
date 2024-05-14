@@ -382,8 +382,10 @@ class player(pygame.sprite.Sprite):
                 elif (tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height - 17) 
                     and self.action != 9):
                     dx = 0
+                    if (tile[1].colliderect(self.rect.x + 1, self.rect.y, self.width -2, self.height - 17)):
+                        dx = -16*self.direction
 
-                #general collisions
+                #general collisions, mostly to do with dy
                 if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width , self.height):
                     if self.vel_y >= 0: #making sure gravity doesn't pull player under the tile
                         self.vel_y = 0

@@ -3,7 +3,6 @@ pygame.init()
 import os
 #print('directory: ' + os.getcwd())
 import csv
-#check out cs 418
 from playerFile import player
 from worldManager import World
 from StatusBarsFile import StatusBars
@@ -395,7 +394,7 @@ while run:
 		#	allows player to take damage from different kinds of sprite groups in a single tick (each enemy collision has its own value)
 		#	does not take in account collisions of multiple of the same sprite group in a single tick
 		for enemy in enumerate(hostiles_group):
-			if pygame.sprite.spritecollide(player0, enemy[1], False, collided= pygame.sprite.collide_rect_ratio(0.75)):
+			if pygame.sprite.spritecollide(player0, enemy[1], False, collided= pygame.sprite.collide_rect_ratio(0.76)):
 				enemy_collision = True #this is a 1 tick variable
 				if enemy[1] == the_sprite_group.enemy0_group:
 					damage += 1.5
