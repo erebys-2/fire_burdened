@@ -137,7 +137,7 @@ class player(pygame.sprite.Sprite):
             2:False, #jump
             3:False, #land
             4:False, #squat
-            5:True, #hurt
+            5:False, #hurt
             6:False, #die
             7:True, #atk1
             8:True, #atk1_2
@@ -337,7 +337,7 @@ class player(pygame.sprite.Sprite):
                     dx = self.direction *2
                 else:
                     if (moveL and self.direction == 1) or (moveR and self.direction == -1):
-                        dx = -self.direction
+                        dx = 0
                     else:
                         dx = self.direction
             
@@ -438,7 +438,7 @@ class player(pygame.sprite.Sprite):
                       and self.disp_flag
                       and tile[1].colliderect(self.collision_rect.x + disp_x + dx, self.collision_rect.y, self.width, self.height - 17)
                     ):
-                    dx = -self.direction * 16
+                    dx += -self.direction * 16
                     #has an issue with recoil, i am too tired to figure it out atm
 
                 #dy collision stuff, sinking through tiles etc
