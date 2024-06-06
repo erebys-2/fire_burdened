@@ -408,7 +408,7 @@ class player(pygame.sprite.Sprite):
         if self.direction < 0:
             disp_x = -self.width//2
         else:
-            disp_x = 0
+            disp_x = self.width//2
         
         for tile in world_solids:
             #x collisions
@@ -436,7 +436,7 @@ class player(pygame.sprite.Sprite):
                 #displaced hitbox x collisions
                 elif (self.action != 9 and self.action != 11
                       and self.disp_flag
-                      and tile[1].colliderect(self.collision_rect.x + disp_x + dx, self.collision_rect.y, 3*self.width//2, self.height - 17)
+                      and tile[1].colliderect(self.collision_rect.x + disp_x + dx, self.collision_rect.y, self.width, self.height - 17)
                     ):
                     dx = -self.direction * 16
                     #has an issue with recoil, i am too tired to figure it out atm
