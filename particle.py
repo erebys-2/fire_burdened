@@ -1,6 +1,6 @@
 import pygame
 import os
-from music_player import music_player
+#from music_player import music_player #type: ignore
 '''
 x, y: location, floats
 direction: for directional particles, int

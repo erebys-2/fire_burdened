@@ -3,14 +3,14 @@ pygame.init()
 import os
 #print('directory: ' + os.getcwd())
 import csv
-from playerFile import player
-from worldManager import World
-from StatusBarsFile import StatusBars
-from Camera import Camera
-from music_player import music_player
-from button import Button
-from textManager import text_manager
-from spriteGroup import sprite_group
+from playerFile import player #type: ignore
+from worldManager import World #type: ignore
+from StatusBarsFile import StatusBars #type: ignore
+from Camera import Camera #type: ignore
+from music_player import music_player #type: ignore
+from button import Button #type: ignore
+from textManager import text_manager #type: ignore
+from spriteGroup import sprite_group #type: ignore
 import gc
 #from pygame.locals import *
 
@@ -256,7 +256,8 @@ while run:
 		if move_R:
 			temp_move_R = move_R
 			move_R = False
-		player0.rect.x = player_new_x #set player location
+		player0.rect.x = player_new_x - 32 #set player location
+        
 		#player0.rect.y = player_new_y #disabling this makes it so that you can jump between levels
 		player0.vel_y = 0
 		camera.set_ini_pos = True #force camera into position
@@ -394,20 +395,22 @@ while run:
 		#	allows player to take damage from different kinds of sprite groups in a single tick (each enemy collision has its own value)
 		#	does not take in account collisions of multiple of the same sprite group in a single tick
 		for enemy in enumerate(hostiles_group):
-			if pygame.sprite.spritecollide(player0, enemy[1], False, collided= pygame.sprite.collide_rect_ratio(0.76)):
-				enemy_collision = True #this is a 1 tick variable
-				if enemy[1] == the_sprite_group.enemy0_group:
-					damage += 1.5
-					# for enemy0_ in enumerate(the_sprite_group.enemy0_group):
-					# 	if enemy0_[1].inundated == False:
-					# 		print(enemy0_[1].inundated)
-					# 		damage += 0.75
-					# 	else:
-					# 		print(enemy0_[1].inundated)
-				if enemy[1] == the_sprite_group.enemy_bullet_group:
-					damage += 3
-					
-				player0.take_damage(damage)
+			if pygame.sprite.spritecollide(player0, enemy[1], False): #only do mask collisions if the rect collision is triggered
+       		#collided= pygame.sprite.collide_rect_ratio(0.76)
+				if pygame.sprite.spritecollide(player0, enemy[1], False, pygame.sprite.collide_mask):
+					enemy_collision = True #this is a 1 tick variable
+					if enemy[1] == the_sprite_group.enemy0_group:
+						damage += 1.5
+						# for enemy0_ in enumerate(the_sprite_group.enemy0_group):
+						# 	if enemy0_[1].inundated == False:
+						# 		print(enemy0_[1].inundated)
+						# 		damage += 0.75
+						# 	else:
+						# 		print(enemy0_[1].inundated)
+					if enemy[1] == the_sprite_group.enemy_bullet_group:
+						damage += 3
+						
+					player0.take_damage(damage)
 				#print(damage)
 			damage = 0
 			
@@ -441,7 +444,7 @@ while run:
 				elif player0.in_air:
 					player0.update_action(2)#2: jump
 					#hold_jump = False
-					if player0.vel_y < -2:# and player0.speed == normal_speed: -1
+					if player0.vel_y < 0:# and player0.speed == normal_speed: -1
 						player0.atk1_alternate = True
 					else:
 						player0.atk1_alternate = False
@@ -475,7 +478,7 @@ while run:
 					move_L = True
 				if event.key == pygame.K_d:
 					move_R = True
-				if event.key == pygame.K_w and event.key == pygame.K_i and player0.stamina_used + 2 <= player0.stamina:
+				if event.key == pygame.K_w and event.key == pygame.K_i and player0.stamina_used + 1 <= player0.stamina:
 					#player0.squat = True
 					#player0.squat_done = True
 					player0.atk1_alternate = False
@@ -507,12 +510,12 @@ while run:
 				elif event.key == pygame.K_o and player0.stamina_used + 2 > player0.stamina:
 					status_bars.warning = True
 				
-				if (event.key == pygame.K_s or event.key == pygame.K_SPACE) and player0.stamina_used + 2.5 <= player0.stamina:
+				if (event.key == pygame.K_s or event.key == pygame.K_SPACE) and player0.stamina_used + player0.roll_stam_rate <= player0.stamina:
 					if hold_roll == False:
 						hold_roll = True
 						#hold_roll_update = pygame.time.get_ticks()
 					hold_jump = False
-				elif (event.key == pygame.K_s or event.key == pygame.K_SPACE) and player0.stamina_used + 2.5 > player0.stamina:
+				elif (event.key == pygame.K_s or event.key == pygame.K_SPACE) and player0.stamina_used + player0.roll_stam_rate > player0.stamina:
 					status_bars.warning = True
      
 				if event.key == pygame.K_RALT or event.key == pygame.K_LALT:
@@ -644,9 +647,10 @@ while run:
 				hold_jump = True
 
 		if hold_roll and (not player0.atk1 or player0.action <= 2):
-			if  player0.stamina_used + 2.5 <= player0.stamina:
+			if  player0.stamina_used + player0.roll_stam_rate <= player0.stamina:
 				player0.rolling = True
 				hold_roll = False
+				
     
 			# if pygame.time.get_ticks() - hold_roll_time > hold_roll_update:
 			# 	hold_roll_update = pygame.time.get_ticks()

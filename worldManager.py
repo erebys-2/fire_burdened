@@ -1,8 +1,8 @@
 import pygame
 import os
-from playerFile import player
-from enemy32File import enemy_32wide
-from particle import particle_
+from playerFile import player #type: ignore
+from enemy32File import enemy_32wide #type: ignore
+from particle import particle_ #type: ignore
 
 
 class World():
@@ -62,6 +62,7 @@ class World():
         enemy0_id = 0
         transition_index = 0
         transition_data = []
+        
         #processing interactable layer
         for y, row in enumerate(level_data_list[2]):
             for x, tile in enumerate(row):
@@ -177,11 +178,8 @@ class World():
                 w_screen.blit(tile[0], tile[1]) # (image, position)
                     
     def draw(self, w_screen, scroll_X, scroll_y):
-        #change scroll rates in these calls, you need to place 3 480x480's back to back for full scrolling
-        #Note: ONLY 2 PARALLAX LAYERS ARE SUPPORTED
-        #the filter layer is also laggy
         
-        self.draw_bg_layers(w_screen, scroll_X//3, self.bg6) #3 parallax layers screws up the game
+        self.draw_bg_layers(w_screen, scroll_X//3, self.bg6)
         self.draw_bg_layers(w_screen, 4*scroll_X//7, self.bg5)
         self.draw_bg_layers(w_screen, 7*scroll_X//9, self.bg4)
         self.draw_bg_layers(w_screen, scroll_X, self.bg3)#filter layer

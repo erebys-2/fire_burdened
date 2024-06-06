@@ -44,6 +44,7 @@ class bullet_(pygame.sprite.Sprite):
             self.frame_list.append(temp_list)
 
         self.image = self.frame_list[self.action][self.frame_index]
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.rect.topleft = (x,y)
         self.width = self.image.get_width()

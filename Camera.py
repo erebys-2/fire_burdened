@@ -13,7 +13,7 @@ class Camera():
         self.set_ini_pos = True
 
         self.rect = pygame.Rect(0, 0, 64, screenH)
-        self.rect.centerx = screenW//2 - 32
+        self.rect.centerx = screenW//2 #- 32
         self.rect.centery = screenH//2
     
     def get_pos_data(self, player_rect, world_coords):
@@ -39,13 +39,18 @@ class Camera():
                 
         #basically an edge case detector for when the player goes to the ends of the level
         #when the player is at the left end of the level
-        if player_rect.x - 16 < self.rect.x and self.x_coord > screenW//2 -64 and player_rect.right - 16 < world_limit[0] - (screenW//2 + 64): 
+        if player_rect.x + 32 < self.rect.x and self.x_coord > screenW//2 - 32 and player_rect.right + 32 < world_limit[0] - (screenW//2 + 32): 
+            #+16 here is determined by the rudimentary scrolling in the player file "if self.x_coord < screenW//2 -32:", where -32 = x
+            #to change, basically add the opposite of x to 16
+            #fuck idk anymore
             player_rect.x += 1
             self.scrollx -= 1
+            
         #when the player is at the right end
-        elif player_rect.right - 16 > self.rect.right and self.x_coord2 < world_limit[0] - (screenW//2 + 64) and player_rect.right - 16 < self.x_coord2 + screenW//2: 
+        elif player_rect.right - 16 > self.rect.right and self.x_coord2 < world_limit[0] - (screenW//2 + 32) and player_rect.right - 16 < self.x_coord2 + screenW//2 - 32: 
             player_rect.x -= 1
             self.scrollx += 1
+            
         else:
             self.scrollx = 0
             

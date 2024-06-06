@@ -1,11 +1,11 @@
 import pygame
 import os
 #from game_window import sprite_group
-from bullet import bullet_
+from bullet import bullet_ #type: ignore
 #print('directory: ' + os.getcwd())
-from particle import particle_
-from music_player import music_player
-
+from particle import particle_ #type: ignore
+from music_player import music_player #type: ignore
+ 
 #GRAVITY = 0.75
 
 class enemy_32wide(pygame.sprite.Sprite):
@@ -79,6 +79,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             self.frame_list.append(temp_list)
 
         self.image = self.frame_list[self.action][self.frame_index]
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.rect.bottomleft = (x,y)
         self.width = self.image.get_width()
