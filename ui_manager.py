@@ -27,7 +27,7 @@ class ui_manager():
         pause_game = True
         exit_to_title = False
         #3 buttons just like the start menu
-        
+        #possibly an inventory button too
         
         if not self.options_menu_enable:
             if self.trigger_once:

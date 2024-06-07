@@ -34,6 +34,8 @@ FPS = 60
 move_L = False
 move_R = False
 
+change_once = True
+
 hold_jmp_update = pygame.time.get_ticks()
 hold_jmp_time = 1
 hold_jump = False
@@ -445,6 +447,7 @@ while run:
 	#this is remnant code from following Coding with Russ' tutorial, I wasn't sure how to integrate this into playerFile.py
 	#when I was separating the files (he wrote his whole tutorial game in virtually one single file)
 	if player0.Alive:
+		
 		if (enemy_collision == True or player0.hurting == True):
 			enemy_collision = False
 			player0.update_action(5) #hurting
@@ -453,15 +456,22 @@ while run:
 				player0.update_action(11)
 			
 			elif player0.atk1:
+				
+				if change_once:
+					if player0.vel_y < -0.1:
+						player0.atk1_alternate = True
+					elif player0.vel_y > 0.1:
+						player0.atk1_alternate = False
+					change_once = False
+     
 				if player0.atk1_alternate == True:# and player0.in_air == False:
-					player0.update_action(7)
+					player0.update_action(7)	
 				else:
-					#player0.update_action(8)#8: atk1, yes they are ordered in the way you loaded them
+					#player0.update_action(8)#8: atk1
 					if player0.crit:
 						player0.update_action(10)
 					else:
-						player0.update_action(8)#8: atk1, yes they are ordered in the way you loaded them
-				
+						player0.update_action(8)#8: atk1
 			else:
 				if player0.rolling:
 					player0.update_action(9)#rolling
@@ -470,10 +480,7 @@ while run:
 				elif player0.in_air:
 					player0.update_action(2)#2: jump
 					#hold_jump = False
-					if player0.vel_y < 0:# and player0.speed == normal_speed: -1
-						player0.atk1_alternate = True
-					else:
-						player0.atk1_alternate = False
+					
 				elif (player0.in_air == False and player0.vel_y >= 0 and player0.landing == True
           			):
 					player0.update_action(3)#3: land
@@ -526,6 +533,7 @@ while run:
 						#print("jump")
      
 				if event.key == pygame.K_i and player0.stamina_used + 1 <= player0.stamina and event.key != pygame.K_w:
+					change_once = True
 					player0.atk1 = True
 					hold_jump = False
 				elif event.key == pygame.K_i and player0.stamina_used + 1 > player0.stamina:

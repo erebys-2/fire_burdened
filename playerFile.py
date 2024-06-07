@@ -509,9 +509,9 @@ class player(pygame.sprite.Sprite):
         #rudimentary scrolling adjust====================================================================================================================
         if self.Alive:
             if x_scroll_en:
-                if self.x_coord < screenW//2 or self.shoot_recoil: 
+                if self.x_coord < screenW//2 or self.shoot_recoil or self.hurting: 
                     self.rect.x += dx
-                elif self.x_coord >= world_limit[0] - (screenW//2 + self.direction*32) or self.shoot_recoil:
+                elif self.x_coord >= world_limit[0] - (screenW//2 + self.direction*32) or self.shoot_recoil or self.hurting:
                     self.rect.x += dx
                 else: 
                     self.scrollx = dx
@@ -691,18 +691,17 @@ class player(pygame.sprite.Sprite):
                 self.squat = False
 
             if self.action == 7 or self.action == 8 or self.action == 10:
-                self.atk_done = True
-				#cancel out of a roll if tranisitioning
-                self.roll_count = 3
-                self.rolling = False
+                
+                #self.squat = False #this line will cancel jumps that have been inputted before the atk
                 
                 if self.action == 7:
                     self.atk1_alternate = False
                 elif self.action == 8:
                     self.atk1_alternate = True
-                
+
                 self.crit = False
                 self.landing = False
+                self.atk_done = True
                     
             if self.action == 9: 
                 #self.image = pygame.image.load('sprites/player/end_of_roll/0.png') #this fucks everything do not add back
