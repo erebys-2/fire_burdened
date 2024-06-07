@@ -10,6 +10,7 @@ from Camera import Camera #type: ignore
 from music_player import music_player #type: ignore
 from button import Button #type: ignore
 from textManager import text_manager #type: ignore
+from ui_manager import ui_manager #type: ignore
 from spriteGroup import sprite_group #type: ignore
 import gc
 #from pygame.locals import *
@@ -43,6 +44,9 @@ hold_roll = False
 
 level_trans_timing = pygame.time.get_ticks()
 show_controls_en = False
+
+pause_game = False
+#exit_to_title = False
 
 text_delay = pygame.time.get_ticks()
 
@@ -146,6 +150,9 @@ level_dict = {
     3:[orang, 'sunset', 15, 200, [], True] #default case?
 }
 
+#ui manager
+ui_manager0 = ui_manager(SCREEN_WIDTH, SCREEN_HEIGHT, [font, font_larger])
+
 #text manager instance
 text_manager0 = text_manager()
 type_out_en = True
@@ -230,7 +237,7 @@ while run:
 	temp_move_L = False
 	player0.gravity_on = color_n_BG[2] #disables player movement w/ accordance to enable signal
 	
-	if level != 0 and not show_controls_en:#delete mouse when out of the main menu
+	if level != 0 and not show_controls_en and not pause_game:#delete mouse when out of the main menu
 		pygame.mouse.set_visible(0)
 	else:
 		pygame.mouse.set_visible(1)
@@ -277,19 +284,24 @@ while run:
 	#camera.draw(screen)#for camera debugging
 	if world.x_scroll_en:
 		camera.auto_correct(player0.rect, world.coords, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
+  
 	world.draw(screen, scroll_x, 0)#this draws the world and scrolls it 
  
-	player0.animate(the_sprite_group)
-	player0.move(move_L, move_R, world.solids, world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
-              	SCREEN_WIDTH, SCREEN_HEIGHT, the_sprite_group)
 	
-	scroll_x = player0.scrollx + camera.scrollx
+	
+	if not pause_game:
+		player0.animate(the_sprite_group)
+		player0.move(pause_game, move_L, move_R, world.solids, world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
+					SCREEN_WIDTH, SCREEN_HEIGHT, the_sprite_group)
+	
+	if not pause_game:
+		scroll_x = player0.scrollx + camera.scrollx
+	else:
+		scroll_x = 0
 
-	the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, player0.direction)
-	
+	the_sprite_group.update_groups_behind_player(pause_game, screen, player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, player0.direction)
 	player0.draw(screen)
-	
-	the_sprite_group.update_groups_infront_player(screen, scroll_x)
+	the_sprite_group.update_groups_infront_player(pause_game, screen, scroll_x)
    
 	status_bars.draw(screen, player0.get_status_bars(), font)
  
@@ -301,6 +313,8 @@ while run:
 	#this will be difficult to extract from the while loop into a single method
 	#will probably have to create an object for special level overlays: menus and inventories
 	if level == 0: 
+		#exit_to_title = False
+		pause_game = False
 		draw_bg(screen, gradient_dict, color_n_BG[0], color_n_BG[1])
 		if ld_title_screen_en: #execute once signal
 			new_game_img = pygame.image.load('sprites/new_game_btn.png').convert_alpha()
@@ -342,7 +356,7 @@ while run:
 			if quit_button.draw(screen):
 				run = False
 
-			if start_button.clicked or quit_button.clicked:
+			if start_button.action or quit_button.action:
 				m_player.play_sound(m_player.sfx[1])
 		#you need to add saves and volume controls, and probably control controls too later
 		#next_level = load_title_screen(screen, color_n_BG, ld_title_screen_en, show_controls_en, level)
@@ -373,6 +387,18 @@ while run:
                                             type_out, type_out_en, 'none')
 		text_speed = 120
  
+	#-------------------------------------------------pausing game--------------------------------------------------------
+	if pause_game:
+		ui_tuple0 = ui_manager0.show_pause_menu(screen)
+		pause_game = ui_tuple0[0]
+		if ui_tuple0[1]:
+			next_level = 0
+			player0 = player(32, 128, 4, 6, 6, 0, 0)
+			player_new_x = 32
+			player_new_y = 32
+			#m_player.stop_sound()
+  
+ 
     #-----------------------------------------------------------------------------------------------------------------------------------------------------------
     #handling enemy player collisions and death------------------------------------------------------------------------------------
     
@@ -383,7 +409,7 @@ while run:
 			'		You Died.',
 			'(ESC to Restart)'
 		)
-		text_box_on =text_manager0.disp_text_box(screen, font_larger, text, black, white, (0, SCREEN_HEIGHT//2 -24, SCREEN_WIDTH, 72), 
+		text_box_on = text_manager0.disp_text_box(screen, font_larger, text, black, white, (0, SCREEN_HEIGHT//2 -24, SCREEN_WIDTH, 72), 
                                            False, type_out_en, 'centered')
 
     
@@ -473,7 +499,7 @@ while run:
 		#key press
 		
 		if(event.type == pygame.KEYDOWN):
-			if player0.Alive and color_n_BG[2]:
+			if player0.Alive and color_n_BG[2] and not pause_game:
 				if event.key == pygame.K_a:
 					move_L = True
 				if event.key == pygame.K_d:
@@ -528,6 +554,7 @@ while run:
 			# 	m_player.play_song('newsong18.wav')
 			if event.key == pygame.K_c:
 				show_controls_en = True
+				
 			if event.key == pygame.K_f:
 				if flags == pygame.SHOWN: #windowed mode
 					flags = pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN #full screen mode
@@ -535,28 +562,35 @@ while run:
 				else:
 					flags = pygame.SHOWN #windowed mode
 					screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)
-			# if event.key == pygame.K_l and player0.action < 5:
-			# 	if level < 2:
-			# 		next_level = level + 1
-			# 	else:
-			# 		next_level = 0
 
-			if event.key == pygame.K_ESCAPE:
+			if event.key == pygame.K_BACKSPACE or event.key == pygame.K_ESCAPE: #escape exits the window when testing...
 				#run = False
 				if level != 0:
-					m_player.stop_sound()
+					#pause_game = ui_manager0.show_pause_menu(screen)[0]
+					
+					if pause_game or not player0.Alive:# or ui_manager0.show_pause_menu(screen)[1]:
+						next_level = 0
+						player0 = player(32, 128, 4, 6, 6, 0, 0)
+						player_new_x = 32
+						player_new_y = 32
+						m_player.stop_sound()
+					else:
+						#print("game is paused")
+						pause_game = True
+
+      
 					m_player.play_sound(m_player.sfx[1])
 				elif level == 0 and show_controls_en:
 					m_player.play_sound(m_player.sfx[1])
 					show_controls_en = False
 				else:
 					run = False
-				next_level = 0
-				player0 = player(32, 128, 4, 6, 6, 0, 0)
-				player_new_x = 32
-				player_new_y = 32
+				
     
 			if event.key == pygame.K_RETURN:
+				if pause_game:
+					pause_game = False
+				
 				if level == 0 and not show_controls_en:
 					m_player.play_sound(m_player.sfx[1])
 					next_level = 1
@@ -566,9 +600,7 @@ while run:
 					type_out = False #kill type_out signal while it's typing
 				#else load next dialogue bubble
 					#print(type_out)
-				
-				#shit you need to be able to reset the player back to level 1 and restore their health!
-    
+
 			#temp bg adjustment
 			amnt = 1
 			if event.key == pygame.K_5:

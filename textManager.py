@@ -85,7 +85,7 @@ class text_manager():
         #...which isn't a bad thing
         
         #textbox bg
-        pygame.draw.rect(screen, color, box)
+        #pygame.draw.rect(screen, color, box)
 
         #text positioning
         if alignment == 'centered': #not actually centered LMAO
@@ -96,7 +96,7 @@ class text_manager():
 
 
         if type_out:
-            if type_out_en:#call this is set to true per several game ticks
+            if type_out_en:#this is set to true per several game ticks
                 str_list = self.copy_by_char2(self.build_combined_str(text, self.disp_text_box_quit), not type_out)# kind of redundant to set str_list but it does the job
             str_list = self.str_list_rebuilt
         else:

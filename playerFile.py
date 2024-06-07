@@ -201,12 +201,12 @@ class player(pygame.sprite.Sprite):
             
         elif (self.frame_index >= 1 and self.frame_index < 4) and (self.action==10):#adjust atk hitbox location for crit
             self.atk_show_sprite = False
-            self.atk_rect.width = self.collision_rect.height
+            self.atk_rect.width = self.collision_rect.width/self.frame_index
             self.atk_rect.height = self.collision_rect.height
             if self.direction == -1:
                 x_loc = self.collision_rect.x - self.width
             else:
-                x_loc = self.collision_rect.x 
+                x_loc = self.collision_rect.x + 16*self.frame_index #not perfect but ok? receding hitbox reduces phantom hits
             y_loc = self.collision_rect.y
             
             self.atk_rect.x = x_loc
@@ -229,12 +229,12 @@ class player(pygame.sprite.Sprite):
                 
         
     
-    def move(self, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, screenW, screenH, the_sprite_group):
+    def move(self, pause_game, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, screenW, screenH, the_sprite_group):
         #reset mvmt variables
         self.collision_rect.x = self.rect.x + self.width
         self.collision_rect.y = self.rect.y
         
-        if self.Alive == False:
+        if self.Alive == False or pause_game:
             dx = 0
         dx = 0
         dy = 0
@@ -418,32 +418,33 @@ class player(pygame.sprite.Sprite):
                 #hitting wall while rolling
                 if self.action == 9 and tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//4 - 2):
                     dx = -1 * self.direction 
-                    #dy += 2
                     self.rolled_into_wall = True
                     if self.frame_index > 0:
                         self.rolling = False
                     #self.debuggin_rect  = (self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//4 - 2)
-                    
+                
+                #displaced hitbox x collisions
+                elif (self.action != 9
+                    and self.disp_flag #and self.action == 67
+                    and tile[1].colliderect(self.collision_rect.x + disp_x + dx, self.collision_rect.y, self.width, self.height - 17)
+                    ):
+                    dx = -8*self.direction
+                
                 #wall collisions while NOT rolling
                 elif (tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y, self.width, self.height - 17) 
                     and self.action != 9 #this line is important for consistency
-                    and (not self.disp_flag or self.action == 11)
                     ):
                     dx = 0
-                    if (tile[1].colliderect(self.collision_rect.x, self.collision_rect.y, self.width, self.height - 17) and self.vel_y > 0):
+                    if (tile[1].colliderect(self.collision_rect.x, self.collision_rect.y, self.width, self.height - 17) 
+                        #and self.vel_y > 0
+                        ):
                         dx = -8*self.direction
-                        
-                #displaced hitbox x collisions
-                elif (self.action != 9 and self.action != 11
-                      and self.disp_flag
-                      and tile[1].colliderect(self.collision_rect.x + disp_x + dx, self.collision_rect.y, self.width, self.height - 17)
-                    ):
-                    dx += -self.direction * 16
-                    #has an issue with recoil, i am too tired to figure it out atm
 
                 #dy collision stuff, sinking through tiles etc
                 
-                if tile[1].colliderect(self.collision_rect.x, self.collision_rect.y + dy, self.width , self.height):
+                if (tile[1].colliderect(self.collision_rect.x, self.collision_rect.y + dy, self.width , self.height)
+                    #and not self.disp_flag
+                    ):
                     if self.vel_y >= 0: #making sure gravity doesn't pull player under the tile
                         self.vel_y = 0
                     elif self.vel_y < 0: #prevents player from gliding on ceiling
@@ -758,7 +759,7 @@ class player(pygame.sprite.Sprite):
         
         # pygame.draw.rect(p_screen, (0,0,255), self.collision_rect)
         # pygame.draw.rect(p_screen, (255,0,0), self.hitbox_rect)
-        # pygame.draw.rect(p_screen, (0,255,0), self.atk_rect_scaled)
+        # pygame.draw.rect(p_screen, (0,255,0), self.atk_rect)
         # pygame.draw.rect(p_screen, (0,0,255), self.debuggin_rect)
         
         if self.flicker == False:
