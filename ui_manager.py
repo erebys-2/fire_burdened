@@ -227,8 +227,8 @@ class ui_manager():
             for i in range(8):
                 self.button_list.append(Button(self.S_W//2 -128, self.S_H//2 -160 + 32*i, self.generic_img, 1))
                 
-            self.button_list.append(Button(self.S_W//2 -144, self.S_H /2 +112, self.generic_img, 1))
-            self.button_list.append(Button(self.S_W//2 + 16, self.S_H /2 +112, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 -144, self.S_H /2 +144, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 + 16, self.S_H /2 +144, self.generic_img, 1))
             
             for i in range(8): #done for formatting (these are dummy buttons)
                 self.button_list.append(Button(self.S_W//2 -0, self.S_H//2 -160 + 32*i, self.generic_img, 1))
@@ -238,6 +238,8 @@ class ui_manager():
         
         self.text_manager0.disp_text_box(screen, self.fontlist[1], ('','Click a button to re-map then press the desired key'), (-1,-1,-1), (200,200,200), 
                                          (112, self.S_H//2 - 216,self.S_W,self.S_H), False, False, 'none')
+        self.text_manager0.disp_text_box(screen, self.fontlist[1], ('','UI buttons ESCAPE and ENTER cannot be re-mapped'), (-1,-1,-1), (200,200,200), 
+                                         (128, self.S_H//2 + 96,self.S_W,self.S_H), False, False, 'none')
         
         ctrls_btn_dict = {
             0:('','Jump'),
@@ -280,7 +282,7 @@ class ui_manager():
         if not self.stop:
             for event in pygame.event.get():
                 if(event.type == pygame.KEYDOWN):
-                    if event.key != pygame.K_ESCAPE or event.key != pygame.K_RETURN:
+                    if event.key != pygame.K_ESCAPE and event.key != pygame.K_RETURN:
                         self.disp_str_list[self.btn_selected][1] = pygame.key.name(event.key)
                         self.ctrls_list[self.btn_selected] = event.key
                     
