@@ -550,23 +550,20 @@ while run:
 			if (event.key == pygame.K_BACKSPACE or event.key == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable: #escape exits the window when testing...
 				#run = False
 				if level != 0:
-
+					ui_manager0.trigger_once = True
 					if pause_game or not player0.Alive:
 						next_level = 0
 						player0 = player(32, 128, 4, 6, 6, 0, 0)
 						player_new_x = 32
 						player_new_y = 32
 						m_player.stop_sound()
-						ui_manager0.trigger_once = True
+						
 					else:
 						#print("game is paused")
 						pause_game = True
 
       
 					m_player.play_sound(m_player.sfx[1])
-				elif level == 0 and show_controls_en:
-					m_player.play_sound(m_player.sfx[1])
-					show_controls_en = False
 				else:
 					run = False
 				

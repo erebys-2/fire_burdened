@@ -3,6 +3,8 @@ import os
 from bullet import bullet_ #type: ignore
 from particle import particle_ #type: ignore
 from music_player import music_player #type: ignore
+import math
+import random
 #print('directory: ' + os.getcwd())
 
 #GRAVITY = 0.75
@@ -412,7 +414,25 @@ class player(pygame.sprite.Sprite):
         
         for tile in world_solids:
             #x collisions
+            rando_frame = 0
             if (tile[2] != 17 and tile[2] != 10 and tile[2] != 2):
+                rect_x_coord = 0
+                if self.direction == 1:
+                    rect_x_coord = self.atk_rect.right - 8
+                else:
+                    rect_x_coord = self.atk_rect.left
+                if tile[1].colliderect(rect_x_coord, self.atk_rect_scaled.y, 8, self.atk_rect_scaled.height) and self.frame_index == 1 and pygame.time.get_ticks() - self.update_time > 60:
+                    #print("atk1 collided")
+                    x_loc = (tile[1].centerx + self.atk_rect.centerx)//2
+                    y_loc = (tile[1].centery + self.atk_rect.centery)//2
+                    particle = particle_(x_loc, y_loc, -self.direction, self.scale, 'player_bullet_explosion', False, rando_frame, False)
+                    the_sprite_group.particle_group.add(particle)
+                    if rando_frame == 0:
+                        rando_frame = 1
+                    else:
+                        rando_frame = 0
+                    
+                
                 #dx collisions, tile walls
                 
                 #hitting wall while rolling
