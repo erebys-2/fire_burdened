@@ -3,6 +3,7 @@ from textManager import text_manager #type: ignore
 from music_player import music_player #type: ignore
 import os
 import pygame
+import csv
 
 class ui_manager():
     
@@ -11,67 +12,288 @@ class ui_manager():
         self.m_player = music_player(m_player_sfx_list_main)
         
         self.text_manager0 = text_manager()
+        #self.ctrls_list = ['w','a','s','d','i','o','p','right alt']
+        
         self.generic_img = pygame.image.load('sprites/generic_btn.png').convert_alpha()
+        self.pause_img = pygame.image.load('sprites/pause_bg.png').convert_alpha()
         
         self.S_W = SCREEN_WIDTH
         self.S_H = SCREEN_HEIGHT
         
         self.options_menu_enable = False
+        self.ctrl_menu_enable = False
+        self.vol_menu_enable = False
+        self.saves_menu_enable = False
+        
         self.trigger_once = True
         
         self.fontlist = fontlist
         self.button_list = []
         
+        self.disp_flags = pygame.SHOWN
+
+        self.stop = False
+        self.btn_selected = 0
+        
+        self.disp_str_list = [
+            ['','empty'],
+            ['','empty'],
+            ['','empty'],
+            ['','empty'],
+            ['','empty'],
+            ['','empty'],
+            ['','empty'],
+            ['','empty']
+        ]
+        
+        self.ctrls_list = [-1,-1,-1,-1,-1,-1,-1,-1]
+        self.ctrls_updated = False
+        self.run_game = True
+        
+        self.title_screen = pygame.image.load('sprites/title_screen.png').convert_alpha()
+        self.ts_rect = self.title_screen.get_rect()
+        self.ts_rect.center = (self.S_W//2, self.S_H//2 +32)
+        
+        
+    def read_settings_data(self):
+        temp_list = []
+        with open(f'ctrls_data.csv', newline= '') as csvfile:
+            reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
+            for row in reader:
+                for entry in row:
+                    temp_list.append(int(entry))
+                    
+        return temp_list
+        
+    def write_settings_data(self, data_):
+        with open(f'ctrls_data.csv', 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile, delimiter = ',')
+                writer.writerow(data_)
+
+#-----------------------------------------------------------main menu----------------------------------------------------------
+    def show_main_menu(self, screen):
+        next_level = 0
+        
+        if not self.options_menu_enable and not self.saves_menu_enable and next_level == 0:
+            if self.trigger_once:
+                self.run_game = True
+                self.button_list *= 0
+
+                for i in range(4):
+                    self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +64 +36*i, self.generic_img, 1))
+                self.trigger_once = False
+                
+            screen.blit(self.title_screen, self.ts_rect)
+            
+            if self.button_list[0].draw(screen):
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.trigger_once = True
+                self.run_game = True
+
+                next_level = 1
+            self.button_list[0].show_text(screen, self.fontlist[1], ('','New Game'))
+            
+            if self.button_list[1].draw(screen):
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.saves_menu_enable = True
+                self.trigger_once = True
+            self.button_list[1].show_text(screen, self.fontlist[1], ('','Load File')) 
+            
+            if self.button_list[2].draw(screen):
+                self.options_menu_enable = True
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.trigger_once = True
+            self.button_list[2].show_text(screen, self.fontlist[1], ('','Options')) 
+            
+            if self.button_list[3].draw(screen):
+                self.run_game = False
+                self.m_player.play_sound(self.m_player.sfx[1])
+            self.button_list[3].show_text(screen, self.fontlist[1], ('','Quit')) 
+            
+        elif self.options_menu_enable and not self.saves_menu_enable:
+            self.show_options_menu(screen)
+            
+        elif not self.options_menu_enable and self.saves_menu_enable:
+            print("load files not implemented yet")
+            self.saves_menu_enable = False
+            
+        return (next_level, self.run_game)
+
+#-----------------------------------------------------------pause menu---------------------------------------------------------
     def show_pause_menu(self, screen):
-        #print("working")
         pause_game = True
         exit_to_title = False
+        
+        #drawing pause text
+        screen.blit(self.pause_img, (0,0))
+        self.text_manager0.disp_text_box(screen, self.fontlist[2], ('','Game Paused'), (-1,-1,-1), (200,200,200), 
+                                         (188, self.S_H//2 - 96,self.S_W,self.S_H), False, False, 'none')
+        
         #3 buttons just like the start menu
         #possibly an inventory button too
         
         if not self.options_menu_enable:
             if self.trigger_once:
                 self.button_list *= 0
+                for i in range(3):
+                    self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +48*i, self.generic_img, 1))
                 
-                rtn_button = Button(self.S_W //2 -64, self.S_H //2 +0, self.generic_img, 1)
-                options_button = Button(self.S_W //2 -64, self.S_H //2 +48, self.generic_img, 1)
-                esc_button = Button(self.S_W //2 -64, self.S_H //2 +96, self.generic_img, 1)
-                
-                self.button_list.append(rtn_button)
-                self.button_list.append(options_button)
-                self.button_list.append(esc_button)
-                #print(esc_button.clicked)
                 self.trigger_once = False
-                
-            text = ('','balls')
-            self.text_manager0.disp_text_box(screen, self.fontlist[1], text, (0,0,0), (255,255,255), (0,0,self.S_W,self.S_H), False, False, 'none')
-            
+
             if self.button_list[0].draw(screen):
                 pause_game = False
                 self.m_player.play_sound(self.m_player.sfx[1])
                 self.trigger_once = True
+            self.button_list[0].show_text(screen, self.fontlist[1], ('','Resume (ENT)')) 
                 
             if self.button_list[1].draw(screen):
                 self.options_menu_enable = True
                 self.m_player.play_sound(self.m_player.sfx[1])
                 self.trigger_once = True
+            self.button_list[1].show_text(screen, self.fontlist[1], ('','Options')) 
                 
             if self.button_list[2].draw(screen):
                 exit_to_title = True
                 pause_game = False
                 self.m_player.play_sound(self.m_player.sfx[1])
-                self.trigger_once = True
+                self.trigger_once = True  
+            self.button_list[2].show_text(screen, self.fontlist[1], ('','Title (ESC)'))  
+            
         else:
             #trigger options menu
             self.show_options_menu(screen)
                 
         return (pause_game, exit_to_title)
     
+    
+#-----------------------------------------------------------Options sub menu-----------------------------------------------------------    
     def show_options_menu(self, screen):
-        if self.trigger_once:
-            self.button_list *= 0
-            self.trigger_once = False
+        pygame.draw.rect(screen, (0,0,0), (0,0,self.S_W,self.S_H))
+        
+        if not self.ctrl_menu_enable and not self.vol_menu_enable:
+            if self.trigger_once:
+                self.button_list *= 0
+                for i in range(4):
+                    self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +48*i, self.generic_img, 1))
+                
+                self.trigger_once = False
+                
+            if self.button_list[0].draw(screen):
+                self.ctrl_menu_enable = True
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.trigger_once = True
+            self.button_list[0].show_text(screen, self.fontlist[1], ('','Controls')) 
+                
+            if self.button_list[1].draw(screen):
+                self.vol_menu_enable = True
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.trigger_once = True
+            self.button_list[1].show_text(screen, self.fontlist[1], ('','Volume')) 
             
-        self.options_menu_enable = False
+            if self.button_list[2].draw(screen):
+                self.m_player.play_sound(self.m_player.sfx[1])
+                if self.disp_flags == pygame.SHOWN: #windowed mode
+                    self.disp_flags = pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN #full screen mode
+                    screen = pygame.display.set_mode((self.S_W, self.S_H), self.disp_flags)
+                elif self.disp_flags == pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN:
+                    self.disp_flags = pygame.SHOWN
+                    screen = pygame.display.set_mode((self.S_W, self.S_H), self.disp_flags)
+            self.button_list[2].show_text(screen, self.fontlist[1], ('','Screen Toggle')) 
+                
+            if self.button_list[3].draw(screen):
+                self.options_menu_enable = False
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.trigger_once = True
+            self.button_list[3].show_text(screen, self.fontlist[1], ('','Back'))  
+            
+        elif self.ctrl_menu_enable and not self.vol_menu_enable:
+            self.show_ctrl_menu(screen)
+            
+        else:
+            self.show_vol_menu(screen)
+            
+#---------------------------------------------------------Controls sub menu---------------------------                
+    def show_ctrl_menu(self, screen):
+        if self.trigger_once:
+            self.stop = False
+            self.button_list *= 0
+            
+            #load current control scheme from csv file into ctrls_list
+            self.ctrls_list = self.read_settings_data()
+            #set up disp_str_list
+            for i in range(len(self.disp_str_list)):
+                self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
+            #load buttons
+            for i in range(8):
+                self.button_list.append(Button(self.S_W//2 -128, self.S_H//2 -160 + 32*i, self.generic_img, 1))
+                
+            self.button_list.append(Button(self.S_W//2 -144, self.S_H /2 +112, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 + 16, self.S_H /2 +112, self.generic_img, 1))
+            
+            for i in range(8): #done for formatting (these are dummy buttons)
+                self.button_list.append(Button(self.S_W//2 -0, self.S_H//2 -160 + 32*i, self.generic_img, 1))
+            
+            self.trigger_once = False
+        
+        
+        self.text_manager0.disp_text_box(screen, self.fontlist[1], ('','Click a button to re-map then press the desired key'), (-1,-1,-1), (200,200,200), 
+                                         (112, self.S_H//2 - 216,self.S_W,self.S_H), False, False, 'none')
+        
+        ctrls_btn_dict = {
+            0:('','Jump'),
+            1:('','Left'),
+            2:('','Roll'),
+            3:('','Right'),
+            4:('','Melee'),
+            5:('','Shoot'),
+            6:('','Special'),
+            7:('','Sprint'),
+        }
+        
+        
+        for i in range(8):
+            if self.button_list[i].draw(screen):
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.btn_selected = i
+                
+            self.button_list[i].show_text(screen, self.fontlist[1], ctrls_btn_dict[i])
+            self.button_list[i+10].show_text(screen, self.fontlist[1], self.disp_str_list[i])
+                
+        #pressing default button
+        if self.button_list[8].draw(screen):
+            self.m_player.play_sound(self.m_player.sfx[1])
+            self.ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054]
+            for i in range(len(self.disp_str_list)):
+                self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
+        self.button_list[8].show_text(screen, self.fontlist[1], ('','Default'))  
+        
+        #pressing save button
+        if self.button_list[9].draw(screen):
+            self.ctrl_menu_enable = False
+            self.m_player.play_sound(self.m_player.sfx[1])
+            self.trigger_once = True  
+            self.ctrls_updated = True
+            #print(self.ctrls_list)
+            self.write_settings_data(self.ctrls_list)
+        self.button_list[9].show_text(screen, self.fontlist[1], ('','Save'))  
+        
+        if not self.stop:
+            for event in pygame.event.get():
+                if(event.type == pygame.KEYDOWN):
+                    if event.key != pygame.K_ESCAPE or event.key != pygame.K_RETURN:
+                        self.disp_str_list[self.btn_selected][1] = pygame.key.name(event.key)
+                        self.ctrls_list[self.btn_selected] = event.key
+                    
+                if(event.type == pygame.QUIT):
+                    self.stop = True
+                    
+#------------------------------------------------------Volume sub menu-------------------------------
+#under construction, will probably be generating a csv file like controls
+        
+    def show_vol_menu(self, screen):
+        print("not sure if I can actually adjust volume with my implementation")
+        self.button_list *= 0
+        self.vol_menu_enable = False
         self.trigger_once = True
-        print("no options yet lol")
+        
+

@@ -118,6 +118,7 @@ status_bars = StatusBars()
 #define font
 font = pygame.font.SysFont('SimSun', 12)
 font_larger = pygame.font.SysFont('SimSun', 16)
+font_massive = pygame.font.SysFont('SimSun', 48)
 
 #music player instance-------------------------------------------------------------------------------------------
 m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav']
@@ -153,7 +154,10 @@ level_dict = {
 }
 
 #ui manager
-ui_manager0 = ui_manager(SCREEN_WIDTH, SCREEN_HEIGHT, [font, font_larger])
+ui_manager0 = ui_manager(SCREEN_WIDTH, SCREEN_HEIGHT, [font, font_larger, font_massive])
+
+#controls
+ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054]
 
 #text manager instance
 text_manager0 = text_manager()
@@ -206,6 +210,16 @@ def load_level_data(level, level_data_list, level_data_dict, level_dict):
 	
 	return [level_dict[level][1], level_dict[level][0], level_dict[level][5]]# gradient, BG_color, player enable
 
+#reading settings data
+def read_settings_data():
+	temp_list = []
+	with open(f'ctrls_data.csv', newline= '') as csvfile:
+		reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
+		for row in reader:
+			for entry in row:
+				temp_list.append(int(entry))
+				
+	return temp_list
 
 #instantiate sprite groups=========
 the_sprite_group = sprite_group()
@@ -229,8 +243,12 @@ run = True
 player_new_x = 32
 player_new_y = 32
 ld_title_screen_en = True
+ctrls_list = read_settings_data()
 
 while run:
+    # #testing general audio mixing
+	# m_player.set_vol_all_channels2(9)
+    
 	clock.tick(FPS)
 	#reset temporary values
 	text_box_on = False
@@ -315,57 +333,15 @@ while run:
 	#this will be difficult to extract from the while loop into a single method
 	#will probably have to create an object for special level overlays: menus and inventories
 	if level == 0: 
-		#exit_to_title = False
-		pause_game = False
 		draw_bg(screen, gradient_dict, color_n_BG[0], color_n_BG[1])
-		if ld_title_screen_en: #execute once signal
-			new_game_img = pygame.image.load('sprites/new_game_btn.png').convert_alpha()
-			quit_img = pygame.image.load('sprites/quit_btn.png').convert_alpha()
-			ctrl_img = pygame.image.load('sprites/ctrl_btn.png').convert_alpha()
-			title_screen = pygame.image.load('sprites/title_screen.png').convert_alpha()
-			ts_rect = title_screen.get_rect()
-			ts_rect.center = (SCREEN_WIDTH//2 -8, SCREEN_HEIGHT//2 +32)
-			start_button = Button(SCREEN_WIDTH //2 -64, SCREEN_HEIGHT //2 +64, new_game_img, 1)
-			ctrl_button = Button(SCREEN_WIDTH //2 -64, SCREEN_HEIGHT //2 +96, ctrl_img, 1)
-			quit_button = Button(SCREEN_WIDTH //2 -64, SCREEN_HEIGHT //2 +128, quit_img, 1)
-			ld_title_screen_en = False
-			#these buttons get purged on level change dw
-		#print(ld_title_screen_en)
-		screen.blit(title_screen, ts_rect)
-  
-		if start_button.highlight:
-			pygame.draw.rect(screen, (255,0,86), start_button.rect, 2)
-			#button shaking lol
-			if pygame.time.get_ticks()%2 == 0:
-				start_button.rect.x += 1
-			elif pygame.time.get_ticks()%3 == 0:
-				start_button.rect.x -= 2
-			else:
-				start_button.rect.x = SCREEN_WIDTH //2 -64
-		else:
-			start_button.rect.x = SCREEN_WIDTH //2 -64
-		if ctrl_button.highlight:
-			pygame.draw.rect(screen, (255,0,86), ctrl_button.rect, 2)
-		if quit_button.highlight:
-			pygame.draw.rect(screen, (255,0,86), quit_button.rect, 2)
-   
-		if not show_controls_en:
-			if start_button.draw(screen):
-				next_level = 1
-			if ctrl_button.draw(screen):
-				show_controls_en = True
-				m_player.play_sound(m_player.sfx[1])
-			if quit_button.draw(screen):
-				run = False
-
-			if start_button.action or quit_button.action:
-				m_player.play_sound(m_player.sfx[1])
-		#you need to add saves and volume controls, and probably control controls too later
-		#next_level = load_title_screen(screen, color_n_BG, ld_title_screen_en, show_controls_en, level)
-	else:
-		ld_title_screen_en = True
+		pause_game = False
+		exit_to_title = False
+		tuple = ui_manager0.show_main_menu(screen)
+		run = tuple[1]
+		next_level = tuple[0]
 	
 	#--------------------------------------showing controls----------------------------
+	#depreciated, still a useful example for typing out though
 	if show_controls_en:
 		text = (
             '',
@@ -399,6 +375,11 @@ while run:
 			player_new_x = 32
 			player_new_y = 32
 			#m_player.stop_sound()
+   
+	#---------------------------------update controls-----------------------------------------
+	if ui_manager0.ctrls_updated:
+		ctrls_list = read_settings_data()
+		ui_manager0.ctrls_updated = False
   
  
     #-----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -506,17 +487,19 @@ while run:
 		#key press
 		
 		if(event.type == pygame.KEYDOWN):
+			#print(pygame.key.name(event.key))
+   
 			if player0.Alive and color_n_BG[2] and not pause_game:
-				if event.key == pygame.K_a:
+				if event.key == ctrls_list[1]: #pygame.K_a
 					move_L = True
-				if event.key == pygame.K_d:
+				if event.key == ctrls_list[3]: #pygame.K_d
 					move_R = True
-				if event.key == pygame.K_w and event.key == pygame.K_i and player0.stamina_used + 1 <= player0.stamina:
+				if event.key == ctrls_list[0] and event.key == ctrls_list[4] and player0.stamina_used + 1 <= player0.stamina: #pygame.K_w, pygame.K_i
 					#player0.squat = True
 					#player0.squat_done = True
 					player0.atk1_alternate = False
 					player0.atk1 = True
-				elif event.key == pygame.K_w:# and player0.in_air == False:# : #and event.key != pygame.K_i and event.key != pygame.K_s
+				elif event.key == ctrls_list[0]: #pygame.K_w 
 					
 					if hold_jump == False:
 						hold_jump = True
@@ -532,27 +515,28 @@ while run:
 						player0.squat = True
 						#print("jump")
      
-				if event.key == pygame.K_i and player0.stamina_used + 1 <= player0.stamina and event.key != pygame.K_w:
+				if event.key == ctrls_list[4] and player0.stamina_used + 1 <= player0.stamina and event.key != ctrls_list[0]: #pygame.K_i, pygame.K_w
 					change_once = True
 					player0.atk1 = True
 					hold_jump = False
-				elif event.key == pygame.K_i and player0.stamina_used + 1 > player0.stamina:
+				elif event.key == ctrls_list[4] and player0.stamina_used + 1 > player0.stamina: #pygame.K_i
 					status_bars.warning = True
 				
-				if event.key == pygame.K_o and player0.stamina_used + 2 <= player0.stamina:
+				if event.key == ctrls_list[5] and player0.stamina_used + 2 <= player0.stamina: #pygame.K_o
 					player0.shot_charging = True
-				elif event.key == pygame.K_o and player0.stamina_used + 2 > player0.stamina:
+				elif event.key == ctrls_list[5] and player0.stamina_used + 2 > player0.stamina: #pygame.K_o
 					status_bars.warning = True
-				
-				if (event.key == pygame.K_s or event.key == pygame.K_SPACE) and player0.stamina_used + player0.roll_stam_rate <= player0.stamina:
+     
+
+				if event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate <= player0.stamina: #pygame.K_s
 					if hold_roll == False:
 						hold_roll = True
 						#hold_roll_update = pygame.time.get_ticks()
 					hold_jump = False
-				elif (event.key == pygame.K_s or event.key == pygame.K_SPACE) and player0.stamina_used + player0.roll_stam_rate > player0.stamina:
+				elif event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate > player0.stamina: #pygame.K_s
 					status_bars.warning = True
      
-				if event.key == pygame.K_RALT or event.key == pygame.K_LALT:
+				if event.key == ctrls_list[7]: #pygame.K_RALT
 					player0.speed = normal_speed + 1
 					player0.sprint = True
 
@@ -560,28 +544,20 @@ while run:
 
 			# if event.key == pygame.K_m:
 			# 	m_player.play_song('newsong18.wav')
-			if event.key == pygame.K_c:
-				show_controls_en = True
-				
-			if event.key == pygame.K_f:
-				if flags == pygame.SHOWN: #windowed mode
-					flags = pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN #full screen mode
-					screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)
-				else:
-					flags = pygame.SHOWN #windowed mode
-					screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)
+			# if event.key == pygame.K_c:
+			# 	show_controls_en = True
 
-			if event.key == pygame.K_BACKSPACE or event.key == pygame.K_ESCAPE: #escape exits the window when testing...
+			if (event.key == pygame.K_BACKSPACE or event.key == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable: #escape exits the window when testing...
 				#run = False
 				if level != 0:
-					#pause_game = ui_manager0.show_pause_menu(screen)[0]
-					
-					if pause_game or not player0.Alive:# or ui_manager0.show_pause_menu(screen)[1]:
+
+					if pause_game or not player0.Alive:
 						next_level = 0
 						player0 = player(32, 128, 4, 6, 6, 0, 0)
 						player_new_x = 32
 						player_new_y = 32
 						m_player.stop_sound()
+						ui_manager0.trigger_once = True
 					else:
 						#print("game is paused")
 						pause_game = True
@@ -609,35 +585,35 @@ while run:
 				#else load next dialogue bubble
 					#print(type_out)
 
-			#temp bg adjustment
-			amnt = 1
-			if event.key == pygame.K_5:
-				amnt = -1
-				print(amnt)
-			elif event.key == pygame.K_6:
-				amnt = 1
-				print(amnt)
-			if event.key == pygame.K_1 or event.key == pygame.K_2 or event.key == pygame.K_3:
-				pygame.key.set_repeat(5,60)
-				if event.key == pygame.K_1 and BG_color[0] < 256 and BG_color[0] > 0:
-					BG_color[0] += amnt
-					#print(BG_color[0])
-				if event.key == pygame.K_2 and BG_color[1] < 256 and BG_color[1] > 0:
-					BG_color[1] += amnt
-				if event.key == pygame.K_3 and BG_color[2] < 256 and BG_color[2] > 0:
-					BG_color[2] += amnt
-			else:
-				pygame.key.set_repeat(0,0)
+			# #temp bg adjustment
+			# amnt = 1
+			# if event.key == pygame.K_5:
+			# 	amnt = -1
+			# 	print(amnt)
+			# elif event.key == pygame.K_6:
+			# 	amnt = 1
+			# 	print(amnt)
+			# if event.key == pygame.K_1 or event.key == pygame.K_2 or event.key == pygame.K_3:
+			# 	pygame.key.set_repeat(5,60)
+			# 	if event.key == pygame.K_1 and BG_color[0] < 256 and BG_color[0] > 0:
+			# 		BG_color[0] += amnt
+			# 		#print(BG_color[0])
+			# 	if event.key == pygame.K_2 and BG_color[1] < 256 and BG_color[1] > 0:
+			# 		BG_color[1] += amnt
+			# 	if event.key == pygame.K_3 and BG_color[2] < 256 and BG_color[2] > 0:
+			# 		BG_color[2] += amnt
+			# else:
+			# 	pygame.key.set_repeat(0,0)
 			
-			if event.key == pygame.K_4:
-				print(BG_color)
+			# if event.key == pygame.K_4:
+			# 	print(BG_color)
 			
 
 
 		if(event.type == pygame.KEYUP):
-			if event.key == pygame.K_a:
+			if event.key == ctrls_list[1]:#pygame.K_a
 				move_L = False
-			if event.key == pygame.K_d:
+			if event.key == ctrls_list[3]:#pygame.K_d
 				move_R = False
 
 			# if event.key == pygame.K_w and player0.squat == False:#variable height jumping, has a bug that results in an echo
@@ -651,11 +627,11 @@ while run:
 			# 	# else:
 			# 	# 	print(player0.vel_y)
 					
-			if event.key == pygame.K_i:
+			if event.key == ctrls_list[4]:#pygame.K_i
 				status_bars.warning = False
-			if (event.key == pygame.K_s or event.key == pygame.K_SPACE):#s
+			if event.key == ctrls_list[2]:#pygame.K_s
 				status_bars.warning = False
-			if event.key == pygame.K_o:
+			if event.key == ctrls_list[5]:#pygame.K_o
 				status_bars.warning = False
 				player0.frame_updateBP = 150
 				if player0.shot_charging == True:
@@ -663,7 +639,7 @@ while run:
 					player0.shot_charging = False
 					#player0.squat = False
 					#player0.squat_done = False
-			if event.key == pygame.K_RALT or event.key == pygame.K_LALT:
+			if event.key == ctrls_list[7]: #pygame.K_RALT
 				player0.speed = normal_speed
 				player0.sprint = False
 			# if event.key == pygame.K_a or event.key == pygame.K_d:

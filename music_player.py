@@ -61,7 +61,7 @@ class music_player():
         
             
     #--------------------------------------------------------------------equalizing-----------------------------------------
-    def auto_equalize(self, channel_count):
+    def auto_equalize(self, channel_count): #for setting volume, self.euqalization_regime will have to be turned into a paraneter passed in from game_window
         #check how many channels are being used
         self.concurrent_sounds = 0
         for channel in self.channel_list: 
@@ -124,6 +124,13 @@ class music_player():
         #print(level)
         for channel in self.channel_list: 
             if channel.get_busy():
+                self.set_channel_vol(channel, level)
+                
+    def set_vol_all_channels2(self, factor): #doesn't quite work when paired with auto equalize
+        #print(level)
+        for channel in self.channel_list: 
+            if channel.get_busy():
+                level = channel.get_volume()*factor
                 self.set_channel_vol(channel, level)
                 
     #for specific sounds

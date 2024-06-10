@@ -1,5 +1,5 @@
 import pygame
-from music_player import music_player
+from music_player import music_player #type: ignore
 #methods regarding text boxes live here
 
 class text_manager():
@@ -85,13 +85,14 @@ class text_manager():
         #...which isn't a bad thing
         
         #textbox bg
-        #pygame.draw.rect(screen, color, box)
+        if color != (-1,-1,-1):
+            pygame.draw.rect(screen, color, box)
 
         #text positioning
         if alignment == 'centered': #not actually centered LMAO
             x = screen.get_width()//2 -64
         else:
-            x = 10
+            x = box[0]
         y = box[1]
 
 

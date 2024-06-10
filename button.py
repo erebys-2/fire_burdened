@@ -1,4 +1,5 @@
 import pygame 
+from textManager import text_manager #type: ignore
 
 #button class
 class Button():
@@ -16,6 +17,19 @@ class Button():
    
 		self.highlight = False
 		self.action = False
+  
+		self.text_manager0 = text_manager()
+		
+	def show_text(self, screen, font, text):
+		# self.text_manager0.disp_text_box(screen, font, text, (-1,-1,-1), (0,0,0), 
+        #                            (self.rect.x + 18, self.rect.y - 8, 32, 64), False, False, 'none')
+		if self.highlight:
+			color = (200,200,120)
+		else:
+			color = (200,200,200)
+        
+		self.text_manager0.disp_text_box(screen, font, text, (-1,-1,-1), color, 
+                                   (self.rect.x + 8, self.rect.y - 10, 32, 64), False, False, 'none')
 		
 
 	def draw(self, surface):
@@ -44,3 +58,5 @@ class Button():
 		#draw button
 		surface.blit(self.image, (self.rect.x, self.rect.y))
 		return self.action
+
+	
