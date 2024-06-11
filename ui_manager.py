@@ -226,7 +226,7 @@ class ui_manager():
             self.button_list *= 0
             
             #load current control scheme from csv file into ctrls_list
-            self.ctrls_list = self.read_settings_data('csv_data')
+            self.ctrls_list = self.read_settings_data('ctrls_data')
             #set up disp_str_list
             for i in range(len(self.disp_str_list)):
                 self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
