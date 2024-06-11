@@ -3,10 +3,10 @@ import os
 from particle import particle_
 from music_player import music_player
 class bullet_(pygame.sprite.Sprite):
-    def __init__(self, x, y, speed, direction, scale, type, eq_regime):
+    def __init__(self, x, y, speed, direction, scale, type, ini_vol):
         pygame.sprite.Sprite.__init__(self)
         
-        self.m_player = music_player(['pop.wav', 'hit.wav'], eq_regime)
+        self.m_player = music_player(['pop.wav', 'hit.wav'], ini_vol)
         self.Active = True
         self.scale = scale
         

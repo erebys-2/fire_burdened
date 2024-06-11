@@ -7,9 +7,9 @@ import csv
 
 class ui_manager():
     
-    def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, fontlist, eq_regime):
+    def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, fontlist, ini_vol):
         m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav']
-        self.m_player = music_player(m_player_sfx_list_main, eq_regime)
+        self.m_player = music_player(m_player_sfx_list_main, ini_vol)
         
         self.text_manager0 = text_manager()
         #self.ctrls_list = ['w','a','s','d','i','o','p','right alt']
@@ -54,7 +54,7 @@ class ui_manager():
         self.ts_rect = self.title_screen.get_rect()
         self.ts_rect.center = (self.S_W//2, self.S_H//2 +32)
         
-        self.eq_regime = eq_regime
+        self.vol_lvl = ini_vol
         self.lower_volume = False
         self.raise_volume = False
         
@@ -148,6 +148,7 @@ class ui_manager():
                 pause_game = False
                 self.m_player.play_sound(self.m_player.sfx[1])
                 self.trigger_once = True
+                pygame.mixer.unpause()
             self.button_list[0].show_text(screen, self.fontlist[1], ('','Resume (ENT)')) 
                 
             if self.button_list[1].draw(screen):
@@ -161,6 +162,8 @@ class ui_manager():
                 pause_game = False
                 self.m_player.play_sound(self.m_player.sfx[1])
                 self.trigger_once = True  
+                pygame.mixer.unpause()
+                pygame.mixer.stop()
             self.button_list[2].show_text(screen, self.fontlist[1], ('','Title (ESC)'))  
             
         else:
@@ -297,13 +300,11 @@ class ui_manager():
         
     def show_vol_menu(self, screen):
         #kinda cursed rn, need to code a slider eventually
-        self.eq_regime = self.read_settings_data('eq_regime')
-        string = f'    {10*self.eq_regime[0]}%'
+        self.vol_lvl = self.read_settings_data('vol_data')
+        string = f'    {10*self.vol_lvl[0]}%'
         self.text_manager0.disp_text_box(screen, self.fontlist[1], ('','Volume Level', string), (-1,-1,-1), (200,200,200), 
                                     (272, self.S_H//2 - 64,self.S_W,self.S_H), False, False, 'none')
-        
-        max_regime = (10,9,9,8,8,7,7,6,6)
-        
+
         if self.trigger_once:
             self.button_list *= 0
             for i in range(3):
@@ -313,15 +314,12 @@ class ui_manager():
 
         if self.button_list[0].draw(screen):
             
-            if self.eq_regime != [-1,-1,-1,-1,-1,-1,-1,-1,-1]:
-                for i in range(len(self.eq_regime)):
-                    if self.eq_regime[i] < max_regime[i]:
-                        self.eq_regime[i] += 1
-            else:
-                self.eq_regime = [1,1,1,1,1,1,1,1,1]
+            if self.vol_lvl[0] < 10:
+                self.vol_lvl[0] += 1
+            
             self.raise_volume = True
-            self.write_settings_data('eq_regime', self.eq_regime)
-            self.m_player.update_eq_regime(self.eq_regime)
+            self.write_settings_data('vol_data', self.vol_lvl)
+            self.m_player.set_vol_all_sounds(self.vol_lvl)
             self.m_player.play_sound(self.m_player.sfx[1])
         else:
             self.raise_volume = False
@@ -329,15 +327,12 @@ class ui_manager():
             
         if self.button_list[1].draw(screen):
             
-            if self.eq_regime != [1,1,1,1,1,1,1,1,1]:
-                for i in range(len(self.eq_regime)):
-                    if self.eq_regime[i] > 1:
-                        self.eq_regime[i] -= 1
-            else:
-                self.eq_regime = [-1,-1,-1,-1,-1,-1,-1,-1,-1]
+            if self.vol_lvl[0] > 0:
+                self.vol_lvl[0] -= 1
+                
             self.lower_volume = True
-            self.write_settings_data('eq_regime', self.eq_regime)
-            self.m_player.update_eq_regime(self.eq_regime)
+            self.write_settings_data('vol_data', self.vol_lvl)
+            self.m_player.set_vol_all_sounds(self.vol_lvl)
             self.m_player.play_sound(self.m_player.sfx[1])
         else:
             self.lower_volume = False

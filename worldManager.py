@@ -56,7 +56,7 @@ class World():
         for lvl_data in self.lvl_data_list:
             lvl_data *= 0
 
-    def process_data(self, level_data_list, the_sprite_group, screenW, screenH, level_transitions, eq_regime):
+    def process_data(self, level_data_list, the_sprite_group, screenW, screenH, level_transitions, ini_vol):
         self.clear_data()
         self.process_coords(level_data_list[0], screenW, screenH, self.lvl_data_list[0])
         enemy0_id = 0
@@ -90,7 +90,7 @@ class World():
                     #add elifs for addition behaviors like spikes or smth
                     #russ instantiated players and enemies in here
                     elif tile == 28:
-                        enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'shooter', enemy0_id, eq_regime)
+                        enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'shooter', enemy0_id, ini_vol)
                         the_sprite_group.enemy0_group.add(enemy0)#for enemy-enemy collisions/ anti stacking
                         enemy0_id += 1
             

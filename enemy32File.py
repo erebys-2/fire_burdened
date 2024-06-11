@@ -10,11 +10,11 @@ from music_player import music_player #type: ignore
 
 class enemy_32wide(pygame.sprite.Sprite):
     #constructors
-    def __init__(self, x, y, speed, scale, type, enemy0_id, eq_regime):
+    def __init__(self, x, y, speed, scale, type, enemy0_id, ini_vol):
         pygame.sprite.Sprite.__init__(self)
-        self.m_player = music_player(['bassdrop2.wav', 'hit.wav', 'roblox2.wav', 'shoot.wav'], eq_regime)
-        self.eq_regime = eq_regime
-        self.m_player.set_sound_vol(self.m_player.sfx[0], 7) #looks like you can adjust vol in the constructor
+        self.m_player = music_player(['bassdrop2.wav', 'hit.wav', 'roblox2.wav', 'shoot.wav'], ini_vol)
+        self.ini_vol = ini_vol
+        #self.m_player.set_sound_vol(self.m_player.sfx[0], 7) #looks like you can adjust vol in the constructor
 
         self.player_collision = False
         self.id = enemy0_id
@@ -394,7 +394,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             else:
                 x = self.rect.left - 28
             y = self.rect.y + self.height//3 - 4
-            enemy_bullet = bullet_(x, y, 8, self.direction, self.scale, '8x8_red', self.eq_regime)
+            enemy_bullet = bullet_(x, y, 8, self.direction, self.scale, '8x8_red', self.ini_vol)
             self.m_player.play_sound(self.m_player.sfx[3])
             sp_group_list[1].add(enemy_bullet)
             self.shoot_done = True

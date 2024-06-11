@@ -26,10 +26,10 @@ class sprite_group():
 			self.button_group
 		]
   
-	def update_vol_lvl(self, input_regime):
+	def update_vol_lvl(self, level):
 		for sp_group in self.sp_groups_with_vol:
 			for sprite in sp_group:
-				sprite.m_player.update_eq_regime(input_regime)
+				sprite.m_player.set_vol_all_sounds(level)
 
 	def purge_sprite_groups(self):
 		for group in self.sp_group_list:

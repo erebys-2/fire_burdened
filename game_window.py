@@ -151,7 +151,7 @@ level_dict = {
     3:[orang, 'sunset', 15, 200, [], True] #default case?
 }
 
-eq_regime = [1,1,1,1,1,1,1,1,1]#[10,9,9,8,8,7,7,6,6]
+vol_lvl = [10,10]
 
 #controls
 ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054]
@@ -193,7 +193,7 @@ def clear_world_data(level_data_list):
 	for level_data in level_data_list:
 		level_data *= 0
 	
-def load_level_data(level, level_data_list, level_data_dict, level_dict, eq_regime):
+def load_level_data(level, level_data_list, level_data_dict, level_dict, vol_lvl):
 	#level_dict[level]: 0:BG_color, 1:gradient_type, 2:rows, 3:cols, 4:level_transitions, 5:player_en
 
 	#reading csv files 
@@ -203,7 +203,7 @@ def load_level_data(level, level_data_list, level_data_dict, level_dict, eq_regi
 		index += 1
   
 	#world has self data lists that get cleared each time this is called
-	world.process_data(level_data_list, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][4], eq_regime)
+	world.process_data(level_data_list, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][4], vol_lvl)
 	
 	return [level_dict[level][1], level_dict[level][0], level_dict[level][5]]# gradient, BG_color, player enable
 
@@ -219,15 +219,15 @@ def read_settings_data(data):
 	return temp_list
 
 
-eq_regime = read_settings_data('eq_regime') #read saved eq regime
+vol_lvl = read_settings_data('vol_data') #read saved eq regime
 #more instantiations
 
 #music player instance-------------------------------------------------------------------------------------------
 m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav']
-m_player = music_player(m_player_sfx_list_main, eq_regime)
+m_player = music_player(m_player_sfx_list_main, vol_lvl)
 
 #ui manager
-ui_manager0 = ui_manager(SCREEN_WIDTH, SCREEN_HEIGHT, [font, font_larger, font_massive], eq_regime)
+ui_manager0 = ui_manager(SCREEN_WIDTH, SCREEN_HEIGHT, [font, font_larger, font_massive], vol_lvl)
 update_vol = False
 
 #instantiate sprite groups=========
@@ -236,13 +236,13 @@ the_sprite_group = sprite_group()
 hostiles_group = (the_sprite_group.enemy0_group, the_sprite_group.enemy_bullet_group)
 
 #instantiate player at the start of load
-player0 = player(32, 128, 4, 6, 6, 0, 0, eq_regime)#6368 #5856 #6240 #test coords for camera autocorrect
+player0 = player(32, 128, 4, 6, 6, 0, 0, vol_lvl)#6368 #5856 #6240 #test coords for camera autocorrect
 #good news is that the player's coordinates can go off screen and currently the camera's auto scroll will eventually correct it
 normal_speed = player0.speed
 
 #load initial level-------------------------------------------------------------------------------------------------
 the_sprite_group.purge_sprite_groups()#does as the name suggests at the start of each load of the game
-color_n_BG = load_level_data(0, level_data_list, level_data_dict, level_dict, eq_regime) 
+color_n_BG = load_level_data(0, level_data_list, level_data_dict, level_dict, vol_lvl) 
 
 
 #running the game----------------------------------------------------------------------------------------------------------------------
@@ -287,7 +287,7 @@ while run:
 		world.clear_data()
 		level_transitioning = True
 		level = next_level
-		color_n_BG = load_level_data(level, level_data_list, level_data_dict, level_dict, eq_regime)
+		color_n_BG = load_level_data(level, level_data_list, level_data_dict, level_dict, vol_lvl)
 		
 		if move_L:
 			temp_move_L = move_L
@@ -382,10 +382,11 @@ while run:
 		pause_game = ui_tuple0[0]
 		if ui_tuple0[1]:
 			next_level = 0
-			player0 = player(32, 128, 4, 6, 6, 0, 0, eq_regime)
+			player0 = player(32, 128, 4, 6, 6, 0, 0, vol_lvl)
 			player_new_x = 32
 			player_new_y = 32
 			#m_player.stop_sound()
+
    
 	#---------------------------------updates from ui manager-----------------------------------------
 	if ui_manager0.ctrls_updated:
@@ -393,11 +394,10 @@ while run:
 		ui_manager0.ctrls_updated = False
   
 	if update_vol: #updates all m_players' eq regimes
-		input_regime = read_settings_data('eq_regime')
-		m_player.update_eq_regime(input_regime) 
-		#ui_manager0.m_player.update_eq_regime(input_regime)
-		the_sprite_group.update_vol_lvl(input_regime)
-		player0.m_player.update_eq_regime(input_regime)
+		vol_lvl = read_settings_data('vol_data')
+		m_player.set_vol_all_sounds(vol_lvl)
+		the_sprite_group.update_vol_lvl(vol_lvl)
+		player0.m_player.set_vol_all_sounds(vol_lvl)
   
 		m_player.play_sound(m_player.sfx[1])
   
@@ -575,14 +575,16 @@ while run:
 					ui_manager0.trigger_once = True
 					if pause_game or not player0.Alive:
 						next_level = 0
-						player0 = player(32, 128, 4, 6, 6, 0, 0, eq_regime)
+						player0 = player(32, 128, 4, 6, 6, 0, 0, vol_lvl)
 						player_new_x = 32
 						player_new_y = 32
-						m_player.stop_sound()
+						#m_player.stop_sound()
+						pygame.mixer.stop()
 						
 					else:
 						#print("game is paused")
 						pause_game = True
+						pygame.mixer.pause()
       
 					m_player.play_sound(m_player.sfx[1])
 				else:
@@ -592,6 +594,7 @@ while run:
 			if event.key == pygame.K_RETURN:
 				if pause_game:
 					pause_game = False
+					pygame.mixer.unpause()
 				
 				if level == 0 and not show_controls_en:
 					m_player.play_sound(m_player.sfx[1])

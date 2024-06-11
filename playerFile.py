@@ -11,7 +11,7 @@ import random
 
 class player(pygame.sprite.Sprite):
     #constructors
-    def __init__(self, x, y, speed, hp, stamina, hits_tanked, stamina_used, eq_regime):
+    def __init__(self, x, y, speed, hp, stamina, hits_tanked, stamina_used, ini_vol):
         pygame.sprite.Sprite.__init__(self)
         #internal variables
         scale = 2
@@ -130,8 +130,8 @@ class player(pygame.sprite.Sprite):
         self.atk_rect = pygame.Rect(-32, -32, 0,0)#self.rect.x, self.rect.y, self.rect.height, 2*self.rect.width
         self.atk_rect_scaled = pygame.Rect(-32, -32, 0,0)
         
-        self.m_player = music_player(['hat.wav', 'hat2.wav', 'step.wav', 'step2.wav', 'slash.wav', 'shoot.wav'], eq_regime)
-        self.eq_regime = eq_regime
+        self.m_player = music_player(['hat.wav', 'hat2.wav', 'step.wav', 'step2.wav', 'slash.wav', 'shoot.wav'], ini_vol)
+        self.ini_vol = ini_vol
         self.play_sound_once_en = True
         
         self.disp_states = { #actions/states when the player has a larger and or displaced hitbox
@@ -744,7 +744,7 @@ class player(pygame.sprite.Sprite):
                 else:
                     x = self.rect.left - 32
                 y = int(self.rect.y + 0.25 * self.height)
-                player_bullet = bullet_(x, y, 20, self.direction, self.scale, 'player_basic', self.eq_regime)
+                player_bullet = bullet_(x, y, 20, self.direction, self.scale, 'player_basic', self.ini_vol)
                 the_sprite_group.player_bullet_group.add(player_bullet)
                 self.charge_built -= 2
                 
@@ -761,7 +761,7 @@ class player(pygame.sprite.Sprite):
                         y += (i)
                     else:
                         y -= (i)
-                    player_bullet = bullet_(x , y, 20, self.direction, self.scale, 'player_basic', self.eq_regime)
+                    player_bullet = bullet_(x , y, 20, self.direction, self.scale, 'player_basic', self.ini_vol)
                     the_sprite_group.player_bullet_group.add(player_bullet)
                 
                 self.extra_recoil = i*3
