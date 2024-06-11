@@ -130,7 +130,7 @@ class player(pygame.sprite.Sprite):
         self.atk_rect = pygame.Rect(-32, -32, 0,0)#self.rect.x, self.rect.y, self.rect.height, 2*self.rect.width
         self.atk_rect_scaled = pygame.Rect(-32, -32, 0,0)
         
-        self.m_player = music_player(['hat.wav', 'hat2.wav', 'step.wav', 'step2.wav', 'slash.wav', 'shoot.wav'], ini_vol)
+        self.m_player = music_player(['hat.wav', 'hat2.wav', 'step.wav', 'step2.wav', 'slash.wav', 'shoot.wav', 'slash2.wav'], ini_vol)
         self.ini_vol = ini_vol
         self.play_sound_once_en = True
         
@@ -244,7 +244,7 @@ class player(pygame.sprite.Sprite):
             y_loc = (tile[1].centery + self.atk_rect.centery)//2
             particle = particle_(x_loc, y_loc, -self.direction, 0.9*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
             the_sprite_group.particle_group.add(particle)
-            self.m_player.play_sound(self.m_player.sfx[3])
+            #self.m_player.play_sound(self.m_player.sfx[6])
     
     
     def move(self, pause_game, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, screenW, screenH, the_sprite_group):

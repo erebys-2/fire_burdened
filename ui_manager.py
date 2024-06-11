@@ -283,7 +283,7 @@ class ui_manager():
             self.trigger_once = True  
             self.ctrls_updated = True
             #print(self.ctrls_list)
-            self.write_settings_data('csv_data', self.ctrls_list)
+            self.write_settings_data('ctrls_data', self.ctrls_list)
         self.button_list[9].show_text(screen, self.fontlist[1], ('','Save'))  
         
         if not self.stop:
