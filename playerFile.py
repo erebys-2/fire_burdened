@@ -11,7 +11,7 @@ import random
 
 class player(pygame.sprite.Sprite):
     #constructors
-    def __init__(self, x, y, speed, hp, stamina, hits_tanked, stamina_used):
+    def __init__(self, x, y, speed, hp, stamina, hits_tanked, stamina_used, eq_regime):
         pygame.sprite.Sprite.__init__(self)
         #internal variables
         scale = 2
@@ -130,7 +130,8 @@ class player(pygame.sprite.Sprite):
         self.atk_rect = pygame.Rect(-32, -32, 0,0)#self.rect.x, self.rect.y, self.rect.height, 2*self.rect.width
         self.atk_rect_scaled = pygame.Rect(-32, -32, 0,0)
         
-        self.m_player = music_player(['hat.wav', 'hat2.wav', 'step.wav', 'step2.wav', 'slash.wav', 'shoot.wav'])
+        self.m_player = music_player(['hat.wav', 'hat2.wav', 'step.wav', 'step2.wav', 'slash.wav', 'shoot.wav'], eq_regime)
+        self.eq_regime = eq_regime
         self.play_sound_once_en = True
         
         self.disp_states = { #actions/states when the player has a larger and or displaced hitbox
@@ -203,12 +204,12 @@ class player(pygame.sprite.Sprite):
             
         elif (self.frame_index >= 1 and self.frame_index < 4) and (self.action==10):#adjust atk hitbox location for crit
             self.atk_show_sprite = False
-            self.atk_rect.width = self.collision_rect.width/self.frame_index
+            self.atk_rect.width = self.collision_rect.height*0.75
             self.atk_rect.height = self.collision_rect.height
-            if self.direction == -1:
-                x_loc = self.collision_rect.x - self.width
+            if self.flip:
+                x_loc = self.collision_rect.x - (self.width + self.frame_index*2)
             else:
-                x_loc = self.collision_rect.x + 16*self.frame_index #not perfect but ok? receding hitbox reduces phantom hits
+                x_loc = self.collision_rect.x + (self.width//2 + self.frame_index*2)
             y_loc = self.collision_rect.y
             
             self.atk_rect.x = x_loc
@@ -228,8 +229,23 @@ class player(pygame.sprite.Sprite):
                 self.particle_update = pygame.time.get_ticks()
                 particle = particle_(self.rect.x, self.rect.y, -self.direction, self.scale, 'player_crit', True, self.frame_index, False)
                 the_sprite_group.particle_group.add(particle)
+              
                 
-        
+    def atk1_grinding(self, tile, the_sprite_group):
+        disp = 0
+        if not self.flip and self.action != 10:
+            disp = 12
+        elif self.flip and self.action != 10:
+            disp = -12
+        else:
+            disp = 0
+        if tile[1].colliderect(self.atk_rect_scaled) and self.frame_index == 1 and pygame.time.get_ticks() - self.update_time < 10:
+            x_loc = (tile[1].centerx + self.atk_rect.centerx)//2 + disp
+            y_loc = (tile[1].centery + self.atk_rect.centery)//2
+            particle = particle_(x_loc, y_loc, -self.direction, 0.9*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
+            the_sprite_group.particle_group.add(particle)
+            self.m_player.play_sound(self.m_player.sfx[3])
+    
     
     def move(self, pause_game, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, screenW, screenH, the_sprite_group):
         #reset mvmt variables
@@ -414,25 +430,9 @@ class player(pygame.sprite.Sprite):
         
         for tile in world_solids:
             #x collisions
-            rando_frame = 0
             if (tile[2] != 17 and tile[2] != 10 and tile[2] != 2):
-                rect_x_coord = 0
-                if self.direction == 1:
-                    rect_x_coord = self.atk_rect.right - 8
-                else:
-                    rect_x_coord = self.atk_rect.left
-                if tile[1].colliderect(rect_x_coord, self.atk_rect_scaled.y, 8, self.atk_rect_scaled.height) and self.frame_index == 1 and pygame.time.get_ticks() - self.update_time > 60:
-                    #print("atk1 collided")
-                    x_loc = (tile[1].centerx + self.atk_rect.centerx)//2
-                    y_loc = (tile[1].centery + self.atk_rect.centery)//2
-                    particle = particle_(x_loc, y_loc, -self.direction, self.scale, 'player_bullet_explosion', False, rando_frame, False)
-                    the_sprite_group.particle_group.add(particle)
-                    if rando_frame == 0:
-                        rando_frame = 1
-                    else:
-                        rando_frame = 0
+                self.atk1_grinding(tile, the_sprite_group)
                     
-                
                 #dx collisions, tile walls
                 
                 #hitting wall while rolling
@@ -744,7 +744,7 @@ class player(pygame.sprite.Sprite):
                 else:
                     x = self.rect.left - 32
                 y = int(self.rect.y + 0.25 * self.height)
-                player_bullet = bullet_(x, y, 20, self.direction, self.scale, 'player_basic')
+                player_bullet = bullet_(x, y, 20, self.direction, self.scale, 'player_basic', self.eq_regime)
                 the_sprite_group.player_bullet_group.add(player_bullet)
                 self.charge_built -= 2
                 
@@ -761,7 +761,7 @@ class player(pygame.sprite.Sprite):
                         y += (i)
                     else:
                         y -= (i)
-                    player_bullet = bullet_(x , y, 20, self.direction, self.scale, 'player_basic')
+                    player_bullet = bullet_(x , y, 20, self.direction, self.scale, 'player_basic', self.eq_regime)
                     the_sprite_group.player_bullet_group.add(player_bullet)
                 
                 self.extra_recoil = i*3

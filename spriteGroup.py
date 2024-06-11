@@ -10,6 +10,12 @@ class sprite_group():
 		self.particle_group_fg = pygame.sprite.Group()
 		self.button_group = pygame.sprite.Group()
 		
+		self.sp_groups_with_vol = [
+			self.enemy0_group,
+			self.enemy_bullet_group,
+			self.player_bullet_group,
+		]
+  
 		self.sp_group_list = [
 			self.enemy0_group,
 			self.enemy_bullet_group,
@@ -19,6 +25,11 @@ class sprite_group():
 			self.particle_group_fg,
 			self.button_group
 		]
+  
+	def update_vol_lvl(self, input_regime):
+		for sp_group in self.sp_groups_with_vol:
+			for sprite in sp_group:
+				sprite.m_player.update_eq_regime(input_regime)
 
 	def purge_sprite_groups(self):
 		for group in self.sp_group_list:
@@ -38,6 +49,8 @@ class sprite_group():
 			if not pause_game:
 				enemy0.animate(self.sp_group_list)
 				enemy0.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list)
+			# elif update_vol:
+			# 	enemy0.m_player.update_eq_regime()
 			if enemy0.Alive == False:
 				self.enemy0_group.remove(enemy0)
     
@@ -46,6 +59,8 @@ class sprite_group():
 			if not pause_game:
 				enemy_bullet.animate()
 				enemy_bullet.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list, player_direction)
+			# elif update_vol:
+			# 	enemy_bullet.m_player.update_eq_regime()
 			if enemy_bullet.Active == False:
 				self.enemy_bullet_group.remove(enemy_bullet)
 	
@@ -54,6 +69,8 @@ class sprite_group():
 			if not pause_game:
 				player_bullet.animate()
 				player_bullet.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list, player_direction)
+			# elif update_vol:
+			# 	player_bullet.m_player.update_eq_regime()
 			if player_bullet.Active == False:
 				self.player_bullet_group.remove(player_bullet)
     

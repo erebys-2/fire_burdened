@@ -7,9 +7,9 @@ import csv
 
 class ui_manager():
     
-    def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, fontlist):
+    def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, fontlist, eq_regime):
         m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav']
-        self.m_player = music_player(m_player_sfx_list_main)
+        self.m_player = music_player(m_player_sfx_list_main, eq_regime)
         
         self.text_manager0 = text_manager()
         #self.ctrls_list = ['w','a','s','d','i','o','p','right alt']
@@ -54,10 +54,14 @@ class ui_manager():
         self.ts_rect = self.title_screen.get_rect()
         self.ts_rect.center = (self.S_W//2, self.S_H//2 +32)
         
+        self.eq_regime = eq_regime
+        self.lower_volume = False
+        self.raise_volume = False
         
-    def read_settings_data(self):
+        
+    def read_settings_data(self, data_name):
         temp_list = []
-        with open(f'ctrls_data.csv', newline= '') as csvfile:
+        with open(f'settings_files/{data_name}.csv', newline= '') as csvfile:
             reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
             for row in reader:
                 for entry in row:
@@ -65,8 +69,8 @@ class ui_manager():
                     
         return temp_list
         
-    def write_settings_data(self, data_):
-        with open(f'ctrls_data.csv', 'w', newline='') as csvfile:
+    def write_settings_data(self, data_name, data_):
+        with open(f'settings_files/{data_name}.csv', 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile, delimiter = ',')
                 writer.writerow(data_)
 
@@ -219,7 +223,7 @@ class ui_manager():
             self.button_list *= 0
             
             #load current control scheme from csv file into ctrls_list
-            self.ctrls_list = self.read_settings_data()
+            self.ctrls_list = self.read_settings_data('csv_data')
             #set up disp_str_list
             for i in range(len(self.disp_str_list)):
                 self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
@@ -276,7 +280,7 @@ class ui_manager():
             self.trigger_once = True  
             self.ctrls_updated = True
             #print(self.ctrls_list)
-            self.write_settings_data(self.ctrls_list)
+            self.write_settings_data('csv_data', self.ctrls_list)
         self.button_list[9].show_text(screen, self.fontlist[1], ('','Save'))  
         
         if not self.stop:
@@ -290,12 +294,61 @@ class ui_manager():
                     self.stop = True
                     
 #------------------------------------------------------Volume sub menu-------------------------------
-#under construction, will probably be generating a csv file like controls
         
     def show_vol_menu(self, screen):
-        print("not sure if I can actually adjust volume with my implementation")
-        self.button_list *= 0
-        self.vol_menu_enable = False
-        self.trigger_once = True
+        #kinda cursed rn, need to code a slider eventually
+        self.eq_regime = self.read_settings_data('eq_regime')
+        string = f'    {10*self.eq_regime[0]}%'
+        self.text_manager0.disp_text_box(screen, self.fontlist[1], ('','Volume Level', string), (-1,-1,-1), (200,200,200), 
+                                    (272, self.S_H//2 - 64,self.S_W,self.S_H), False, False, 'none')
+        
+        max_regime = (10,9,9,8,8,7,7,6,6)
+        
+        if self.trigger_once:
+            self.button_list *= 0
+            for i in range(3):
+                self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +48*i, self.generic_img, 1))
+                
+            self.trigger_once = False
+
+        if self.button_list[0].draw(screen):
+            
+            if self.eq_regime != [-1,-1,-1,-1,-1,-1,-1,-1,-1]:
+                for i in range(len(self.eq_regime)):
+                    if self.eq_regime[i] < max_regime[i]:
+                        self.eq_regime[i] += 1
+            else:
+                self.eq_regime = [1,1,1,1,1,1,1,1,1]
+            self.raise_volume = True
+            self.write_settings_data('eq_regime', self.eq_regime)
+            self.m_player.update_eq_regime(self.eq_regime)
+            self.m_player.play_sound(self.m_player.sfx[1])
+        else:
+            self.raise_volume = False
+        self.button_list[0].show_text(screen, self.fontlist[1], ('','Louder')) 
+            
+        if self.button_list[1].draw(screen):
+            
+            if self.eq_regime != [1,1,1,1,1,1,1,1,1]:
+                for i in range(len(self.eq_regime)):
+                    if self.eq_regime[i] > 1:
+                        self.eq_regime[i] -= 1
+            else:
+                self.eq_regime = [-1,-1,-1,-1,-1,-1,-1,-1,-1]
+            self.lower_volume = True
+            self.write_settings_data('eq_regime', self.eq_regime)
+            self.m_player.update_eq_regime(self.eq_regime)
+            self.m_player.play_sound(self.m_player.sfx[1])
+        else:
+            self.lower_volume = False
+        self.button_list[1].show_text(screen, self.fontlist[1], ('','Quieter')) 
+            
+        if self.button_list[2].draw(screen):
+            self.vol_menu_enable = False
+            self.m_player.play_sound(self.m_player.sfx[1])
+            self.trigger_once = True
+        self.button_list[2].show_text(screen, self.fontlist[1], ('','Back'))  
+        
+    
         
 

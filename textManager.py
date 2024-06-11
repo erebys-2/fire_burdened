@@ -15,8 +15,8 @@ class text_manager():
         self.str_list_rebuilt = []
         self.disp_text_box_quit = False
         
-        self.m_player_sfx_list = ['roblox_oof.wav', 'hat.wav']
-        self.m_player = music_player(self.m_player_sfx_list)
+        # self.m_player_sfx_list = ['roblox_oof.wav', 'hat.wav']
+        # self.m_player = music_player(self.m_player_sfx_list)
         self.finished_typing = False
         
     #reset internal variables
@@ -58,8 +58,8 @@ class text_manager():
                 self.word_split_indice.append(self.internal_index)
                 
             #plays sound for letters
-            if self.empty_str[self.internal_index] != '\n' and self.empty_str[self.internal_index] != ' ': 
-                self.m_player.play_sound(self.m_player.sfx[1])
+            # if self.empty_str[self.internal_index] != '\n' and self.empty_str[self.internal_index] != ' ': 
+            #     self.m_player.play_sound(self.m_player.sfx[1])
             
             for i in range(len(self.word_split_indice)-1):#separating full words
                 tup = (self.word_split_indice[i]+1, self.word_split_indice[i+1])

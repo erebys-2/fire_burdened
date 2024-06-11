@@ -6,7 +6,7 @@ import os
 #probably another for each enemy/ the player
 class music_player():
     
-    def __init__(self, sfx_list):
+    def __init__(self, sfx_list, eq_regime):
         pygame.mixer.init()
         
         #all sfx files for the game will be in one directory, 
@@ -45,24 +45,23 @@ class music_player():
 
         self.concurrent_sounds = 0
 
-        self.equalization_regime = {
-            0: 10,
-            1: 9,
-            2: 9,
-            3: 8,
-            4: 8,
-            5: 7,
-            6: 7,
-            7: 6,
-            8: 6
-        }
+        self.eq_regime = eq_regime#[10,9,9,8,8,7,7,6,6]
+       
         #self.SONG_END = pygame.USEREVENT + 1
         self.playing_music = False
         
+    #------------------------------------update eq regime------------------------------
+    #method should be called whenever the game is paused or specifically when the volume sub menu is enabled
+    #it will read a csv file with a eq regime and set self.eq_regime
+    def update_eq_regime(self, input_regime):
+        
+        self.eq_regime = input_regime
+        #print(self.eq_regime)
             
     #--------------------------------------------------------------------equalizing-----------------------------------------
-    def auto_equalize(self, channel_count): #for setting volume, self.euqalization_regime will have to be turned into a paraneter passed in from game_window
+    def auto_equalize(self): #for setting volume, self.euqalization_regime will have to be turned into a paraneter passed in from game_window
         #check how many channels are being used
+        
         self.concurrent_sounds = 0
         for channel in self.channel_list: 
             if channel.get_busy():
@@ -74,11 +73,11 @@ class music_player():
         # if pygame.mixer.music.get_busy: #also factor in music
         #     num = 1
             #print("there is music playing")
-        self.set_vol_all_channels(self.equalization_regime[self.concurrent_sounds] - 2) #self.equalization_regime[self.concurrent_sounds] 
+        self.set_vol_all_channels(self.eq_regime[self.concurrent_sounds])
                 
         #when too many sounds are trying to play (espcially during a bullet spam) free up one channel   
         #works 9 times out of 10?    
-        if self.concurrent_sounds == channel_count:
+        if self.concurrent_sounds == self.channel_count:
             self.channel_list[0].stop()
         
         #print(self.concurrent_sounds)
@@ -94,11 +93,10 @@ class music_player():
             pygame.mixer.music.stop()
         #print(pygame.mixer.music.get_busy())
         
-        
     def play_sound(self, sound):
-        self.auto_equalize(self.channel_count)
+        #if update_eq, read from the csv file
+        self.auto_equalize()
         pygame.mixer.Sound.play(sound)
-
         
     def stop_sound(self):
         pygame.mixer.stop()
@@ -115,10 +113,12 @@ class music_player():
 
     #for channels
     def set_channel_vol(self, channel, level):
-        if level < 10: 
+        if level < 10 and level >= 0: 
             channel.set_volume(level*0.1)
         elif level == 10:
             channel.set_volume(0.9921875)
+        else:
+            channel.set_volume(0)
             
     def set_vol_all_channels(self, level):
         #print(level)

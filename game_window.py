@@ -120,9 +120,7 @@ font = pygame.font.SysFont('SimSun', 12)
 font_larger = pygame.font.SysFont('SimSun', 16)
 font_massive = pygame.font.SysFont('SimSun', 48)
 
-#music player instance-------------------------------------------------------------------------------------------
-m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav']
-m_player = music_player(m_player_sfx_list_main)
+
 
 #camera instance
 camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -153,8 +151,7 @@ level_dict = {
     3:[orang, 'sunset', 15, 200, [], True] #default case?
 }
 
-#ui manager
-ui_manager0 = ui_manager(SCREEN_WIDTH, SCREEN_HEIGHT, [font, font_larger, font_massive])
+eq_regime = [1,1,1,1,1,1,1,1,1]#[10,9,9,8,8,7,7,6,6]
 
 #controls
 ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054]
@@ -196,7 +193,7 @@ def clear_world_data(level_data_list):
 	for level_data in level_data_list:
 		level_data *= 0
 	
-def load_level_data(level, level_data_list, level_data_dict, level_dict):
+def load_level_data(level, level_data_list, level_data_dict, level_dict, eq_regime):
 	#level_dict[level]: 0:BG_color, 1:gradient_type, 2:rows, 3:cols, 4:level_transitions, 5:player_en
 
 	#reading csv files 
@@ -206,14 +203,14 @@ def load_level_data(level, level_data_list, level_data_dict, level_dict):
 		index += 1
   
 	#world has self data lists that get cleared each time this is called
-	world.process_data(level_data_list, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][4])
+	world.process_data(level_data_list, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][4], eq_regime)
 	
 	return [level_dict[level][1], level_dict[level][0], level_dict[level][5]]# gradient, BG_color, player enable
 
 #reading settings data
-def read_settings_data():
+def read_settings_data(data):
 	temp_list = []
-	with open(f'ctrls_data.csv', newline= '') as csvfile:
+	with open(f'settings_files/{data}.csv', newline= '') as csvfile:
 		reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
 		for row in reader:
 			for entry in row:
@@ -221,19 +218,31 @@ def read_settings_data():
 				
 	return temp_list
 
+
+eq_regime = read_settings_data('eq_regime') #read saved eq regime
+#more instantiations
+
+#music player instance-------------------------------------------------------------------------------------------
+m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav']
+m_player = music_player(m_player_sfx_list_main, eq_regime)
+
+#ui manager
+ui_manager0 = ui_manager(SCREEN_WIDTH, SCREEN_HEIGHT, [font, font_larger, font_massive], eq_regime)
+update_vol = False
+
 #instantiate sprite groups=========
 the_sprite_group = sprite_group()
 #create a hostiles group tuple
 hostiles_group = (the_sprite_group.enemy0_group, the_sprite_group.enemy_bullet_group)
 
 #instantiate player at the start of load
-player0 = player(32, 128, 4, 6, 6, 0, 0)#6368 #5856 #6240 #test coords for camera autocorrect
+player0 = player(32, 128, 4, 6, 6, 0, 0, eq_regime)#6368 #5856 #6240 #test coords for camera autocorrect
 #good news is that the player's coordinates can go off screen and currently the camera's auto scroll will eventually correct it
 normal_speed = player0.speed
 
 #load initial level-------------------------------------------------------------------------------------------------
 the_sprite_group.purge_sprite_groups()#does as the name suggests at the start of each load of the game
-color_n_BG = load_level_data(0, level_data_list, level_data_dict, level_dict) 
+color_n_BG = load_level_data(0, level_data_list, level_data_dict, level_dict, eq_regime) 
 
 
 #running the game----------------------------------------------------------------------------------------------------------------------
@@ -243,7 +252,10 @@ run = True
 player_new_x = 32
 player_new_y = 32
 ld_title_screen_en = True
-ctrls_list = read_settings_data()
+
+ctrls_list = read_settings_data('ctrls_data')
+
+
 
 while run:
     # #testing general audio mixing
@@ -275,7 +287,7 @@ while run:
 		world.clear_data()
 		level_transitioning = True
 		level = next_level
-		color_n_BG = load_level_data(level, level_data_list, level_data_dict, level_dict)
+		color_n_BG = load_level_data(level, level_data_list, level_data_dict, level_dict, eq_regime)
 		
 		if move_L:
 			temp_move_L = move_L
@@ -313,7 +325,6 @@ while run:
 		player0.animate(the_sprite_group)
 		player0.move(pause_game, move_L, move_R, world.solids, world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
 					SCREEN_WIDTH, SCREEN_HEIGHT, the_sprite_group)
-	
 	if not pause_game:
 		scroll_x = player0.scrollx + camera.scrollx
 	else:
@@ -371,15 +382,26 @@ while run:
 		pause_game = ui_tuple0[0]
 		if ui_tuple0[1]:
 			next_level = 0
-			player0 = player(32, 128, 4, 6, 6, 0, 0)
+			player0 = player(32, 128, 4, 6, 6, 0, 0, eq_regime)
 			player_new_x = 32
 			player_new_y = 32
 			#m_player.stop_sound()
    
-	#---------------------------------update controls-----------------------------------------
+	#---------------------------------updates from ui manager-----------------------------------------
 	if ui_manager0.ctrls_updated:
-		ctrls_list = read_settings_data()
+		ctrls_list = read_settings_data('ctrls_data')
 		ui_manager0.ctrls_updated = False
+  
+	if update_vol: #updates all m_players' eq regimes
+		input_regime = read_settings_data('eq_regime')
+		m_player.update_eq_regime(input_regime) 
+		#ui_manager0.m_player.update_eq_regime(input_regime)
+		the_sprite_group.update_vol_lvl(input_regime)
+		player0.m_player.update_eq_regime(input_regime)
+  
+		m_player.play_sound(m_player.sfx[1])
+  
+	update_vol = ui_manager0.raise_volume or ui_manager0.lower_volume #2 different signals from ui_manager or'd together
   
  
     #-----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -553,7 +575,7 @@ while run:
 					ui_manager0.trigger_once = True
 					if pause_game or not player0.Alive:
 						next_level = 0
-						player0 = player(32, 128, 4, 6, 6, 0, 0)
+						player0 = player(32, 128, 4, 6, 6, 0, 0, eq_regime)
 						player_new_x = 32
 						player_new_y = 32
 						m_player.stop_sound()
@@ -561,7 +583,6 @@ while run:
 					else:
 						#print("game is paused")
 						pause_game = True
-
       
 					m_player.play_sound(m_player.sfx[1])
 				else:
