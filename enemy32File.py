@@ -402,6 +402,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         
         #setting the image
         self.image = self.frame_list[self.action][self.frame_index]
+        self.mask = pygame.mask.from_surface(self.image)
 
         #update sprite dimensions
         self.width = self.image.get_width()

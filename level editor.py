@@ -81,7 +81,7 @@ good bg colors
 
 
 WHITE = (210, 210, 210)
-BG_color = (100,64,58)
+BG_color = (200,143,167)
 black = (0,0,0)
 RED = (255, 128, 128)
 BG_color2 = (255,0,86)

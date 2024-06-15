@@ -269,10 +269,10 @@ while run:
 	temp_move_L = False
 	player0.gravity_on = color_n_BG[2] #disables player movement w/ accordance to enable signal
 	
-	if level != 0 and not show_controls_en and not pause_game:#delete mouse when out of the main menu
-		pygame.mouse.set_visible(0)
-	else:
+	if level == 0 or pause_game or not player0.Alive:#delete mouse when out of the main menu
 		pygame.mouse.set_visible(1)
+	else:
+		pygame.mouse.set_visible(0)
   
 	if player0.lvl_transition_flag:#test for player collision w/ level transition rects
 		next_level = player0.lvl_transition_data[0]
@@ -350,6 +350,8 @@ while run:
 		tuple = ui_manager0.show_main_menu(screen)
 		run = tuple[1]
 		next_level = tuple[0]
+		if not run:
+			pygame.time.wait(100)   
 	
 	#--------------------------------------showing controls----------------------------
 	#depreciated, still a useful example for typing out though
@@ -385,8 +387,6 @@ while run:
 			player0 = player(32, 128, 4, 6, 6, 0, 0, vol_lvl)
 			player_new_x = 32
 			player_new_y = 32
-			#m_player.stop_sound()
-
    
 	#---------------------------------updates from ui manager-----------------------------------------
 	if ui_manager0.ctrls_updated:
@@ -399,8 +399,6 @@ while run:
 		the_sprite_group.update_vol_lvl(vol_lvl)
 		player0.m_player.set_vol_all_sounds(vol_lvl)
   
-		m_player.play_sound(m_player.sfx[1])
-  
 	update_vol = ui_manager0.raise_volume or ui_manager0.lower_volume #2 different signals from ui_manager or'd together
   
  
@@ -409,13 +407,18 @@ while run:
     
 	if player0.hits_tanked >= player0.hp:#killing the player------------------------------------------------
 		player0.Alive = False
-		text = (
-			'',
-			'		You Died.',
-			'(ESC to Restart)'
-		)
-		text_box_on = text_manager0.disp_text_box(screen, font_larger, text, black, white, (0, SCREEN_HEIGHT//2 -24, SCREEN_WIDTH, 72), 
-                                           False, type_out_en, 'centered')
+		# text = (
+		# 	'',
+		# 	'		You Died.',
+		# 	'(ESC to Restart)'
+		# )
+		# text_box_on = text_manager0.disp_text_box(screen, font_larger, text, black, white, (0, SCREEN_HEIGHT//2 -24, SCREEN_WIDTH, 72), 
+        #                                    False, type_out_en, 'centered')
+		if ui_manager0.show_death_menu(screen):
+			next_level = 0
+			player0 = player(32, 128, 4, 6, 6, 0, 0, vol_lvl)
+			player_new_x = 32
+			player_new_y = 32
 
     
     #the outermost if basically states: 
@@ -466,15 +469,17 @@ while run:
 					elif player0.vel_y > 0.1:
 						player0.atk1_alternate = False
 					change_once = False
-     
-				if player0.atk1_alternate == True:# and player0.in_air == False:
-					player0.update_action(7)	
+
+				if player0.crit:
+					player0.update_action(10)
 				else:
-					#player0.update_action(8)#8: atk1
-					if player0.crit:
-						player0.update_action(10)
+					if player0.atk1_alternate == True:# and player0.in_air == False:
+						player0.update_action(7)	
 					else:
 						player0.update_action(8)#8: atk1
+					
+					# else:
+					# 	player0.update_action(8)#8: atk1
 			else:
 				if player0.rolling:
 					player0.update_action(9)#rolling
@@ -592,12 +597,14 @@ while run:
 				
     
 			if event.key == pygame.K_RETURN:
-				if pause_game:
+				if pause_game and not ui_manager0.options_menu_enable:
+					ui_manager0.trigger_once = True
 					pause_game = False
 					pygame.mixer.unpause()
 				
 				if level == 0 and not show_controls_en:
 					m_player.play_sound(m_player.sfx[1])
+					ui_manager0.trigger_once = True
 					next_level = 1
 				if (text_manager0.str_list_rebuilt != text_manager0.current_str_list):
 					if type_out:

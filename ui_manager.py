@@ -71,8 +71,8 @@ class ui_manager():
         
     def write_settings_data(self, data_name, data_):
         with open(f'settings_files/{data_name}.csv', 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile, delimiter = ',')
-                writer.writerow(data_)
+            writer = csv.writer(csvfile, delimiter = ',')
+            writer.writerow(data_)
 
 #-----------------------------------------------------------main menu----------------------------------------------------------
     def show_main_menu(self, screen):
@@ -160,10 +160,10 @@ class ui_manager():
             if self.button_list[2].draw(screen):
                 exit_to_title = True
                 pause_game = False
-                self.m_player.play_sound(self.m_player.sfx[1])
                 self.trigger_once = True  
                 pygame.mixer.unpause()
                 pygame.mixer.stop()
+                self.m_player.play_sound(self.m_player.sfx[1])
             self.button_list[2].show_text(screen, self.fontlist[1], ('','Title (ESC)'))  
             
         else:
@@ -344,6 +344,40 @@ class ui_manager():
             self.trigger_once = True
         self.button_list[2].show_text(screen, self.fontlist[1], ('','Back'))  
         
-    
-        
+#-------------------------------------------Death Menu---------------------------------------------
 
+    def show_death_menu(self, screen):
+        exit_to_title = False
+        
+        #drawing pause text
+        screen.blit(self.pause_img, (0,0))
+        self.text_manager0.disp_text_box(screen, self.fontlist[1], ('','You Died'), (-1,-1,-1), (200,200,200), 
+                                         (288, self.S_H//2 - 32,self.S_W,self.S_H), False, False, 'none')
+        
+        if self.trigger_once:
+            self.run_game = True
+            self.button_list *= 0
+
+            for i in range(2):
+                self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +32 +36*i, self.generic_img, 1))
+            self.trigger_once = False
+
+        if not self.saves_menu_enable:
+            if self.button_list[0].draw(screen):
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.saves_menu_enable = True
+                self.trigger_once = True
+            self.button_list[0].show_text(screen, self.fontlist[1], ('','Last Save')) 
+            
+            if self.button_list[1].draw(screen):
+                exit_to_title = True
+                self.trigger_once = True  
+                pygame.mixer.stop()
+                self.m_player.play_sound(self.m_player.sfx[1])
+            self.button_list[1].show_text(screen, self.fontlist[1], ('','Title (ESC)'))  
+        
+        elif self.saves_menu_enable:
+            print("load files not implemented yet")
+            self.saves_menu_enable = False
+        
+        return exit_to_title

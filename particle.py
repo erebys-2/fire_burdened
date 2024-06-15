@@ -35,22 +35,15 @@ class particle_(pygame.sprite.Sprite):
         else:
             self.flip = True
         
-        #self.animation_types = []
         self.frame_list = []
         self.frame_index = self.forced_frame
         self.update_time = pygame.time.get_ticks()
         
-        # if type == 'player_crit':
-        #     self.animation_types = ['default']
-
-        #for animation in self.animation_types:
-        #temp_list = []
         frames = len(os.listdir(f'sprites/particle/{self.particle_type}'))
 
         for i in range(frames):
             img = pygame.image.load(f'sprites/particle/{self.particle_type}/{i}.png').convert_alpha()
             img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-            #temp_list.append(img)
             self.frame_list.append(img)
 
         self.image = self.frame_list[self.frame_index]

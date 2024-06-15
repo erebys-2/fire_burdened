@@ -205,12 +205,12 @@ class player(pygame.sprite.Sprite):
         elif (self.frame_index >= 1 and self.frame_index < 4) and (self.action==10):#adjust atk hitbox location for crit
             self.atk_show_sprite = False
             self.atk_rect.width = self.collision_rect.height*0.75
-            self.atk_rect.height = self.collision_rect.height
+            self.atk_rect.height = self.collision_rect.height - 8*self.frame_index
             if self.flip:
                 x_loc = self.collision_rect.x - (self.width + self.frame_index*2)
             else:
                 x_loc = self.collision_rect.x + (self.width//2 + self.frame_index*2)
-            y_loc = self.collision_rect.y
+            y_loc = self.collision_rect.y + 4*self.frame_index
             
             self.atk_rect.x = x_loc
             self.atk_rect.y = y_loc
@@ -337,7 +337,7 @@ class player(pygame.sprite.Sprite):
             self.rolled_into_wall == False):#fast initial impulse
                 if self.crit:
                     dx = self.direction *4 *self.speed
-                    if self.in_air and self.vel_y + 5 <= 26:
+                    if self.in_air and self.vel_y + 5 <= 20:
                         self.vel_y += 5
                 else:
                     if moveL or moveR:
@@ -448,7 +448,7 @@ class player(pygame.sprite.Sprite):
                     and self.disp_flag #and self.action == 67
                     and tile[1].colliderect(self.collision_rect.x + disp_x + dx, self.collision_rect.y, self.width, self.height - 17)
                     ):
-                    dx = -8*self.direction
+                    dx = -16*self.direction
                 
                 #wall collisions while NOT rolling
                 elif (tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y, self.width, self.height - 17) 
@@ -531,7 +531,7 @@ class player(pygame.sprite.Sprite):
             if x_scroll_en:
                 if self.x_coord < screenW//2 or self.shoot_recoil or self.hurting: 
                     self.rect.x += dx
-                elif self.x_coord >= world_limit[0] - (screenW//2 + self.direction*32) or self.shoot_recoil or self.hurting:
+                elif self.x_coord >= world_limit[0] - (screenW//2 + self.direction*32) or self.shoot_recoil or self.action == 5:
                     self.rect.x += dx
                 else: 
                     self.scrollx = dx
@@ -683,6 +683,7 @@ class player(pygame.sprite.Sprite):
 
         #setting the image
         self.image = self.frame_list[self.action][self.frame_index]
+        self.mask = pygame.mask.from_surface(self.image)
 
         #update sprite dimensions
         # self.width = self.image.get_width()
@@ -718,8 +719,8 @@ class player(pygame.sprite.Sprite):
                     self.atk1_alternate = False
                 elif self.action == 8:
                     self.atk1_alternate = True
-
-                self.crit = False
+                elif self.action == 10:
+                    self.crit = False
                 self.landing = False
                 self.atk_done = True
                     
@@ -778,7 +779,7 @@ class player(pygame.sprite.Sprite):
         
         # pygame.draw.rect(p_screen, (0,0,255), self.collision_rect)
         # pygame.draw.rect(p_screen, (255,0,0), self.hitbox_rect)
-        # pygame.draw.rect(p_screen, (0,255,0), self.atk_rect)
+        # pygame.draw.rect(p_screen, (0,255,0), self.atk_rect_scaled)
         # pygame.draw.rect(p_screen, (0,0,255), self.debuggin_rect)
         
         if self.flicker == False:

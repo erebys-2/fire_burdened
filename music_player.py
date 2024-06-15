@@ -45,7 +45,7 @@ class music_player():
 
         self.concurrent_sounds = 0
 
-        self.eq_regime = [10,9,9,8,8,7,7,6,6]
+        self.eq_regime = (10,9,9,8,8,7,7,6,6)
        
         #self.SONG_END = pygame.USEREVENT + 1
         self.playing_music = False
