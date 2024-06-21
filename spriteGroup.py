@@ -26,6 +26,8 @@ class sprite_group():
 			self.button_group
 		]
   
+		self.hostiles_group = (self.enemy0_group, self.enemy_bullet_group)
+  
 	def update_vol_lvl(self, level):
 		for sp_group in self.sp_groups_with_vol:
 			for sprite in sp_group:
@@ -35,7 +37,7 @@ class sprite_group():
 		for group in self.sp_group_list:
 			group.empty()
 			
-	def update_groups_behind_player(self, pause_game, screen, player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, player_direction):
+	def update_groups_behind_player(self, pause_game, screen, player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, player_direction, obj_list):
 		for particle in self.particle_group_bg:
 			particle.draw(screen)
 			if not pause_game:
@@ -47,7 +49,7 @@ class sprite_group():
 		for enemy0 in self.enemy0_group:
 			enemy0.draw(screen)
 			if not pause_game:
-				enemy0.animate(self.sp_group_list)
+				enemy0.animate(self.sp_group_list, obj_list)
 				enemy0.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list)
 			# elif update_vol:
 			# 	enemy0.m_player.update_eq_regime()

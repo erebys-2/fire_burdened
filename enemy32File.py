@@ -5,6 +5,7 @@ from bullet import bullet_ #type: ignore
 #print('directory: ' + os.getcwd())
 from particle import particle_ #type: ignore
 from music_player import music_player #type: ignore
+import random
  
 #GRAVITY = 0.75
 
@@ -31,6 +32,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         self.recoil = 42
         self.recoil_slow = 3
         self.speed_boost = 1
+        self.recovering = False
 
         self.vel_y = 0
         self.in_air = True
@@ -98,6 +100,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         if self.inundated == False:
             #enemy type specific behaviors--------------------------------------------------------------------------------------
             if self.enemy_type == 'dog':
+                
                 if player_rect.x > self.rect.x - 5*32 and player_rect.x <= self.rect.x:
                     dx = -self.speed *self.speed_boost
                     self.direction = -1
@@ -186,6 +189,8 @@ class enemy_32wide(pygame.sprite.Sprite):
                 #dy-= 2
                 
             else:
+                # if self.recovering:
+                #     self.update_action(0)
                 if self.shoot == True and (self.idle_counter == 1 or self.idle_bypass == True):#2
                     if self.frame_index <= 4:
                         self.shoot = True
@@ -234,6 +239,11 @@ class enemy_32wide(pygame.sprite.Sprite):
             
             particle = particle_(x_avg, y_avg, -self.direction, self.scale, 'player_impact', True, self.rando_frame, False)
             sp_group_list[5].add(particle)
+            i = 0
+            for i in range(2):
+                particle2 = particle_(x_avg+random.randrange(-32,32), y_avg+random.randrange(-32,32), -self.direction, 0.3*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
+                sp_group_list[5].add(particle2)
+                i+=1
             self.m_player.play_sound(self.m_player.sfx[1])
             
             if self.rando_frame < 2:
@@ -347,12 +357,14 @@ class enemy_32wide(pygame.sprite.Sprite):
         self.rect.x += (dx - scrollx)
         self.rect.y += dy
     
-    def animate(self, sp_group_list):
+    def animate(self, sp_group_list, obj_list):
         
         if self.dead == True:
             self.m_player.play_sound(self.m_player.sfx[0])
             self.explode(sp_group_list)
             self.Alive = False
+            #print(obj_list[0].index(self))
+            obj_list[0].pop(obj_list[0].index(self))
             self.kill()
         
         #colliding with bullet 
@@ -420,14 +432,8 @@ class enemy_32wide(pygame.sprite.Sprite):
             if self.action == 2:#hurting
                 #boolean to whether just take damage or die
                 if self.inundated == True:
-                    # self.hits_tanked += self.dmg_multiplier
-                    # self.dmg_multiplier = 0
-                    # print(self.hits_tanked)
-                    # if self.enemy_type == 'dog':
-                    #     self.vel_y -= 10
-                    #     self.in_air = True
                     self.inundated = False
-                    
+                self.recovering = True
                 self.idle_counter = 0
 
             elif self.action == 3:
@@ -439,6 +445,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                 if self.idle_counter > 1: #2
                     self.idle_counter = 0
                 #print(self.idle_counter)
+                self.recovering = False
                 
             elif self.action == 4:
                 self.idle_counter = 0

@@ -15,6 +15,8 @@ class Camera():
         self.rect = pygame.Rect(0, 0, 64, screenH)
         self.rect.centerx = screenW//2 #- 32
         self.rect.centery = screenH//2
+
+        self.on_right_edge = False
     
     def get_pos_data(self, player_rect, world_coords):
         for tile in world_coords:
@@ -45,15 +47,23 @@ class Camera():
             #fuck idk anymore
             player_rect.x += 1
             self.scrollx -= 1
+            #self.on_right_edge = False
             
         #when the player is at the right end
         elif player_rect.right - 16 > self.rect.right and self.x_coord2 < world_limit[0] - (screenW//2 + 32) and player_rect.right - 16 < self.x_coord2 + screenW//2 - 32: 
             player_rect.x -= 1
             self.scrollx += 1
+            #self.on_right_edge = True
+            #print("working")
             
         else:
-            self.scrollx = 0
-            
+            #set player to center screen
+            #self.on_right_edge = False
+            if self.rect.x - player_rect.x > 16  and self.x_coord >= screenW//2 and self.x_coord < world_limit[0] - (screenW//2):
+                player_rect.x += 1
+                self.scrollx -= 1
+            else:
+                self.scrollx = 0
             
         #I am delirious, but the player can be loaded into any part of the level now and the camera will immediately autocorrect
         #and center itself on the player's location, except in the edge cases of being at half screen widths from the start and end
@@ -89,4 +99,5 @@ class Camera():
         
     def draw(self, p_screen):
         #for debugging (the camera is basically a column that checks relative position of the player)
+        #pygame.draw.rect(p_screen, (0,0,128), (self.Px_coord, 0, 10,10))
         pygame.draw.rect(p_screen, (128,0,255), self.rect)

@@ -177,6 +177,14 @@ class player(pygame.sprite.Sprite):
             self.m_player.play_sound(self.m_player.sfx[sound])
         self.last_frame = self.frame_index
         
+    def atk1_kill_hitbox(self):
+        self.atk_show_sprite = False
+        self.atk_rect.x = 0
+        self.atk_rect.y = 0
+        self.atk_rect.width = 0
+        self.atk_rect.height = 0
+        self.atk_rect_scaled  = self.atk_rect
+        
     def atk1_set_hitbox(self, the_sprite_group):
         if (self.frame_index == 1 or self.frame_index == 2) and (self.action == 8 or self.action == 7):#(pygame.time.get_ticks() - self.update_time < 10)
             #adjust hitbox location for default atks
@@ -215,11 +223,7 @@ class player(pygame.sprite.Sprite):
             self.atk_rect.x = x_loc
             self.atk_rect.y = y_loc
         else:#kill atk hitbox (h and w -> 0 and move to upper left)
-            self.atk_show_sprite = False
-            self.atk_rect.x = 0
-            self.atk_rect.y = 0
-            self.atk_rect.width = 0
-            self.atk_rect.height = 0
+            self.atk1_kill_hitbox()
         #adjusting atk hitbox size
         if self.action != 10:
             self.atk_rect_scaled  = self.atk_rect.scale_by(0.90)
@@ -245,9 +249,15 @@ class player(pygame.sprite.Sprite):
             particle = particle_(x_loc, y_loc, -self.direction, 0.9*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
             the_sprite_group.particle_group.add(particle)
             #self.m_player.play_sound(self.m_player.sfx[6])
+        # for enemy in obj_list[0]:
+        #     x_loc = (enemy.rect.centerx + self.atk_rect.centerx)//2 + disp
+        #     y_loc = (enemy.rect.centery + self.atk_rect.centery)//2
+        #     if self.atk_rect.colliderect(enemy.rect) and self.frame_index == 1 and pygame.time.get_ticks() - self.update_time < 2 and not enemy.inundated:
+        #         particle = particle_(x_loc+random.randrange(-20,20), y_loc+random.randrange(-20,20), -self.direction, 0.9*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
+        #         the_sprite_group.particle_group.add(particle)
     
     
-    def move(self, pause_game, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, screenW, screenH, the_sprite_group):
+    def move(self, pause_game, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, screenW, screenH, obj_list, the_sprite_group):
         #reset mvmt variables
         self.collision_rect.x = self.rect.x + self.width
         self.collision_rect.y = self.rect.y
@@ -320,12 +330,13 @@ class player(pygame.sprite.Sprite):
             if ((moveL and self.direction == 1) or (moveR and self.direction == -1) #BREAK ROLLING
                 or self.squat
                 or self.stamina_used + self.roll_stam_rate > self.stamina
-                or self.atk1
+                or (self.atk1)# and ((self.action == 7 or self.action ==8) and self.frame_index < 2))
                 or self.roll_count >= self.roll_limit
                 #or self.rolled_into_wall
                 ):
-                self.rolling = False
-                self.roll_count = self.roll_limit
+                if (self.action != 7 and self.action != 8):
+                    self.rolling = False
+                    self.roll_count = self.roll_limit
                 
         #------------------------------------------------------------------------------------------------------------------------------------------------------
         #atk1------------------------------------------------------------------------------------------------------------------------------------
@@ -333,34 +344,40 @@ class player(pygame.sprite.Sprite):
 
         
         if self.atk1:#adjusting speed to simulate momentum, motion stuff
-            if (self.frame_index == 0 and 
-            self.rolled_into_wall == False):#fast initial impulse
-                if self.crit:
-                    dx = self.direction *4 *self.speed
-                    if self.in_air and self.vel_y + 5 <= 20:
-                        self.vel_y += 5
-                else:
-                    if moveL or moveR:
-                        multiplier = 2
+            if not self.rolling and not (((moveL and self.direction == 1) or (moveR and self.direction == -1)) and self.frame_index > 2):
+                if (self.frame_index == 0 and 
+                self.rolled_into_wall == False):#fast initial impulse
+                    if self.crit:
+                        dx = self.direction *4 *self.speed
+                        if self.in_air and self.vel_y + 5 <= 20:
+                            self.vel_y += 5
                     else:
-                        multiplier = 1
-                    dx = self.direction *multiplier *(self.speed) 
-                    if self.action == 7 and self.frame_index == 1:
-                        self.vel_y -=0.5
-                    elif self.action == 8 and self.vel_y + 5 <= 26 and self.vel_y > 0 and self.in_air: #25 max 
-                        self.vel_y += 5
-                #self.screen_shake() #does not work
-            elif self.frame_index > 1 :# slow forward speed
-                if self.crit:
-                    dx = self.direction *2
-                else:
-                    if (moveL and self.direction == 1) or (moveR and self.direction == -1):
-                        dx = 0
+                        if moveL or moveR:
+                            multiplier = 2
+                        else:
+                            multiplier = 1
+                        dx = self.direction *multiplier *(self.speed) 
+                        if self.action == 7 and self.frame_index == 1:
+                            self.vel_y -=0.7
+                        elif self.action == 8 and self.vel_y + 5 <= 26 and self.vel_y > 0 and self.in_air: #25 max 
+                            self.vel_y += 5
+                    #self.screen_shake() #does not work
+                elif self.frame_index > 1 :# slow forward speed
+                    if self.crit:
+                        dx = self.direction *2
                     else:
-                        dx = self.direction
+                        if (moveL and self.direction == 1) or (moveR and self.direction == -1):
+                            dx = 0
+                        else:
+                            dx = self.direction
             
-            #drawing atk sprite and setting hitboxes            
-            self.atk1_set_hitbox(the_sprite_group)
+                #drawing atk sprite and setting hitboxes            
+                self.atk1_set_hitbox(the_sprite_group)
+            else:
+                self.atk1_kill_hitbox()
+                self.atk1 = False
+                self.crit = False
+                #self.atk_done = True
                     
         #==========================================================================================================================================
         #shooting
@@ -385,10 +402,10 @@ class player(pygame.sprite.Sprite):
             
         #hurting/ enemy collisions
         if self.hurting == True and self.rolling == False:
-            if self.frame_index == 1:
-                dx = -self.direction * 8
-            elif self.frame_index > 1:
-                dx = -self.direction * 2
+            if self.frame_index < 2:
+                dx = -self.direction * 4
+            # elif self.frame_index > 1:
+            #     dx = -self.direction * 2
 
         #gravity
         if self.gravity_on:
@@ -398,6 +415,10 @@ class player(pygame.sprite.Sprite):
                 self.vel_y
             dy = self.vel_y
         
+        #----------------------------------------------entity collisions
+        # for enemy in obj_list[0]:
+        #     if (enemy.rect.colliderect(self.collision_rect.x + 8, self.collision_rect.y, self.width//2, self.height - 17) and self.action != 9 and not self.atk1 and not self.i_frames_en):
+        #         dx = -4*self.direction
         
         #--------------------------------------------------------------coordinate test
         #USED FOR CAMERA SCROLLING
@@ -455,10 +476,14 @@ class player(pygame.sprite.Sprite):
                     and self.action != 9 #this line is important for consistency
                     ):
                     dx = 0
+                    self.hitting_wall = True
                     if (tile[1].colliderect(self.collision_rect.x, self.collision_rect.y, self.width, self.height - 17) 
                         #and self.vel_y > 0
                         ):
-                        dx = -8*self.direction
+                        if dx < 0:
+                            dx = 8*self.direction
+                        elif dx > 0:
+                            dx = -8*self.direction
 
                 #dy collision stuff, sinking through tiles etc
                 
@@ -531,9 +556,9 @@ class player(pygame.sprite.Sprite):
             if x_scroll_en:
                 if self.x_coord < screenW//2 or self.shoot_recoil or self.hurting: 
                     self.rect.x += dx
-                elif self.x_coord >= world_limit[0] - (screenW//2 + self.direction*32) or self.shoot_recoil or self.action == 5:
+                elif self.x_coord >= world_limit[0] - (screenW//2 + 32) or self.shoot_recoil or self.action == 5:
                     self.rect.x += dx
-                else: 
+                elif self.x_coord >= screenW//2  and self.x_coord < world_limit[0] - (screenW//2 - 16): 
                     self.scrollx = dx
             else:
                 self.rect.x += dx

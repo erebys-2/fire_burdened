@@ -45,10 +45,10 @@ class player_interactable(pygame.sprite.Sprite):
         
     def activate(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list):
         if self.enabled:
-            print("active")
-            
             if self.type == 'spinning_blades':
                 self.animate()
+            elif self.type == 'crusher_top':
+                self.animate
                 
     def animate(self):
         framerates = {

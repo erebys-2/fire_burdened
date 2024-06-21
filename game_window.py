@@ -112,6 +112,8 @@ level_data_dict = { #names of the corresponding csv files
 }
 
 world = World()
+obj_list = world.obj_list
+
 #instantiate status bars
 status_bars = StatusBars()
 
@@ -205,7 +207,7 @@ def load_level_data(level, level_data_list, level_data_dict, level_dict, vol_lvl
 	#world has self data lists that get cleared each time this is called
 	world.process_data(level_data_list, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][4], vol_lvl)
 	
-	return [level_dict[level][1], level_dict[level][0], level_dict[level][5]]# gradient, BG_color, player enable
+	return [level_dict[level][1], level_dict[level][0], level_dict[level][5], world.obj_list]# gradient, BG_color, player enable
 
 #reading settings data
 def read_settings_data(data):
@@ -232,17 +234,18 @@ update_vol = False
 
 #instantiate sprite groups=========
 the_sprite_group = sprite_group()
-#create a hostiles group tuple
-hostiles_group = (the_sprite_group.enemy0_group, the_sprite_group.enemy_bullet_group)
 
 #instantiate player at the start of load
-player0 = player(32, 128, 4, 6, 6, 0, 0, vol_lvl)#6368 #5856 #6240 #test coords for camera autocorrect
+hp = 6
+player0 = player(32, 128, 4, hp, 6, 0, 0, vol_lvl)#6368 #5856 #6240 #test coords for camera autocorrect
 #good news is that the player's coordinates can go off screen and currently the camera's auto scroll will eventually correct it
 normal_speed = player0.speed
 
 #load initial level-------------------------------------------------------------------------------------------------
 the_sprite_group.purge_sprite_groups()#does as the name suggests at the start of each load of the game
-color_n_BG = load_level_data(0, level_data_list, level_data_dict, level_dict, vol_lvl) 
+lvl_data = load_level_data(0, level_data_list, level_data_dict, level_dict, vol_lvl)
+color_n_BG = lvl_data[0:3]
+obj_list = lvl_data[3]
 
 
 #running the game----------------------------------------------------------------------------------------------------------------------
@@ -282,12 +285,15 @@ while run:
 	
 	#----------------------------------------------------------------------level changing-------------------------------------------------
 	if level != next_level:
+		scroll_x = 0
 		the_sprite_group.purge_sprite_groups()
 		clear_world_data(level_data_list)
 		world.clear_data()
 		level_transitioning = True
 		level = next_level
-		color_n_BG = load_level_data(level, level_data_list, level_data_dict, level_dict, vol_lvl)
+		lvl_data = load_level_data(level, level_data_list, level_data_dict, level_dict, vol_lvl)
+		color_n_BG = lvl_data[0:3]
+		obj_list = lvl_data[3]
 		
 		if move_L:
 			temp_move_L = move_L
@@ -316,7 +322,7 @@ while run:
 	#camera.draw(screen)#for camera debugging
 	if world.x_scroll_en:
 		camera.auto_correct(player0.rect, world.coords, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
-  
+	
 	world.draw(screen, scroll_x, 0)#this draws the world and scrolls it 
  
 	
@@ -324,13 +330,13 @@ while run:
 	if not pause_game:
 		player0.animate(the_sprite_group)
 		player0.move(pause_game, move_L, move_R, world.solids, world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
-					SCREEN_WIDTH, SCREEN_HEIGHT, the_sprite_group)
+					SCREEN_WIDTH, SCREEN_HEIGHT, obj_list, the_sprite_group)
 	if not pause_game:
 		scroll_x = player0.scrollx + camera.scrollx
 	else:
 		scroll_x = 0
 
-	the_sprite_group.update_groups_behind_player(pause_game, screen, player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, player0.direction)
+	the_sprite_group.update_groups_behind_player(pause_game, screen, player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, player0.direction, obj_list)
 	player0.draw(screen)
 	the_sprite_group.update_groups_infront_player(pause_game, screen, scroll_x)
    
@@ -384,7 +390,7 @@ while run:
 		pause_game = ui_tuple0[0]
 		if ui_tuple0[1]:
 			next_level = 0
-			player0 = player(32, 128, 4, 6, 6, 0, 0, vol_lvl)
+			player0 = player(32, 128, 4, hp, 6, 0, 0, vol_lvl)
 			player_new_x = 32
 			player_new_y = 32
    
@@ -416,7 +422,7 @@ while run:
         #                                    False, type_out_en, 'centered')
 		if ui_manager0.show_death_menu(screen):
 			next_level = 0
-			player0 = player(32, 128, 4, 6, 6, 0, 0, vol_lvl)
+			player0 = player(32, 128, 4, hp, 6, 0, 0, vol_lvl)
 			player_new_x = 32
 			player_new_y = 32
 
@@ -428,7 +434,7 @@ while run:
 		#loops thru toople of sprite groups that can damage the player
 		#	allows player to take damage from different kinds of sprite groups in a single tick (each enemy collision has its own value)
 		#	does not take in account collisions of multiple of the same sprite group in a single tick
-		for enemy in enumerate(hostiles_group):
+		for enemy in enumerate(the_sprite_group.hostiles_group):
 			if pygame.sprite.spritecollide(player0, enemy[1], False): #only do mask collisions if the rect collision is triggered
        		#collided= pygame.sprite.collide_rect_ratio(0.76)
 				if pygame.sprite.spritecollide(player0, enemy[1], False, pygame.sprite.collide_mask):
@@ -461,6 +467,9 @@ while run:
 			if player0.shoot:
 				player0.update_action(11)
 			
+			elif player0.rolling or hold_roll:
+				player0.update_action(9)#rolling
+				player0.atk1_alternate = False
 			elif player0.atk1:
 				
 				if change_once:
@@ -481,11 +490,8 @@ while run:
 					# else:
 					# 	player0.update_action(8)#8: atk1
 			else:
-				if player0.rolling:
-					player0.update_action(9)#rolling
-					player0.atk1_alternate = False
 					#hold_jump = False
-				elif player0.in_air:
+				if player0.in_air:
 					player0.update_action(2)#2: jump
 					#hold_jump = False
 					
@@ -527,7 +533,7 @@ while run:
 					player0.atk1_alternate = False
 					player0.atk1 = True
 				elif event.key == ctrls_list[0]: #pygame.K_w 
-					
+					player0.landing = False
 					if hold_jump == False:
 						hold_jump = True
 						hold_jmp_update = pygame.time.get_ticks()
@@ -580,7 +586,7 @@ while run:
 					ui_manager0.trigger_once = True
 					if pause_game or not player0.Alive:
 						next_level = 0
-						player0 = player(32, 128, 4, 6, 6, 0, 0, vol_lvl)
+						player0 = player(32, 128, 4, hp, 6, 0, 0, vol_lvl)
 						player_new_x = 32
 						player_new_y = 32
 						#m_player.stop_sound()
@@ -644,16 +650,9 @@ while run:
 			if event.key == ctrls_list[3]:#pygame.K_d
 				move_R = False
 
-			# if event.key == pygame.K_w and player0.squat == False:#variable height jumping, has a bug that results in an echo
-			# 	# if player0.action == 2 and player0.rolling == False and player0.vel_y < 0:
-					
-			# 	# 	hold_jump = False
-			# 	if player0.vel_y <= -5:
-			# 		player0.vel_y *= 0.5
-			# 		hold_jump = False
-			# 		print(player0.vel_y)
-			# 	# else:
-			# 	# 	print(player0.vel_y)
+			if event.key == ctrls_list[0] and player0.squat == False and player0.vel_y <= 1:#variable height jumping
+				player0.vel_y *= 0.55 #rate at which jump vel decreases
+				hold_jump = False
 					
 			if event.key == ctrls_list[4]:#pygame.K_i
 				status_bars.warning = False
@@ -690,7 +689,7 @@ while run:
 			else:
 				hold_jump = True
 
-		if hold_roll and (not player0.atk1 or player0.action <= 2):
+		if hold_roll: #and (not player0.atk1 or player0.action <= 2):
 			if  player0.stamina_used + player0.roll_stam_rate <= player0.stamina:
 				player0.rolling = True
 				hold_roll = False

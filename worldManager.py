@@ -34,6 +34,12 @@ class World():
         self.t_set_index = 0
         tile_set_types = ['standard', 'bg_oversized']
         
+        
+        self.enemy_list = []
+        self.obstacle_list = []
+        self.bullet_list = []
+        self.obj_list = [self.enemy_list, self.obstacle_list, self.bullet_list]
+        
         #self.horiz_scrolling = False
         #self.vert_scrolling = False
         
@@ -55,6 +61,9 @@ class World():
     def clear_data(self):
         for lvl_data in self.lvl_data_list:
             lvl_data *= 0
+            
+        for obj in self.obj_list:
+            obj *= 0
 
     def process_data(self, level_data_list, the_sprite_group, screenW, screenH, level_transitions, ini_vol):
         self.clear_data()
@@ -93,10 +102,12 @@ class World():
                         enemy0 = enemy_32wide(x * 32, y * 32, 3, 2, 'dog', enemy0_id, ini_vol)
                         the_sprite_group.enemy0_group.add(enemy0)#for enemy-enemy collisions/ anti stacking
                         enemy0_id += 1
+                        self.enemy_list.append(enemy0)
                     elif tile == 29:
                         enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'shooter', enemy0_id, ini_vol)
                         the_sprite_group.enemy0_group.add(enemy0)#for enemy-enemy collisions/ anti stacking
                         enemy0_id += 1
+                        self.enemy_list.append(enemy0)
             
         #load bg
         for i in range(len(self.lvl_data_list) -3):
@@ -183,12 +194,17 @@ class World():
                     
     def draw(self, w_screen, scroll_X, scroll_y):
         
-        self.draw_bg_layers(w_screen, scroll_X//3, self.bg6)
-        self.draw_bg_layers(w_screen, 4*scroll_X//7, self.bg5)
-        self.draw_bg_layers(w_screen, 7*scroll_X//9, self.bg4)
-        self.draw_bg_layers(w_screen, scroll_X, self.bg3)#filter layer
-        self.draw_bg_layers(w_screen, scroll_X, self.bg2)#detailed 1:1 bg layer 2
-        self.draw_bg_layers(w_screen, scroll_X, self.bg1)
+        if scroll_X > 0:
+            correction = 1
+        else:
+            correction = 0
+        
+        self.draw_bg_layers(w_screen, (scroll_X + correction)//3, self.bg6)
+        self.draw_bg_layers(w_screen, 4*(scroll_X + correction)//7, self.bg5)
+        self.draw_bg_layers(w_screen, 7*(scroll_X + correction)//9, self.bg4)
+        self.draw_bg_layers(w_screen, (scroll_X), self.bg3)#filter layer
+        self.draw_bg_layers(w_screen, (scroll_X), self.bg2)#detailed 1:1 bg layer 2
+        self.draw_bg_layers(w_screen, (scroll_X), self.bg1)
         
         for tile in self.solids:
             #this code below basically means the first index: [1], gets the tile's rect, 
