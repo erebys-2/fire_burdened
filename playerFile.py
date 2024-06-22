@@ -76,6 +76,8 @@ class player(pygame.sprite.Sprite):
         self.roll_stam_rate = 0.25
         
         self.sprint = False
+        self.change_direction = False
+        self.last_direction = self.direction
         
         self.hp = hp
         self.stamina = stamina
@@ -96,7 +98,7 @@ class player(pygame.sprite.Sprite):
         #fill animation frames
         animation_types = ['idle', 'run', 'jump', 'land', 'squat', 'hurt', 
                            'die', 'atk1', 'atk1_2', 'roll', 'atk1_3', 'shoot',
-                           'charging', 'atk1_2_particle']
+                           'charging', 'atk1_2_particle', 'turn_around']
         for animation in animation_types:
             temp_list = []
             frames = len(os.listdir(f'sprites/player/{animation}'))
@@ -148,8 +150,8 @@ class player(pygame.sprite.Sprite):
             10:True, #atk1_3
             11:True, #shoot
             12:False, #
-            13:False,
-            14:False
+            13:False, #
+            14:False #turn_around
         }
        
     #methods
@@ -299,6 +301,13 @@ class player(pygame.sprite.Sprite):
         elif self.action == 6:
             dx = 0
             
+        #does not work   
+        # if self.direction != self.last_direction and not self.in_air and not (moveL and moveR):
+        #     self.last_direction = self.direction
+        #     self.flip = not self.flip
+        #     self.change_direction = True
+        #     dx = 0
+
 
         #jump
         if (self.jump == True and self.in_air == False) or self.squat_done == True:
@@ -685,7 +694,8 @@ class player(pygame.sprite.Sprite):
             9: 90, #roll
             10: 110, #crit
             11: 85, #shoot
-            12: 145 #idk
+            12: 145, #idk
+            14: 100
         }
         #everything speeds up when pressing alt/sprint except shooting at the cost of slower stamina regen
         adjustment = 0
@@ -699,7 +709,10 @@ class player(pygame.sprite.Sprite):
             self.roll_count = 0
 		
         #regen
-        self.stamina_regen()
+        if self.Alive:
+            self.stamina_regen()
+        else:
+            self.stamina_used = self.stamina
         
         #update frame
         #self.rect_shift() #shitty method
@@ -725,6 +738,9 @@ class player(pygame.sprite.Sprite):
             if self.action != 5 and self.action != 6:
                 self.frame_index = 0
 
+            if self.action == 14:
+                self.change_direction = False
+    
             if self.action == 5:
                 self.hurting = False
                 self.i_frames_en = True #triggers i_frames for next tick
