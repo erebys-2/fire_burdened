@@ -75,7 +75,6 @@ tile_types = len(os.listdir(f'sprites/tileset/{tile_set}'))
 
 damage = 0
 scroll_x = 0
-enemy_collision = False
 
 fg_data = []
 coord_data = []
@@ -329,9 +328,9 @@ while run:
 	
 	if not pause_game:
 		player0.animate(the_sprite_group)
+		player0.do_entity_collisions(the_sprite_group, obj_list, level_transitioning)
 		player0.move(pause_game, move_L, move_R, world.solids, world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
 					SCREEN_WIDTH, SCREEN_HEIGHT, obj_list, the_sprite_group)
-	if not pause_game:
 		scroll_x = player0.scrollx + camera.scrollx
 	else:
 		scroll_x = 0
@@ -426,42 +425,12 @@ while run:
 			player_new_x = 32
 			player_new_y = 32
 
-    
-    #the outermost if basically states: 
-    #if the player is not meleeing or rolling or is going through the hurt animation/has i frames
-	if (player0.rolling == False and player0.action != 7 and player0.action != 8 and player0.action != 10
-     	and player0.i_frames_en == False and player0.hurting == False and player0.Alive):
-		#loops thru toople of sprite groups that can damage the player
-		#	allows player to take damage from different kinds of sprite groups in a single tick (each enemy collision has its own value)
-		#	does not take in account collisions of multiple of the same sprite group in a single tick
-		for enemy in enumerate(the_sprite_group.hostiles_group):
-			if pygame.sprite.spritecollide(player0, enemy[1], False): #only do mask collisions if the rect collision is triggered
-       		#collided= pygame.sprite.collide_rect_ratio(0.76)
-				if pygame.sprite.spritecollide(player0, enemy[1], False, pygame.sprite.collide_mask):
-					enemy_collision = True #this is a 1 tick variable
-					if enemy[1] == the_sprite_group.enemy0_group:
-						damage += 1.5
-						# for enemy0_ in enumerate(the_sprite_group.enemy0_group):
-						# 	if enemy0_[1].inundated == False:
-						# 		print(enemy0_[1].inundated)
-						# 		damage += 0.75
-						# 	else:
-						# 		print(enemy0_[1].inundated)
-					if enemy[1] == the_sprite_group.enemy_bullet_group:
-						damage += 3
-						
-					player0.take_damage(damage)
-				#print(damage)
-			damage = 0
-			
-
 	#============================================================update player action for animation=======================================================
 	#this is remnant code from following Coding with Russ' tutorial, I wasn't sure how to integrate this into playerFile.py
 	#when I was separating the files (he wrote his whole tutorial game in virtually one single file)
 	if player0.Alive:
 		
-		if (enemy_collision == True or player0.hurting == True):
-			enemy_collision = False
+		if (player0.hurting):
 			player0.update_action(5) #hurting
 		else:
 			if player0.shoot:

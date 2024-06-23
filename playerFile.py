@@ -127,7 +127,8 @@ class player(pygame.sprite.Sprite):
         self.debuggin_rect = self.collision_rect
         # self.hitbox_rect = pygame.Rect((self.rect.x + self.width//4, self.rect.y + self.height//4), 
         #                     (self.rect.width - self.rect.width//2, self.rect.height - self.rect.height//2))
-        self.hitbox_rect = self.collision_rect.scale_by(0.8)
+        self.hitbox_rect = pygame.Rect(self.collision_rect.x + 2, self.collision_rect.y + 8, self.width - 4, self.height*0.75 - 6)
+        #self.hitbox_rect = self.collision_rect.scale_by(0.80)
         self.BP_rect = pygame.Rect(self.rect.x, self.rect.y, self.rect.height, 2*self.rect.width)
         self.atk_rect = pygame.Rect(-32, -32, 0,0)#self.rect.x, self.rect.y, self.rect.height, 2*self.rect.width
         self.atk_rect_scaled = pygame.Rect(-32, -32, 0,0)
@@ -250,14 +251,34 @@ class player(pygame.sprite.Sprite):
             y_loc = (tile[1].centery + self.atk_rect.centery)//2
             particle = particle_(x_loc, y_loc, -self.direction, 0.9*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
             the_sprite_group.particle_group.add(particle)
-            #self.m_player.play_sound(self.m_player.sfx[6])
-        # for enemy in obj_list[0]:
-        #     x_loc = (enemy.rect.centerx + self.atk_rect.centerx)//2 + disp
-        #     y_loc = (enemy.rect.centery + self.atk_rect.centery)//2
-        #     if self.atk_rect.colliderect(enemy.rect) and self.frame_index == 1 and pygame.time.get_ticks() - self.update_time < 2 and not enemy.inundated:
-        #         particle = particle_(x_loc+random.randrange(-20,20), y_loc+random.randrange(-20,20), -self.direction, 0.9*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
-        #         the_sprite_group.particle_group.add(particle)
     
+    
+    def do_entity_collisions(self, the_sprite_group, obj_list, level_transitioning):
+        #----------------------------------------------entity collisions
+        damage = 0
+        if ((self.action < 7 or self.action > 10) and not self.i_frames_en and not self.hurting and self.Alive and not level_transitioning):
+            for enemy in enumerate(the_sprite_group.hostiles_group):
+                if pygame.sprite.spritecollide(self, enemy[1], False): 
+                    if pygame.sprite.spritecollide(self, enemy[1], False, pygame.sprite.collide_mask):
+                        # if enemy[1] == the_sprite_group.enemy0_group:
+                        #     damage += 1.5
+                        if enemy[1] == the_sprite_group.enemy_bullet_group:
+                            damage += 3
+                            self.hurting = True
+                            self.take_damage(damage)
+                        if enemy[1] == the_sprite_group.enemy_bullet_group2:
+                            damage += 2
+                            self.hurting = True
+                            self.take_damage(damage)
+                    #print(damage)
+                damage = 0
+        
+            for enemy in obj_list[0]:
+                if (self.hitbox_rect.colliderect(enemy.atk_rect_scaled) and not enemy.inundated):
+                    damage += 1.5
+                    self.hurting = True
+                    self.take_damage(damage) 
+                damage = 0
     
     def move(self, pause_game, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, screenW, screenH, obj_list, the_sprite_group):
         #reset mvmt variables
@@ -345,7 +366,7 @@ class player(pygame.sprite.Sprite):
                 ):
                 if (self.action != 7 and self.action != 8):
                     self.rolling = False
-                    self.roll_count = self.roll_limit
+                    #self.roll_count = self.roll_limit
                 
         #------------------------------------------------------------------------------------------------------------------------------------------------------
         #atk1------------------------------------------------------------------------------------------------------------------------------------
@@ -353,7 +374,7 @@ class player(pygame.sprite.Sprite):
 
         
         if self.atk1:#adjusting speed to simulate momentum, motion stuff
-            if not self.rolling and not (((moveL and self.direction == 1) or (moveR and self.direction == -1)) and self.frame_index > 2):
+            if not (self.rolling) and not (((moveL and self.direction == 1) or (moveR and self.direction == -1)) and self.frame_index > 2):
                 if (self.frame_index == 0 and 
                 self.rolled_into_wall == False):#fast initial impulse
                     if self.crit:
@@ -386,6 +407,7 @@ class player(pygame.sprite.Sprite):
                 self.atk1_kill_hitbox()
                 self.atk1 = False
                 self.crit = False
+                
                 #self.atk_done = True
                     
         #==========================================================================================================================================
@@ -420,14 +442,11 @@ class player(pygame.sprite.Sprite):
         if self.gravity_on:
             if self.vel_y <= 25:#25 = terminal velocity
                 self.vel_y += 0.5
-            if self.vel_y > 10:
-                self.vel_y
+            if self.shoot and self.frame_index == 2:
+                self.vel_y *= 0.8
             dy = self.vel_y
         
-        #----------------------------------------------entity collisions
-        # for enemy in obj_list[0]:
-        #     if (enemy.rect.colliderect(self.collision_rect.x + 8, self.collision_rect.y, self.width//2, self.height - 17) and self.action != 9 and not self.atk1 and not self.i_frames_en):
-        #         dx = -4*self.direction
+        
         
         #--------------------------------------------------------------coordinate test
         #USED FOR CAMERA SCROLLING
@@ -769,10 +788,8 @@ class player(pygame.sprite.Sprite):
                 #self.image = pygame.image.load('sprites/player/end_of_roll/0.png') #this fucks everything do not add back
                 if self.roll_count == self.roll_limit:# or self.rolled_into_wall:#roll limit, this ends up getting incremented once more after 
                     self.rolling = False
-
                 self.roll_count += 1
                 self.rolled_into_wall = False
-                #print(self.roll_count)
             
             if self.action == 6:
                 self.frame_index = 5   

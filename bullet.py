@@ -32,6 +32,8 @@ class bullet_(pygame.sprite.Sprite):
             self.animation_types = ['default']
         if type == 'player_basic':
             self.animation_types = ['default']
+        if type == 'ground_impact':
+            self.animation_types = ['default']
             
         for animation in self.animation_types:
             temp_list = []
@@ -112,7 +114,7 @@ class bullet_(pygame.sprite.Sprite):
         # a possible solution could be on the enemy end have it iterate thru the bullet list to check each bullet
         # for collisions, but I think this would be noticeably inefficient
         
-        if (pygame.sprite.spritecollide(self, sp_group_list[0], False)):
+        if (pygame.sprite.spritecollide(self, sp_group_list[0], False) and self.bullet_type != 'ground_impact'):
             #dx +=(self.direction)*64
             if self.exploded == True:
                 #self.kill()
@@ -154,11 +156,14 @@ class bullet_(pygame.sprite.Sprite):
         # if (pygame.sprite.spritecollide(self, the_sprite_group.enemy0_group, False)):
         #     self.Active = False
         #     #self.kill()
-        
-        frame_update = 30
+        if self.bullet_type == 'ground_impact':
+            frame_update = 30
+        else:
+            frame_update = 30
 
         #setting the image
         self.image = self.frame_list[self.action][self.frame_index]
+        self.mask = pygame.mask.from_surface(self.image)
 
         #update sprite dimensions
         self.width = self.image.get_width()
@@ -170,12 +175,15 @@ class bullet_(pygame.sprite.Sprite):
 
         #END OF ANIMATION FRAMES    
         if self.frame_index >= len(self.frame_list[self.action]):
-            if self.action == 1:
-                self.frame_index = 2
-                self.Active = False
-                #self.kill()
+            if self.bullet_type != 'ground_impact':
+                if self.action == 1:
+                    self.frame_index = 2
+                    self.Active = False
+                    #self.kill()
+                else:
+                    self.frame_index = 0
             else:
-                self.frame_index = 0
+                self.Active = False
         
     
     

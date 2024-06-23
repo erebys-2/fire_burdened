@@ -39,6 +39,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         self.jump = False
         self.jump_counter = 0
         self.on_ground = False
+        self.hit_ground = False
         
         self.hp = 6 #how many hits can he take
         self.dead = False
@@ -85,17 +86,28 @@ class enemy_32wide(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.rect.bottomleft = (x,y)
+        self.atk_rect = pygame.Rect(-32, -32, 0,0)
+        self.atk_rect_scaled = pygame.Rect(-32, -32, 0,0)#self.atk_rect.scale_by(0.8)
         self.width = self.image.get_width()
         self.height = self.image.get_height()
         
         
 
     #methods----------------------------------------------------------------------------------------
+    
+    def atk1_kill_hitbox(self):
+        self.atk_rect.x = 0
+        self.atk_rect.y = 0
+        self.atk_rect.width = 0
+        self.atk_rect.height = 0
+        self.atk_rect_scaled = self.atk_rect
         
     def move(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list):
         dx = 0
         dy = 0
         moving = False
+        
+        
         # if player is within left range, or right range
         if self.inundated == False:
             #enemy type specific behaviors--------------------------------------------------------------------------------------
@@ -105,10 +117,20 @@ class enemy_32wide(pygame.sprite.Sprite):
                     dx = -self.speed *self.speed_boost
                     self.direction = -1
                     moving = True
+                    
                 elif player_rect.x < self.rect.x + self.width + 5*32 and player_rect.x >= self.rect.x:
                     dx = self.speed *self.speed_boost
                     self.direction = 1
                     moving = True
+                
+                if self.action == 1:
+                    if self.direction < 0:
+                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y, self.width//2, self.height)
+                    else:
+                        self.atk_rect = pygame.Rect(self.rect.x + self.width//2, self.rect.y, self.width//2, self.height)
+                    self.atk_rect_scaled = self.atk_rect.scale_by(0.8)
+                else:
+                    self.atk1_kill_hitbox()
                 
                 if self.speed_boost != 1:
                     self.speed_boost = 1
@@ -116,6 +138,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                     sp_group_list[3].add(particle)
                     self.in_air = True
                     self.vel_y = -8
+                    
                     
             elif self.enemy_type == 'shooter':
                 #always face the player
@@ -164,21 +187,34 @@ class enemy_32wide(pygame.sprite.Sprite):
                             self.jump = True
                         elif player_rect.x < self.rect.x + self.width + (jump_range*self.width) and player_rect.x >= self.rect.x:
                             self.jump = True
+                            
+                    if self.action == 5:
+                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + self.height//2, self.width, self.height//2)
+                        self.atk_rect_scaled = self.atk_rect.scale_by(0.8)
+                    else:
+                        self.atk1_kill_hitbox()
 
+                
                     
-                jump_cooldown = 720
-                if (self.jump and self.in_air == False and self.on_ground and
-                    (pygame.time.get_ticks() - self.update_time2 > jump_cooldown)):
+                jump_cooldown = 360
+                if (self.jump and self.in_air == False and self.on_ground and (pygame.time.get_ticks() - self.update_time2 > jump_cooldown)):
                     self.update_time2 = pygame.time.get_ticks()
+                    # if self.hit_ground:
+                    #     enemy_bullet = bullet_(self.rect.x - 64, self.rect.y, 0, self.direction, self.scale, 'ground_impact', self.ini_vol)
+                    #     #self.m_player.play_sound(self.m_player.sfx[3])
+                    #     sp_group_list[7].add(enemy_bullet)
+                    #     self.hit_ground = False
                     particle = particle_(self.rect.centerx, self.rect.centery, -self.direction, self.scale, 'player_mvmt', True, 1, False)
                     sp_group_list[3].add(particle)
                     self.vel_y = -10
                     self.in_air = True
-
+                    
+                
 
          
         else:
             moving = False
+            self.atk1_kill_hitbox()
         
         #action tree-------------------------------------------------------------------------------------------------------------
         if self.hits_tanked < self.hp:#alive
@@ -212,15 +248,12 @@ class enemy_32wide(pygame.sprite.Sprite):
         
         #gravity 
         if self.Alive == True:  
-            # if self.inundated:
-            #     self.vel_y = -10
-            #     self.in_air = True
            
             g = 0.4
             self.vel_y += g
             
-            if self.vel_y > 10:
-                self.vel_y
+            # if self.vel_y > 10:
+            #     self.vel_y
                 
         else:
             self.vel_y = 0
@@ -269,10 +302,6 @@ class enemy_32wide(pygame.sprite.Sprite):
         #enemy0 collisions
         for enemy0 in sp_group_list[0]:
             if self.rect.colliderect(enemy0.rect) and self.id != enemy0.id:
-                # if self.rect.x > enemy0.rect.x:
-                #     dx += -self.direction
-                # elif self.rect.x < enemy0.rect.x:
-                #     dx += self.direction
 
                 if self.id < enemy0.id:
                     dx += -self.direction * 2
@@ -309,22 +338,19 @@ class enemy_32wide(pygame.sprite.Sprite):
 
                 #y collisions
                 if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width , self.height):
-
                     if self.vel_y >= 0:
                         #self.vel_y = 0 
                         if tile[1].colliderect(self.rect.x + self.width//4 + 2, self.rect.y + (self.height//2), self.width//2 - 4, self.height//2):
-                            #print("working_too")
                             if tile[1].bottom > self.rect.bottom:
                                 dy = tile[1].top  - self.rect.bottom #-1
                                 #print('hi')
                             self.on_ground = True
                             self.in_air = False
                             self.vel_y = 0 
-                        # if self.vel_y > 0:
-                        #     self.in_air = True
-                        # else:
-                        #     self.in_air = False
-                    
+                            
+                            if self.action == 5:
+                                self.hit_ground = True
+
                     elif self.vel_y < 0:
                         if tile[1].colliderect(self.rect.x + self.width//8, self.rect.y, self.width - self.width//4, self.height//2):
                             dy = 32
@@ -341,6 +367,9 @@ class enemy_32wide(pygame.sprite.Sprite):
                         self.vel_y = 0
                         self.in_air = False
                         self.on_ground = True
+                        
+                        if self.action == 5:
+                            self.hit_ground = True
                     elif self.vel_y < 0:
                         self.vel_y *= 0.6#velocity dampening when passing thru tile
                         self.in_air = True
@@ -409,6 +438,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             enemy_bullet = bullet_(x, y, 8, self.direction, self.scale, '8x8_red', self.ini_vol)
             self.m_player.play_sound(self.m_player.sfx[3])
             sp_group_list[1].add(enemy_bullet)
+            
             self.shoot_done = True
             self.shoot = False
         
@@ -435,6 +465,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                     self.inundated = False
                 self.recovering = True
                 self.idle_counter = 0
+                
 
             elif self.action == 3:
                 self.kill()
@@ -468,7 +499,7 @@ class enemy_32wide(pygame.sprite.Sprite):
     def draw(self, p_screen):
         #self.animate()
         p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
-        #pygame.draw.rect(p_screen, (255,0,0), self.ref_rect)
+        #pygame.draw.rect(p_screen, (255,0,0), self.atk_rect_scaled)
     
     def update_action(self, new_action):
         #check if action has changed
@@ -488,7 +519,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                     self.vel_y = -7
                     self.in_air = True
             elif new_action == 1:
-                if self.enemy_type == 'dog' and self.inundated == False and self.in_air == False:
+                if self.enemy_type == 'dog' and self.in_air == False:
                     self.speed_boost = 8
             
                 #print(self.hits_tanked)
