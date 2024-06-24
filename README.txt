@@ -1,6 +1,6 @@
 ===============================================================
 NO FILES MAY BE REDISTRIBUTED WITHOUT EXPLICIT PERMISSION.
-ASSETS MAY NOT BE REUSED.
+ASSETS MAY NOT BE REUSED FOR UNRELATED PROJECTS.
 CODE MAY BE REFERENCED AND REPURPOSED.
 ===============================================================
 
@@ -15,20 +15,21 @@ fully realized into one since my vision for it doesn't require such a large worl
 Currently there are 2 conjoined debugging levels that loop back to one another.
 
 Disclaimer:
-This is my first major coding project outside of school assignments so there will be some jank and spaghetti (bad code).
+This is my first major coding project outside of school assignments so there will be some bad code.
 Now and then I go back and try to clean up older code as I learn better coding.
+For now there is sadness and desperation in these lines.
 
 Live Dev Log: 
 https://docs.google.com/document/d/1DKHFFTGyHRi6FeIa0QXCALuBxQLR8XExPAktH98XHok/edit?usp=sharing
 
 
-SET UP:
+SET UP: (This is for Windows, GG Mac bros)
 
     Download the following if you haven't already:
     1. Python, 
     2. Pygame, 
 
-        To install Pygame I think it was 
+        To install Pygame:
         Win + R, type "cmd", enter, then paste: "python3 -m pip install -U pygame"
 
     3. Visual Studio Code or some other IDE, 
@@ -37,16 +38,20 @@ SET UP:
 	search "Execute in File Dir", set it as enable.
 
         The second part is important or else the next time 
-	you open VS code you will be hit with file not found errors...
-        why this is not a default setting eludes me.
+	you open VS code you will get file not found errors.
 
-	Personally I use VS code with Kevin Rose's python indent extension, 
-	VS code for python is unuseable without it.
-
+	If you want to try modding the code, I would highly reccommend 
+	Kevin Rose's python indent extension since vanilla VS code has issues
+	with indent oversensitivity for python.
 
 This zip file has the directories in right places.
 
-To run, open game_window.py and hit the run button in the upper right corner.
+RUNNING GAME:
+
+Open game_window.py in your IDE and run it.
+
+*Note: The controls can now be reconfigured and saved, but the paragraph below still explains
+the base mechanics. I recommend trying the default settings.
 
 The controls are WAD to move, I to melee, O to shoot, S to roll, and ALT to sprint.
 The direction of the melee attack depends on if you're falling or rising.
@@ -57,6 +62,10 @@ You can jump and roll in mid air too.
 Holding ALT increases your speed, but your stamina regeneration rate is lowered.
 Holding O will deplete some initial stamina then continuously charge up how
 many projectiles you shoot. You shoot when you lift the key.
+
+Escape/Backspace and Enter can be used in the main menu or pause menu for quick navigation.
+
+*Note 2: Toggle screen will change your resolution while the game is running; it does not work on Mac.
 
 ========================================================================================
 Insiprations:

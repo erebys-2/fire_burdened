@@ -123,7 +123,8 @@ class enemy_32wide(pygame.sprite.Sprite):
                     self.direction = 1
                     moving = True
                 
-                if self.action == 1:
+                if self.action == 1: 
+                    
                     if self.direction < 0:
                         self.atk_rect = pygame.Rect(self.rect.x, self.rect.y, self.width//2, self.height)
                     else:
@@ -196,7 +197,7 @@ class enemy_32wide(pygame.sprite.Sprite):
 
                 
                     
-                jump_cooldown = 360
+                jump_cooldown = 720
                 if (self.jump and self.in_air == False and self.on_ground and (pygame.time.get_ticks() - self.update_time2 > jump_cooldown)):
                     self.update_time2 = pygame.time.get_ticks()
                     # if self.hit_ground:
@@ -206,7 +207,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                     #     self.hit_ground = False
                     particle = particle_(self.rect.centerx, self.rect.centery, -self.direction, self.scale, 'player_mvmt', True, 1, False)
                     sp_group_list[3].add(particle)
-                    self.vel_y = -10
+                    self.vel_y = -9
                     self.in_air = True
                     
                 
@@ -290,9 +291,10 @@ class enemy_32wide(pygame.sprite.Sprite):
                 self.dmg_multiplier = 6
             elif player_action == 7 or player_action == 8:
                 self.dmg_multiplier = 2
-        elif (self.rect.colliderect(player_rect.scale_by(0.2)) and (player_action == 0 or player_action == 6)
-              or (self.rect.x < player_rect.x and self.rect.right > player_rect.right 
-                and not (player_action == 10))
+        elif (self.rect.colliderect(player_rect.scale_by(0.2)) 
+            and (player_action == 0 or player_action == 6)
+            or (self.rect.x < player_rect.x and self.rect.right > player_rect.right 
+            and not (player_action == 10))
               ):
             dx = 0
         elif player_action == 6 and self.rect.colliderect(player_rect):

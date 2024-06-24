@@ -72,7 +72,7 @@ class player(pygame.sprite.Sprite):
   
         self.rolling = False
         self.roll_count = 0
-        self.roll_limit = 2
+        self.roll_limit = 1
         self.roll_stam_rate = 0.25
         
         self.sprint = False
@@ -353,9 +353,9 @@ class player(pygame.sprite.Sprite):
 		#rolling 
         if self.rolling == True:
             if self.flip == True :
-                dx = -(self.speed + 1)
+                dx = -(self.speed + 2)
             else:
-                dx = (self.speed + 1)
+                dx = (self.speed + 2)
             
             if ((moveL and self.direction == 1) or (moveR and self.direction == -1) #BREAK ROLLING
                 or self.squat
@@ -374,9 +374,11 @@ class player(pygame.sprite.Sprite):
 
         
         if self.atk1:#adjusting speed to simulate momentum, motion stuff
-            if not (self.rolling) and not (((moveL and self.direction == 1) or (moveR and self.direction == -1)) and self.frame_index > 2):
-                if (self.frame_index == 0 and 
-                self.rolled_into_wall == False):#fast initial impulse
+            #if not break atk1
+            if not (((moveL and self.direction == 1) or (moveR and self.direction == -1)) and self.frame_index > 2) and not (self.rolling): #not (self.rolling) and 
+                if (self.frame_index == 0 and self.rolled_into_wall == False):#fast initial impulse
+                    # if pygame.time.get_ticks() < self.update_time + 20:
+                    #     self.m_player.play_sound(self.m_player.sfx[1])
                     if self.crit:
                         dx = self.direction *4 *self.speed
                         if self.in_air and self.vel_y + 5 <= 20:
@@ -387,8 +389,9 @@ class player(pygame.sprite.Sprite):
                         else:
                             multiplier = 1
                         dx = self.direction *multiplier *(self.speed) 
-                        if self.action == 7 and self.frame_index == 1:
-                            self.vel_y -=0.7
+                        if self.action == 7:
+                            self.vel_y -= 0.3
+                            
                         elif self.action == 8 and self.vel_y + 5 <= 26 and self.vel_y > 0 and self.in_air: #25 max 
                             self.vel_y += 5
                     #self.screen_shake() #does not work
@@ -710,7 +713,7 @@ class player(pygame.sprite.Sprite):
             6: 145, #die
             7: 105, #upstrike
             8: 105, #downstrike
-            9: 90, #roll
+            9: 100, #roll
             10: 110, #crit
             11: 85, #shoot
             12: 145, #idk
@@ -734,17 +737,12 @@ class player(pygame.sprite.Sprite):
             self.stamina_used = self.stamina
         
         #update frame
-        #self.rect_shift() #shitty method
         if self.i_frames_en:
             self.i_frames(self.i_frames_time, self.update_time2)
 
         #setting the image
         self.image = self.frame_list[self.action][self.frame_index]
         self.mask = pygame.mask.from_surface(self.image)
-
-        #update sprite dimensions
-        # self.width = self.image.get_width()
-        # self.height = self.image.get_height()
         
         #change frame index---------------------------------------------------------------
         if pygame.time.get_ticks() - self.update_time > frame_update:
