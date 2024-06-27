@@ -632,8 +632,11 @@ while run:
 			if event.key == ctrls_list[3]:#pygame.K_d
 				move_R = False
 
-			if event.key == ctrls_list[0] and player0.squat == False and player0.vel_y <= 1 and not player0.atk1:#variable height jumping
-				player0.vel_y *= 0.45 #rate at which jump vel decreases
+			if event.key == ctrls_list[0] and player0.squat == False and player0.vel_y <= 1:#variable height jumping
+				if player0.action == 7:
+					player0.vel_y *= 0.3
+				else:
+					player0.vel_y *= 0.45 #rate at which jump vel decreases
 				hold_jump = False
 					
 			if event.key == ctrls_list[4]:#pygame.K_i

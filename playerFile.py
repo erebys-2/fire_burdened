@@ -517,7 +517,7 @@ class player(pygame.sprite.Sprite):
                             multiplier = 1
                         dx = self.direction *multiplier *(self.speed) 
                         if self.action == 7:
-                            self.vel_y -= 0.25
+                            self.vel_y -= 0.4
                             
                         elif self.action == 8 and self.vel_y + 5 <= 26 and self.vel_y > 0 and self.in_air: #25 max 
                             self.vel_y += 5
