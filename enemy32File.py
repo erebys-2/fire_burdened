@@ -173,7 +173,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                    
                 if self.inundated == False: #cannot move towards player when inundated
                     #move if the player gets too close
-                    chase_range = 1.8
+                    chase_range = 1.4
                 
                     if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x <= self.rect.x:
                         dx = -self.speed
@@ -182,7 +182,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                         dx = self.speed
                         moving = True
                     #jump if the player is within this range
-                    jump_range = 1.3
+                    jump_range = 1.6
                     if self.rect.top <= player_rect.top:
                         if player_rect.x > self.rect.x - (jump_range*self.width) and player_rect.x <= self.rect.x:
                             self.jump = True
@@ -207,7 +207,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                     #     self.hit_ground = False
                     particle = particle_(self.rect.centerx, self.rect.centery, -self.direction, self.scale, 'player_mvmt', True, 1, False)
                     sp_group_list[3].add(particle)
-                    self.vel_y = -9
+                    self.vel_y = -8.5
                     self.in_air = True
                     
                 
@@ -412,6 +412,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             
         if (pygame.sprite.spritecollide(self, sp_group_list[2], False)):
             self.inundated = True
+            self.dmg_multiplier = 0
             self.hits_tanked += 1
             self.rect.x += -self.direction * 2
             #print("hit" + str(self.hits_tanked))

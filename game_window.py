@@ -13,6 +13,7 @@ from textManager import text_manager #type: ignore
 from ui_manager import ui_manager #type: ignore
 from spriteGroup import sprite_group #type: ignore
 import gc
+import random
 #from pygame.locals import *
 
 
@@ -311,6 +312,7 @@ while run:
 			move_R = temp_move_R
 		if temp_move_L:
 			move_L = temp_move_L
+   
 	elif level_transitioning and pygame.time.get_ticks() - 180 > level_trans_timing:
 		level_trans_timing = pygame.time.get_ticks()
 		level_transitioning = False
@@ -346,8 +348,6 @@ while run:
 		pygame.draw.rect(screen, (0,0,0), (0,0,SCREEN_WIDTH,SCREEN_HEIGHT))
  
 	#--------------------------------------------------------------MAIN MENU CODE---------------------------------------------------------------------
-	#this will be difficult to extract from the while loop into a single method
-	#will probably have to create an object for special level overlays: menus and inventories
 	if level == 0: 
 		draw_bg(screen, gradient_dict, color_n_BG[0], color_n_BG[1])
 		pause_game = False
@@ -398,7 +398,9 @@ while run:
 		ctrls_list = read_settings_data('ctrls_data')
 		ui_manager0.ctrls_updated = False
   
-	if update_vol: #updates all m_players' eq regimes
+	if update_vol: #updates all m_players' sounds with new volume setting
+    #objects already instantiated have their volumes updated here
+    #new objects take vol_lvl as their ini_vol parameter so their volumes match the setting upon instantiation
 		vol_lvl = read_settings_data('vol_data')
 		m_player.set_vol_all_sounds(vol_lvl)
 		the_sprite_group.update_vol_lvl(vol_lvl)
@@ -408,7 +410,7 @@ while run:
   
  
     #-----------------------------------------------------------------------------------------------------------------------------------------------------------
-    #handling enemy player collisions and death------------------------------------------------------------------------------------
+    #handling player death and game over screen------------------------------------------------------------------------------------
     
 	if player0.hits_tanked >= player0.hp:#killing the player------------------------------------------------
 		player0.Alive = False
@@ -424,6 +426,15 @@ while run:
 			player0 = player(32, 128, 4, hp, 6, 0, 0, vol_lvl)
 			player_new_x = 32
 			player_new_y = 32
+   
+	if player0.brain_damage:
+		temp_list = []
+		for i in range(8):
+			temp_list.append(random.randint(90,120))
+		ui_manager0.write_settings_data('ctrls_data',  temp_list)
+		ctrls_list = read_settings_data('ctrls_data')
+		temp_list *= 0
+		player0.brain_damage = False
 
 	#============================================================update player action for animation=======================================================
 	#this is remnant code from following Coding with Russ' tutorial, I wasn't sure how to integrate this into playerFile.py

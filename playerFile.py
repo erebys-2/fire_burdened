@@ -18,11 +18,13 @@ class player(pygame.sprite.Sprite):
         self.scale = scale
         self.Alive = True
         self.action = 0
+        self.last_action = 0
 
         self.speed = speed
         self.default_speed = self.speed
         self.direction = 1
         self.flip = False
+        self.brain_damage = False
 
         self.scrollx = 0
         self.current_x = x + 32
@@ -94,6 +96,8 @@ class player(pygame.sprite.Sprite):
         self.update_time4 = pygame.time.get_ticks()#debuggin
         self.particle_update = pygame.time.get_ticks()
         self.BP_update_time = pygame.time.get_ticks()
+        
+        self.angle = 0
 
         #fill animation frames
         animation_types = ['idle', 'run', 'jump', 'land', 'squat', 'hurt', 
@@ -133,7 +137,7 @@ class player(pygame.sprite.Sprite):
         self.atk_rect = pygame.Rect(-32, -32, 0,0)#self.rect.x, self.rect.y, self.rect.height, 2*self.rect.width
         self.atk_rect_scaled = pygame.Rect(-32, -32, 0,0)
         
-        self.m_player = music_player(['hat.wav', 'hat2.wav', 'step.wav', 'step2.wav', 'slash.wav', 'shoot.wav', 'slash2.wav'], ini_vol)
+        self.m_player = music_player(['hat.wav', 'hat2.wav', 'step.wav', 'step2.wav', 'slash.wav', 'shoot.wav', 'slash2.wav', 'boonk.wav'], ini_vol)
         self.ini_vol = ini_vol
         self.play_sound_once_en = True
         
@@ -156,6 +160,18 @@ class player(pygame.sprite.Sprite):
         }
        
     #methods
+    
+
+    def rotate(self, rate, angle):
+        self.angle += rate
+        if self.angle >= angle:
+            self.angle = 0
+        self.image = pygame.transform.rotozoom(self.image, self.angle, 1)
+        self.rect = self.image.get_rect(center=self.rect.center)
+        
+        if self.angle % 60 == 0:
+            self.m_player.play_sound(self.m_player.sfx[random.randint(0,(len(self.m_player.sfx)-1))])
+
             
     def update_landing(self, the_sprite_group):
         
@@ -279,6 +295,117 @@ class player(pygame.sprite.Sprite):
                     self.hurting = True
                     self.take_damage(damage) 
                 damage = 0
+                
+    def do_tile_collisions(self, world_solids, the_sprite_group, dx, dy):
+        #size adjust for displaced rects
+        if self.direction < 0:
+            disp_x = -self.width//2
+        else:
+            disp_x = self.width//2
+        
+        for tile in world_solids:
+            #x collisions
+            if (tile[2] != 17 and tile[2] != 10 and tile[2] != 2):
+                self.atk1_grinding(tile, the_sprite_group)
+                    
+                #dx collisions, tile walls
+                
+                #hitting wall while rolling
+                if self.action == 9 and tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//4 - 2):
+                    dx = -1 * self.direction 
+                    self.rolled_into_wall = True
+                    if self.frame_index > 0:
+                        if self.rolling:#you can die via concussion now
+                            self.m_player.play_sound(self.m_player.sfx[7])
+                            if self.stamina_used >= 5:
+                                self.hits_tanked += 0.1
+                                if random.randint(1,69) == 69:
+                                    self.brain_damage = True
+                        self.rolling = False
+                    #self.debuggin_rect  = (self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//4 - 2)
+                
+                #displaced hitbox x collisions
+                elif (self.action != 9
+                    and self.disp_flag #and self.action == 67
+                    and tile[1].colliderect(self.collision_rect.x + disp_x + dx, self.collision_rect.y, self.width, self.height - 17)
+                    ):
+                    dx = -16*self.direction
+                
+                #wall collisions while NOT rolling
+                elif (tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y, self.width, self.height - 17) 
+                    and self.action != 9 #this line is important for consistency
+                    ):
+                    dx = 0
+                    self.hitting_wall = True
+                    if (tile[1].colliderect(self.collision_rect.x, self.collision_rect.y, self.width, self.height - 17) 
+                        #and self.vel_y > 0
+                        ):
+                        if dx < 0:
+                            dx = 8*self.direction
+                        elif dx > 0:
+                            dx = -8*self.direction
+
+                #dy collision stuff, sinking through tiles etc
+                
+                if (tile[1].colliderect(self.collision_rect.x, self.collision_rect.y + dy, self.width , self.height)
+                    #and not self.disp_flag
+                    ):
+                    if self.vel_y >= 0: #making sure gravity doesn't pull player under the tile
+                        self.vel_y = 0
+                    elif self.vel_y < 0: #prevents player from gliding on ceiling
+                        self.vel_y *= 0.5
+                        self.in_air = True
+                        self.squat = False
+                        
+                    if (self.action == 9): #rolling collisions
+                        if (tile[1].y > self.collision_rect.y + self.height -32): #lower collisions
+                            dy = tile[1].top  - self.rect.bottom 
+                        elif (tile[1].bottom < self.collision_rect.y + self.height -32): #upper collisions
+                            dy = tile[1].bottom  - self.rect.top
+                            
+                    else: #IMPORTANT---------------------default floor and ceiling collisions
+                        #basically there's 2 collision checks that each make up half of the collision rect, upper and lower
+                        
+                        if tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//2):
+                            dy = tile[1].top  - self.rect.bottom #-1
+                            self.rolled_into_wall = False
+                            self.in_air = False
+                            
+                        elif tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + dy, self.width, self.height//2):
+                            dy = tile[1].bottom  - self.rect.top
+                            
+            #special tiles
+            elif(tile[2] == 2):#spikes/ other trap tiles
+                if tile[1].colliderect(self.collision_rect.x + self.width//4 + dx, self.collision_rect.y + dy, self.width//2, self.height - 8):
+                    self.hits_tanked = 6
+            
+            elif(tile[2] == 17):#one way tiles
+                if tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.bottom - 16 + dy, self.width, 17):
+                    if self.vel_y >= 0: 
+                        self.vel_y = 0
+                        self.in_air = False
+                    elif self.vel_y < 0:
+                        self.vel_y *= 0.6#velocity dampening when passing thru tile
+                        self.in_air = True
+
+                    dy = tile[1].top - self.collision_rect.bottom
+                    self.rolled_into_wall = False
+                           
+            elif(tile[2] == 10 and not self.disp_flag):#level transition tiles
+                if tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + dy, 2, self.height):
+                    #this collision will be used to initiate a level change
+                    #tile[3][0]: next_level, [1]: player new x, [2]: player new y
+                    self.lvl_transition_flag = True
+                    self.lvl_transition_data = tile[3]
+
+        
+        #debuggin bottom boundary
+        if self.rect.bottom + dy > 480:
+            dy = 480 - self.rect.bottom
+            self.in_air = False
+            
+            
+        return (dx, dy)
     
     def move(self, pause_game, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, screenW, screenH, obj_list, the_sprite_group):
         #reset mvmt variables
@@ -375,7 +502,7 @@ class player(pygame.sprite.Sprite):
         
         if self.atk1:#adjusting speed to simulate momentum, motion stuff
             #if not break atk1
-            if not (((moveL and self.direction == 1) or (moveR and self.direction == -1)) and self.frame_index > 2) and not (self.rolling): #not (self.rolling) and 
+            if not (((moveL and self.direction == 1) or (moveR and self.direction == -1)) and self.frame_index > 2) and not (self.rolling and self.frame_index > 0): #not (self.rolling) and 
                 if (self.frame_index == 0 and self.rolled_into_wall == False):#fast initial impulse
                     # if pygame.time.get_ticks() < self.update_time + 20:
                     #     self.m_player.play_sound(self.m_player.sfx[1])
@@ -390,7 +517,7 @@ class player(pygame.sprite.Sprite):
                             multiplier = 1
                         dx = self.direction *multiplier *(self.speed) 
                         if self.action == 7:
-                            self.vel_y -= 0.3
+                            self.vel_y -= 0.25
                             
                         elif self.action == 8 and self.vel_y + 5 <= 26 and self.vel_y > 0 and self.in_air: #25 max 
                             self.vel_y += 5
@@ -450,7 +577,6 @@ class player(pygame.sprite.Sprite):
             dy = self.vel_y
         
         
-        
         #--------------------------------------------------------------coordinate test
         #USED FOR CAMERA SCROLLING
         for tile in world_coords:
@@ -473,107 +599,13 @@ class player(pygame.sprite.Sprite):
         #----------------------------------------------------------------------------------------------------------------------------------
         #================================================================TILE COLLISIONS=====================================================================
         #====================================================================================================================================
-
-        #size adjust for displaced rects
-        if self.direction < 0:
-            disp_x = -self.width//2
+        if self.brain_damage or self.angle != 0:
+            dxdy = (0,0)
         else:
-            disp_x = self.width//2
-        
-        for tile in world_solids:
-            #x collisions
-            if (tile[2] != 17 and tile[2] != 10 and tile[2] != 2):
-                self.atk1_grinding(tile, the_sprite_group)
-                    
-                #dx collisions, tile walls
-                
-                #hitting wall while rolling
-                if self.action == 9 and tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//4 - 2):
-                    dx = -1 * self.direction 
-                    self.rolled_into_wall = True
-                    if self.frame_index > 0:
-                        self.rolling = False
-                    #self.debuggin_rect  = (self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//4 - 2)
-                
-                #displaced hitbox x collisions
-                elif (self.action != 9
-                    and self.disp_flag #and self.action == 67
-                    and tile[1].colliderect(self.collision_rect.x + disp_x + dx, self.collision_rect.y, self.width, self.height - 17)
-                    ):
-                    dx = -16*self.direction
-                
-                #wall collisions while NOT rolling
-                elif (tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y, self.width, self.height - 17) 
-                    and self.action != 9 #this line is important for consistency
-                    ):
-                    dx = 0
-                    self.hitting_wall = True
-                    if (tile[1].colliderect(self.collision_rect.x, self.collision_rect.y, self.width, self.height - 17) 
-                        #and self.vel_y > 0
-                        ):
-                        if dx < 0:
-                            dx = 8*self.direction
-                        elif dx > 0:
-                            dx = -8*self.direction
-
-                #dy collision stuff, sinking through tiles etc
-                
-                if (tile[1].colliderect(self.collision_rect.x, self.collision_rect.y + dy, self.width , self.height)
-                    #and not self.disp_flag
-                    ):
-                    if self.vel_y >= 0: #making sure gravity doesn't pull player under the tile
-                        self.vel_y = 0
-                    elif self.vel_y < 0: #prevents player from gliding on ceiling
-                        self.vel_y *= 0.5
-                        self.in_air = True
-                        self.squat = False
-                        
-                    if (self.action == 9): #rolling collisions
-                        if (tile[1].y > self.collision_rect.y + self.height -32): #lower collisions
-                            dy = tile[1].top  - self.rect.bottom 
-                        elif (tile[1].bottom < self.collision_rect.y + self.height -32): #upper collisions
-                            dy = tile[1].bottom  - self.rect.top
-                            
-                    else: #IMPORTANT---------------------default floor and ceiling collisions
-                        #basically there's 2 collision checks that each make up half of the collision rect, upper and lower
-                        
-                        if tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//2):
-                            dy = tile[1].top  - self.rect.bottom #-1
-                            self.rolled_into_wall = False
-                            self.in_air = False
-                            
-                        elif tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + dy, self.width, self.height//2):
-                            dy = tile[1].bottom  - self.rect.top
-                            
-            #special tiles
-            elif(tile[2] == 2):#spikes/ other trap tiles
-                if tile[1].colliderect(self.collision_rect.x + self.width//4 + dx, self.collision_rect.y + dy, self.width//2, self.height - 8):
-                    self.hits_tanked = 6
+            dxdy = self.do_tile_collisions(world_solids, the_sprite_group, dx, dy)
             
-            elif(tile[2] == 17):#one way tiles
-                if tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.bottom - 16 + dy, self.width, 17):
-                    if self.vel_y >= 0: 
-                        self.vel_y = 0
-                        self.in_air = False
-                    elif self.vel_y < 0:
-                        self.vel_y *= 0.6#velocity dampening when passing thru tile
-                        self.in_air = True
-
-                    dy = tile[1].top - self.collision_rect.bottom
-                    self.rolled_into_wall = False
-                           
-            elif(tile[2] == 10 and not self.disp_flag):#level transition tiles
-                if tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + dy, 2, self.height):
-                    #this collision will be used to initiate a level change
-                    #tile[3][0]: next_level, [1]: player new x, [2]: player new y
-                    self.lvl_transition_flag = True
-                    self.lvl_transition_data = tile[3]
-
-        
-        #debuggin bottom boundary
-        if self.rect.bottom + dy > 480:
-            dy = 480 - self.rect.bottom
-            self.in_air = False
+        dx = dxdy[0]
+        dy = dxdy[1]
 
         #update pos------------------------------------------------------------------------------------------------------------------------
         
@@ -598,8 +630,10 @@ class player(pygame.sprite.Sprite):
             #self.scrollx
 
         self.hitbox_rect.centerx = self.collision_rect.centerx
+        
+        if self.brain_damage or self.angle != 0:
+            self.rotate(5, 360)
 
-    
     #method for status bars, can probably return a list---------------------------    
     def get_status_bars(self):
         hp_remaining = self.hp - self.hits_tanked
@@ -851,6 +885,9 @@ class player(pygame.sprite.Sprite):
     
     def update_action(self, new_action):
         #check if action has changed
+        
+        
+        
         if new_action != self.action:
             if self.action == 9 and (new_action == 7 or new_action == 8):
                 self.crit = True
@@ -859,6 +896,7 @@ class player(pygame.sprite.Sprite):
                 self.crit == False
                 self.m_player.play_sound(self.m_player.sfx[1])
                 
+            self.last_action = self.action
             self.action = new_action
             self.disp_flag = self.disp_states[self.action]
             
