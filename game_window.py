@@ -343,6 +343,12 @@ while run:
    
 	status_bars.draw(screen, player0.get_status_bars(), font)
  
+	for p_int in obj_list[1]:
+		if p_int.do_screenshake:
+			tuple = camera.horizonatal_screen_shake(8, 5, player0.rect, p_int.do_screenshake)
+			p_int.do_screenshake = tuple[0]
+			scroll_x += tuple[1]
+ 
 	#----------black screen while transitioning---------------------------------------------------------
 	if level_transitioning:
 		pygame.draw.rect(screen, (0,0,0), (0,0,SCREEN_WIDTH,SCREEN_HEIGHT))

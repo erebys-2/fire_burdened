@@ -303,19 +303,21 @@ class player(pygame.sprite.Sprite):
                 damage = 0
                 
     def do_obj_list_collisions(self, obj_list, dx, dy, the_sprite_group):
-       
+        in_air = self.in_air
         for p_int in obj_list[1]:
             if p_int.has_collisions[p_int.type]:
                 self.atk1_grinding(p_int.rect, the_sprite_group)
                 if (p_int.rect.colliderect(self.collision_rect.x+2, self.collision_rect.y + dy, self.width-4, self.height)):
                     if self.collision_rect.bottom >= p_int.rect.top and self.collision_rect.bottom <= p_int.rect.y + 32:
-                        self.in_air = False
+                        in_air = False
                         dy = p_int.vel_y
                         dx += p_int.vel_x
                         if self.collision_rect.bottom != p_int.rect.top:
                             dy -= self.collision_rect.bottom- p_int.rect.top
                     elif self.collision_rect.top <= p_int.rect.bottom and self.collision_rect.top >= p_int.rect.y + 32 and p_int.vel_y >= 0:
                         dy = p_int.vel_y
+                    else:
+                        in_air = True
 
                 if (p_int.rect.colliderect(self.collision_rect.x + dx, self.collision_rect.y-8, self.width, self.height-8)):
                     if self.collision_rect.x > p_int.rect.x and self.collision_rect.right < p_int.rect.right:
@@ -337,13 +339,14 @@ class player(pygame.sprite.Sprite):
                     else:
                         self.hits_tanked += rate
                 
-        return (dx,dy)
+        return (dx,dy, in_air)
             
     def do_tile_collisions(self, world_solids, the_sprite_group, dx, dy, obj_list):
         
         dxdy = self.do_obj_list_collisions(obj_list, dx, dy, the_sprite_group)
         dx = dxdy[0]
         dy = dxdy[1]
+        self.in_air = dxdy[2]
         
         #size adjust for displaced rects
         if self.direction < 0:
@@ -399,9 +402,9 @@ class player(pygame.sprite.Sprite):
                     #and not self.disp_flag
                     ):
 
-                    if self.vel_y >= 0: #making sure gravity doesn't pull player under the tile
+                    if self.vel_y >= 0 or not dxdy[2]: #making sure gravity doesn't pull player under the tile
                         self.vel_y = 0
-                    elif self.vel_y < 0: #prevents player from gliding on ceiling
+                    elif self.vel_y < 0 and dxdy[2]: #prevents player from gliding on ceiling
                         self.vel_y *= 0.5
                         self.in_air = True
                         self.squat = False

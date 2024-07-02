@@ -17,6 +17,32 @@ class Camera():
         self.rect.centery = screenH//2
 
         self.on_right_edge = False
+        
+        self.cycle = 0
+        
+    def horizonatal_screen_shake(self, intensity, cycle_limit, player_rect, trigger):
+        if cycle_limit %2 != 0: #needs even cycle limits to work
+            cycle_limit += 1
+            
+        if trigger:
+            if self.cycle < cycle_limit:
+                if self.cycle %2 == 0:
+                    player_rect.x -= intensity
+                    scrollx = intensity
+                else:
+                    player_rect.x += intensity
+                    scrollx = -intensity
+                self.cycle += 1
+            else:
+                scrollx = 0
+                self.cycle = 0
+                trigger = False
+        else:
+            scrollx = 0
+            
+        return (trigger, scrollx)
+            
+        
     
     def get_pos_data(self, player_rect, world_coords):
         for tile in world_coords:

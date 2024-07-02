@@ -31,16 +31,24 @@ class player_interactable_(pygame.sprite.Sprite):
         self.frame_index = 0
         self.update_time = pygame.time.get_ticks()
         self.update_time2 = pygame.time.get_ticks()
+        self.action = 0
         
+        animation_types = {
+            'spinning_blades':('spin', 'spin2'),
+            'crusher_top':('crush', 'grimace'),
+        }
         
-        frames = len(os.listdir(f'sprites/player_interactable/{self.type}'))
+        for animation in animation_types[self.type]:
+            temp_list = []
+            frames = len(os.listdir(f'sprites/player_interactable/{self.type}/{animation}'))
+        
+            for i in range(frames):
+                img = pygame.image.load(f'sprites/player_interactable/{self.type}/{animation}/{i}.png').convert_alpha()
+                img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
+                temp_list.append(img)
+            self.frame_list.append(temp_list)
 
-        for i in range(frames):
-            img = pygame.image.load(f'sprites/player_interactable/{self.type}/{i}.png').convert_alpha()
-            img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-            self.frame_list.append(img)
-
-        self.image = self.frame_list[self.frame_index]
+        self.image = self.frame_list[self.action][self.frame_index]
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.rect.topleft = (x,y)
@@ -57,6 +65,7 @@ class player_interactable_(pygame.sprite.Sprite):
         self.vel_x = 0
         self.pause = False
         self.trigger_once = False
+        self.do_screenshake = False
         
         self.has_collisions = {
             'spinning_blades':False,
@@ -98,7 +107,7 @@ class player_interactable_(pygame.sprite.Sprite):
                     self.animate()
                 #self.animate()
             elif self.type == 'crusher_top':
-                self.atk_rect = pygame.Rect(self.rect.x + 2, self.rect.bottom - 32, self.width - 4, 32)
+                self.atk_rect = pygame.Rect(self.rect.x + 4, self.rect.bottom - 32, self.width - 8, 32)
                 if pygame.time.get_ticks() - self.update_time2 > 720:
                     self.update_time2 = pygame.time.get_ticks()
                     self.pause = False
@@ -108,13 +117,15 @@ class player_interactable_(pygame.sprite.Sprite):
                 if self.trigger_once:
                     if self.rect.x < 640 + 160 and self.rect.right >= 0 - 160:
                         self.m_player.play_sound(self.m_player.sfx[0])
-                        particle = particle_(self.rect.x - 24, self.rect.centery - 48, -self.direction, self.scale*1.5, 'sparks', True, random.randint(0,2), False)
+                        particle = particle_(self.rect.x - (24*self.scale), self.rect.centery - (48*self.scale), -self.direction, self.scale*1.5, 'sparks', True, random.randint(0,2), False)
                         sp_group_list[5].add(particle)
                         #WE NEED SCREENSHAKE AAAAAA
+                        self.do_screenshake = True
                     self.trigger_once = False
                 
                 if ((self.dropping and not self.on_ground 
-                    and (player_rect.x > self.rect.x - 2*self.width and player_rect.x < self.rect.x + self.width + 2*self.width))
+                    and (player_rect.x > self.rect.x - 2*self.width and player_rect.x < self.rect.x + self.width + 2*self.width)
+                    )
                     or self.already_falling
                     ):
                     self.already_falling = True
@@ -122,17 +133,15 @@ class player_interactable_(pygame.sprite.Sprite):
                     self.animate()
                 elif not self.dropping and self.on_ground and not self.pause:
                     self.vel_y = -5
-                    self.image = self.frame_list[0]
+                    self.image = self.frame_list[0][0]
                 else:
                     self.vel_y = 0
                     if self.pause:
-                        self.image = self.frame_list[random.randint(4,6)]
+                        #self.image = self.frame_list[self.action][random.randint(4,6)]
+                        self.action = 1
+                        self.animate()
                     else:
-                        self.image = self.frame_list[0]
-                    
-                
-                    
-                
+                        self.image = self.frame_list[0][0]
                 #self.current_x += self.vel_y
                 
                 self.rect.y += self.vel_y
@@ -140,12 +149,6 @@ class player_interactable_(pygame.sprite.Sprite):
                 
         self.rect.x += ( - scrollx)
                 
-    def rotate(self, rate):
-        if self.rect.x < 640:
-            self.angle += rate
-            self.image = pygame.transform.rotozoom(self.image, self.angle, 1)
-            self.rect = self.image.get_rect(center=self.rect.center)
-        #self.mask = pygame.mask.from_surface(self.image)
                 
     def animate(self):
         framerates = {
@@ -156,7 +159,7 @@ class player_interactable_(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         frame_update = framerates[self.type]
         #setting the image
-        self.image = self.frame_list[self.frame_index]
+        self.image = self.frame_list[self.action][self.frame_index]
 
         if pygame.time.get_ticks() - self.update_time > frame_update:
             self.update_time = pygame.time.get_ticks()
@@ -164,10 +167,13 @@ class player_interactable_(pygame.sprite.Sprite):
 
         #END OF ANIMATION FRAMES    
         if self.frame_index >= len(self.frame_list):
-            if self.type != 'crusher_top':
-                self.frame_index = 0
-            else:
-                self.frame_index = 3
+            # if self.type != 'crusher_top':
+            #     self.frame_index = 0
+            # else:
+            #     self.frame_index = 3
+            self.frame_index = 0
+            if self.type == 'crusher_top' and self.action == 1:
+                self.action = 0
             
             
 
