@@ -99,17 +99,17 @@ level_data_list = [
 	bg6_data
 ]
 
-level_data_dict = { #names of the corresponding csv files
-	0: 'coord_data',
-	1: 'fg_data',
-	2: 'data',
-	3: 'bg1_data',
-	4: 'bg2_data',
-	5: 'bg3_data',
-	6: 'bg4_data',
-	7: 'bg5_data',
-	8: 'bg6_data'
-}
+level_data_str_tuple = ( #names of the corresponding csv files
+	'coord_data',
+	'fg_data',
+	'data',
+	'bg1_data',
+	'bg2_data',
+	'bg3_data',
+	'bg4_data',
+	'bg5_data',
+	'bg6_data'
+)
 
 world = World()
 obj_list = world.obj_list
@@ -146,12 +146,13 @@ gradient_dict = {
 }
 
 #dictionary for level transitions
-level_dict = {
-    0:[black, 'none', 15, 30, [], False],
-    1:[maroonish, 'rain', 15, 200, [(2, 15*32, 2, 44*32 -2, 288), (2, 15*32, 2, 2, 384)], True],
-    2:[maroonish, 'rain', 15, 45, [(2, 15*32, 1, 199*32 -2, 384), (2, 15*32, 1, 2, 288)], True],
-    3:[orang, 'sunset', 15, 200, [], True] #default case?
-}
+#level_tuple: (color, gradient, y tile count, x tile count, lvl trans data, player enable)
+#lvl trans data: (width, height, next_level, player_new_x, player_new_y)
+level_tuple = (
+    [black, 'none', 15, 30, [], False], #lvl 0
+    [maroonish, 'rain', 15, 200, [(2, 15*32, 2, 44*32 -2, 288), (2, 15*32, 2, 2, 384)], True], #lvl 1
+    [maroonish, 'rain', 15, 45, [(2, 15*32, 1, 199*32 -2, 384), (2, 15*32, 1, 2, 288)], True] #lvl 2
+)
 
 vol_lvl = [10,10]
 
@@ -195,19 +196,19 @@ def clear_world_data(level_data_list):
 	for level_data in level_data_list:
 		level_data *= 0
 	
-def load_level_data(level, level_data_list, level_data_dict, level_dict, vol_lvl):
-	#level_dict[level]: 0:BG_color, 1:gradient_type, 2:rows, 3:cols, 4:level_transitions, 5:player_en
+def load_level_data(level, level_data_list, level_data_str_tuple, level_tuple, vol_lvl):
+	#level_tuple[level]: 0:BG_color, 1:gradient_type, 2:rows, 3:cols, 4:level_transitions, 5:player_en
 
 	#reading csv files 
 	index = 0
 	for level_data in level_data_list:
-		read_level_data(level, level_dict[level][2], level_dict[level][3], level_data, level_data_dict[index])
+		read_level_data(level, level_tuple[level][2], level_tuple[level][3], level_data, level_data_str_tuple[index])
 		index += 1
   
 	#world has self data lists that get cleared each time this is called
-	world.process_data(level_data_list, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][4], vol_lvl)
+	world.process_data(level_data_list, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_tuple[level][4], vol_lvl)
 	
-	return [level_dict[level][1], level_dict[level][0], level_dict[level][5], world.obj_list]# gradient, BG_color, player enable
+	return [level_tuple[level][1], level_tuple[level][0], level_tuple[level][5], world.obj_list]# gradient, BG_color, player enable
 
 #reading settings data
 def read_settings_data(data):
@@ -243,7 +244,7 @@ normal_speed = player0.speed
 
 #load initial level-------------------------------------------------------------------------------------------------
 the_sprite_group.purge_sprite_groups()#does as the name suggests at the start of each load of the game
-lvl_data = load_level_data(0, level_data_list, level_data_dict, level_dict, vol_lvl)
+lvl_data = load_level_data(0, level_data_list, level_data_str_tuple, level_tuple, vol_lvl)
 color_n_BG = lvl_data[0:3]
 obj_list = lvl_data[3]
 
@@ -291,7 +292,7 @@ while run:
 		world.clear_data()
 		level_transitioning = True
 		level = next_level
-		lvl_data = load_level_data(level, level_data_list, level_data_dict, level_dict, vol_lvl)
+		lvl_data = load_level_data(level, level_data_list, level_data_str_tuple, level_tuple, vol_lvl)
 		color_n_BG = lvl_data[0:3]
 		obj_list = lvl_data[3]
 		

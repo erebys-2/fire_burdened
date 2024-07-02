@@ -791,22 +791,22 @@ class player(pygame.sprite.Sprite):
     
     def animate(self, the_sprite_group):
         self.mask = pygame.mask.from_surface(self.image)
-        framerates = {#action: frame_update
-            0: 200, #idle
-            1: 160, #run
-            2: 145, #jump
-            3: 80, #land
-            4: 15, #squat
-            5: 50, #take damage
-            6: 145, #die
-            7: 105, #upstrike
-            8: 105, #downstrike
-            9: 100, #roll
-            10: 110, #crit
-            11: 85, #shoot
-            12: 145, #idk
-            14: 100
-        }
+        framerates = (#action: frame_update
+            200, #idle
+            160, #run
+            145, #jump
+            80, #land
+            15, #squat
+            50, #take damage
+            145, #die
+            105, #upstrike
+            105, #downstrike
+            100, #roll
+            110, #crit
+            85, #shoot
+            145, #idk
+            100
+        )
         #everything speeds up when pressing alt/sprint except shooting at the cost of slower stamina regen
         adjustment = 0
         if self.sprint and self.action != 11 and self.action != 6: 
