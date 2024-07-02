@@ -102,7 +102,38 @@ class enemy_32wide(pygame.sprite.Sprite):
         self.atk_rect.height = 0
         self.atk_rect_scaled = self.atk_rect
         
-    def move(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list):
+    def do_obj_list_collisions(self, obj_list, dx, dy):
+       
+        for p_int in obj_list[1]:
+            if p_int.has_collisions[p_int.type]:
+                if (p_int.rect.colliderect(self.rect.x+2, self.rect.y + dy, self.width-4, self.height)):
+                    if self.rect.bottom >= p_int.rect.top and self.rect.bottom <= p_int.rect.y + 32:
+                        self.in_air = False
+                        dy = p_int.vel_y
+                        dx += p_int.vel_x
+                        if self.rect.bottom != p_int.rect.top:
+                            dy -= self.rect.bottom- p_int.rect.top
+                    elif self.rect.top <= p_int.rect.bottom and self.rect.top >= p_int.rect.y + 32 and p_int.vel_y >= 0:
+                        dy = p_int.vel_y
+
+                if (p_int.rect.colliderect(self.rect.x + dx, self.rect.y-8, self.width, self.height-8)):
+                    if self.rect.x > p_int.rect.x and self.rect.right < p_int.rect.right:
+                        dx = 0
+                    else:
+                        dx = -dx + p_int.vel_x
+ 
+                    
+            #taking damage from crushing traps
+            if p_int.is_hostile[p_int.type]:
+                rate = self.hp//3
+                if (self.rect.colliderect(p_int.atk_rect)):
+                    if self.hits_tanked + rate > self.hp:
+                        self.hits_tanked = self.hp
+                    else:
+                        self.hits_tanked += rate
+        return (dx,dy)
+        
+    def move(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list, obj_list):
         dx = 0
         dy = 0
         moving = False
@@ -311,7 +342,9 @@ class enemy_32wide(pygame.sprite.Sprite):
                     dx += self.direction * 2
 
 
-        
+        dxdy = self.do_obj_list_collisions(obj_list, dx, dy)
+        dx = dxdy[0]
+        dy = dxdy[1]
         #world collisions
         for tile in world_solids:
             if tile[2] != 2 and tile[2] != 17:

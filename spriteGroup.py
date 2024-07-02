@@ -61,7 +61,7 @@ class sprite_group():
 			enemy0.draw(screen)
 			if not pause_game:
 				enemy0.animate(self.sp_group_list, obj_list)
-				enemy0.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list)
+				enemy0.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list, obj_list)
 			# elif update_vol:
 			# 	enemy0.m_player.update_eq_regime()
 			if enemy0.Alive == False:
