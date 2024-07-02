@@ -101,7 +101,8 @@ class particle_(pygame.sprite.Sprite):
             'shooter_death': 80,
             'dog_death': 100,
             'player_mvmt': 75,
-            'player_impact': 60
+            'player_impact': 60,
+            'sparks': 40
         }    
         
         if self.is_bg:

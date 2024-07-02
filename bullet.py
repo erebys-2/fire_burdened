@@ -53,7 +53,7 @@ class bullet_(pygame.sprite.Sprite):
         self.height = self.image.get_height()
         
         
-    def move(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list, player_direction):
+    def move(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list, player_direction, obj_list):
         dx = 0
         dy = 0
         
@@ -98,6 +98,11 @@ class bullet_(pygame.sprite.Sprite):
                 self.Active = False
                 self.explode(sp_group_list)
                 #self.kill()
+                
+        for p_int in obj_list[1]:
+            if (self.rect.colliderect(p_int.rect)):
+                self.Active = False
+                self.explode(sp_group_list)
         
         #enemy collisions
         

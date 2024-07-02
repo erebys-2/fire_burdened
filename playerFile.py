@@ -141,23 +141,23 @@ class player(pygame.sprite.Sprite):
         self.ini_vol = ini_vol
         self.play_sound_once_en = True
         
-        self.disp_states = { #actions/states when the player has a larger and or displaced hitbox
-            0:False, #idle
-            1:False, #run
-            2:False, #jump
-            3:False, #land
-            4:False, #squat
-            5:False, #hurt
-            6:False, #die
-            7:True, #atk1
-            8:True, #atk1_2
-            9:True, #roll
-            10:True, #atk1_3
-            11:True, #shoot
-            12:False, #
-            13:False, #
-            14:False #turn_around
-        }
+        self.disp_states = ( #actions/states when the player has a larger and or displaced hitbox
+            False, #idle
+            False, #run
+            False, #jump
+            False, #land
+            False, #squat
+            False, #hurt
+            False, #die
+            True, #atk1
+            True, #atk1_2
+            True, #roll
+            True, #atk1_3
+            True, #shoot
+            False, #
+            False, #
+            False #turn_around
+        )
        
     #methods
     
@@ -217,9 +217,10 @@ class player(pygame.sprite.Sprite):
             if self.action == 8:
                 y_loc = self.collision_rect.y
                 self.image3 = self.frame_list[13][0]
-                x_loc += self.direction *12
+                x_loc += self.direction *16
             elif self.action == 7:
-                y_loc = self.collision_rect.y - self.width//8
+                x_loc += self.direction *2
+                y_loc = self.collision_rect.y - self.width//4
                 if self.frame_index == 1:
                     self.image3 = self.frame_list[13][2]
                 elif self.frame_index == 2:
@@ -254,7 +255,7 @@ class player(pygame.sprite.Sprite):
                 the_sprite_group.particle_group.add(particle)
               
                 
-    def atk1_grinding(self, tile, the_sprite_group):
+    def atk1_grinding(self, rect, the_sprite_group):
         disp = 0
         if not self.flip and self.action != 10:
             disp = 12
@@ -262,11 +263,11 @@ class player(pygame.sprite.Sprite):
             disp = -12
         else:
             disp = 0
-        if tile[1].colliderect(self.atk_rect_scaled) and self.frame_index == 1 and pygame.time.get_ticks() - self.update_time < 10:
-            x_loc = (tile[1].centerx + self.atk_rect.centerx)//2 + disp
-            y_loc = (tile[1].centery + self.atk_rect.centery)//2
+        if rect.colliderect(self.atk_rect_scaled) and self.frame_index == 1 and pygame.time.get_ticks() - self.update_time < 10:
+            x_loc = (rect.centerx + self.atk_rect.centerx)//2 + disp
+            y_loc = (rect.centery + self.atk_rect.centery)//2
             particle = particle_(x_loc, y_loc, -self.direction, 0.9*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
-            the_sprite_group.particle_group.add(particle)
+            the_sprite_group.particle_group_fg.add(particle)
     
     
     def do_entity_collisions(self, the_sprite_group, obj_list, level_transitioning):
@@ -286,6 +287,11 @@ class player(pygame.sprite.Sprite):
                             damage += 2
                             self.hurting = True
                             self.take_damage(damage)
+                        if enemy[1] == the_sprite_group.p_int_group2:
+                            print(pygame.time.get_ticks())
+                            #damage += self.hp//2
+                            # self.hurting = True
+                            # self.take_damage(damage)
                     #print(damage)
                 damage = 0
         
@@ -296,7 +302,49 @@ class player(pygame.sprite.Sprite):
                     self.take_damage(damage) 
                 damage = 0
                 
-    def do_tile_collisions(self, world_solids, the_sprite_group, dx, dy):
+    def do_obj_list_collisions(self, obj_list, dx, dy, the_sprite_group):
+       
+        for p_int in obj_list[1]:
+            if p_int.has_collisions[p_int.type]:
+                self.atk1_grinding(p_int.rect, the_sprite_group)
+                if (p_int.rect.colliderect(self.collision_rect.x+2, self.collision_rect.y + dy, self.width-4, self.height)):
+                    if self.collision_rect.bottom >= p_int.rect.top and self.collision_rect.bottom <= p_int.rect.y + 32:
+                        self.in_air = False
+                        dy = p_int.vel_y
+                        dx += p_int.vel_x
+                        if self.collision_rect.bottom != p_int.rect.top:
+                            dy -= self.collision_rect.bottom- p_int.rect.top
+                    elif self.collision_rect.top <= p_int.rect.bottom and self.collision_rect.top >= p_int.rect.y + 32 and p_int.vel_y >= 0:
+                        dy = p_int.vel_y
+
+                if (p_int.rect.colliderect(self.collision_rect.x + dx, self.collision_rect.y-8, self.width, self.height-8)):
+                    if self.collision_rect.x > p_int.rect.x and self.collision_rect.right < p_int.rect.right:
+                        dx = 0
+                    else:
+                        dx = -dx + p_int.vel_x
+                elif (self.action != 9
+                    and self.disp_flag #and self.action == 67
+                    and p_int.rect.colliderect(self.collision_rect.x + self.direction*self.width//2 + dx, self.collision_rect.y, self.width, self.height - 17)
+                    ):
+                    dx = -16*self.direction
+                    
+            #taking damage from crushing traps
+            if p_int.is_hostile[p_int.type]:
+                rate = 0.5
+                if (self.hitbox_rect.colliderect(p_int.atk_rect)):
+                    if self.hits_tanked + rate > self.hp:
+                        self.hits_tanked = self.hp
+                    else:
+                        self.hits_tanked += rate
+                
+        return (dx,dy)
+            
+    def do_tile_collisions(self, world_solids, the_sprite_group, dx, dy, obj_list):
+        
+        dxdy = self.do_obj_list_collisions(obj_list, dx, dy, the_sprite_group)
+        dx = dxdy[0]
+        dy = dxdy[1]
+        
         #size adjust for displaced rects
         if self.direction < 0:
             disp_x = -self.width//2
@@ -306,7 +354,7 @@ class player(pygame.sprite.Sprite):
         for tile in world_solids:
             #x collisions
             if (tile[2] != 17 and tile[2] != 10 and tile[2] != 2):
-                self.atk1_grinding(tile, the_sprite_group)
+                self.atk1_grinding(tile[1], the_sprite_group)
                     
                 #dx collisions, tile walls
                 
@@ -350,6 +398,7 @@ class player(pygame.sprite.Sprite):
                 if (tile[1].colliderect(self.collision_rect.x, self.collision_rect.y + dy, self.width , self.height)
                     #and not self.disp_flag
                     ):
+
                     if self.vel_y >= 0: #making sure gravity doesn't pull player under the tile
                         self.vel_y = 0
                     elif self.vel_y < 0: #prevents player from gliding on ceiling
@@ -403,6 +452,8 @@ class player(pygame.sprite.Sprite):
         if self.rect.bottom + dy > 480:
             dy = 480 - self.rect.bottom
             self.in_air = False
+            
+
             
             
         return (dx, dy)
@@ -602,7 +653,7 @@ class player(pygame.sprite.Sprite):
         if self.brain_damage or self.angle != 0:
             dxdy = (0,0)
         else:
-            dxdy = self.do_tile_collisions(world_solids, the_sprite_group, dx, dy)
+            dxdy = self.do_tile_collisions(world_solids, the_sprite_group, dx, dy, obj_list)
             
         dx = dxdy[0]
         dy = dxdy[1]
@@ -736,7 +787,7 @@ class player(pygame.sprite.Sprite):
     
     
     def animate(self, the_sprite_group):
-
+        self.mask = pygame.mask.from_surface(self.image)
         framerates = {#action: frame_update
             0: 200, #idle
             1: 160, #run
@@ -776,7 +827,7 @@ class player(pygame.sprite.Sprite):
 
         #setting the image
         self.image = self.frame_list[self.action][self.frame_index]
-        self.mask = pygame.mask.from_surface(self.image)
+        
         
         #change frame index---------------------------------------------------------------
         if pygame.time.get_ticks() - self.update_time > frame_update:

@@ -3,6 +3,7 @@ import os
 from playerFile import player #type: ignore
 from enemy32File import enemy_32wide #type: ignore
 from particle import particle_ #type: ignore
+from player_interactable import player_interactable_
 
 
 class World():
@@ -38,7 +39,7 @@ class World():
         self.enemy_list = []
         self.obstacle_list = []
         self.bullet_list = []
-        self.obj_list = [self.enemy_list, self.obstacle_list, self.bullet_list]
+        self.obj_list = [self.enemy_list, self.obstacle_list]
         
         #self.horiz_scrolling = False
         #self.vert_scrolling = False
@@ -94,20 +95,26 @@ class World():
                         img_rect.y = y * 32
 
                     tile_data = (img, img_rect, tile, transition_data)
-                    if tile != 26 and tile != 28 and tile != 29: #if it isn't grass or a mob
+                    if tile != 26 and tile != 28 and tile != 29 and tile != 45: #if it isn't grass or a mob
                         self.solids.append(tile_data)
                     #add elifs for addition behaviors like spikes or smth
                     #russ instantiated players and enemies in here
                     elif tile == 28:
                         enemy0 = enemy_32wide(x * 32, y * 32, 3, 2, 'dog', enemy0_id, ini_vol)
-                        the_sprite_group.enemy0_group.add(enemy0)#for enemy-enemy collisions/ anti stacking
-                        enemy0_id += 1
+                        the_sprite_group.enemy0_group.add(enemy0)
+                        enemy0_id += 1#for enemy-enemy collisions/ anti stacking
                         self.enemy_list.append(enemy0)
                     elif tile == 29:
                         enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'shooter', enemy0_id, ini_vol)
-                        the_sprite_group.enemy0_group.add(enemy0)#for enemy-enemy collisions/ anti stacking
-                        enemy0_id += 1
+                        the_sprite_group.enemy0_group.add(enemy0)
+                        enemy0_id += 1#for enemy-enemy collisions/ anti stacking
                         self.enemy_list.append(enemy0)
+                    elif tile == 45:
+                        p_int = player_interactable_(x * 32, y * 32, 1, 1, 'crusher_top', ini_vol, True, False)
+                        the_sprite_group.p_int_group.add(p_int)
+                        self.obstacle_list.append(p_int)
+                        
+                        
             
         #load bg
         for i in range(len(self.lvl_data_list) -3):

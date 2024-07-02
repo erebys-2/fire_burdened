@@ -134,8 +134,8 @@ orang = [140, 123, 108]
 black = [0,0,0]
 white = [255,255,255]
 white2 = [190,162,178]
-maroonish = [134, 107, 116]
-reddish =  [200,143,167]
+maroonish = [140, 107, 116]
+reddish =  [170,143,167]
 jade = [119, 121, 124]
 
 #dictionaty for gradients
@@ -148,8 +148,8 @@ gradient_dict = {
 #dictionary for level transitions
 level_dict = {
     0:[black, 'none', 15, 30, [], False],
-    1:[reddish, 'rain', 15, 200, [(2, 15*32, 2, 44*32 -2, 288), (2, 15*32, 2, 2, 384)], True],
-    2:[reddish, 'rain', 15, 45, [(2, 15*32, 1, 199*32 -2, 384), (2, 15*32, 1, 2, 288)], True],
+    1:[maroonish, 'rain', 15, 200, [(2, 15*32, 2, 44*32 -2, 288), (2, 15*32, 2, 2, 384)], True],
+    2:[maroonish, 'rain', 15, 45, [(2, 15*32, 1, 199*32 -2, 384), (2, 15*32, 1, 2, 288)], True],
     3:[orang, 'sunset', 15, 200, [], True] #default case?
 }
 
@@ -339,7 +339,7 @@ while run:
 
 	the_sprite_group.update_groups_behind_player(pause_game, screen, player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, player0.direction, obj_list)
 	player0.draw(screen)
-	the_sprite_group.update_groups_infront_player(pause_game, screen, scroll_x)
+	the_sprite_group.update_groups_infront_player(pause_game, screen, scroll_x, world.solids, player0.hitbox_rect, player0.atk_rect_scaled, player0.action)
    
 	status_bars.draw(screen, player0.get_status_bars(), font)
  
