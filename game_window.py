@@ -257,6 +257,10 @@ player_new_x = 32
 player_new_y = 32
 ld_title_screen_en = True
 
+world_tile0_coord = (0,0)
+do_screenshake_master = False
+screenshake_profile = (8,5)
+
 ctrls_list = read_settings_data('ctrls_data')
 
 
@@ -323,10 +327,9 @@ while run:
 	draw_bg(screen, gradient_dict, color_n_BG[0], color_n_BG[1])#this just draws the color
 	#camera.draw(screen)#for camera debugging
 	if world.x_scroll_en:
-		camera.auto_correct(player0.rect, world.coords, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
+		camera.auto_correct(player0.rect, world.coords, world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
 	
-	world.draw(screen, scroll_x, 0)#this draws the world and scrolls it 
- 
+	world_tile0_coord = world.draw(screen, scroll_x, 0)#this draws the world and scrolls it 
 	
 	
 	if not pause_game:
@@ -344,11 +347,31 @@ while run:
    
 	status_bars.draw(screen, player0.get_status_bars(), font)
  
+	#---------------------------------------screen shake------------------------------------------------------------------------
+	if player0.do_screenshake:
+		player0.do_screenshake = False
+		if not do_screenshake_master:
+			do_screenshake_master = True
+			screenshake_profile = (10,4)
+
 	for p_int in obj_list[1]:
 		if p_int.do_screenshake:
-			tuple = camera.horizonatal_screen_shake(8, 5, player0.rect, p_int.do_screenshake)
-			p_int.do_screenshake = tuple[0]
-			scroll_x += tuple[1]
+			p_int.do_screenshake = False
+			if not do_screenshake_master:
+				do_screenshake_master = True
+				screenshake_profile = (8,6)
+   
+	if do_screenshake_master:
+		tuple = camera.horizonatal_screen_shake(screenshake_profile, do_screenshake_master)
+		do_screenshake_master = tuple[0]
+		scroll_x += tuple[1]
+		player0.rect.x += tuple[2]
+  
+	# for enemy in obj_list[0]:
+	# 	if enemy.do_screenshake:
+	# 		tuple = camera.horizonatal_screen_shake(12, 3, player0.rect, enemy.do_screenshake)
+	# 		enemy.do_screenshake = tuple[0]
+	# 		scroll_x += tuple[1]
  
 	#----------black screen while transitioning---------------------------------------------------------
 	if level_transitioning:

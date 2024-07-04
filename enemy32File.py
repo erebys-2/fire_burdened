@@ -13,7 +13,7 @@ class enemy_32wide(pygame.sprite.Sprite):
     #constructors
     def __init__(self, x, y, speed, scale, type, enemy0_id, ini_vol):
         pygame.sprite.Sprite.__init__(self)
-        self.m_player = music_player(['bassdrop2.wav', 'hit.wav', 'roblox2.wav', 'shoot.wav'], ini_vol)
+        self.m_player = music_player(['bassdrop2.wav', 'hit.wav', 'roblox2.wav', 'shoot.wav', 'step2soft.wav'], ini_vol)
         self.ini_vol = ini_vol
         #self.m_player.set_sound_vol(self.m_player.sfx[0], 7) #looks like you can adjust vol in the constructor
 
@@ -59,6 +59,8 @@ class enemy_32wide(pygame.sprite.Sprite):
         self.update_time = pygame.time.get_ticks()
         self.update_time2 = pygame.time.get_ticks()
         self.getting_shot_delay = pygame.time.get_ticks()
+        
+        self.do_screenshake = False
 
         #fill animation frames
         if type == 'dog':
@@ -487,6 +489,8 @@ class enemy_32wide(pygame.sprite.Sprite):
         self.height = self.image.get_height()
 
         if pygame.time.get_ticks() - self.update_time > frame_update:
+            # if self.action == 5 and self.frame_index == 0:
+            #     self.m_player.play_sound(self.m_player.sfx[4])
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
 
@@ -551,12 +555,15 @@ class enemy_32wide(pygame.sprite.Sprite):
                 self.m_player.play_sound(self.m_player.sfx[2])
                 self.hits_tanked += self.dmg_multiplier
                 self.dmg_multiplier = 0
+                self.do_screenshake = True
                 if self.enemy_type == 'dog':
                     self.vel_y = -7
                     self.in_air = True
             elif new_action == 1:
                 if self.enemy_type == 'dog' and self.in_air == False:
                     self.speed_boost = 8
+            # elif new_action == 5:
+            #     self.m_player.play_sound(self.m_player.sfx[4])
             
                 #print(self.hits_tanked)
             

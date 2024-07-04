@@ -223,7 +223,10 @@ class World():
         for tile in self.coords:
             tile[0][0] -= scroll_X #the coords file does not have an image
             
+            
         self.draw_bg_layers(w_screen, scroll_X, self.fg)
+        
+        return (self.coords[0][0][0], self.coords[0][0][1])
             
         
             

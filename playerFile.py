@@ -63,6 +63,7 @@ class player(pygame.sprite.Sprite):
         self.crit = False
         self.flicker = False
         self.i_frames_time = 0
+        self.do_screenshake = False
 		
         self.shoot = False
         self.shot_charging = False
@@ -939,12 +940,10 @@ class player(pygame.sprite.Sprite):
     
     def update_action(self, new_action):
         #check if action has changed
-        
-        
-        
         if new_action != self.action:
             if self.action == 9 and (new_action == 7 or new_action == 8):
                 self.crit = True
+                self.do_screenshake = True
                 self.m_player.play_sound(self.m_player.sfx[4])
             elif self.action != 9 and (new_action == 7 or new_action == 8):
                 self.crit == False

@@ -20,27 +20,32 @@ class Camera():
         
         self.cycle = 0
         
-    def horizonatal_screen_shake(self, intensity, cycle_limit, player_rect, trigger):
+        
+    def horizonatal_screen_shake(self, profile, trigger):
+        intensity = profile[0]
+        cycle_limit = profile[1]
         if cycle_limit %2 != 0: #needs even cycle limits to work
             cycle_limit += 1
             
         if trigger:
             if self.cycle < cycle_limit:
                 if self.cycle %2 == 0:
-                    player_rect.x -= intensity
+                    player_mvmt = -intensity
                     scrollx = intensity
                 else:
-                    player_rect.x += intensity
+                    player_mvmt = intensity
                     scrollx = -intensity
                 self.cycle += 1
             else:
+                player_mvmt = 0
                 scrollx = 0
                 self.cycle = 0
                 trigger = False
         else:
+            player_mvmt = 0
             scrollx = 0
             
-        return (trigger, scrollx)
+        return (trigger, scrollx, player_mvmt)
             
         
     
@@ -60,7 +65,7 @@ class Camera():
                 if self.Px_coord != x_coord:
                     self.Px_coord = x_coord
                     
-    def auto_correct(self, player_rect, world_coords, world_limit, screenW, screenH):
+    def auto_correct(self, player_rect, world_coords, world_tile0_coord, world_limit, screenW, screenH):
         self.scrollx = 0
         
         self.get_pos_data(player_rect, world_coords)
@@ -75,6 +80,10 @@ class Camera():
             self.scrollx -= 1
             #self.on_right_edge = False
             
+        elif player_rect.x + 32 < self.rect.x and self.x_coord < screenW - 32 and world_tile0_coord[0] > 0:
+            player_rect.x -= world_tile0_coord[0]
+            self.scrollx += world_tile0_coord[0]
+            
         #when the player is at the right end
         elif player_rect.right - 16 > self.rect.right and self.x_coord2 < world_limit[0] - (screenW//2 + 32) and player_rect.right - 16 < self.x_coord2 + screenW//2 - 32: 
             player_rect.x -= 1
@@ -88,6 +97,11 @@ class Camera():
             if self.rect.x - player_rect.x > 16  and self.x_coord >= screenW//2 and self.x_coord < world_limit[0] - (screenW//2):
                 player_rect.x += 1
                 self.scrollx -= 1
+            # elif self.x_coord < screenW//2 - 32:
+            #     print(self.x_coord)
+            #     print(screenW//2)
+            #     player_rect.x -= 1
+            #     self.scrollx += 1
             else:
                 self.scrollx = 0
             
