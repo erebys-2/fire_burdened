@@ -289,10 +289,10 @@ class player(pygame.sprite.Sprite):
                             self.hurting = True
                             self.take_damage(damage)
                         if enemy[1] == the_sprite_group.p_int_group2:
-                            print(pygame.time.get_ticks())
-                            #damage += self.hp//2
-                            # self.hurting = True
-                            # self.take_damage(damage)
+                            #print(pygame.time.get_ticks())
+                            damage += self.hp//2
+                            self.hurting = True
+                            self.take_damage(damage)
                     #print(damage)
                 damage = 0
         
@@ -307,7 +307,7 @@ class player(pygame.sprite.Sprite):
         in_air = self.in_air
         for p_int in obj_list[1]:
             if p_int.has_collisions[p_int.type]:
-                self.atk1_grinding(p_int.rect, the_sprite_group)
+                #self.atk1_grinding(p_int.rect, the_sprite_group)
                 if (p_int.rect.colliderect(self.collision_rect.x+2, self.collision_rect.y + dy, self.width-4, self.height)):
                     if self.collision_rect.bottom >= p_int.rect.top and self.collision_rect.bottom <= p_int.rect.y + 32:
                         in_air = False
@@ -320,16 +320,20 @@ class player(pygame.sprite.Sprite):
                     else:
                         in_air = True
 
-                if (p_int.rect.colliderect(self.collision_rect.x + dx, self.collision_rect.y-8, self.width, self.height-8)):
+                if (p_int.rect.colliderect(self.collision_rect.x + dx, self.collision_rect.y+2, self.width, self.height- 2)):
                     if self.collision_rect.x > p_int.rect.x and self.collision_rect.right < p_int.rect.right:
                         dx = 0
                     else:
                         dx = -dx + p_int.vel_x
                 elif (self.action != 9
                     and self.disp_flag #and self.action == 67
-                    and p_int.rect.colliderect(self.collision_rect.x + self.direction*self.width//2 + dx, self.collision_rect.y, self.width, self.height - 17)
+                    and p_int.rect.colliderect(self.collision_rect.x + self.direction*self.width//2 + dx, self.collision_rect.y+2, self.width, self.height - 2)
                     ):
                     dx = -16*self.direction
+                elif (self.action == 9
+                      and p_int.rect.colliderect(self.collision_rect.x + dx, self.collision_rect.y + 16, self.width, self.height - 16)
+                    ):
+                    dx = -dx + p_int.vel_x
                     
             #taking damage from crushing traps
             if p_int.is_hostile[p_int.type]:
@@ -619,7 +623,7 @@ class player(pygame.sprite.Sprite):
         #hurting/ enemy collisions
         if self.hurting == True and self.rolling == False:
             if self.frame_index < 2:
-                dx = -self.direction * 4
+                dx = -self.direction * 2
             # elif self.frame_index > 1:
             #     dx = -self.direction * 2
 

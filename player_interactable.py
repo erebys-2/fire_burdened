@@ -15,6 +15,7 @@ class player_interactable_(pygame.sprite.Sprite):
         self.enabled = enabled
         self.moveable = moveable
         self.angle = 0
+        self.initial_y = y
         self.initial_x = x
         self.current_x = x
         self.scale = scale
@@ -36,6 +37,8 @@ class player_interactable_(pygame.sprite.Sprite):
         animation_types = {
             'spinning_blades':('spin', 'spin2'),
             'crusher_top':('crush', 'grimace'),
+            'moving_plat_h':('move', 'move2'),
+            'moving_plat_v':('move', 'move2')
         }
         
         for animation in animation_types[self.type]:
@@ -69,23 +72,27 @@ class player_interactable_(pygame.sprite.Sprite):
         
         self.has_collisions = {
             'spinning_blades':False,
-            'crusher_top':True
+            'crusher_top':True,
+            'moving_plat_h':True,
+            'moving_plat_v':True
         }
         
         self.is_hostile = {
             'spinning_blades':True,
-            'crusher_top':True
+            'crusher_top':True,
+            'moving_plat_h':False,
+            'moving_plat_v':False
         }
         self.atk_rect = pygame.Rect(0,0,0,0)
         
         
-    def do_tile_collisions(self, world_solids, dx, dy):
+    def do_tile_y_collisions(self, world_solids, dy):
         for tile in world_solids:
             # if tile[1].colliderect(self.rect.x + dx, self.rect.y + 4, self.width//2, self.height - 8):
 
             # elif tile[1].colliderect(self.rect.x + self.width//2 + dx, self.rect.y + 4, self.width//2, self.height - 8):
                 
-            if tile[1].colliderect(self.rect.x + 2, self.rect.y + dy, self.width - 4, self.height//2) or self.rect.y <= 0:
+            if tile[1].colliderect(self.rect.x + 2, self.rect.y + dy, self.width - 4, self.height//2) or self.rect.y <= self.initial_y:
                 self.dropping = True
                 self.on_ground = False
                 
@@ -97,22 +104,42 @@ class player_interactable_(pygame.sprite.Sprite):
                 self.on_ground = True
                 self.already_falling = False
 
-        
+    def do_tile_x_collisions(self, world_solids, dx):
+         for tile in world_solids:
+            if tile[1].colliderect(self.rect.x + dx, self.rect.y + 4, self.width//2, self.height - 8):
+                self.direction = 1
+
+            elif tile[1].colliderect(self.rect.x + self.width//2 + dx, self.rect.y + 4, self.width//2, self.height - 8):
+                self.direction = -1
         
     def enable(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list):
         if self.enabled:
             if self.type == 'spinning_blades':
-                #self.animate()
                 if self.rect.x < 640 and self.rect.right >= 0:
                     self.animate()
-                #self.animate()
+                    
+            elif self.type == 'moving_plat_h':
+                self.do_tile_x_collisions(world_solids, self.vel_x)
+                self.vel_x = 4*self.direction
+
+            elif self.type == 'moving_plat_v':
+                self.do_tile_y_collisions(world_solids, self.vel_x)
+
+                if (self.dropping and not self.on_ground):
+                    self.already_falling = True
+                    self.vel_y = 5
+                elif not self.dropping and self.on_ground:
+                    self.vel_y = -5
+                    
+                self.rect.y += self.vel_y
+                
             elif self.type == 'crusher_top':
                 self.atk_rect = pygame.Rect(self.rect.x + 4, self.rect.bottom - 32, self.width - 8, 32)
                 if pygame.time.get_ticks() - self.update_time2 > 720:
                     self.update_time2 = pygame.time.get_ticks()
                     self.pause = False
                     
-                self.do_tile_collisions(world_solids, self.vel_x, self.vel_y)
+                self.do_tile_y_collisions(world_solids, self.vel_y)
                 
                 if self.trigger_once:
                     if self.rect.x < 640 + 160 and self.rect.right >= 0 - 160:
@@ -138,22 +165,27 @@ class player_interactable_(pygame.sprite.Sprite):
                     self.vel_y = 0
                     if self.pause:
                         #self.image = self.frame_list[self.action][random.randint(4,6)]
-                        self.action = 1
+                        self.update_action(1)
                         self.animate()
                     else:
                         self.image = self.frame_list[0][0]
+        
                 #self.current_x += self.vel_y
-                
                 self.rect.y += self.vel_y
+        else:
+            self.mask.clear()
+            self.atk_rect = pygame.Rect(0,0,0,0)
                 
                 
-        self.rect.x += ( - scrollx)
+        self.rect.x += ( - scrollx) + self.vel_x
                 
                 
     def animate(self):
         framerates = {
-            'spinning_blades': 15,
-            'crusher_top': 70
+            'spinning_blades': 30,
+            'crusher_top': 70,
+            'moving_plat_h': 100,
+            'moving_plat_v': 100
         }    
         
         self.mask = pygame.mask.from_surface(self.image)
@@ -166,16 +198,21 @@ class player_interactable_(pygame.sprite.Sprite):
             self.frame_index += 1 
 
         #END OF ANIMATION FRAMES    
-        if self.frame_index >= len(self.frame_list):
-            # if self.type != 'crusher_top':
-            #     self.frame_index = 0
-            # else:
-            #     self.frame_index = 3
+        if self.frame_index >= len(self.frame_list[self.action]):
             self.frame_index = 0
             if self.type == 'crusher_top' and self.action == 1:
-                self.action = 0
+                self.update_action(0)
             
-            
+    def update_action(self, new_action):
+        #check if action has changed
+
+        if new_action != self.action:
+            #if new_action != 5:
+                #self.jump_counter = 0
+            self.action = new_action
+            #update animation settings
+            self.frame_index = 0
+            self.update_time = pygame.time.get_ticks()
 
     
     def draw(self, p_screen):

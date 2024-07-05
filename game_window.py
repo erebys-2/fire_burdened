@@ -1,6 +1,8 @@
 import pygame
-pygame.init()
 import os
+os.environ['SDL_VIDEO_CENTERED'] = '1' 
+pygame.init()
+
 #print('directory: ' + os.getcwd())
 import csv
 from playerFile import player #type: ignore

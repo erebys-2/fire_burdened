@@ -34,7 +34,7 @@ class sprite_group():
 			self.p_int_group2
 		]
   
-		self.hostiles_group = (self.enemy0_group, self.enemy_bullet_group, self.enemy_bullet_group2, self.p_int_group)
+		self.hostiles_group = (self.enemy0_group, self.enemy_bullet_group, self.enemy_bullet_group2, self.p_int_group2)
   
 	def update_vol_lvl(self, level):
 		for sp_group in self.sp_groups_with_vol:

@@ -66,7 +66,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         if type == 'dog':
             self.animation_types = ['idle', 'move', 'hurt', 'die']
             self.hp = 6
-            self.recoil = 52
+            self.recoil = 58
             self.recoil_slow = 2
         elif type == 'shooter':   
             self.animation_types = ['idle', 'move', 'hurt', 'die', 'shoot', 'jump'] 
@@ -108,17 +108,19 @@ class enemy_32wide(pygame.sprite.Sprite):
        
         for p_int in obj_list[1]:
             if p_int.has_collisions[p_int.type]:
-                if (p_int.rect.colliderect(self.rect.x+2, self.rect.y + dy, self.width-4, self.height)):
+                if (p_int.rect.colliderect(self.rect.x+2, self.rect.y + dy, self.width-4, self.height) and self.action != 2):
                     if self.rect.bottom >= p_int.rect.top and self.rect.bottom <= p_int.rect.y + 32:
                         self.in_air = False
+                        self.on_ground = True
                         dy = p_int.vel_y
                         dx += p_int.vel_x
                         if self.rect.bottom != p_int.rect.top:
                             dy -= self.rect.bottom- p_int.rect.top
+                        self.speed_boost = 0.2
                     elif self.rect.top <= p_int.rect.bottom and self.rect.top >= p_int.rect.y + 32 and p_int.vel_y >= 0:
                         dy = p_int.vel_y
 
-                if (p_int.rect.colliderect(self.rect.x + dx, self.rect.y-8, self.width, self.height-8)):
+                if (p_int.rect.colliderect(self.rect.x + dx, self.rect.y+2, self.width, self.height-2)):
                     if self.rect.x > p_int.rect.x and self.rect.right < p_int.rect.right:
                         dx = 0
                     else:
@@ -451,6 +453,13 @@ class enemy_32wide(pygame.sprite.Sprite):
             self.hits_tanked += 1
             self.rect.x += -self.direction * 2
             #print("hit" + str(self.hits_tanked))
+            
+        if (pygame.sprite.spritecollide(self, sp_group_list[9], False)):
+            if pygame.sprite.spritecollide(self, sp_group_list[9], False, pygame.sprite.collide_mask):
+                self.inundated = True
+                self.dmg_multiplier = 0
+                self.hits_tanked += 3
+                self.rect.x += -self.direction * 2
             
         if self.action == 0:#idle
             frame_update = 140

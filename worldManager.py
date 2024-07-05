@@ -49,6 +49,16 @@ class World():
         #self.ref_pt = pygame.Rect((0,0),(32,32))
 
         #load tiles/images
+        
+        self.special_tiles = (
+            26,
+            28,
+            29,
+            45,
+            46,
+            47,
+            48
+        )
 
         for tile_set in tile_set_types:
             temp_list = []
@@ -77,6 +87,7 @@ class World():
         for y, row in enumerate(level_data_list[2]):
             for x, tile in enumerate(row):
                 if tile >= 0:
+                    count = 0
                     img = self.tileList[0][tile]
                     img_rect = img.get_rect()
                     if(tile == 17):#pass thru 1 way
@@ -95,10 +106,15 @@ class World():
                         img_rect.y = y * 32
 
                     tile_data = (img, img_rect, tile, transition_data)
-                    if tile != 26 and tile != 28 and tile != 29 and tile != 45: #if it isn't grass or a mob
+                    
+                    for s_tile in self.special_tiles:
+                        if tile != s_tile:
+                            count += 1 #checks if tile ids match those of special tiles
+                        else:
+                            break
+                    
+                    if count == len(self.special_tiles):#if the current tile != all the tiles in the special tile tuple
                         self.solids.append(tile_data)
-                    #add elifs for addition behaviors like spikes or smth
-                    #russ instantiated players and enemies in here
                     elif tile == 28:
                         enemy0 = enemy_32wide(x * 32, y * 32, 3, 2, 'dog', enemy0_id, ini_vol)
                         the_sprite_group.enemy0_group.add(enemy0)
@@ -111,6 +127,17 @@ class World():
                         self.enemy_list.append(enemy0)
                     elif tile == 45:
                         p_int = player_interactable_(x * 32, y * 32, 1, 1, 'crusher_top', ini_vol, True, False)
+                        the_sprite_group.p_int_group.add(p_int)
+                        self.obstacle_list.append(p_int)
+                    elif tile == 46:
+                        p_int2 = player_interactable_(x * 32, y * 32, 2, 1, 'spinning_blades', ini_vol, True, False)
+                        the_sprite_group.p_int_group2.add(p_int2)
+                    elif tile == 47:
+                        p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_h', ini_vol, True, False)
+                        the_sprite_group.p_int_group.add(p_int)
+                        self.obstacle_list.append(p_int)
+                    elif tile == 48:
+                        p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_v', ini_vol, True, False)
                         the_sprite_group.p_int_group.add(p_int)
                         self.obstacle_list.append(p_int)
                         

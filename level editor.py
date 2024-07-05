@@ -155,18 +155,23 @@ def draw_bg(data):
 
 def draw_world():
     for y, row in enumerate(world_data):#world data and bg data should have the same amount of data
-        for x, tile_ in enumerate(row):
-            if tile_ >= 0:
-                if tile_ == 15 or tile_ == 16 or tile_ == 18 or tile_ == 2:
+        for x, tile in enumerate(row):
+            if tile >= 0:
+                if tile == 15 or tile == 16 or tile == 18 or tile == 2:
                     #blit(source, dest, area=None, special_flags=0) -> Rect
-                    screen.blit(tile_list[t_set_index][tile_], (x * TILE_SIZE - scroll, (y * TILE_SIZE)+ 16))
-                elif(tile_ == 45):
-                    bg_tile = tile_ - 30
+                    screen.blit(tile_list[t_set_index][tile], (x * TILE_SIZE - scroll, (y * TILE_SIZE)+ 16))
+                elif(tile == 45 or tile == 47 or tile == 48):
+                    bg_tile = tile - 30
+                    img = tile_list[1][bg_tile]
+                    img = pygame.transform.scale(img, (int(img.get_width() * 1), int(img.get_height() * 1)))
+                    screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)))
+                elif(tile == 46):
+                    bg_tile = tile - 30
                     img = tile_list[1][bg_tile]
                     img = pygame.transform.scale(img, (int(img.get_width() * 2), int(img.get_height() * 2)))
                     screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)))
                 else: 
-                    screen.blit(tile_list[t_set_index][tile_], (x * TILE_SIZE - scroll, y * TILE_SIZE))
+                    screen.blit(tile_list[t_set_index][tile], (x * TILE_SIZE - scroll, y * TILE_SIZE))
 
 
 #button stuff
