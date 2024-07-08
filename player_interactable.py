@@ -70,19 +70,19 @@ class player_interactable_(pygame.sprite.Sprite):
         self.trigger_once = False
         self.do_screenshake = False
         
-        self.has_collisions = {
-            'spinning_blades':False,
-            'crusher_top':True,
-            'moving_plat_h':True,
-            'moving_plat_v':True
+        self.collision_and_hostility = {
+            'spinning_blades':(False, True),
+            'crusher_top': (True, True),
+            'moving_plat_h':(True, False),
+            'moving_plat_v': (True, False)
         }
         
-        self.is_hostile = {
-            'spinning_blades':True,
-            'crusher_top':True,
-            'moving_plat_h':False,
-            'moving_plat_v':False
-        }
+        # self.is_hostile = {
+        #     'spinning_blades':True,
+        #     'crusher_top':True,
+        #     'moving_plat_h':False,
+        #     'moving_plat_v':False
+        # }
         self.atk_rect = pygame.Rect(0,0,0,0)
         
         

@@ -4,7 +4,7 @@ from playerFile import player #type: ignore
 from enemy32File import enemy_32wide #type: ignore
 from particle import particle_ #type: ignore
 from player_interactable import player_interactable_
-
+from dialogueCSVformatter import csv_extracter
 
 class World():
     def __init__(self):
@@ -68,6 +68,8 @@ class World():
                 tile_img = pygame.image.load(f'sprites/tileset/{tile_set}/{i}.png').convert_alpha()
                 temp_list.append(tile_img)
             self.tileList.append(temp_list)
+            
+        self.CSV_f0 = csv_extracter(120)
     
     def clear_data(self):
         for lvl_data in self.lvl_data_list:

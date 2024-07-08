@@ -107,7 +107,7 @@ class enemy_32wide(pygame.sprite.Sprite):
     def do_obj_list_collisions(self, obj_list, dx, dy):
        
         for p_int in obj_list[1]:
-            if p_int.has_collisions[p_int.type]:
+            if p_int.collision_and_hostility[p_int.type][0]:
                 if (p_int.rect.colliderect(self.rect.x+2, self.rect.y + dy, self.width-4, self.height) and self.action != 2):
                     if self.rect.bottom >= p_int.rect.top and self.rect.bottom <= p_int.rect.y + 32:
                         self.in_air = False
@@ -128,7 +128,7 @@ class enemy_32wide(pygame.sprite.Sprite):
  
                     
             #taking damage from crushing traps
-            if p_int.is_hostile[p_int.type]:
+            if p_int.collision_and_hostility[p_int.type][1]:
                 rate = self.hp//3
                 if (self.rect.colliderect(p_int.atk_rect)):
                     if self.hits_tanked + rate > self.hp:
@@ -306,7 +306,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             x_avg = (self.rect.x + player_atk_rect.right)/2
             y_avg = (self.rect.y + player_atk_rect.bottom)/2
             
-            particle = particle_(x_avg, y_avg, -self.direction, self.scale, 'player_impact', True, self.rando_frame, False)
+            particle = particle_(x_avg - 16*self.direction, y_avg, -self.direction, self.scale, 'player_impact', True, self.rando_frame, False)
             sp_group_list[5].add(particle)
             i = 0
             for i in range(2):
@@ -321,7 +321,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                 self.rando_frame = 0
             
             self.inundated = True
-            dx += -self.direction * self.recoil
+            dx = -self.direction * self.recoil
             if player_action ==  10 or player_action == 9:
                 self.dmg_multiplier = 6
             elif player_action == 7 or player_action == 8:

@@ -306,7 +306,7 @@ class player(pygame.sprite.Sprite):
     def do_obj_list_collisions(self, obj_list, dx, dy, the_sprite_group):
         in_air = self.in_air
         for p_int in obj_list[1]:
-            if p_int.has_collisions[p_int.type]:
+            if p_int.collision_and_hostility[p_int.type][0]:
                 #self.atk1_grinding(p_int.rect, the_sprite_group)
                 if (p_int.rect.colliderect(self.collision_rect.x+2, self.collision_rect.y + dy, self.width-4, self.height)):
                     if self.collision_rect.bottom >= p_int.rect.top and self.collision_rect.bottom <= p_int.rect.y + 32:
@@ -336,7 +336,7 @@ class player(pygame.sprite.Sprite):
                     dx = -dx + p_int.vel_x
                     
             #taking damage from crushing traps
-            if p_int.is_hostile[p_int.type]:
+            if p_int.collision_and_hostility[p_int.type][1]:
                 rate = 0.5
                 if (self.hitbox_rect.colliderect(p_int.atk_rect)):
                     if self.hits_tanked + rate > self.hp:
@@ -623,7 +623,7 @@ class player(pygame.sprite.Sprite):
         #hurting/ enemy collisions
         if self.hurting == True and self.rolling == False:
             if self.frame_index < 2:
-                dx = -self.direction * 2
+                dx = -self.direction * 4
             # elif self.frame_index > 1:
             #     dx = -self.direction * 2
 
@@ -899,9 +899,9 @@ class player(pygame.sprite.Sprite):
                 self.charge_built -= 2
                 
                 i = 0
-                while self.charge_built - 0.4 > 0:
+                while self.charge_built - 0.35 > 0:
                     i+= 1
-                    self.charge_built -= 0.4
+                    self.charge_built -= 0.35
                     #x+= self.direction * 32
                     if i < 4:
                         x+= self.direction * 32

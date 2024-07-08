@@ -124,7 +124,7 @@ class text_manager():
 
     
     
-# #comment out later
+# # #comment out later
 # #----------------------variables for testing
 # str_list = [
 #     'hello',
