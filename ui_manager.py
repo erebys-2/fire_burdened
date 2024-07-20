@@ -7,7 +7,7 @@ import csv
 
 class ui_manager():
     
-    def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, fontlist, ini_vol):
+    def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, fontlist, ini_vol, fs_size):
         m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav']
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
         
@@ -19,6 +19,9 @@ class ui_manager():
         
         self.S_W = SCREEN_WIDTH
         self.S_H = SCREEN_HEIGHT
+        
+        self.std_size = (SCREEN_WIDTH, SCREEN_HEIGHT)
+        self.fs_size = fs_size
         
         self.options_menu_enable = False
         self.ctrl_menu_enable = False
@@ -59,9 +62,9 @@ class ui_manager():
         self.raise_volume = False
         
         
-    def read_settings_data(self, data_name):
+    def read_csv_data(self, data_name):
         temp_list = []
-        with open(f'settings_files/{data_name}.csv', newline= '') as csvfile:
+        with open(f'dynamic_CSVs/{data_name}.csv', newline= '') as csvfile:
             reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
             for row in reader:
                 for entry in row:
@@ -69,14 +72,15 @@ class ui_manager():
                     
         return temp_list
         
-    def write_settings_data(self, data_name, data_):
-        with open(f'settings_files/{data_name}.csv', 'w', newline='') as csvfile:
+    def write_csv_data(self, data_name, data):
+        with open(f'dynamic_CSVs/{data_name}.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter = ',')
-            writer.writerow(data_)
+            writer.writerow(data)
 
 #-----------------------------------------------------------main menu----------------------------------------------------------
     def show_main_menu(self, screen):
         next_level = 0
+        plot_index_list = [-1, -1]
         
         if not self.options_menu_enable and not self.saves_menu_enable and next_level == 0:
             if self.trigger_once:
@@ -93,7 +97,8 @@ class ui_manager():
                 self.m_player.play_sound(self.m_player.sfx[1])
                 self.trigger_once = True
                 self.run_game = True
-
+                #sets plot index list to 0
+                plot_index_list = [-1,-1]
                 next_level = 1
             self.button_list[0].show_text(screen, self.fontlist[1], ('','New Game'))
             
@@ -119,9 +124,13 @@ class ui_manager():
             
         elif not self.options_menu_enable and self.saves_menu_enable:
             print("load files not implemented yet")
+            #will have to load the plot index list when a save is loaded
+            plot_index_list = self.read_csv_data('plot_data')
+            print(plot_index_list)
+            
             self.saves_menu_enable = False
             
-        return (next_level, self.run_game)
+        return (next_level, self.run_game, plot_index_list)
 
 #-----------------------------------------------------------pause menu---------------------------------------------------------
     def show_pause_menu(self, screen):
@@ -201,10 +210,10 @@ class ui_manager():
                 self.m_player.play_sound(self.m_player.sfx[1])
                 if self.disp_flags == pygame.SHOWN: #windowed mode
                     self.disp_flags = pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN #full screen mode
-                    screen = pygame.display.set_mode((self.S_W, self.S_H), self.disp_flags)
+                    screen = pygame.display.set_mode(self.std_size, self.disp_flags)
                 elif self.disp_flags == pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN:
                     self.disp_flags = pygame.SHOWN
-                    screen = pygame.display.set_mode((self.S_W, self.S_H), self.disp_flags)
+                    screen = pygame.display.set_mode(self.std_size, self.disp_flags)
             self.button_list[2].show_text(screen, self.fontlist[1], ('','Screen Toggle')) 
                 
             if self.button_list[3].draw(screen):
@@ -226,7 +235,7 @@ class ui_manager():
             self.button_list *= 0
             
             #load current control scheme from csv file into ctrls_list
-            self.ctrls_list = self.read_settings_data('ctrls_data')
+            self.ctrls_list = self.read_csv_data('ctrls_data')
             #set up disp_str_list
             for i in range(len(self.disp_str_list)):
                 self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
@@ -283,7 +292,7 @@ class ui_manager():
             self.trigger_once = True  
             self.ctrls_updated = True
             #print(self.ctrls_list)
-            self.write_settings_data('ctrls_data', self.ctrls_list)
+            self.write_csv_data('ctrls_data', self.ctrls_list)
         self.button_list[9].show_text(screen, self.fontlist[1], ('','Save'))  
         
         if not self.stop:
@@ -300,7 +309,7 @@ class ui_manager():
         
     def show_vol_menu(self, screen):
         #kinda cursed rn, need to code a slider eventually
-        self.vol_lvl = self.read_settings_data('vol_data')
+        self.vol_lvl = self.read_csv_data('vol_data')
         string = f'    {10*self.vol_lvl[0]}%'
         self.text_manager0.disp_text_box(screen, self.fontlist[1], ('','Volume Level', string), (-1,-1,-1), (200,200,200), 
                                     (272, self.S_H//2 - 64,self.S_W,self.S_H), False, False, 'none')
@@ -318,7 +327,7 @@ class ui_manager():
                 self.vol_lvl[0] += 1
             
             self.raise_volume = True
-            self.write_settings_data('vol_data', self.vol_lvl)
+            self.write_csv_data('vol_data', self.vol_lvl)
             self.m_player.set_vol_all_sounds(self.vol_lvl)
             self.m_player.play_sound(self.m_player.sfx[1])
         else:
@@ -331,7 +340,7 @@ class ui_manager():
                 self.vol_lvl[0] -= 1
                 
             self.lower_volume = True
-            self.write_settings_data('vol_data', self.vol_lvl)
+            self.write_csv_data('vol_data', self.vol_lvl)
             self.m_player.set_vol_all_sounds(self.vol_lvl)
             self.m_player.play_sound(self.m_player.sfx[1])
         else:

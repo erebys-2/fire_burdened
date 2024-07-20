@@ -11,20 +11,21 @@ from StatusBarsFile import StatusBars #type: ignore
 from Camera import Camera #type: ignore
 from music_player import music_player #type: ignore
 from button import Button #type: ignore
-from textManager import text_manager #type: ignore
+from textManager import text_manager, dialogue_box #type: ignore
 from ui_manager import ui_manager #type: ignore
 from spriteGroup import sprite_group #type: ignore
 import gc
 import random
 #from pygame.locals import *
-
+monitor_size = [pygame.display.Info().current_w, pygame.display.Info().current_h]
 
 #setting the screen-----------------------------------------------------------
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
+standard_size = (SCREEN_WIDTH, SCREEN_HEIGHT)
 flags = pygame.SHOWN #windowed mode
 #flags = pygame.DOUBLEBUF|pygame.FULLSCREEN #full screen mode
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)
+screen = pygame.display.set_mode(standard_size, flags)
 
 pygame.display.set_caption('game window')
 
@@ -39,16 +40,14 @@ move_R = False
 
 change_once = True
 
-hold_jmp_update = pygame.time.get_ticks()
-hold_jmp_time = 1
-hold_jump = False
+hold_jump_update = pygame.time.get_ticks()
+hold_jump_time = 20
 
 hold_roll_update = pygame.time.get_ticks()
 hold_roll_time = 20
 hold_roll = False
 
 level_trans_timing = pygame.time.get_ticks()
-show_controls_en = False
 
 pause_game = False
 #exit_to_title = False
@@ -78,6 +77,7 @@ tile_types = len(os.listdir(f'sprites/tileset/{tile_set}'))
 
 damage = 0
 scroll_x = 0
+scroll_y = 0
 
 fg_data = []
 coord_data = []
@@ -156,16 +156,18 @@ level_tuple = (
     [maroonish, 'rain', 15, 45, [(2, 15*32, 1, 199*32 -2, 384), (2, 15*32, 1, 2, 288)], True] #lvl 2
 )
 
+#lists for dynamic CSVs
+#plot_index_list = [-1,-1]
 vol_lvl = [10,10]
-
-#controls
 ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054]
 
 #text manager instance
 text_manager0 = text_manager()
-type_out_en = True
-text_speed = 200
-type_out = True
+
+text_speed = 80
+
+
+
 
 #methods--------------
 
@@ -208,14 +210,14 @@ def load_level_data(level, level_data_list, level_data_str_tuple, level_tuple, v
 		index += 1
   
 	#world has self data lists that get cleared each time this is called
-	world.process_data(level_data_list, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_tuple[level][4], vol_lvl)
+	world.process_data(level, level_data_list, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_tuple[level][4], vol_lvl)
 	
 	return [level_tuple[level][1], level_tuple[level][0], level_tuple[level][5], world.obj_list]# gradient, BG_color, player enable
 
 #reading settings data
 def read_settings_data(data):
 	temp_list = []
-	with open(f'settings_files/{data}.csv', newline= '') as csvfile:
+	with open(f'dynamic_CSVs/{data}.csv', newline= '') as csvfile:
 		reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
 		for row in reader:
 			for entry in row:
@@ -227,12 +229,15 @@ def read_settings_data(data):
 vol_lvl = read_settings_data('vol_data') #read saved eq regime
 #more instantiations
 
+#dialoguwe box handler
+dialogue_box0 = dialogue_box(vol_lvl)
+
 #music player instance-------------------------------------------------------------------------------------------
 m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav']
 m_player = music_player(m_player_sfx_list_main, vol_lvl)
 
 #ui manager
-ui_manager0 = ui_manager(SCREEN_WIDTH, SCREEN_HEIGHT, [font, font_larger, font_massive], vol_lvl)
+ui_manager0 = ui_manager(SCREEN_WIDTH, SCREEN_HEIGHT, [font, font_larger, font_massive], vol_lvl, monitor_size)
 update_vol = False
 
 #instantiate sprite groups=========
@@ -240,7 +245,8 @@ the_sprite_group = sprite_group()
 
 #instantiate player at the start of load
 hp = 6
-player0 = player(32, 128, 4, hp, 6, 0, 0, vol_lvl)#6368 #5856 #6240 #test coords for camera autocorrect
+speed = 4
+player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl)#6368 #5856 #6240 #test coords for camera autocorrect
 #good news is that the player's coordinates can go off screen and currently the camera's auto scroll will eventually correct it
 normal_speed = player0.speed
 
@@ -265,15 +271,13 @@ screenshake_profile = (8,5)
 
 ctrls_list = read_settings_data('ctrls_data')
 
-
+dialogue_enable = False
+next_dialogue = False
+dialogue_trigger_ready = False
 
 while run:
-    # #testing general audio mixing
-	# m_player.set_vol_all_channels2(9)
-    
 	clock.tick(FPS)
 	#reset temporary values
-	text_box_on = False
  
 	temp_move_R = False
 	temp_move_L = False
@@ -293,7 +297,9 @@ while run:
 	#----------------------------------------------------------------------level changing-------------------------------------------------
 	if level != next_level:
 		scroll_x = 0
+		scroll_y = 0
 		the_sprite_group.purge_sprite_groups()
+		dialogue_box0.reset_internals()
 		clear_world_data(level_data_list)
 		world.clear_data()
 		level_transitioning = True
@@ -326,54 +332,77 @@ while run:
 	
 	
 	#---------------------------------------------------------drawing level and sprites------------------------------------------------------------------
+	#---------------------------------------------------------handling movement and collisions and AI----------------------------------------------------
 	draw_bg(screen, gradient_dict, color_n_BG[0], color_n_BG[1])#this just draws the color
 	#camera.draw(screen)#for camera debugging
 	if world.x_scroll_en:
 		camera.auto_correct(player0.rect, world.coords, world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
 	
-	world_tile0_coord = world.draw(screen, scroll_x, 0)#this draws the world and scrolls it 
+	world_tile0_coord = world.draw(screen, scroll_x, scroll_y)#this draws the world and scrolls it 
 	
 	
 	if not pause_game:
 		player0.animate(the_sprite_group)
 		player0.do_entity_collisions(the_sprite_group, obj_list, level_transitioning)
-		player0.move(pause_game, move_L, move_R, world.solids, world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
+		if not dialogue_enable: 
+			player0.move(pause_game, move_L, move_R, world.solids, world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
 					SCREEN_WIDTH, SCREEN_HEIGHT, obj_list, the_sprite_group)
 		scroll_x = player0.scrollx + camera.scrollx
 	else:
 		scroll_x = 0
 
-	the_sprite_group.update_groups_behind_player(pause_game, screen, player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, player0.direction, obj_list)
+	#dialogue trigger sent here
+	the_sprite_group.update_groups_behind_player(pause_game, screen, player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, player0.direction, obj_list, 
+                                              dialogue_enable, next_dialogue, font_larger)
 	player0.draw(screen)
 	the_sprite_group.update_groups_infront_player(pause_game, screen, scroll_x, world.solids, player0.hitbox_rect, player0.atk_rect_scaled, player0.action)
    
 	status_bars.draw(screen, player0.get_status_bars(), font)
+ 
+	#--------------------------------------------------------------------handling drawing text boxes------------------------------------------------------------------
+	#textboxes have a maximum of 240 characters
+	
+	if the_sprite_group.textbox_output[0] != '' and the_sprite_group.textbox_output[1] and the_sprite_group.textbox_output[2]:
+		#print(the_sprite_group.textbox_output)
+		#the_sprite_group.textbox_output = (name, player_collision, dialogue_enable, message, expression, self.character_index_dict[self.name])
+		dialogue_box0.draw_text_box(the_sprite_group.textbox_output[3], font_larger, screen, the_sprite_group.textbox_output[0], 
+                              		the_sprite_group.textbox_output[4], the_sprite_group.textbox_output[5], text_speed)
+
+		 
+	
  
 	#---------------------------------------screen shake------------------------------------------------------------------------
 	if player0.do_screenshake:
 		player0.do_screenshake = False
 		if not do_screenshake_master:
 			do_screenshake_master = True
-			screenshake_profile = (10,4)
+			screenshake_profile = (16, 4, 2) #intensity x, intensity y, cycle count
 
 	for p_int in obj_list[1]:
 		if p_int.do_screenshake:
 			p_int.do_screenshake = False
 			if not do_screenshake_master:
 				do_screenshake_master = True
-				screenshake_profile = (8,6)
-   
+				screenshake_profile = (8, 8, 3)
+
+	for enemy in obj_list[0]:
+		if enemy.do_screenshake:
+			enemy.do_screenshake = False
+			if not do_screenshake_master:
+				do_screenshake_master = True
+				if player0.sprint:
+					screenshake_profile = (10, 3, 2)
+				else:
+					screenshake_profile = (6, 2, 2)
+
 	if do_screenshake_master:
-		tuple = camera.horizonatal_screen_shake(screenshake_profile, do_screenshake_master)
-		do_screenshake_master = tuple[0]
-		scroll_x += tuple[1]
-		player0.rect.x += tuple[2]
+		ss_output = camera.screen_shake(screenshake_profile, do_screenshake_master)
+		do_screenshake_master = ss_output[0]
+		player0.rect.x += ss_output[1][0]
+		scroll_x += ss_output[1][1]
+		player0.vel_y += ss_output[1][2]
+		scroll_y = -ss_output[1][3]
   
-	# for enemy in obj_list[0]:
-	# 	if enemy.do_screenshake:
-	# 		tuple = camera.horizonatal_screen_shake(12, 3, player0.rect, enemy.do_screenshake)
-	# 		enemy.do_screenshake = tuple[0]
-	# 		scroll_x += tuple[1]
  
 	#----------black screen while transitioning---------------------------------------------------------
 	if level_transitioning:
@@ -384,44 +413,27 @@ while run:
 		draw_bg(screen, gradient_dict, color_n_BG[0], color_n_BG[1])
 		pause_game = False
 		exit_to_title = False
-		tuple = ui_manager0.show_main_menu(screen)
-		run = tuple[1]
-		next_level = tuple[0]
+
+		#plot index list's csv is read within ui_manager
+		output = ui_manager0.show_main_menu(screen)
+  
+		world.set_plot_index_list(plot_index_list = output[2])
+		run = output[1]
+		next_level = output[0]
+  
 		if not run:
 			pygame.time.wait(100)   
-	
-	#--------------------------------------showing controls----------------------------
-	#depreciated, still a useful example for typing out though
-	if show_controls_en:
-		text = (
-            '',
-            '	-MOVEMENT AND ATTACKING-',
-            'W: Jump',
-            'A: Left',
-            'D: Right',
-            'S: Roll',
-            'ALT: Sprint Enable',
-            'I: Melee, I + S: Dash Strike,',
-            'I + upwards momentum: Upstrike, I + Downwards momentum: Downstrike',
-            'O: Projectile, HOLD O: Charge Projectile',
-            '',
-            '	-UI RELATED-',
-            'Enter: Inspect/ Confirm/ New Game from Title',
-            'ESC: Exit to Title/ Quit Game from Title - DOES NOT PAUSE GAME',
-            'F: Toggle Fullscreen',
-            'C: Show Controls - DOES NOT PAUSE GAME'
-		)
-		text_box_on = text_manager0.disp_text_box(screen, font_larger, text, black, white, (0,0,SCREEN_WIDTH,SCREEN_HEIGHT), 
-                                            type_out, type_out_en, 'none')
-		text_speed = 120
+
  
 	#-------------------------------------------------pausing game--------------------------------------------------------
 	if pause_game:
+		#this code draws the actual pause menu
+		#need another conditional for pressing esc while in a cut scene
 		ui_tuple0 = ui_manager0.show_pause_menu(screen)
 		pause_game = ui_tuple0[0]
 		if ui_tuple0[1]:
 			next_level = 0
-			player0 = player(32, 128, 4, hp, 6, 0, 0, vol_lvl)
+			player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl)
 			player_new_x = 32
 			player_new_y = 32
    
@@ -434,6 +446,7 @@ while run:
     #objects already instantiated have their volumes updated here
     #new objects take vol_lvl as their ini_vol parameter so their volumes match the setting upon instantiation
 		vol_lvl = read_settings_data('vol_data')
+		dialogue_box0.m_player.set_vol_all_sounds(vol_lvl)
 		m_player.set_vol_all_sounds(vol_lvl)
 		the_sprite_group.update_vol_lvl(vol_lvl)
 		player0.m_player.set_vol_all_sounds(vol_lvl)
@@ -446,16 +459,10 @@ while run:
     
 	if player0.hits_tanked >= player0.hp:#killing the player------------------------------------------------
 		player0.Alive = False
-		# text = (
-		# 	'',
-		# 	'		You Died.',
-		# 	'(ESC to Restart)'
-		# )
-		# text_box_on = text_manager0.disp_text_box(screen, font_larger, text, black, white, (0, SCREEN_HEIGHT//2 -24, SCREEN_WIDTH, 72), 
-        #                                    False, type_out_en, 'centered')
+
 		if ui_manager0.show_death_menu(screen):
 			next_level = 0
-			player0 = player(32, 128, 4, hp, 6, 0, 0, vol_lvl)
+			player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl)
 			player_new_x = 32
 			player_new_y = 32
    
@@ -463,7 +470,7 @@ while run:
 		temp_list = []
 		for i in range(8):
 			temp_list.append(random.randint(90,120))
-		ui_manager0.write_settings_data('ctrls_data',  temp_list)
+		ui_manager0.write_csv_data('ctrls_data',  temp_list)
 		ctrls_list = read_settings_data('ctrls_data')
 		temp_list *= 0
 		player0.brain_damage = False
@@ -471,11 +478,20 @@ while run:
 	#============================================================update player action for animation=======================================================
 	#this is remnant code from following Coding with Russ' tutorial, I wasn't sure how to integrate this into playerFile.py
 	#when I was separating the files (he wrote his whole tutorial game in virtually one single file)
+ 
+	#takes change_once, move_L, move_R, hold_roll 
+	# if dialogue_enable:
+	# 	move_L = False
+	# 	move_R = False
+	# 	player0.rolled_into_wall = True
+
+ 
 	if player0.Alive:
-		
+		dialogue_trigger_ready = player0.dialogue_trigger_ready
 		if (player0.hurting):
 			player0.update_action(5) #hurting
 		else:
+		
 			if player0.shoot:
 				player0.update_action(11)
 
@@ -496,7 +512,7 @@ while run:
 				if player0.crit:
 					player0.update_action(10)
 				else:
-					if player0.atk1_alternate == True:# and player0.in_air == False:
+					if player0.atk1_alternate:# and player0.in_air == False:
 						player0.update_action(7)	
 					else:
 						player0.update_action(8)#8: atk1
@@ -504,13 +520,11 @@ while run:
 					# else:
 					# 	player0.update_action(8)#8: atk1
 			else:
-					#hold_jump = False
-				if player0.in_air:
+				if player0.in_air or player0.squat_done:
 					player0.update_action(2)#2: jump
-					#hold_jump = False
-					
+
 				elif (player0.in_air == False and player0.vel_y >= 0 and player0.landing == True
-          			):
+					):
 					player0.update_action(3)#3: land
 					
 				elif player0.squat: 
@@ -523,7 +537,9 @@ while run:
 	else:
 		player0.update_action(6) #dead
 		player0.scrollx = 0
-  
+	
+ 
+	#print(the_sprite_group.textbox_output)
 	#---------------------------------------------------------------------------------------------------------------------------------------------
 	#-------------------------------------------------------KBD inputs----------------------------------------------------------------------------
 	#---------------------------------------------------------------------------------------------------------------------------------------------
@@ -536,36 +552,30 @@ while run:
 		if(event.type == pygame.KEYDOWN):
 			#print(pygame.key.name(event.key))
    
-			if player0.Alive and color_n_BG[2] and not pause_game:
+			if player0.Alive and color_n_BG[2] and not pause_game and not dialogue_enable:
 				if event.key == ctrls_list[1]: #pygame.K_a
 					move_L = True
 				if event.key == ctrls_list[3]: #pygame.K_d
 					move_R = True
-				if event.key == ctrls_list[0] and event.key == ctrls_list[4] and player0.stamina_used + 1 <= player0.stamina: #pygame.K_w, pygame.K_i
-					#player0.squat = True
-					#player0.squat_done = True
-					player0.atk1_alternate = False
-					player0.atk1 = True
+
 				elif event.key == ctrls_list[0]: #pygame.K_w 
+					hold_jmp_update = pygame.time.get_ticks()
 					player0.landing = False
-					if hold_jump == False:
-						hold_jump = True
-						hold_jmp_update = pygame.time.get_ticks()
-					
-					# if pygame.time.get_ticks() - hold_jmp_time > hold_jmp_update:
-					# 	hold_jmp_update = pygame.time.get_ticks()
-					# 	player0.jump = False
-					# else:
-					# 	player0.jump = True
+
+					if not player0.in_air:
+						player0.squat_done = True
+					elif pygame.time.get_ticks() - hold_jump_time > hold_jump_update and player0.vel_y > 0:
+						#print(pygame.time.get_ticks())
+						player0.squat = True 
+
 					if player0.rolling and player0.in_air == False:
 						player0.roll_count = player0.roll_limit
 						player0.squat = True
-						#print("jump")
-     
+
 				if event.key == ctrls_list[4] and player0.stamina_used + 1 <= player0.stamina and event.key != ctrls_list[0]: #pygame.K_i, pygame.K_w
 					change_once = True
 					player0.atk1 = True
-					hold_jump = False
+					#player0.squat = False
 				elif event.key == ctrls_list[4] and player0.stamina_used + 1 > player0.stamina: #pygame.K_i
 					status_bars.warning = True
 				
@@ -576,6 +586,7 @@ while run:
      
 
 				if event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate <= player0.stamina: #pygame.K_s
+					player0.squat = False
 					if hold_roll == False:
 						hold_roll = True
 						#hold_roll_update = pygame.time.get_ticks()
@@ -586,6 +597,11 @@ while run:
 				if event.key == ctrls_list[7]: #pygame.K_RALT
 					player0.speed = normal_speed + 1
 					player0.sprint = True
+
+				#debugging flight button
+				#if you fly over the camera object the level breaks
+				if event.key == pygame.K_0:
+					player0.squat_done = True
 
 			#===============================================================UI Related Keys=============================================================
 
@@ -598,23 +614,27 @@ while run:
 				#run = False
 				if level != 0:
 					ui_manager0.trigger_once = True
-					if pause_game or not player0.Alive:
+					if (pause_game or not player0.Alive) and not dialogue_enable:
 						next_level = 0
-						player0 = player(32, 128, 4, hp, 6, 0, 0, vol_lvl)
+						player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl)
 						player_new_x = 32
 						player_new_y = 32
 						#m_player.stop_sound()
+						dialogue_box0.reset_internals()
 						pygame.mixer.stop()
-						
-					else:
+						m_player.play_sound(m_player.sfx[1])
+
+					elif not dialogue_enable:
 						#print("game is paused")
 						pause_game = True
 						pygame.mixer.pause()
-      
-					m_player.play_sound(m_player.sfx[1])
+						m_player.play_sound(m_player.sfx[1])
+					else:
+						dialogue_enable = False
+						
 				else:
 					run = False
-				
+			
     
 			if event.key == pygame.K_RETURN:
 				if pause_game and not ui_manager0.options_menu_enable:
@@ -622,15 +642,23 @@ while run:
 					pause_game = False
 					pygame.mixer.unpause()
 				
-				if level == 0 and not show_controls_en:
+				if dialogue_trigger_ready:
+					dialogue_enable = True
+				if dialogue_enable:
+					if dialogue_box0.str_list_rebuilt != dialogue_box0.current_str_list:
+						text_speed = 0
+						m_player.play_sound(m_player.sfx[1])
+					else:
+						text_speed = 80
+						next_dialogue = True
+						dialogue_box0.type_out = True
+				
+				if level == 0:
 					m_player.play_sound(m_player.sfx[1])
 					ui_manager0.trigger_once = True
 					next_level = 1
-				if (text_manager0.str_list_rebuilt != text_manager0.current_str_list):
-					if type_out:
-						m_player.play_sound(m_player.sfx[1])
-					type_out = False #kill type_out signal while it's typing
-				#else load next dialogue bubble
+				
+				# #else load next dialogue bubble
 					#print(type_out)
 
 			# #temp bg adjustment
@@ -664,12 +692,12 @@ while run:
 			if event.key == ctrls_list[3]:#pygame.K_d
 				move_R = False
 
-			if event.key == ctrls_list[0] and player0.squat == False and player0.vel_y <= 1:#variable height jumping
-				if player0.action == 7:
-					player0.vel_y *= 0.3
-				else:
-					player0.vel_y *= 0.45 #rate at which jump vel decreases
-				hold_jump = False
+			if event.key == ctrls_list[0]:#variable height jumping
+				if player0.vel_y <= -1:
+					player0.vel_y *= 0.3 #rate at which jump vel decreases
+				player0.squat = False
+				player0.squat_done = False
+
 					
 			if event.key == ctrls_list[4]:#pygame.K_i
 				status_bars.warning = False
@@ -690,53 +718,16 @@ while run:
 			# 	player0.sprint = False
 			if event.key == pygame.K_c:
 				show_controls_en = False
+			if event.key == pygame.K_RETURN:
+				next_dialogue = False
 		
-		if hold_jump:
-			if pygame.time.get_ticks() - hold_jmp_time > hold_jmp_update:
-				hold_jmp_update = pygame.time.get_ticks()
-				hold_jump = False
-				if player0.in_air == False:
-					player0.squat_done = True
-				# else:
-				# 	player0.squat_done = False
-				#print("fin")
-			elif player0.in_air == False and player0.landing == False:
-				player0.squat = True
-				hold_jump = False
-			else:
-				hold_jump = True
 
 		if hold_roll: #and (not player0.atk1 or player0.action <= 2):
 			if  player0.stamina_used + player0.roll_stam_rate <= player0.stamina:
 				player0.rolling = True
 				hold_roll = False
 				
-    
-			# if pygame.time.get_ticks() - hold_roll_time > hold_roll_update:
-			# 	hold_roll_update = pygame.time.get_ticks()
-			# 	hold_roll = False
-			# else:
-			# 	hold_roll = True
-
-				
 				#print("holding")
-		
-	#clock for textbox 
-	if text_box_on and type_out and (text_manager0.str_list_rebuilt != text_manager0.current_str_list):
-		if pygame.time.get_ticks() - text_delay > text_speed:
-			text_delay = pygame.time.get_ticks()
-			#print(text_delay)
-			
-			type_out_en = True
-		else:
-			type_out_en = False
-   
-	elif not type_out:#reset type_out signal
-		text_manager0.str_list_rebuilt = text_manager0.current_str_list
-		type_out = True
-	
-	# if pygame.time.get_ticks()%150 == 0:
-	# 	print(type_out)
 
 	pygame.display.update()
 

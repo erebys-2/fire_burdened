@@ -71,7 +71,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         elif type == 'shooter':   
             self.animation_types = ['idle', 'move', 'hurt', 'die', 'shoot', 'jump'] 
             self.hp = 10
-            self.recoil = 46
+            self.recoil = 32
             self.recoil_slow = 2
             
         for animation in self.animation_types:
@@ -111,6 +111,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                 if (p_int.rect.colliderect(self.rect.x+2, self.rect.y + dy, self.width-4, self.height) and self.action != 2):
                     if self.rect.bottom >= p_int.rect.top and self.rect.bottom <= p_int.rect.y + 32:
                         self.in_air = False
+                        self.vel_y = 0.5
                         self.on_ground = True
                         dy = p_int.vel_y
                         dx += p_int.vel_x
@@ -119,6 +120,9 @@ class enemy_32wide(pygame.sprite.Sprite):
                         self.speed_boost = 0.2
                     elif self.rect.top <= p_int.rect.bottom and self.rect.top >= p_int.rect.y + 32 and p_int.vel_y >= 0:
                         dy = p_int.vel_y
+                        self.vel_y = 0.5
+                    else:
+                        self.in_air = True
 
                 if (p_int.rect.colliderect(self.rect.x + dx, self.rect.y+2, self.width, self.height-2)):
                     if self.rect.x > p_int.rect.x and self.rect.right < p_int.rect.right:
@@ -163,7 +167,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                     if self.direction < 0:
                         self.atk_rect = pygame.Rect(self.rect.x, self.rect.y, self.width//2, self.height)
                     else:
-                        self.atk_rect = pygame.Rect(self.rect.x + self.width//2, self.rect.y, self.width//2, self.height)
+                        self.atk_rect = pygame.Rect(self.rect.x + self.width//2, self.rect.y, self.width//2, self.height - 16)
                     self.atk_rect_scaled = self.atk_rect.scale_by(0.8)
                 else:
                     self.atk1_kill_hitbox()
@@ -306,11 +310,11 @@ class enemy_32wide(pygame.sprite.Sprite):
             x_avg = (self.rect.x + player_atk_rect.right)/2
             y_avg = (self.rect.y + player_atk_rect.bottom)/2
             
-            particle = particle_(x_avg - 16*self.direction, y_avg, -self.direction, self.scale, 'player_impact', True, self.rando_frame, False)
+            particle = particle_(x_avg - 16*self.direction, y_avg, -self.direction, self.scale*1.05, 'player_impact', True, self.rando_frame, False)
             sp_group_list[5].add(particle)
             i = 0
-            for i in range(2):
-                particle2 = particle_(x_avg+random.randrange(-32,32), y_avg+random.randrange(-32,32), -self.direction, 0.3*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
+            for i in range(3):
+                particle2 = particle_(x_avg+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.3*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
                 sp_group_list[5].add(particle2)
                 i+=1
             self.m_player.play_sound(self.m_player.sfx[1])
@@ -320,6 +324,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             else:
                 self.rando_frame = 0
             
+            self.do_screenshake = True
             self.inundated = True
             dx = -self.direction * self.recoil
             if player_action ==  10 or player_action == 9:
@@ -564,7 +569,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                 self.m_player.play_sound(self.m_player.sfx[2])
                 self.hits_tanked += self.dmg_multiplier
                 self.dmg_multiplier = 0
-                self.do_screenshake = True
+                
                 if self.enemy_type == 'dog':
                     self.vel_y = -7
                     self.in_air = True

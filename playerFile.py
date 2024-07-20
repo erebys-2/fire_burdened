@@ -7,8 +7,6 @@ import math
 import random
 #print('directory: ' + os.getcwd())
 
-#GRAVITY = 0.75
-
 class player(pygame.sprite.Sprite):
     #constructors
     def __init__(self, x, y, speed, hp, stamina, hits_tanked, stamina_used, ini_vol):
@@ -99,6 +97,8 @@ class player(pygame.sprite.Sprite):
         self.BP_update_time = pygame.time.get_ticks()
         
         self.angle = 0
+        
+        self.dialogue_trigger_ready = False
 
         #fill animation frames
         animation_types = ['idle', 'run', 'jump', 'land', 'squat', 'hurt', 
@@ -252,9 +252,15 @@ class player(pygame.sprite.Sprite):
             self.atk_rect_scaled  = self.atk_rect.scale_by(1)
             if (pygame.time.get_ticks() - self.particle_update > 105) and self.frame_index  < 3:
                 self.particle_update = pygame.time.get_ticks()
-                particle = particle_(self.rect.x, self.rect.y, -self.direction, self.scale, 'player_crit', True, self.frame_index, False)
+                particle = particle_(self.rect.centerx, self.rect.centery, -self.direction, self.scale, 'player_crit', True, self.frame_index, False)
                 the_sprite_group.particle_group.add(particle)
-              
+                i = 0
+                for i in range(5):
+                    particle2 = particle_(self.rect.centerx + random.randrange(-48,48), self.rect.centery + random.randrange(-48,48), -self.direction, 0.3*self.scale, 
+                                          'player_bullet_explosion', True, random.randrange(0,3), False)
+                    the_sprite_group.particle_group.add(particle2)
+                    i+= 1
+
                 
     def atk1_grinding(self, rect, the_sprite_group):
         disp = 0
@@ -311,12 +317,14 @@ class player(pygame.sprite.Sprite):
                 if (p_int.rect.colliderect(self.collision_rect.x+2, self.collision_rect.y + dy, self.width-4, self.height)):
                     if self.collision_rect.bottom >= p_int.rect.top and self.collision_rect.bottom <= p_int.rect.y + 32:
                         in_air = False
+                        self.vel_y = 0.5
                         dy = p_int.vel_y
                         dx += p_int.vel_x
                         if self.collision_rect.bottom != p_int.rect.top:
                             dy -= self.collision_rect.bottom- p_int.rect.top
                     elif self.collision_rect.top <= p_int.rect.bottom and self.collision_rect.top >= p_int.rect.y + 32 and p_int.vel_y >= 0:
                         dy = p_int.vel_y
+                        self.vel_y = 0.5
                     else:
                         in_air = True
 
@@ -343,15 +351,23 @@ class player(pygame.sprite.Sprite):
                         self.hits_tanked = self.hp
                     else:
                         self.hits_tanked += rate
+                        
+            for obj in obj_list[2]:
+                if self.collision_rect.colliderect(obj.rect):
+                    self.dialogue_trigger_ready = True
+                else:
+                    self.dialogue_trigger_ready = False
                 
-        return (dx,dy, in_air)
+        return (dx, dy, in_air)
             
     def do_tile_collisions(self, world_solids, the_sprite_group, dx, dy, obj_list):
         
         dxdy = self.do_obj_list_collisions(obj_list, dx, dy, the_sprite_group)
+        
         dx = dxdy[0]
-        dy = dxdy[1]
+        dy = dxdy[1] 
         self.in_air = dxdy[2]
+        
         
         #size adjust for displaced rects
         if self.direction < 0:
@@ -501,7 +517,8 @@ class player(pygame.sprite.Sprite):
             if self.atk_done == True:
                 self.atk1 = False
                 self.atk_done = False
-            self.squat_done = False
+            if self.action == 10:
+                self.squat_done = False
             
         elif self.action == 9:
             self.squat_done = False
@@ -516,25 +533,7 @@ class player(pygame.sprite.Sprite):
         #     dx = 0
 
 
-        #jump
-        if (self.jump == True and self.in_air == False) or self.squat_done == True:
-            #START THE SQUAT
-            if self.squat_done == False:
-                self.squat = True
-            elif self.squat_done == True:
-                
-                self.squat_done = False
-                self.vel_y = -9.5
-                self.in_air = True
-                
-        elif self.in_air and not (moveL or moveR or self.action == 5):
-            if self.action != 8 or self.action != 10:
-                self.landing = True
-            else:
-                self.landing = False
-        
-        #land
-        self.update_landing(the_sprite_group)
+
 
 		#rolling 
         if self.rolling == True:
@@ -561,7 +560,11 @@ class player(pygame.sprite.Sprite):
         
         if self.atk1:#adjusting speed to simulate momentum, motion stuff
             #if not break atk1
-            if not (((moveL and self.direction == 1) or (moveR and self.direction == -1)) and self.frame_index > 2) and not (self.rolling and self.frame_index > 0): #not (self.rolling) and 
+            if (not (((moveL and self.direction == 1) or (moveR and self.direction == -1)) and self.frame_index > 2) 
+                and not (self.rolling and self.frame_index > 0) 
+                and not (self.squat_done and self.frame_index > 2)
+                ): #not (self.rolling) and 
+                
                 if (self.frame_index == 0 and self.rolled_into_wall == False):#fast initial impulse
                     # if pygame.time.get_ticks() < self.update_time + 20:
                     #     self.m_player.play_sound(self.m_player.sfx[1])
@@ -576,10 +579,11 @@ class player(pygame.sprite.Sprite):
                             multiplier = 1
                         dx = self.direction *multiplier *(self.speed) 
                         if self.action == 7:
-                            self.vel_y -= 0.4
+                            self.vel_y -= 0.6
+                            #print(self.vel_y)
                             
                         elif self.action == 8 and self.vel_y + 5 <= 26 and self.vel_y > 0 and self.in_air: #25 max 
-                            self.vel_y += 5
+                            self.vel_y += 7
                     #self.screen_shake() #does not work
                 elif self.frame_index > 1 :# slow forward speed
                     if self.crit:
@@ -600,6 +604,26 @@ class player(pygame.sprite.Sprite):
                 #self.atk_done = True
                     
         #==========================================================================================================================================
+        
+        #jump
+        if (self.jump == True and self.in_air == False) or self.squat_done == True:
+            if self.squat_done == False:
+                self.squat = True
+            elif self.squat_done == True and not(self.atk1):
+                
+                self.squat_done = False
+                self.vel_y = -9.5
+                self.in_air = True
+                
+        elif self.in_air and not (moveL or moveR or self.action == 5):
+            if self.action != 8 or self.action != 10:
+                self.landing = True
+            else:
+                self.landing = False
+        
+        #land
+        self.update_landing(the_sprite_group)
+        
         #shooting
         if self.action == 11:
             if self.frame_index == 3:
@@ -628,9 +652,10 @@ class player(pygame.sprite.Sprite):
             #     dx = -self.direction * 2
 
         #gravity
+        
         if self.gravity_on:
             if self.vel_y <= 25:#25 = terminal velocity
-                self.vel_y += 0.5
+                self.vel_y += 0.6
             if self.shoot and self.frame_index == 2:
                 self.vel_y *= 0.8
             dy = self.vel_y
@@ -732,7 +757,7 @@ class player(pygame.sprite.Sprite):
             elif self.rolling and self.stamina_used + self.roll_stam_rate <= self.stamina:
                 unit = self.roll_stam_rate
             else:
-                unit = -0.18
+                unit = -0.22
             # if self.action >= 7 and self.frame_index <= 1:
             #     unit = 0
             # else:
@@ -796,12 +821,13 @@ class player(pygame.sprite.Sprite):
     
     def animate(self, the_sprite_group):
         self.mask = pygame.mask.from_surface(self.image)
-        framerates = (#action: frame_update
+        
+        framerates = (
             200, #idle
             160, #run
             145, #jump
             80, #land
-            15, #squat
+            20, #squat
             50, #take damage
             145, #die
             105, #upstrike
@@ -940,7 +966,7 @@ class player(pygame.sprite.Sprite):
         if self.atk_show_sprite:
             p_screen.blit(pygame.transform.flip(self.image3, self.flip, False), self.atk_rect)
         
-        
+    
     
     def update_action(self, new_action):
         #check if action has changed
@@ -952,7 +978,7 @@ class player(pygame.sprite.Sprite):
             elif self.action != 9 and (new_action == 7 or new_action == 8):
                 self.crit == False
                 self.m_player.play_sound(self.m_player.sfx[1])
-                
+
             self.last_action = self.action
             self.action = new_action
             self.disp_flag = self.disp_states[self.action]

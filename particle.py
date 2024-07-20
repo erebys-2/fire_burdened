@@ -27,6 +27,7 @@ class particle_(pygame.sprite.Sprite):
         #self.action = 0
         self.bound = bound
         self.direction = direction
+        self.sprite_centered = ('player_bullet_explosion', 'enemy_bullet_explosion', 'player_impact', 'player_mvmt', 'player_crit' )
         
         self.frame_sync = frame_sync
         self.forced_frame = frame
@@ -53,9 +54,7 @@ class particle_(pygame.sprite.Sprite):
              self.particle_type == 'fountain'):
             self.is_bg = True
         
-        if (self.particle_type == 'player_bullet_explosion' or self.particle_type == 'enemy_bullet_explosion' 
-            or self.particle_type == 'player_impact' or self.particle_type == 'player_mvmt'
-            ):
+        if any(self.particle_type == particle for particle in self.sprite_centered):
             self.rect.center = (x,y)
         else:
             self.rect.topleft = (x,y)

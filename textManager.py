@@ -1,4 +1,5 @@
 import pygame
+import os
 from music_player import music_player #type: ignore
 #methods regarding text boxes live here
 
@@ -15,19 +16,32 @@ class text_manager():
         self.str_list_rebuilt = []
         self.disp_text_box_quit = False
         
-        # self.m_player_sfx_list = ['roblox_oof.wav', 'hat.wav']
-        # self.m_player = music_player(self.m_player_sfx_list)
         self.finished_typing = False
+        
+        self.text_delay = pygame.time.get_ticks()
+        self.type_out_en = True
+        self.type_out = True
         
     #reset internal variables
     def reset_internals(self):
         self.combined_str = ' '
+        self.current_str_list = []
+        self.run_once = False
 
         self.word_split_indice = [0]
         self.empty_str = ''
         self.internal_index = 0
-
+        
         self.str_list_rebuilt = []
+        self.disp_text_box_quit = False
+        
+        # self.m_player_sfx_list = ['roblox_oof.wav', 'hat.wav']
+        # self.m_player = music_player(self.m_player_sfx_list)
+        self.finished_typing = False
+        
+        self.text_delay = pygame.time.get_ticks()
+        self.type_out_en = True
+        self.type_out = True
         
         
     #create combined string from string list
@@ -121,9 +135,71 @@ class text_manager():
             dy += 17
 
         return True
+    
+    
+    
 
-    
-    
+
+
+
+class dialogue_box(text_manager):
+    def __init__(self, ini_vol):
+        super().__init__()
+        self.obj_directory_names  = ('Test', 'Test2')
+        self.img_master_list = []
+        
+        self.m_player_sfx_list = ['hat.wav']
+        self.m_player = music_player(self.m_player_sfx_list, ini_vol)
+        
+        
+        obj_count = len(os.listdir(f'sprites/npc_expressions'))
+        for i in range(obj_count):
+            img_count = len(os.listdir(f'sprites/npc_expressions/{self.obj_directory_names[i]}'))
+
+            temp_list = []
+            for j in range(img_count):
+                img = pygame.image.load(f'sprites/npc_expressions/{self.obj_directory_names[i]}/{j}.png').convert_alpha()
+                img = pygame.transform.scale(img, (int(img.get_width() * 1), int(img.get_height() * 1)))
+                temp_list.append(img)
+                
+            self.img_master_list.append(temp_list)
+            
+        self.dialogue_box_rect = (0, 360, 640, 120)
+        self.character_art_rect = (0, 0, 640, 480)
+        self.counter = 0
+        
+    def draw_text_box(self, name, font, screen, message, image_index, name_index, text_speed):
+        img = self.img_master_list[name_index][image_index]
+        screen.blit(pygame.transform.flip(img, False, False), self.character_art_rect)
+        
+        pygame.draw.rect(screen, (0,0,0), self.dialogue_box_rect)#can make a custom dialogue window later
+        
+        self.disp_text_box(screen, font, (name + ':', ' '), (-1,-1,-1),  (200,200,200), (16, 372, 112, 120), False, False, 'none')
+        self.disp_text_box(screen, font, ('Next:(enter)     Exit:(esc)', ''), (-1,-1,-1),  (80,80,80), (420, 456, 32, 32), False, False, 'none')
+        self.disp_text_box(screen, font, list(message), (-1,-1,-1),  (200,200,200), (128, 372, 640, 120), self.type_out, self.type_out_en, 'none')
+        self.type_out_handler(self.type_out, text_speed)
+        
+        
+    def type_out_handler(self, type_out, text_speed):
+        
+        if type_out and ((self.str_list_rebuilt) != self.current_str_list):
+            if pygame.time.get_ticks() - self.text_delay > text_speed:
+                self.text_delay = pygame.time.get_ticks()
+                self.type_out_en = True
+                
+                
+                if text_speed > 0 and (self.counter%2 == 0):
+                    self.m_player.play_sound(self.m_player.sfx[0])
+                self.counter += 1
+            else:
+                self.type_out_en = False
+                
+            # print(self.str_list_rebuilt)
+            # print(self.current_str_list)
+        else:
+            self.counter = 0
+            self.type_out = False
+        
 # # #comment out later
 # #----------------------variables for testing
 # str_list = [

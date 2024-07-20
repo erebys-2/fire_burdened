@@ -86,10 +86,7 @@ class bullet_(pygame.sprite.Sprite):
                     self.direction = -self.direction
                     self.deflected = True
                     self.speed += 16
-                    if self.flip:
-                        self.flip = False
-                    else:
-                        self.flip = True
+                    self.flip = not self.flip
                 
             
         #tile collisions

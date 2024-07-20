@@ -14,7 +14,7 @@ class csv_extracter():
     #reads csv file and fills a list with entries as strings    
     def read_npc_data(self, data_name):
         temp_list = []
-        with open(f'{data_name}.csv', newline= '') as csvfile:
+        with open(f'npc_dialogue_files/{data_name}.csv', newline= '') as csvfile:
             reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
             for row in reader:
                 for entry in row:
@@ -32,14 +32,15 @@ class csv_extracter():
         
         #split strings into lists of strings and ints by the divider '#'
         for string in str_list:
-            break_index = 0
-            for char in string:
-                if char == '#':
-                    break
-                break_index+= 1
-            
-            list = [string[0:break_index],int(string[break_index+1:len(string)])]
-            temp_list.append(list)
+            if string != '':
+                
+                break_index = self.get_break_index('#', string)
+                list = [string[0:break_index], string[break_index+1:len(string)]]
+                
+                break_index2 = self.get_break_index('#', list[1])    
+                list2 = [list[0], int(list[1][0:break_index2]), int(list[1][break_index2+1:len(list[1])])]
+                
+                temp_list.append(list2)
             
         #split list of lists by boundary ints -1 and -2
         for list in temp_list:
@@ -63,6 +64,15 @@ class csv_extracter():
         destination_list.pop(0)
         return destination_list
     
+    def get_break_index(self, special_char, string):
+        break_index = 0
+        for char in string:
+            if char == special_char:
+                break
+            break_index+= 1
+        
+        return break_index
+    
     #formats the string in the list of lists into a string list that is compatible with textManager's methods 
     #will split a large string into segments as long as the provided length of the text box (in units of chars)
     #words have '-' added if split in the middle
@@ -79,11 +89,9 @@ class csv_extracter():
                     string_to_append = string[0+self.cut_off_length*(i):self.cut_off_length*(i+1)]
                     
                     #check against list of sentence splitting chars to add '-' when a word is split
-                    score = 0
-                    for char in self.endcase_char:
-                        if string[self.cut_off_length*(i+1)-1] != char and self.cut_off_length*(i+1) != len(string) and string[self.cut_off_length*(i+1)] != char:
-                            score += 1
-                    if score >= len(self.endcase_char):
+                    if (self.cut_off_length*(i+1) != len(string) and 
+                        all(string[self.cut_off_length*(i+1)-1] != char and string[self.cut_off_length*(i+1)] != char for char in self.endcase_char)
+                        ):
                         string_to_append = string_to_append + '-'
                         
                     str_list.append(string_to_append)
@@ -93,8 +101,8 @@ class csv_extracter():
                     str_list.append(string[self.cut_off_length*(i+1):len(string)])
             else:
                 str_list.append(string[0:len(string)])
-                str_list.append(' ')
-            destination_list.append((tuple(str_list),item[1]))
+            str_list.append('')
+            destination_list.append((tuple(str_list),item[1],item[2]))
             
         return destination_list
         
@@ -117,13 +125,16 @@ class csv_extracter():
                     
 #there will be a single universal plot index csv where the first column is character names, and the second column is the index
 #each character will take in their index as an plot index then process it through a method called in the npcFile's constructor
-#that takes initial index and current level and npc name to determine the current index
+#that takes plot index and current level and npc name to determine the current index
 
 #plot index will have nothing to do with actual dialogue index
 
 #universal plot index csv will be updated if the player passes through a key dialogue box
 
 #on new game, the second column will be reset to all 0's
+
+#Player choices will also be handled through the npc file as well, (each npc will have to be passed the player dialogue list as a consequence)
+#NPC dialogue will be displayed ontop the screen, player reponses in the bottom
     
     
 # csv_ex0 = csv_extracter(120)

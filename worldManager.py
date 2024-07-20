@@ -6,6 +6,8 @@ from particle import particle_ #type: ignore
 from player_interactable import player_interactable_
 from dialogueCSVformatter import csv_extracter
 
+from npcFile import npc, Test
+
 class World():
     def __init__(self):
         self.coords = []
@@ -35,11 +37,11 @@ class World():
         self.t_set_index = 0
         tile_set_types = ['standard', 'bg_oversized']
         
-        
         self.enemy_list = []
         self.obstacle_list = []
+        self.textprompt_list = []
         self.bullet_list = []
-        self.obj_list = [self.enemy_list, self.obstacle_list]
+        self.obj_list = [self.enemy_list, self.obstacle_list, self.textprompt_list]
         
         #self.horiz_scrolling = False
         #self.vert_scrolling = False
@@ -57,7 +59,8 @@ class World():
             45,
             46,
             47,
-            48
+            48,
+            49
         )
 
         for tile_set in tile_set_types:
@@ -69,7 +72,36 @@ class World():
                 temp_list.append(tile_img)
             self.tileList.append(temp_list)
             
-        self.CSV_f0 = csv_extracter(120)
+        self.csv_f0 = csv_extracter(60)
+        #self.full_dialogue_list = self.csv_f0.get_all_npc_data('dialogue_data')
+        
+        # print(self.csv_f0.get_specific_npc_data('Test', full_dialogue_list))
+        # print(self.csv_f0.get_specific_npc_data('Test2', full_dialogue_list))
+        
+        #plot index list will be a dynamic list under world for convenience since NPCs that access/modify it will be instantiated under world
+        #it will be initially set when the main menu code is executed
+        self.plot_index_list = []
+    
+    #called in main menu where either a new game or save file is loaded
+
+    def set_plot_index_list(self, plot_index_list):
+        self.plot_index_list = plot_index_list
+        
+    #pil_update_flag will be set to true everytime plot index list is updated for a textprompt obj
+    #useful method incase multiple npc's with plot sensitive lines are in a single level
+    def update_all_plot_index_lists(self):
+        for obj in self.textprompt_list:
+            if obj.pil_update_flag:
+                self.plot_index_list = obj.plot_index_list
+                for obj in self.textprompt_list:
+                    if obj.plot_index_list != self.plot_index_list:
+                        obj.plot_index_list = self.plot_index_list
+                obj.pil_update_flag = False
+                
+    #for saving
+    def get_plot_index_list(self):
+        self.update_all_plot_index_lists()
+        return self.plot_index_list
     
     def clear_data(self):
         for lvl_data in self.lvl_data_list:
@@ -78,7 +110,8 @@ class World():
         for obj in self.obj_list:
             obj *= 0
 
-    def process_data(self, level_data_list, the_sprite_group, screenW, screenH, level_transitions, ini_vol):
+    #loading the level
+    def process_data(self, level, level_data_list, the_sprite_group, screenW, screenH, level_transitions, ini_vol):
         self.clear_data()
         self.process_coords(level_data_list[0], screenW, screenH, self.lvl_data_list[0])
         enemy0_id = 0
@@ -89,7 +122,7 @@ class World():
         for y, row in enumerate(level_data_list[2]):
             for x, tile in enumerate(row):
                 if tile >= 0:
-                    count = 0
+
                     img = self.tileList[0][tile]
                     img_rect = img.get_rect()
                     if(tile == 17):#pass thru 1 way
@@ -109,13 +142,8 @@ class World():
 
                     tile_data = (img, img_rect, tile, transition_data)
                     
-                    for s_tile in self.special_tiles:
-                        if tile != s_tile:
-                            count += 1 #checks if tile ids match those of special tiles
-                        else:
-                            break
-                    
-                    if count == len(self.special_tiles):#if the current tile != all the tiles in the special tile tuple
+                        
+                    if all(tile != s_tile for s_tile in self.special_tiles):
                         self.solids.append(tile_data)
                     elif tile == 28:
                         enemy0 = enemy_32wide(x * 32, y * 32, 3, 2, 'dog', enemy0_id, ini_vol)
@@ -142,6 +170,11 @@ class World():
                         p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_v', ini_vol, True, False)
                         the_sprite_group.p_int_group.add(p_int)
                         self.obstacle_list.append(p_int)
+                    elif tile == 49:
+                        dialogue_list = self.csv_f0.get_specific_npc_data('Test', self.csv_f0.get_all_npc_data('dialogue_data'))
+                        Testnpc = Test(x * 32, y * 32, 2, 1, 'Test', ini_vol, True, dialogue_list, self.plot_index_list, level, player_inventory= [])
+                        the_sprite_group.textprompt_group.add(Testnpc)
+                        self.textprompt_list.append(Testnpc)
                         
                         
             
@@ -212,9 +245,9 @@ class World():
                     rtrn_list.append(tile_data)
                     
                                        
-    def draw_bg_layers(self, w_screen, scroll_X, data):
+    def draw_bg_layers(self, w_screen, scroll_X, scroll_Y, data):
         #currently only handles x scrolling
-        scroll_amnt = scroll_X
+        #scroll_amnt = scroll_X
         #logic for looping bg, maximum sprite size is 480x480
         for tile in data:
             if (data == self.bg3 or data == self.bg4 or data == self.bg5 or data == self.bg6):
@@ -224,38 +257,42 @@ class World():
                 elif tile[1][0] < -960:
                     tile[1][0] += (960+960)
 
-            tile[1][0] -= scroll_amnt
+            tile[1][0] -= scroll_X
+            tile[1][1] -= scroll_Y
+            
             if tile[1].x <= 640:
                 w_screen.blit(tile[0], tile[1]) # (image, position)
                     
-    def draw(self, w_screen, scroll_X, scroll_y):
+    def draw(self, w_screen, scroll_X, scroll_Y):
         
         if scroll_X > 0:
             correction = 1
         else:
             correction = 0
         
-        self.draw_bg_layers(w_screen, (scroll_X + correction)//3, self.bg6)
-        self.draw_bg_layers(w_screen, 4*(scroll_X + correction)//7, self.bg5)
-        self.draw_bg_layers(w_screen, 7*(scroll_X + correction)//9, self.bg4)
-        self.draw_bg_layers(w_screen, (scroll_X), self.bg3)#filter layer
-        self.draw_bg_layers(w_screen, (scroll_X), self.bg2)#detailed 1:1 bg layer 2
-        self.draw_bg_layers(w_screen, (scroll_X), self.bg1)
+        self.draw_bg_layers(w_screen, (scroll_X + correction)//3, 0, self.bg6)
+        self.draw_bg_layers(w_screen, 4*(scroll_X + correction)//7, 0, self.bg5)
+        self.draw_bg_layers(w_screen, 7*(scroll_X + correction)//9, 0, self.bg4)
+        self.draw_bg_layers(w_screen, (scroll_X), 0, self.bg3)#filter layer
+        self.draw_bg_layers(w_screen, (scroll_X), scroll_Y, self.bg2)#detailed 1:1 bg layer 2
+        self.draw_bg_layers(w_screen, (scroll_X), scroll_Y, self.bg1)
         
         for tile in self.solids:
             #this code below basically means the first index: [1], gets the tile's rect, 
             #then the [0] right after gets the x coordinate
             #if you were to swap [0] with [1] you'd get the y coord
             tile[1][0] -= scroll_X
+            tile[1][1] -= scroll_Y
             w_screen.blit(tile[0], tile[1]) # (image, position)
         
         for tile in self.coords:
             tile[0][0] -= scroll_X #the coords file does not have an image
+            tile[0][1] -= scroll_Y
             
             
-        self.draw_bg_layers(w_screen, scroll_X, self.fg)
+        self.draw_bg_layers(w_screen, scroll_X, scroll_Y, self.fg)
         
-        return (self.coords[0][0][0], self.coords[0][0][1])
+        return (self.coords[0][0][0], self.coords[0][0][1]) #x and y of first tile
             
         
             

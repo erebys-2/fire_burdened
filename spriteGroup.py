@@ -12,12 +12,14 @@ class sprite_group():
 		self.enemy_bullet_group2 = pygame.sprite.Group()
 		self.p_int_group = pygame.sprite.Group()
 		self.p_int_group2 = pygame.sprite.Group()
+		self.textprompt_group = pygame.sprite.Group()
 		
 		self.sp_groups_with_vol = [
 			self.enemy0_group,
 			self.enemy_bullet_group,
 			self.p_int_group,
-			self.p_int_group2
+			self.p_int_group2,
+			self.textprompt_group
 			#self.enemy_bullet_group2
 		]
   
@@ -31,10 +33,12 @@ class sprite_group():
 			self.button_group,
 			self.enemy_bullet_group2,
 			self.p_int_group,
-			self.p_int_group2
+			self.p_int_group2,
+			self.textprompt_group
 		]
   
 		self.hostiles_group = (self.enemy0_group, self.enemy_bullet_group, self.enemy_bullet_group2, self.p_int_group2)
+		self.textbox_output = ('', False, False, '', 0)
   
 	def update_vol_lvl(self, level):
 		for sp_group in self.sp_groups_with_vol:
@@ -44,8 +48,11 @@ class sprite_group():
 	def purge_sprite_groups(self):
 		for group in self.sp_group_list:
 			group.empty()
+   
+		self.textbox_output = ('', False, False, '', 0)
 			
-	def update_groups_behind_player(self, pause_game, screen, player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, player_direction, obj_list):
+	def update_groups_behind_player(self, pause_game, screen, player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, player_direction, obj_list, 
+                                 dialogue_enable, next_dialogue, font):
 		for particle in self.particle_group_bg:
 			particle.draw(screen)
 			if not pause_game:
@@ -104,6 +111,14 @@ class sprite_group():
 				particle.move(scroll_x)
 			if particle.Active == False:
 				self.particle_group.remove(particle)
+    
+		for obj in self.textprompt_group:
+			obj.draw(screen)
+			if not pause_game:
+				obj.animate(self.sp_group_list)
+				obj.get_dialogue_index(obj.current_level, obj.current_p_inv, obj.current_dialogue_index)
+				self.textbox_output = obj.enable(dialogue_enable, next_dialogue, screen, font, player_hitbox_rect, scroll_x)
+
     
 	def update_groups_infront_player(self, pause_game, screen, scroll_x, world_solids, player_hitbox_rect, player_atk_rect_scaled, player_action):
     

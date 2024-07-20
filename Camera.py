@@ -21,31 +21,28 @@ class Camera():
         self.cycle = 0
         
         
-    def horizonatal_screen_shake(self, profile, trigger):
-        intensity = profile[0]
-        cycle_limit = profile[1]
-        if cycle_limit %2 != 0: #needs even cycle limits to work
-            cycle_limit += 1
-            
+    def screen_shake(self, profile, trigger):
+        intensity_x = profile[0]
+        intensity_y = profile[1]
+        cycle_limit = profile[2] * 2
+
         if trigger:
             if self.cycle < cycle_limit:
                 if self.cycle %2 == 0:
-                    player_mvmt = -intensity
-                    scrollx = intensity
+                    #player_mvmt_x, scroll_x, player_mvmt_y, scroll_y
+                    mvmt_output = (-intensity_x, intensity_x, -intensity_y, intensity_y)
                 else:
-                    player_mvmt = intensity
-                    scrollx = -intensity
+                    mvmt_output = (intensity_x, -intensity_x, intensity_y, -intensity_y)
+                    
                 self.cycle += 1
             else:
-                player_mvmt = 0
-                scrollx = 0
+                mvmt_output = (0,0,0,0)
                 self.cycle = 0
                 trigger = False
         else:
-            player_mvmt = 0
-            scrollx = 0
+            mvmt_output = (0,0,0,0)
             
-        return (trigger, scrollx, player_mvmt)
+        return (trigger, mvmt_output)
             
         
     
