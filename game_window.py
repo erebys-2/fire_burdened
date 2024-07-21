@@ -40,12 +40,6 @@ move_R = False
 
 change_once = True
 
-hold_jump_update = pygame.time.get_ticks()
-hold_jump_time = 20
-
-hold_roll_update = pygame.time.get_ticks()
-hold_roll_time = 20
-hold_roll = False
 
 level_trans_timing = pygame.time.get_ticks()
 
@@ -55,6 +49,7 @@ pause_game = False
 text_delay = pygame.time.get_ticks()
 
 level_transitions = []
+player0_lvl_transition_data = (False, [])#flag, data
 #level transition system:
 #each level in load_level_data will have its own level_transitions list which will (in order) contain the next levels
 #each level will have level transition objects, that can be placed with the level editor,
@@ -253,7 +248,7 @@ normal_speed = player0.speed
 #load initial level-------------------------------------------------------------------------------------------------
 the_sprite_group.purge_sprite_groups()#does as the name suggests at the start of each load of the game
 lvl_data = load_level_data(0, level_data_list, level_data_str_tuple, level_tuple, vol_lvl)
-color_n_BG = lvl_data[0:3]
+gradient_BGcolor_playerEN = lvl_data[0:3]
 obj_list = lvl_data[3]
 
 
@@ -275,25 +270,28 @@ dialogue_enable = False
 next_dialogue = False
 dialogue_trigger_ready = False
 
+player_enable_master = False
+
+hold_jump_update = pygame.time.get_ticks()
+
 while run:
 	clock.tick(FPS)
-	#reset temporary values
  
 	temp_move_R = False
 	temp_move_L = False
-	player0.gravity_on = color_n_BG[2] #disables player movement w/ accordance to enable signal
-	
+	player_enable_master = (gradient_BGcolor_playerEN[2] and not dialogue_enable)
+ 
 	if level == 0 or pause_game or not player0.Alive:#delete mouse when out of the main menu
 		pygame.mouse.set_visible(1)
 	else:
 		pygame.mouse.set_visible(0)
   
-	if player0.lvl_transition_flag:#test for player collision w/ level transition rects
-		next_level = player0.lvl_transition_data[0]
-		player_new_x = player0.lvl_transition_data[1]
-		player_new_y = player0.lvl_transition_data[2]
-		player0.lvl_transition_flag = False
-	
+
+	if player0_lvl_transition_data[0]:#test for player collision w/ level transition rects
+		next_level = player0_lvl_transition_data[1][0]
+		player_new_x = player0_lvl_transition_data[1][1]
+		player_new_y = player0_lvl_transition_data[1][2]
+
 	#----------------------------------------------------------------------level changing-------------------------------------------------
 	if level != next_level:
 		scroll_x = 0
@@ -305,7 +303,7 @@ while run:
 		level_transitioning = True
 		level = next_level
 		lvl_data = load_level_data(level, level_data_list, level_data_str_tuple, level_tuple, vol_lvl)
-		color_n_BG = lvl_data[0:3]
+		gradient_BGcolor_playerEN = lvl_data[0:3]
 		obj_list = lvl_data[3]
 		
 		if move_L:
@@ -333,7 +331,7 @@ while run:
 	
 	#---------------------------------------------------------drawing level and sprites------------------------------------------------------------------
 	#---------------------------------------------------------handling movement and collisions and AI----------------------------------------------------
-	draw_bg(screen, gradient_dict, color_n_BG[0], color_n_BG[1])#this just draws the color
+	draw_bg(screen, gradient_dict, gradient_BGcolor_playerEN[0], gradient_BGcolor_playerEN[1])#this just draws the color
 	#camera.draw(screen)#for camera debugging
 	if world.x_scroll_en:
 		camera.auto_correct(player0.rect, world.coords, world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -344,12 +342,15 @@ while run:
 	if not pause_game:
 		player0.animate(the_sprite_group)
 		player0.do_entity_collisions(the_sprite_group, obj_list, level_transitioning)
-		if not dialogue_enable: 
-			player0.move(pause_game, move_L, move_R, world.solids, world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
-					SCREEN_WIDTH, SCREEN_HEIGHT, obj_list, the_sprite_group)
+		if player_enable_master: 
+			player0_lvl_transition_data = player0.move(pause_game, move_L, move_R, world.solids, world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
+														SCREEN_WIDTH, SCREEN_HEIGHT, obj_list, the_sprite_group)
 		scroll_x = player0.scrollx + camera.scrollx
 	else:
 		scroll_x = 0
+  
+
+	
 
 	#dialogue trigger sent here
 	the_sprite_group.update_groups_behind_player(pause_game, screen, player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, player0.direction, obj_list, 
@@ -410,7 +411,7 @@ while run:
  
 	#--------------------------------------------------------------MAIN MENU CODE---------------------------------------------------------------------
 	if level == 0: 
-		draw_bg(screen, gradient_dict, color_n_BG[0], color_n_BG[1])
+		draw_bg(screen, gradient_dict, gradient_BGcolor_playerEN[0], gradient_BGcolor_playerEN[1])
 		pause_game = False
 		exit_to_title = False
 
@@ -479,11 +480,12 @@ while run:
 	#this is remnant code from following Coding with Russ' tutorial, I wasn't sure how to integrate this into playerFile.py
 	#when I was separating the files (he wrote his whole tutorial game in virtually one single file)
  
-	#takes change_once, move_L, move_R, hold_roll 
-	# if dialogue_enable:
-	# 	move_L = False
-	# 	move_R = False
-	# 	player0.rolled_into_wall = True
+	#takes change_once, move_L, move_R 
+	if dialogue_enable:
+		player0.atk1 = False
+		player0.atk1_kill_hitbox()
+		player0.action = 0
+		player0.rolled_into_wall = True
 
  
 	if player0.Alive:
@@ -494,10 +496,8 @@ while run:
 		
 			if player0.shoot:
 				player0.update_action(11)
-
-				#player0.change_direction = False
-			
-			elif player0.rolling or hold_roll:
+    
+			elif player0.rolling: 
 				player0.update_action(9)#rolling
 				player0.atk1_alternate = False
 			elif player0.atk1:
@@ -520,10 +520,12 @@ while run:
 					# else:
 					# 	player0.update_action(8)#8: atk1
 			else:
-				if player0.in_air or player0.squat_done:
+				#print(player0.in_air)
+				if player0.in_air or player0.squat_done:# or (player0.vel_y > 1):
 					player0.update_action(2)#2: jump
 
-				elif (player0.in_air == False and player0.vel_y >= 0 and player0.landing == True
+				elif ( not (move_L or move_R)
+					and player0.in_air == False and player0.vel_y >= 0 and player0.landing == True
 					):
 					player0.update_action(3)#3: land
 					
@@ -538,7 +540,6 @@ while run:
 		player0.update_action(6) #dead
 		player0.scrollx = 0
 	
- 
 	#print(the_sprite_group.textbox_output)
 	#---------------------------------------------------------------------------------------------------------------------------------------------
 	#-------------------------------------------------------KBD inputs----------------------------------------------------------------------------
@@ -552,20 +553,27 @@ while run:
 		if(event.type == pygame.KEYDOWN):
 			#print(pygame.key.name(event.key))
    
-			if player0.Alive and color_n_BG[2] and not pause_game and not dialogue_enable:
+			if player0.Alive and gradient_BGcolor_playerEN[2] and not pause_game and not dialogue_enable:
 				if event.key == ctrls_list[1]: #pygame.K_a
 					move_L = True
 				if event.key == ctrls_list[3]: #pygame.K_d
 					move_R = True
-
-				elif event.key == ctrls_list[0]: #pygame.K_w 
-					hold_jmp_update = pygame.time.get_ticks()
+				# if event.key == ctrls_list[0] and event.key == ctrls_list[4] and player0.stamina_used + 1 <= player0.stamina:
+				# 	player0.squat = True
+				# 	player0.squat_done = True
+				# 	player0.atk1_alternate = False
+				# 	change_once = False
+				# 	player0.atk1 = (event.key == ctrls_list[4])
+				if event.key == ctrls_list[0]: #pygame.K_w 
+					
 					player0.landing = False
 
-					if not player0.in_air:
-						player0.squat_done = True
-					elif pygame.time.get_ticks() - hold_jump_time > hold_jump_update and player0.vel_y > 0:
-						#print(pygame.time.get_ticks())
+					if not player0.in_air: #player is on ground
+						player0.squat = True
+					elif player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:
+						hold_jump_update = pygame.time.get_ticks()
+						#print(hold_jump_update)
+         				#extends jump signal if the player is in air but close to the ground, the effect will be like a preemptive jump
 						player0.squat = True 
 
 					if player0.rolling and player0.in_air == False:
@@ -574,7 +582,7 @@ while run:
 
 				if event.key == ctrls_list[4] and player0.stamina_used + 1 <= player0.stamina and event.key != ctrls_list[0]: #pygame.K_i, pygame.K_w
 					change_once = True
-					player0.atk1 = True
+					player0.atk1 = (event.key == ctrls_list[4])
 					#player0.squat = False
 				elif event.key == ctrls_list[4] and player0.stamina_used + 1 > player0.stamina: #pygame.K_i
 					status_bars.warning = True
@@ -587,9 +595,7 @@ while run:
 
 				if event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate <= player0.stamina: #pygame.K_s
 					player0.squat = False
-					if hold_roll == False:
-						hold_roll = True
-						#hold_roll_update = pygame.time.get_ticks()
+					player0.rolling = True
 					hold_jump = False
 				elif event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate > player0.stamina: #pygame.K_s
 					status_bars.warning = True
@@ -691,14 +697,14 @@ while run:
 				move_L = False
 			if event.key == ctrls_list[3]:#pygame.K_d
 				move_R = False
-
+    
+			#delayed full jump bug:
+			#if the the animation for squatting before a jump is just slow enough, it might finish AFTER  the jump key is released
+			#so the code below to limit the jump height will not execute, resulting in a full height jump if the jump key is pressed sufficiently fast enough
+			#switched to continuous signal
 			if event.key == ctrls_list[0]:#variable height jumping
-				if player0.vel_y <= -1:
-					player0.vel_y *= 0.3 #rate at which jump vel decreases
-				player0.squat = False
-				player0.squat_done = False
+				player0.jump_dampen = True
 
-					
 			if event.key == ctrls_list[4]:#pygame.K_i
 				status_bars.warning = False
 			if event.key == ctrls_list[2]:#pygame.K_s
@@ -720,14 +726,6 @@ while run:
 				show_controls_en = False
 			if event.key == pygame.K_RETURN:
 				next_dialogue = False
-		
-
-		if hold_roll: #and (not player0.atk1 or player0.action <= 2):
-			if  player0.stamina_used + player0.roll_stam_rate <= player0.stamina:
-				player0.rolling = True
-				hold_roll = False
-				
-				#print("holding")
 
 	pygame.display.update()
 
