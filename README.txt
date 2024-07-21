@@ -1,8 +1,13 @@
-===============================================================
-NO FILES MAY BE REDISTRIBUTED WITHOUT EXPLICIT PERMISSION.
-ASSETS MAY NOT BE REUSED FOR UNRELATED PROJECTS.
-CODE MAY BE REFERENCED AND REPURPOSED.
-===============================================================
+==============================================================================================================================
+Fire Burdened © 2023 by erebys-2 is licensed under CC BY-NC 4.0 
+
+"This license requires that reusers give credit to the creator. 
+It allows reusers to distribute, remix, adapt, and build upon the material in any medium or format,*
+for noncommercial purposes only."
+
+*Do not just steal the assets and code to make a half baked port of an unfinished project.
+Contact @kc2854 on Discord if unsure.
+==============================================================================================================================
 
 Description:
 Fire Burdened is a combat platformer with gameplay emphasis on very short range melee and high maneuverability
@@ -23,49 +28,86 @@ Live Dev Log:
 https://docs.google.com/document/d/1DKHFFTGyHRi6FeIa0QXCALuBxQLR8XExPAktH98XHok/edit?usp=sharing
 
 
+------------------------------------------------------------------------------------------------
 SET UP: (This is for Windows, GG Mac bros)
+------------------------------------------------------------------------------------------------
 
-    Download the following if you haven't already:
+    Download the following:
     1. Python, 
     2. Pygame, 
 
-        To install Pygame:
+        To install Pygame on Windows:
         Win + R, type "cmd", enter, then paste: "python3 -m pip install -U pygame"
 
     3. Visual Studio Code or some other IDE, 
 
-        Download the microsoft python extension, then go into settings and 
-	search "Execute in File Dir", set it as enable.
+        Download the microsoft python extension, then go into settings and search "Execute in File Dir", set it as enable.
 
-        The second part is important or else the next time 
-	you open VS code you will get file not found errors.
+        The second part is important or else the next time you open VS code you will get file not found errors.
 
-	If you want to try modding the code, I would highly reccommend 
-	Kevin Rose's python indent extension since vanilla VS code has issues
+	If you want to try modding the code, I would highly reccommend Kevin Rose's python indent extension since vanilla VS code has issues
 	with indent oversensitivity for python.
 
-This zip file has the directories in right places.
+This zip file has all the directories in right places.
 
+
+------------------------------------------------------------------------------------------------
 RUNNING GAME:
+------------------------------------------------------------------------------------------------
 
 Open game_window.py in your IDE and run it.
 
-*Note: The controls can now be reconfigured and saved, but the paragraph below still explains
-the base mechanics. I recommend trying the default settings.
+
+
+------------------------------------------------------------------------------------------------
+HOW TO PLAY:
+------------------------------------------------------------------------------------------------
+
+*Note: The controls can be reconfigured and saved, but the paragraph below still explains
+the base mechanics. I recommend trying the default settings. The philosophy was to have one
+hand deal with purely movement, and the other hand deal with attacks and special moves.
 
 The controls are WAD to move, I to melee, O to shoot, S to roll, and ALT to sprint.
-The direction of the melee attack depends on if you're falling or rising.
-I while falling will do a downstrike, I while rising will do an upstrike.
-I while rolling will do a crit.
-You can jump and roll in mid air too.
 
-Holding ALT increases your speed, but your stamina regeneration rate is lowered.
-Holding O will deplete some initial stamina then continuously charge up how
-many projectiles you shoot. You shoot when you lift the key.
+Jumping:
+    Jumping is variable height. Hold the key for longer and you'll jump higher and farther.
+
+Rolling:
+    Pressing S will iniate a roll. 
+    Stamina will be consumed the longer you roll.
+    Rolling can be canceled by:
+        -Hitting a wall
+        -Jumping
+        -Pressing the opposite direction key A or D
+    You do not take damage while in roll animation.
+
+Melee:
+    The direction of the melee attack depends on vertical velocity.
+    Pressing I while falling will do a downstrike; pressing I while rising will do an upstrike.
+    Pressing I while rolling will do a crit.
+    Pressing I while holding down the same direction key A or D will increase horizontal distance traveled.
+    Melee animation can be canceled 1 frame early by:
+        -Jumping (hold jump after pressing I until you jump)
+        -Pressing the opposite direction key A or D (hold either keys after pressing I)
+        -Rolling***
+    You do not take damage while in attack animation from enemies or bullets.
+    You can deflect bullets by hitting them back.
+
+Sprint:
+    Holding ALT increases your movement AND animation speed (all your actions will be faster too), 
+    but your stamina regeneration rate is significantly lowered.
+
+Shoot: 
+    Holding O will deplete some initial stamina then continuously charge up how
+    many projectiles you shoot. You shoot when you lift the key.
+    (Nerfed because all my test players are cowards)
 
 Escape/Backspace and Enter can be used in the main menu or pause menu for quick navigation.
 
-*Note 2: Toggle screen will change your resolution while the game is running; it does not work on Mac.
+**Note 2: Toggle screen will change your resolution while the game is running; it does not work on Mac.
+***Note 3: rolling can cancel before the attack is even animated, this is a bug but the fix interferes with the code for initiating a crit.
+
+
 
 ========================================================================================
 Insiprations:
@@ -74,7 +116,7 @@ Insiprations:
 -Hollowknight
 -Dark Souls
 
-Special Thanks:
+Acknowledgments:
 -Coding with Russ for a good base/ tutorial to jump off from
 -r/Pygame for inspiration
 

@@ -524,8 +524,10 @@ while run:
 				if player0.in_air or player0.squat_done:# or (player0.vel_y > 1):
 					player0.update_action(2)#2: jump
 
-				elif ( not (move_L or move_R)
-					and player0.in_air == False and player0.vel_y >= 0 and player0.landing == True
+				elif ( not (move_L or move_R) and
+					not player0.in_air and
+					player0.vel_y >= 0 and
+					player0.landing
 					):
 					player0.update_action(3)#3: land
 					

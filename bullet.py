@@ -81,6 +81,10 @@ class bullet_(pygame.sprite.Sprite):
                 and player_direction != self.direction
                 and self.deflected == False
                 ):
+                    if player_direction == 1:
+                        self.rect.centerx = player_atk_rect.right
+                    else:
+                        self.rect.centerx = player_atk_rect.x
                     self.explode(sp_group_list)
                     self.m_player.play_sound(self.m_player.sfx[1])
                     self.direction = -self.direction

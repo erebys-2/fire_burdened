@@ -160,7 +160,7 @@ class player(pygame.sprite.Sprite):
             
     def update_landing(self, the_sprite_group):
         
-        if self.in_air != self.curr_state and not self.disp_flag:#self.action < 5:
+        if self.in_air != self.curr_state and not self.disp_flag and self.action != 1:#self.action < 5:
             if not self.in_air:
                 particle = particle_(self.rect.centerx, self.rect.centery, -self.direction, self.scale, 'player_mvmt', True, 0, False)
                 the_sprite_group.particle_group.add(particle)
@@ -400,6 +400,7 @@ class player(pygame.sprite.Sprite):
                     ):
                     dx = 0
                     self.hitting_wall = True
+                    
                     if (tile[1].colliderect(self.collision_rect.x, self.collision_rect.y, self.width, self.height - 17) 
                         #and self.vel_y > 0
                         ):
@@ -407,7 +408,10 @@ class player(pygame.sprite.Sprite):
                             dx = 8*self.direction
                         elif dx > 0:
                             dx = -8*self.direction
-
+                    # self.in_air = False
+                    # self.curr_state = False
+                    #self.landing = False
+                        
                 #dy collision stuff, sinking through tiles etc
                 
                 if (tile[1].colliderect(self.collision_rect.x, self.collision_rect.y + dy, self.width , self.height)
@@ -441,7 +445,10 @@ class player(pygame.sprite.Sprite):
                         and not self.in_air
                         and self.vel_y > 6 #velocity based coyote jump
                         ):
+                    self.curr_state = True
                     self.in_air = True
+                    self.squat = False
+                    
                             
             #special tiles
             elif(tile[2] == 2):#spikes/ other trap tiles
@@ -502,7 +509,7 @@ class player(pygame.sprite.Sprite):
                 dx = self.speed
                 self.flip = False
                 self.direction = 1
-            if (moveL or moveR):
+            if (moveL or moveR) or self.action == 1:
                 self.landing = False
                 
         elif self.action == 5:#taking damage, hurting----------------------
@@ -552,6 +559,7 @@ class player(pygame.sprite.Sprite):
 
         
         if self.atk1:#adjusting speed to simulate momentum, motion stuff
+            self.curr_state = self.in_air
             #if not break atk1
             if (not (((moveL and self.direction == 1) or (moveR and self.direction == -1)) and self.frame_index > 2) 
                 and not (self.rolling and self.frame_index > 0) 
@@ -607,8 +615,8 @@ class player(pygame.sprite.Sprite):
                 self.vel_y = -9.5
                 self.in_air = True
                 
-        elif self.in_air and not (moveL or moveR or self.action == 5):
-            if self.action != 8 or self.action != 10:
+        elif self.in_air and not (moveL or moveR):
+            if self.action != 8 and self.action != 10 and self.action != 1 and self.action != 5:
                 self.landing = True
             else:
                 self.landing = False
