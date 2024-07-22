@@ -497,9 +497,7 @@ while run:
 			if player0.shoot:
 				player0.update_action(11)
     
-			elif player0.rolling: 
-				player0.update_action(9)#rolling
-				player0.atk1_alternate = False
+			
 			elif player0.atk1:
 				
 				if change_once:
@@ -516,9 +514,10 @@ while run:
 						player0.update_action(7)	
 					else:
 						player0.update_action(8)#8: atk1
-					
-					# else:
-					# 	player0.update_action(8)#8: atk1
+      
+			elif player0.rolling: 
+				player0.update_action(9)#rolling
+				player0.atk1_alternate = False
 			else:
 				#print(player0.in_air)
 				if player0.in_air or player0.squat_done:# or (player0.vel_y > 1):

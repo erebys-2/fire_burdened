@@ -89,7 +89,7 @@ Melee:
     Melee animation can be canceled 1 frame early by:
         -Jumping (hold jump after pressing I until you jump)
         -Pressing the opposite direction key A or D (hold either keys after pressing I)
-        -Rolling***
+        -Rolling
     You do not take damage while in attack animation from enemies or bullets.
     You can deflect bullets by hitting them back.
 
@@ -105,8 +105,6 @@ Shoot:
 Escape/Backspace and Enter can be used in the main menu or pause menu for quick navigation.
 
 **Note 2: Toggle screen will change your resolution while the game is running; it does not work on Mac.
-***Note 3: rolling can cancel before the attack is even animated, this is a bug but the fix interferes with the code for initiating a crit.
-
 
 
 ========================================================================================

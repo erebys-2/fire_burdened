@@ -17,7 +17,6 @@ class enemy_32wide(pygame.sprite.Sprite):
         self.ini_vol = ini_vol
         #self.m_player.set_sound_vol(self.m_player.sfx[0], 7) #looks like you can adjust vol in the constructor
 
-        self.player_collision = False
         self.id = enemy0_id
         
         self.Alive = True
@@ -162,12 +161,12 @@ class enemy_32wide(pygame.sprite.Sprite):
                     self.direction = 1
                     moving = True
                 
-                if self.action == 1: 
+                if self.action == 1: #when the dog is running it has an attack hitbox
                     
                     if self.direction < 0:
-                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y, self.width//2, self.height)
+                        self.atk_rect = pygame.Rect(self.rect.x + 8, self.rect.y + 16, self.width//2 + 8, self.height - 32)
                     else:
-                        self.atk_rect = pygame.Rect(self.rect.x + self.width//2, self.rect.y, self.width//2, self.height - 16)
+                        self.atk_rect = pygame.Rect(self.rect.x + self.width//2 - 8, self.rect.y + 16, self.width//2 + 8, self.height - 32)
                     self.atk_rect_scaled = self.atk_rect.scale_by(0.8)
                 else:
                     self.atk1_kill_hitbox()
@@ -228,7 +227,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                         elif player_rect.x < self.rect.x + self.width + (jump_range*self.width) and player_rect.x >= self.rect.x:
                             self.jump = True
                             
-                    if self.action == 5:
+                    if self.action == 5: #when the shooter is jumping it has an attack hitbox
                         self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + self.height//2, self.width, self.height//2)
                         self.atk_rect_scaled = self.atk_rect.scale_by(0.8)
                     else:
@@ -267,7 +266,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             else:
                 # if self.recovering:
                 #     self.update_action(0)
-                if self.shoot == True and (self.idle_counter == 1 or self.idle_bypass == True):#2
+                if self.shoot == True and (self.idle_counter == 1 or self.idle_bypass == True) and self.direction != 0:#2
                     if self.frame_index <= 4:
                         self.shoot = True
                     self.update_action(4)
@@ -332,13 +331,21 @@ class enemy_32wide(pygame.sprite.Sprite):
             elif player_action == 7 or player_action == 8:
                 self.dmg_multiplier = 2
         elif (self.rect.colliderect(player_rect.scale_by(0.2)) 
-            and (player_action == 0 or player_action == 6)
+            #and (player_action == 0 or player_action == 6)
             or (self.rect.x < player_rect.x and self.rect.right > player_rect.right 
-            and not (player_action == 10))
+            and player_action != 7 and player_action != 8 and player_action != 10)
               ):
             dx = 0
+            self.direction = 0
+            if self.enemy_type == 'shooter':
+                self.jump = True
         elif player_action == 6 and self.rect.colliderect(player_rect):
             dx = 0
+        else:
+            if self.flip:
+                self.direction = 1
+            else:
+                self.direction = -1
 
         
         #enemy0 collisions
@@ -478,7 +485,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             frame_update = 95
 
         #--shooting bullet---------------------------------------------------------------------------------
-        if self.action == 4 and self.frame_index == 4 and self.shoot_done == False:
+        if self.action == 4 and self.frame_index == 4 and self.shoot_done == False and self.direction != 0:
             #print("Pew!")
             
             if self.flip == True:

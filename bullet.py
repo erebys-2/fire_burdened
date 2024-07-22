@@ -76,8 +76,7 @@ class bullet_(pygame.sprite.Sprite):
                     self.exploded = True
                     # self.Active = False
                     # #self.kill()
-            elif ((player_action == 7 or player_action == 8) 
-                and self.rect.colliderect(player_atk_rect)
+            elif (self.rect.colliderect(player_atk_rect)
                 and player_direction != self.direction
                 and self.deflected == False
                 ):

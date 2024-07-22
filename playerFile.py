@@ -265,6 +265,7 @@ class player(pygame.sprite.Sprite):
         #----------------------------------------------entity collisions
         damage = 0
         if ((self.action < 7 or self.action > 10) and not self.i_frames_en and not self.hurting and self.Alive and not level_transitioning):
+            #sprite based collisions
             for enemy in enumerate(the_sprite_group.hostiles_group):
                 if pygame.sprite.spritecollide(self, enemy[1], False): 
                     if pygame.sprite.spritecollide(self, enemy[1], False, pygame.sprite.collide_mask):
@@ -285,9 +286,10 @@ class player(pygame.sprite.Sprite):
                             self.take_damage(damage)
                     #print(damage)
                 damage = 0
-        
+
+            #rect based collisions
             for enemy in obj_list[0]:
-                if (self.hitbox_rect.colliderect(enemy.atk_rect_scaled) and not enemy.inundated):
+                if (self.hitbox_rect.colliderect(enemy.atk_rect_scaled)):
                     damage += 1.5
                     self.hurting = True
                     self.take_damage(damage) 
@@ -562,7 +564,7 @@ class player(pygame.sprite.Sprite):
             self.curr_state = self.in_air
             #if not break atk1
             if (not (((moveL and self.direction == 1) or (moveR and self.direction == -1)) and self.frame_index > 2) 
-                and not (self.rolling and self.frame_index > 0) 
+                and not (self.rolling and self.frame_index > 2) 
                 and not (self.squat and self.frame_index > 2)
                 ): #not (self.rolling) and 
                 
@@ -602,6 +604,10 @@ class player(pygame.sprite.Sprite):
                 self.atk1_kill_hitbox()
                 self.atk1 = False
                 self.crit = False
+        else:
+            self.atk1_kill_hitbox()
+            self.atk1 = False
+            self.crit = False
 
         #==========================================================================================================================================
         
@@ -987,7 +993,10 @@ class player(pygame.sprite.Sprite):
     def update_action(self, new_action):
         #check if action has changed
         if new_action != self.action:
-            if self.action == 9 and (new_action == 7 or new_action == 8):
+            if (self.action == 7 or self.action == 8) and (self.rolling or self.action == 9):
+                self.crit = False
+                self.atk1 = False
+            elif self.action == 9 and (new_action == 7 or new_action == 8) and self.atk1:
                 self.crit = True
                 self.do_screenshake = True
                 self.m_player.play_sound(self.m_player.sfx[4])
