@@ -374,10 +374,10 @@ while run:
  
 	#---------------------------------------screen shake------------------------------------------------------------------------
 	if player0.do_screenshake:
+		screenshake_profile = player0.screenshake_profile #intensity x, intensity y, cycle count
 		player0.do_screenshake = False
 		if not do_screenshake_master:
 			do_screenshake_master = True
-			screenshake_profile = (16, 4, 2) #intensity x, intensity y, cycle count
 
 	for p_int in obj_list[1]:
 		if p_int.do_screenshake:

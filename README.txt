@@ -5,8 +5,9 @@ Fire Burdened © 2023 by erebys-2 is licensed under CC BY-NC 4.0
 It allows reusers to distribute, remix, adapt, and build upon the material in any medium or format,*
 for noncommercial purposes only."
 
-*Do not just steal the assets and code to make a half baked port of an unfinished project.
-Contact @kc2854 on Discord if unsure.
+*This applies to the code.
+DO NOT reuse the assets- anything non-code in this repository- without explicit permission.
+Contact @kc2854 on Discord for permission.
 ==============================================================================================================================
 
 Description:
@@ -90,7 +91,6 @@ Melee:
         -Jumping (hold jump after pressing I until you jump)
         -Pressing the opposite direction key A or D (hold either keys after pressing I)
         -Rolling
-    You do not take damage while in attack animation from enemies or bullets.
     You can deflect bullets by hitting them back.
 
 Sprint:
@@ -103,6 +103,11 @@ Shoot:
     (Nerfed because all my test players are cowards)
 
 Escape/Backspace and Enter can be used in the main menu or pause menu for quick navigation.
+
+Taking Damage:
+    There is NO contact damage. 
+    The current enemies are so simple that there might seem like contact damage since they're coded to deploy
+    their attack hitboxes when close to the player. When damaged, their attack hitboxes are removed.
 
 **Note 2: Toggle screen will change your resolution while the game is running; it does not work on Mac.
 

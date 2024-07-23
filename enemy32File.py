@@ -70,7 +70,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         elif type == 'shooter':   
             self.animation_types = ['idle', 'move', 'hurt', 'die', 'shoot', 'jump'] 
             self.hp = 10
-            self.recoil = 32
+            self.recoil = 49
             self.recoil_slow = 2
             
         for animation in self.animation_types:
@@ -161,12 +161,16 @@ class enemy_32wide(pygame.sprite.Sprite):
                     self.direction = 1
                     moving = True
                 
+                if player_rect.centerx > self.rect.x and player_rect.centerx < self.rect.right:
+                    self.direction = 0
+                    
+                
                 if self.action == 1: #when the dog is running it has an attack hitbox
                     
                     if self.direction < 0:
-                        self.atk_rect = pygame.Rect(self.rect.x + 8, self.rect.y + 16, self.width//2 + 8, self.height - 32)
+                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.width//2 + 8, self.height - 32)
                     else:
-                        self.atk_rect = pygame.Rect(self.rect.x + self.width//2 - 8, self.rect.y + 16, self.width//2 + 8, self.height - 32)
+                        self.atk_rect = pygame.Rect(self.rect.x + self.width//2, self.rect.y + 16, self.width//2 + 8, self.height - 32)
                     self.atk_rect_scaled = self.atk_rect.scale_by(0.8)
                 else:
                     self.atk1_kill_hitbox()
@@ -300,8 +304,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         
         #player collisions------------------------------------------------------------------------------------------------------------------
         
-        if ((player_action == 7 or player_action == 8 or player_action == 10)
-            and self.rect.colliderect(player_atk_rect)
+        if (self.rect.colliderect(player_atk_rect)
             and self.inundated == False
             ):
            
@@ -330,15 +333,16 @@ class enemy_32wide(pygame.sprite.Sprite):
                 self.dmg_multiplier = 6
             elif player_action == 7 or player_action == 8:
                 self.dmg_multiplier = 2
-        elif (self.rect.colliderect(player_rect.scale_by(0.2)) 
+        elif (self.rect.colliderect(player_rect.scale_by(0.8)) 
             #and (player_action == 0 or player_action == 6)
             or (self.rect.x < player_rect.x and self.rect.right > player_rect.right 
-            and player_action != 7 and player_action != 8 and player_action != 10)
+            and not self.inundated)
               ):
-            dx = 0
+            dx = -dx
             self.direction = 0
             if self.enemy_type == 'shooter':
                 self.jump = True
+            
         elif player_action == 6 and self.rect.colliderect(player_rect):
             dx = 0
         else:
@@ -346,7 +350,6 @@ class enemy_32wide(pygame.sprite.Sprite):
                 self.direction = 1
             else:
                 self.direction = -1
-
         
         #enemy0 collisions
         for enemy0 in sp_group_list[0]:

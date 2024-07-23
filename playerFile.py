@@ -53,6 +53,7 @@ class player(pygame.sprite.Sprite):
         self.flicker = False
         self.i_frames_time = 0
         self.do_screenshake = False
+        self.screenshake_profile = (0,0,0)
 		
         self.shoot = False
         self.shot_charging = False
@@ -669,6 +670,8 @@ class player(pygame.sprite.Sprite):
         if self.hurting == True and self.rolling == False:
             if self.frame_index < 2:
                 dx = -self.direction * 4
+                self.do_screenshake = True
+                self.screenshake_profile = (3, 3, 2)
             # elif self.frame_index > 1:
             #     dx = -self.direction * 2
 
@@ -999,10 +1002,13 @@ class player(pygame.sprite.Sprite):
             elif self.action == 9 and (new_action == 7 or new_action == 8) and self.atk1:
                 self.crit = True
                 self.do_screenshake = True
+                self.screenshake_profile = (16, 4, 2)
                 self.m_player.play_sound(self.m_player.sfx[4])
             elif self.action != 9 and (new_action == 7 or new_action == 8):
                 self.crit == False
                 self.m_player.play_sound(self.m_player.sfx[1])
+            elif new_action == 5:
+                print("oof") #make player hurting sound
 
             self.action = new_action
             self.disp_flag = self.disp_states[self.action]
