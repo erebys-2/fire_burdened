@@ -6,7 +6,7 @@ from particle import particle_ #type: ignore
 from player_interactable import player_interactable_
 from dialogueCSVformatter import csv_extracter
 
-from npcFile import npc, Test
+from npcFile import npc, Test, Test2
 
 class World():
     def __init__(self):
@@ -60,7 +60,8 @@ class World():
             46,
             47,
             48,
-            49
+            49,
+            50
         )
 
         for tile_set in tile_set_types:
@@ -93,10 +94,11 @@ class World():
         for obj in self.textprompt_list:
             if obj.pil_update_flag:
                 self.plot_index_list = obj.plot_index_list
-                for obj in self.textprompt_list:
-                    if obj.plot_index_list != self.plot_index_list:
-                        obj.plot_index_list = self.plot_index_list
                 obj.pil_update_flag = False
+                #print(self.plot_index_list)
+                for obj in self.textprompt_list:
+                    obj.plot_index_list = self.plot_index_list
+                    
                 
     #for saving
     def get_plot_index_list(self):
@@ -175,6 +177,11 @@ class World():
                         Testnpc = Test(x * 32, y * 32, 2, 1, 'Test', ini_vol, True, dialogue_list, self.plot_index_list, level, player_inventory= [])
                         the_sprite_group.textprompt_group.add(Testnpc)
                         self.textprompt_list.append(Testnpc)
+                    elif tile == 50:
+                        dialogue_list = self.csv_f0.get_specific_npc_data('Test2', self.csv_f0.get_all_npc_data('dialogue_data'))
+                        Testnpc2 = Test2(x * 32, y * 32, 2, 1, 'Test2', ini_vol, True, dialogue_list, self.plot_index_list, level, player_inventory= [])
+                        the_sprite_group.textprompt_group.add(Testnpc2)
+                        self.textprompt_list.append(Testnpc2)
                         
                         
             

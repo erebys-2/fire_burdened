@@ -1,3 +1,4 @@
+
 import pygame
 import os
 os.environ['SDL_VIDEO_CENTERED'] = '1' 
@@ -368,7 +369,7 @@ while run:
 		#the_sprite_group.textbox_output = (name, player_collision, dialogue_enable, message, expression, self.character_index_dict[self.name])
 		dialogue_box0.draw_text_box(the_sprite_group.textbox_output[3], font_larger, screen, the_sprite_group.textbox_output[0], 
                               		the_sprite_group.textbox_output[4], the_sprite_group.textbox_output[5], text_speed)
-
+		
 		 
 	
  
@@ -486,6 +487,17 @@ while run:
 		player0.atk1_kill_hitbox()
 		player0.action = 0
 		player0.rolled_into_wall = True
+		world.update_all_plot_index_lists()
+
+	if player0.hurting or not player0.dialogue_trigger_ready:
+		dialogue_enable = False
+	#note there is a problem with the dialogue system where if an npc is trying to modify another npc's plot index list and the dialogue is cut off mid typing,
+	#the current index will linger (one of the parameters for changing plot index list), even if the player talks to another npc, the next time the player
+	#talks to the npc that was cut off plot index will be reset to the value from when it first changed since npc's will continue their dialogue from when they
+	#were cut off
+ 
+	#dialogue boxes can no longer be exited if an npc is mid dialogue
+	#however they can still be interupted by the player getting damaged
 
  
 	if player0.Alive:
@@ -496,7 +508,6 @@ while run:
 		
 			if player0.shoot:
 				player0.update_action(11)
-    
 			
 			elif player0.atk1:
 				
@@ -636,7 +647,7 @@ while run:
 						pause_game = True
 						pygame.mixer.pause()
 						m_player.play_sound(m_player.sfx[1])
-					else:
+					elif dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list:
 						dialogue_enable = False
 						
 				else:
@@ -646,6 +657,7 @@ while run:
 			if event.key == pygame.K_RETURN:
 				if pause_game and not ui_manager0.options_menu_enable:
 					ui_manager0.trigger_once = True
+					dialogue_trigger_ready = False
 					pause_game = False
 					pygame.mixer.unpause()
 				

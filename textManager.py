@@ -145,7 +145,7 @@ class text_manager():
 class dialogue_box(text_manager):
     def __init__(self, ini_vol):
         super().__init__()
-        self.obj_directory_names  = ('Test', 'Test2')
+        self.obj_directory_names  = ('Test', 'Test2') #inverse plot index dict
         self.img_master_list = []
         
         self.m_player_sfx_list = ['hat.wav']

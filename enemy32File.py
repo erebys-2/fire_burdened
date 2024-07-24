@@ -168,9 +168,9 @@ class enemy_32wide(pygame.sprite.Sprite):
                 if self.action == 1: #when the dog is running it has an attack hitbox
                     
                     if self.direction < 0:
-                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.width//2 + 8, self.height - 32)
+                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.width//2 + 16, self.height - 32)
                     else:
-                        self.atk_rect = pygame.Rect(self.rect.x + self.width//2, self.rect.y + 16, self.width//2 + 8, self.height - 32)
+                        self.atk_rect = pygame.Rect(self.rect.x + self.width//2 - 8, self.rect.y + 16, self.width//2 + 16, self.height - 32)
                     self.atk_rect_scaled = self.atk_rect.scale_by(0.8)
                 else:
                     self.atk1_kill_hitbox()
@@ -325,18 +325,18 @@ class enemy_32wide(pygame.sprite.Sprite):
                 self.rando_frame += 1
             else:
                 self.rando_frame = 0
-            
+                
+            dx = -self.direction * self.recoil
             self.do_screenshake = True
             self.inundated = True
-            dx = -self.direction * self.recoil
+            
             if player_action ==  10 or player_action == 9:
                 self.dmg_multiplier = 6
             elif player_action == 7 or player_action == 8:
                 self.dmg_multiplier = 2
-        elif (self.rect.colliderect(player_rect.scale_by(0.8)) 
-            #and (player_action == 0 or player_action == 6)
-            or (self.rect.x < player_rect.x and self.rect.right > player_rect.right 
-            and not self.inundated)
+                
+        elif ((self.rect.colliderect(player_rect.scale_by(0.8)) or (self.rect.x < player_rect.x and self.rect.right > player_rect.right )
+            and not (self.inundated or self.rect.colliderect(player_atk_rect)))
               ):
             dx = -dx
             self.direction = 0
@@ -345,7 +345,8 @@ class enemy_32wide(pygame.sprite.Sprite):
             
         elif player_action == 6 and self.rect.colliderect(player_rect):
             dx = 0
-        else:
+        
+        if self.direction == 0:
             if self.flip:
                 self.direction = 1
             else:

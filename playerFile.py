@@ -346,10 +346,11 @@ class player(pygame.sprite.Sprite):
                         self.hits_tanked += rate
                         
             for obj in obj_list[2]:
-                if self.collision_rect.colliderect(obj.rect) and self.disp_flag == False:
+                if self.collision_rect.colliderect(obj.rect) and self.action == 0 and dx == 0:
                     self.dialogue_trigger_ready = True
-                else:
-                    self.dialogue_trigger_ready = False
+                #     #print(obj.name)
+                # else:
+                #     self.dialogue_trigger_ready = False
                 
         return (dx, dy, in_air)
             
@@ -490,7 +491,7 @@ class player(pygame.sprite.Sprite):
     
     def move(self, pause_game, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, screenW, screenH, obj_list, the_sprite_group):
         #reset mvmt variables
-        
+        self.dialogue_trigger_ready = False
         self.collision_rect.x = self.rect.x + self.width
         self.collision_rect.y = self.rect.y
         

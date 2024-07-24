@@ -61,8 +61,15 @@ class sprite_group():
 			if particle.Active == False:
 				self.particle_group_bg.remove(particle)
     
-
-
+		for obj in self.textprompt_group:
+			obj.draw(screen)
+			if not pause_game and obj.enabled:
+				obj.animate(self.sp_group_list)
+				obj.get_dialogue_index(obj.current_level, obj.current_p_inv, obj.current_dialogue_index)
+				obj.display_interaction_prompt(dialogue_enable, player_hitbox_rect, screen, scroll_x)
+				if obj.player_collision:
+					self.textbox_output = obj.enable(dialogue_enable, next_dialogue)
+					#print(obj.enable(dialogue_enable, next_dialogue, screen, player_hitbox_rect, scroll_x))
 
 		for enemy0 in self.enemy0_group:
 			enemy0.draw(screen)
@@ -103,7 +110,7 @@ class sprite_group():
 			# 	player_bullet.m_player.update_eq_regime()
 			if player_bullet.Active == False:
 				self.player_bullet_group.remove(player_bullet)
-    
+
 		for particle in self.particle_group:
 			particle.draw(screen)
 			if not pause_game:
@@ -112,14 +119,7 @@ class sprite_group():
 			if particle.Active == False:
 				self.particle_group.remove(particle)
     
-		for obj in self.textprompt_group:
-			obj.draw(screen)
-			if not pause_game:
-				obj.animate(self.sp_group_list)
-				obj.get_dialogue_index(obj.current_level, obj.current_p_inv, obj.current_dialogue_index)
-				self.textbox_output = obj.enable(dialogue_enable, next_dialogue, screen, font, player_hitbox_rect, scroll_x)
 
-    
 	def update_groups_infront_player(self, pause_game, screen, scroll_x, world_solids, player_hitbox_rect, player_atk_rect_scaled, player_action):
     
 		for p_int in self.p_int_group:
