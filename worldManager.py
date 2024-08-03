@@ -5,6 +5,7 @@ from enemy32File import enemy_32wide #type: ignore
 from particle import particle_ #type: ignore
 from player_interactable import player_interactable_
 from dialogueCSVformatter import csv_extracter
+from BGspritesFile import tree, fountain, lamp
 
 from npcFile import npc, Test, Test2
 
@@ -128,6 +129,7 @@ class World():
                     img = self.tileList[0][tile]
                     img_rect = img.get_rect()
                     if(tile == 17):#pass thru 1 way
+                        #img = pygame.transform.scale(img, (32,32))
                         img_rect = pygame.Rect(0, 0, 32, 16)
                     elif(tile == 10):#level transition tile
                         img = self.tileList[0][9]
@@ -235,21 +237,21 @@ class World():
                         img = self.tileList[1][tile-30]
                         
                     if tile == 31:
-                        bg_particle_0 = particle_(x*32, y*32, -1, 1, 'lamp_flash', False, 0, False)
-                        the_sprite_group.particle_group_bg.add(bg_particle_0)
-                    # elif tile == 36:
-                    #     bg_particle_0 = particle_(x*32, y*32, -1, 1, 'tree_leaves', False, 0)
-                    #     the_sprite_group.particle_group_bg.add(bg_particle_0)
-                    elif tile == 39:
-                        bg_particle_0 = particle_(x*32, y*32, -1, 1, 'fountain', False, 0, False)
-                        the_sprite_group.particle_group_bg.add(bg_particle_0)
+                        bg_sprite = lamp(x*32, y*32, 1, False, 'lamp')
+                        the_sprite_group.bg_sprite_group.add(bg_sprite)
+                    elif tile == 36:
+                        bg_sprite = tree(x*32, y*32, 1, False, 'tree')
+                        the_sprite_group.bg_sprite_group.add(bg_sprite)
+                    elif tile == 39:        
+                        bg_sprite = fountain(x*32, y*32, 1, False, 'fountain')
+                        the_sprite_group.bg_sprite_group.add(bg_sprite)
                     
                     img_rect = img.get_rect()
                     img_rect.x = x * 32
                     img_rect.y = y * 32
                     tile_data = (img, img_rect, tile)
-                    
-                    rtrn_list.append(tile_data)
+                    if tile != 36 and tile != 39:
+                        rtrn_list.append(tile_data)
                     
                                        
     def draw_bg_layers(self, w_screen, scroll_X, scroll_Y, data):

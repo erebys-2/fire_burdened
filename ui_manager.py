@@ -76,7 +76,10 @@ class ui_manager():
         with open(f'dynamic_CSVs/{data_name}.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter = ',')
             writer.writerow(data)
-
+            
+#this is essentially methods calling other methods
+#menus are methods and they're drawn by the impulse signal trigger_once
+#the last menu will be restored when the current sub menu kills its own enable signal
 #-----------------------------------------------------------main menu----------------------------------------------------------
     def show_main_menu(self, screen):
         next_level = 0

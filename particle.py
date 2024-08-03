@@ -23,7 +23,6 @@ class particle_(pygame.sprite.Sprite):
         #play the sound at the very end of the constructor
         self.Active = True
         self.particle_type = type
-        self.is_bg = False
         #self.action = 0
         self.bound = bound
         self.direction = direction
@@ -50,9 +49,6 @@ class particle_(pygame.sprite.Sprite):
         self.image = self.frame_list[self.frame_index]
         self.rect = self.image.get_rect()
         
-        if (self.particle_type == 'tree_leaves' or self.particle_type == 'bush_leaves' or self.particle_type == 'lamp_flash' or
-             self.particle_type == 'fountain'):
-            self.is_bg = True
         
         if any(self.particle_type == particle for particle in self.sprite_centered):
             self.rect.center = (x,y)
@@ -71,17 +67,18 @@ class particle_(pygame.sprite.Sprite):
         dx = 0
         dy = 0
         #if self.bound == False:
-        if self.is_bg == False:
-            if self.rect.x > 896 or self.rect.x < -96 or self.rect.y > 480 or self.rect.y < 0:
-                self.Active = False
-                self.kill()
+
+        if self.rect.x > 896 or self.rect.x < -96 or self.rect.y > 480 or self.rect.y < 0:
+            self.Active = False
+            self.kill()
+            
         if self.particle_type == 'shooter_death':
             self.rect.y -= 4*(1/(self.frame_index+1))
             
         elif self.particle_type == 'dog_death':
             self.rect.y -= 2*(1/(self.frame_index+1))
             
-        if self.particle_type == 'player_down_strike':
+        elif self.particle_type == 'player_down_strike':
             dx += -self.direction * 1
 
         self.rect.x += (dx - scrollx)
@@ -104,10 +101,7 @@ class particle_(pygame.sprite.Sprite):
             'sparks': 40
         }    
         
-        if self.is_bg:
-            frame_update = 300
-        else:
-            frame_update = framerates[self.particle_type]
+        frame_update = framerates[self.particle_type]
             
         #still frame particles
         if self.frame_sync:
@@ -132,9 +126,9 @@ class particle_(pygame.sprite.Sprite):
                 # if self.particle_type == 'dog_death' or self.particle_type == 'shooter_death':
                 #     self.m_player.play_sound(self.m_player.sfx[0])
                 self.frame_index = 0
-                if self.is_bg == False:
-                    self.Active = False
-                    self.kill()
+
+                self.Active = False
+                self.kill()
     
     def draw(self, p_screen):
         

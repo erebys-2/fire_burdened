@@ -342,8 +342,8 @@ while run:
 	
 	if not pause_game:
 		player0.animate(the_sprite_group)
-		player0.do_entity_collisions(the_sprite_group, obj_list, level_transitioning)
 		if player_enable_master: 
+			player0.do_entity_collisions(the_sprite_group, obj_list, level_transitioning)
 			player0_lvl_transition_data = player0.move(pause_game, move_L, move_R, world.solids, world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
 														SCREEN_WIDTH, SCREEN_HEIGHT, obj_list, the_sprite_group)
 		scroll_x = player0.scrollx + camera.scrollx
@@ -355,7 +355,7 @@ while run:
 
 	#dialogue trigger sent here
 	the_sprite_group.update_groups_behind_player(pause_game, screen, player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, player0.direction, obj_list, 
-                                              dialogue_enable, next_dialogue, font_larger)
+                                              dialogue_enable, next_dialogue)
 	player0.draw(screen)
 	the_sprite_group.update_groups_infront_player(pause_game, screen, scroll_x, world.solids, player0.hitbox_rect, player0.atk_rect_scaled, player0.action)
    
@@ -393,16 +393,16 @@ while run:
 			if not do_screenshake_master:
 				do_screenshake_master = True
 				if player0.sprint:
-					screenshake_profile = (10, 3, 2)
+					screenshake_profile = (10, 6, 2)
 				else:
-					screenshake_profile = (6, 2, 2)
+					screenshake_profile = (6, 4, 2)
 
 	if do_screenshake_master:
 		ss_output = camera.screen_shake(screenshake_profile, do_screenshake_master)
 		do_screenshake_master = ss_output[0]
 		player0.rect.x += ss_output[1][0]
 		scroll_x += ss_output[1][1]
-		player0.vel_y += ss_output[1][2]
+		player0.vel_y += ss_output[1][2]*1.02
 		scroll_y = -ss_output[1][3]
   
  

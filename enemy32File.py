@@ -335,8 +335,8 @@ class enemy_32wide(pygame.sprite.Sprite):
             elif player_action == 7 or player_action == 8:
                 self.dmg_multiplier = 2
                 
-        elif ((self.rect.colliderect(player_rect.scale_by(0.8)) or (self.rect.x < player_rect.x and self.rect.right > player_rect.right )
-            and not (self.inundated or self.rect.colliderect(player_atk_rect)))
+        elif (self.rect.colliderect(player_rect.scale_by(0.8)) or (self.rect.x < player_rect.x and self.rect.right > player_rect.right )
+            #and not (self.inundated or self.rect.colliderect(player_atk_rect))
               ):
             dx = -dx
             self.direction = 0
@@ -448,7 +448,8 @@ class enemy_32wide(pygame.sprite.Sprite):
             self.explode(sp_group_list)
             self.Alive = False
             #print(obj_list[0].index(self))
-            obj_list[0].pop(obj_list[0].index(self))
+            #obj_list[0].pop(obj_list[0].index(self))
+            del obj_list[0][obj_list[0].index(self)]
             self.kill()
         
         #colliding with bullet 

@@ -67,6 +67,7 @@ class player(pygame.sprite.Sprite):
         self.roll_count = 0
         self.roll_limit = 1
         self.roll_stam_rate = 0.25
+        self.hitting_wall = False
         
         self.sprint = False
         self.change_direction = False
@@ -271,7 +272,7 @@ class player(pygame.sprite.Sprite):
                 if pygame.sprite.spritecollide(self, enemy[1], False): 
                     if pygame.sprite.spritecollide(self, enemy[1], False, pygame.sprite.collide_mask):
                         # if enemy[1] == the_sprite_group.enemy0_group:
-                        #     damage += 1.5
+                        #     print(enemy)
                         if enemy[1] == the_sprite_group.enemy_bullet_group:
                             damage += 3
                             self.hurting = True
@@ -362,6 +363,7 @@ class player(pygame.sprite.Sprite):
         dx = dxdy[0]
         dy = dxdy[1] 
         self.in_air = dxdy[2]
+        #self.hitting_wall = False
         
         
         #size adjust for displaced rects
@@ -404,6 +406,7 @@ class player(pygame.sprite.Sprite):
                     ):
                     dx = 0
                     self.hitting_wall = True
+                    #print(self.hitting_wall)
                     
                     if (tile[1].colliderect(self.collision_rect.x, self.collision_rect.y, self.width, self.height - 17) 
                         #and self.vel_y > 0
@@ -415,10 +418,12 @@ class player(pygame.sprite.Sprite):
                     # self.in_air = False
                     # self.curr_state = False
                     #self.landing = False
+                else:
+                    self.hitting_wall = False
                         
                 #dy collision stuff, sinking through tiles etc
                 
-                if (tile[1].colliderect(self.collision_rect.x, self.collision_rect.y + dy, self.width , self.height)
+                if (tile[1].colliderect(self.collision_rect.x + 1, self.collision_rect.y + dy, self.width - 2, self.height)
                     #and not self.disp_flag
                     ):
 
@@ -438,12 +443,12 @@ class player(pygame.sprite.Sprite):
                     else: #IMPORTANT---------------------default floor and ceiling collisions
                         #basically there's 2 collision checks that each make up half of the collision rect, upper and lower
                         
-                        if tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//2):
+                        if tile[1].colliderect(self.collision_rect.x + 1, self.collision_rect.y + self.height//2 + dy, self.width - 2, self.height//2):
                             dy = tile[1].top  - self.rect.bottom #-1
                             self.rolled_into_wall = False
                             self.in_air = False
                             
-                        elif tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + dy, self.width, self.height//2):
+                        elif tile[1].colliderect(self.collision_rect.x + 1, self.collision_rect.y + dy, self.width - 2, self.height//2):
                             dy = tile[1].bottom  - self.rect.top
                 elif  (not tile[1].colliderect(self.collision_rect.x, self.collision_rect.y + dy, self.width , self.height)
                         and not self.in_air
@@ -460,12 +465,12 @@ class player(pygame.sprite.Sprite):
                     self.hits_tanked = 6
             
             elif(tile[2] == 17):#one way tiles
-                if tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.bottom - 16 + dy, self.width, 17):
+                if tile[1].colliderect(self.collision_rect.x, self.collision_rect.bottom - 16 + dy, self.width, 18):
                     if self.vel_y >= 0: 
                         self.vel_y = 0
                         self.in_air = False
                     elif self.vel_y < 0:
-                        self.vel_y *= 0.6#velocity dampening when passing thru tile
+                        self.vel_y *= 0.8#velocity dampening when passing thru tile
                         self.in_air = True
 
                     dy = tile[1].top - self.collision_rect.bottom
@@ -574,7 +579,7 @@ class player(pygame.sprite.Sprite):
                     # if pygame.time.get_ticks() < self.update_time + 20:
                     #     self.m_player.play_sound(self.m_player.sfx[1])
                     if self.crit:
-                        dx = self.direction *4 *self.speed
+                        dx = self.direction * 4 * self.speed
                         if self.in_air and self.vel_y + 5 <= 20:
                             self.vel_y += 5
                     else:
@@ -582,18 +587,16 @@ class player(pygame.sprite.Sprite):
                             multiplier = 2
                         else:
                             multiplier = 1
-                        dx = self.direction *(multiplier *(self.speed) + 1)
+                        dx = self.direction * (multiplier * (self.speed) + 2)
+                        
                         if self.action == 7:
                             self.vel_y -= 0.6
-                            #print(self.vel_y)
-                            
-                        elif self.action == 8 and self.vel_y + 5 <= 26 and self.vel_y > 0 and self.in_air: #25 max 
+                        elif self.action == 8 and self.vel_y + 7 <= 28 and self.vel_y > 0 and self.in_air: #25 max 
                             self.vel_y += 7
-                            
-                    #self.screen_shake() #does not work
+
                 elif self.frame_index > 1 :# slow forward speed
                     if self.crit:
-                        dx = self.direction *2
+                        dx = self.direction * 2
                     else:
                         if (moveL and self.direction == 1) or (moveR and self.direction == -1):
                             dx = 0
@@ -669,10 +672,12 @@ class player(pygame.sprite.Sprite):
             
         #hurting/ enemy collisions
         if self.hurting == True and self.rolling == False:
-            if self.frame_index < 2:
-                dx = -self.direction * 4
-                self.do_screenshake = True
-                self.screenshake_profile = (3, 3, 2)
+            if not self.hitting_wall and self.frame_index < 2:
+                dx -= self.direction * 4
+            elif self.hitting_wall:
+                dx = 0
+            self.do_screenshake = True
+            self.screenshake_profile = (3, 3, 2)
             # elif self.frame_index > 1:
             #     dx = -self.direction * 2
 
@@ -818,6 +823,7 @@ class player(pygame.sprite.Sprite):
         if self.hits_tanked >= self.hp:#killing the player------------------------------------------------
             self.hits_tanked = self.hp
             self.Alive = False
+            self.hurting = False
             
     
     #drawing during game and animations----------------------------------------
@@ -1003,7 +1009,7 @@ class player(pygame.sprite.Sprite):
             elif self.action == 9 and (new_action == 7 or new_action == 8) and self.atk1:
                 self.crit = True
                 self.do_screenshake = True
-                self.screenshake_profile = (16, 4, 2)
+                self.screenshake_profile = (16, 6, 2)
                 self.m_player.play_sound(self.m_player.sfx[4])
             elif self.action != 9 and (new_action == 7 or new_action == 8):
                 self.crit == False
