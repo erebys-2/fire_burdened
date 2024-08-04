@@ -292,7 +292,7 @@ class player(pygame.sprite.Sprite):
             #rect based collisions
             for enemy in obj_list[0]:
                 if (self.hitbox_rect.colliderect(enemy.atk_rect_scaled)):
-                    damage += 1.5
+                    damage += 0
                     self.hurting = True
                     self.take_damage(damage) 
                 damage = 0
@@ -674,13 +674,14 @@ class player(pygame.sprite.Sprite):
         #make this scale with the charge
             
         #hurting/ enemy collisions
-        if self.hurting == True and self.rolling == False:
+        if self.hurting and not self.rolling:
             if not self.hitting_wall and self.frame_index < 2:
                 dx -= self.direction * 4
+                self.do_screenshake = True
+                self.screenshake_profile = (-3, 3, 2)
             elif self.hitting_wall:
-                dx = 0
-            self.do_screenshake = True
-            self.screenshake_profile = (3, 3, 2)
+                dx = 1.5
+            
             # elif self.frame_index > 1:
             #     dx = -self.direction * 2
 
