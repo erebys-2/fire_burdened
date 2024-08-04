@@ -38,7 +38,7 @@ SET UP: (This is for Windows, GG Mac bros)
     2. Pygame, 
 
         To install Pygame on Windows:
-        Win + R, type "cmd", enter, then paste: "python3 -m pip install -U pygame"
+        Win + R, type "cmd", enter, then paste: "python -m pip install -U pygame"
 
     3. Visual Studio Code or some other IDE, 
 
