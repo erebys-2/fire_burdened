@@ -383,6 +383,7 @@ class player(pygame.sprite.Sprite):
                 if self.action == 9 and tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//4 - 2):
                     dx = -1 * self.direction 
                     self.rolled_into_wall = True
+                    self.hitting_wall = True
                     if self.frame_index > 0:
                         if self.rolling:#you can die via concussion now
                             self.m_player.play_sound(self.m_player.sfx[7])
@@ -399,6 +400,7 @@ class player(pygame.sprite.Sprite):
                     and tile[1].colliderect(self.collision_rect.x + disp_x + dx, self.collision_rect.y, self.width, self.height - 17)
                     ):
                     dx = -16*self.direction
+                    self.hitting_wall = True
                 
                 #wall collisions while NOT rolling
                 elif (tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y, self.width, self.height - 17) 
@@ -645,6 +647,7 @@ class player(pygame.sprite.Sprite):
             
         if self.action == 3 or self.action == 1 or self.action == 0:
             self.jump_dampen = False
+            self.in_air = False
         
         #land
         
