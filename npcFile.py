@@ -114,11 +114,13 @@ class npc(pygame.sprite.Sprite):
         
         return (message, self.player_collision, dialogue_enable, self.name, expression, self.character_index_dict[self.name])
     
-    def display_interaction_prompt(self, dialogue_enable, player_rect, screen, scrollx):
+    def display_interaction_prompt(self, dialogue_enable, player_rect, screen):
         self.player_collision = self.rect.colliderect(player_rect)
         if self.player_collision and self.name != 'invisible_prompt':
             if not dialogue_enable:
                 screen.blit(self.interaction_prompt, (self.rect.x, self.rect.y - 24, 32, 32))
+        
+    def scroll_along(self, scrollx):
         self.rect.x += ( - scrollx)
 
     def disable(self):

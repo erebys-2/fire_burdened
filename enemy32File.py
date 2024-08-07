@@ -5,6 +5,7 @@ from bullet import bullet_ #type: ignore
 #print('directory: ' + os.getcwd())
 from particle import particle_ #type: ignore
 from music_player import music_player #type: ignore
+from ItemFile import Item #type: ignore
 import random
  
 #GRAVITY = 0.75
@@ -151,6 +152,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             #enemy type specific behaviors--------------------------------------------------------------------------------------
             if self.enemy_type == 'dog':
                 
+
                 if player_rect.x > self.rect.x - 5*32 and player_rect.x <= self.rect.x:
                     dx = -self.speed *self.speed_boost
                     self.direction = -1
@@ -160,16 +162,17 @@ class enemy_32wide(pygame.sprite.Sprite):
                     dx = self.speed *self.speed_boost
                     self.direction = 1
                     moving = True
-                
+                        
+
                 if player_rect.centerx > self.rect.x and player_rect.centerx < self.rect.right:
                     self.direction = 0
                     
                 
                 if self.action == 1: #when the dog is running it has an attack hitbox
                     
-                    if self.direction < 0:
+                    if self.direction == -1:
                         self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.width//2 + 16, self.height - 32)
-                    else:
+                    elif self.direction == 1:
                         self.atk_rect = pygame.Rect(self.rect.x + self.width//2 - 8, self.rect.y + 16, self.width//2 + 16, self.height - 32)
                     self.atk_rect_scaled = self.atk_rect.scale_by(0.8)
                 else:
@@ -450,6 +453,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             #print(obj_list[0].index(self))
             #obj_list[0].pop(obj_list[0].index(self))
             del obj_list[0][obj_list[0].index(self)]
+            sp_group_list[12].add(Item('test', self.rect.centerx, self.rect.centery))
             self.kill()
         
         #colliding with bullet 

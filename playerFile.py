@@ -292,7 +292,7 @@ class player(pygame.sprite.Sprite):
             #rect based collisions
             for enemy in obj_list[0]:
                 if (self.hitbox_rect.colliderect(enemy.atk_rect_scaled)):
-                    damage += 0
+                    damage += 1.5
                     self.hurting = True
                     self.take_damage(damage) 
                 damage = 0
@@ -547,8 +547,8 @@ class player(pygame.sprite.Sprite):
 
 
 		#rolling 
-        if self.rolling == True:
-            if self.flip == True :
+        if self.rolling and not self.hurting:
+            if self.flip:
                 dx = -(self.speed + 2)
             else:
                 dx = (self.speed + 2)
@@ -569,7 +569,7 @@ class player(pygame.sprite.Sprite):
         #------------------------------------------------------------------------------------------------------------------
 
         
-        if self.atk1:#adjusting speed to simulate momentum, motion stuff
+        if self.atk1 and not self.hurting:#adjusting speed to simulate momentum, motion stuff
             self.curr_state = self.in_air
             #if not break atk1
             if (not (((moveL and self.direction == 1) or (moveR and self.direction == -1)) and self.frame_index > 2) 
@@ -678,9 +678,9 @@ class player(pygame.sprite.Sprite):
             if not self.hitting_wall and self.frame_index < 2:
                 dx -= self.direction * 4
                 self.do_screenshake = True
-                self.screenshake_profile = (-3, 3, 2)
+                self.screenshake_profile = (-1, 3, 2)
             elif self.hitting_wall:
-                dx = 1.5
+                dx = 0
             
             # elif self.frame_index > 1:
             #     dx = -self.direction * 2

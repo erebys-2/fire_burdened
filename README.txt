@@ -25,9 +25,6 @@ This is my first major coding project outside of school assignments so there wil
 Now and then I go back and try to clean up older code as I learn better coding.
 For now there is sadness and desperation in these lines.
 
-Live Dev Log: 
-https://docs.google.com/document/d/1DKHFFTGyHRi6FeIa0QXCALuBxQLR8XExPAktH98XHok/edit?usp=sharing
-
 
 ------------------------------------------------------------------------------------------------
 SET UP: (This is for Windows, GG Mac bros)

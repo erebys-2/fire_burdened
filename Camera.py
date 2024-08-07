@@ -64,30 +64,20 @@ class Camera():
                     
     def auto_correct(self, player_rect, world_coords, world_tile0_coord, world_limit, screenW, screenH):
         self.scrollx = 0
-        
         self.get_pos_data(player_rect, world_coords)
                 
-        #basically an edge case detector for when the player goes to the ends of the level
-        #when the player is at the left end of the level
-        if player_rect.x + 32 < self.rect.x and self.x_coord > screenW//2 - 32 and player_rect.right + 32 < world_limit[0] - (screenW//2 + 32): 
-            #+16 here is determined by the rudimentary scrolling in the player file "if self.x_coord < screenW//2 -32:", where -32 = x
-            #to change, basically add the opposite of x to 16
-            #fuck idk anymore
-            player_rect.x += 1
-            self.scrollx -= 1
-            #self.on_right_edge = False
-            
-        elif player_rect.x + 32 < self.rect.x and self.x_coord < screenW - 32 and world_tile0_coord[0] > 0:
+        #when the player is on the left half screen of the level
+        if player_rect.x + 32 < self.rect.x and self.x_coord < screenW - 32 and world_tile0_coord[0] > 0:
             player_rect.x -= world_tile0_coord[0]
             self.scrollx += world_tile0_coord[0]
             
-        #when the player is at the right end
+        #when the player on the right half screen of the level
         elif player_rect.right - 16 > self.rect.right and self.x_coord2 < world_limit[0] - (screenW//2 + 32) and player_rect.right - 16 < self.x_coord2 + screenW//2 - 32: 
             player_rect.x -= 1
             self.scrollx += 1
             #self.on_right_edge = True
             #print("working")
-            
+    
         else:
             #set player to center screen
             #self.on_right_edge = False
@@ -111,7 +101,7 @@ class Camera():
             #tests if the player is beyond the first screen half of the level and if the initial position needs to be set, middle boolean is a limiter
             
             dx = player_rect.x - self.x_coord #adjustment for if the player is not on the right edge
-            dx2 = dx - (screenW//2 + 32) #adjustment for if the player is on the right edge
+            dx2 = dx - (screenW//2 ) #adjustment for if the player is on the right edge
             
             if self.on_r_edge == False: #idk why this is faster?? the camera will lag without this boolean
                 temp_x = player_rect.x #probably has to do with this statement

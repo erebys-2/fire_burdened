@@ -14,19 +14,21 @@ class sprite_group():
 		self.p_int_group2 = pygame.sprite.Group()
 		self.textprompt_group = pygame.sprite.Group()
 		self.bg_sprite_group = pygame.sprite.Group()
+		self.item_group = pygame.sprite.Group()
 		
 		self.sp_groups_with_vol = [
 			self.enemy0_group,
 			self.enemy_bullet_group,
 			self.p_int_group,
 			self.p_int_group2,
-			self.textprompt_group
+			self.textprompt_group,
+			self.item_group
 			#self.enemy_bullet_group2
 		]
   
 		self.sp_group_list = [
-			self.enemy0_group,
-			self.enemy_bullet_group,
+			self.enemy0_group, 
+			self.enemy_bullet_group, 
 			self.player_bullet_group,
 			self.particle_group,
 			self.particle_group_bg,
@@ -36,7 +38,8 @@ class sprite_group():
 			self.p_int_group,
 			self.p_int_group2,
 			self.textprompt_group,
-			self.bg_sprite_group
+			self.bg_sprite_group,
+			self.item_group
 		]
   
 		self.hostiles_group = (self.enemy0_group, self.enemy_bullet_group, self.enemy_bullet_group2, self.p_int_group2)
@@ -52,6 +55,13 @@ class sprite_group():
 			group.empty()
    
 		self.textbox_output = ('', False, False, '', 0)
+  
+	def update_item_group(self, pause_game, player_hitbox_rect, pick_up_confirmation, scroll_x, screen):
+		for item in self.item_group:
+			item.draw(screen)
+			item.scroll_along(scroll_x)
+			item.enable(player_hitbox_rect, pick_up_confirmation, pause_game)#player has to send pick up confirmation
+			
 			
 	def update_groups_behind_player(self, pause_game, screen, player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, player_direction, obj_list, 
                                  dialogue_enable, next_dialogue):
@@ -74,7 +84,8 @@ class sprite_group():
 			if not pause_game and obj.enabled:
 				obj.animate(self.sp_group_list)
 				obj.get_dialogue_index(obj.current_level, obj.current_p_inv, obj.current_dialogue_index)
-				obj.display_interaction_prompt(dialogue_enable, player_hitbox_rect, screen, scroll_x)
+				obj.display_interaction_prompt(dialogue_enable, player_hitbox_rect, screen)
+				obj.scroll_along(scroll_x)
 				if obj.player_collision:
 					self.textbox_output = obj.enable(dialogue_enable, next_dialogue)
 					#print(obj.enable(dialogue_enable, next_dialogue, screen, player_hitbox_rect, scroll_x))
@@ -84,8 +95,6 @@ class sprite_group():
 			if not pause_game:
 				enemy0.animate(self.sp_group_list, obj_list)
 				enemy0.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list, obj_list)
-			# elif update_vol:
-			# 	enemy0.m_player.update_eq_regime()
 			if enemy0.Alive == False:
 				self.enemy0_group.remove(enemy0)
 
@@ -94,8 +103,6 @@ class sprite_group():
 			if not pause_game:
 				enemy_bullet.animate()
 				enemy_bullet.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list, player_direction, obj_list)
-			# elif update_vol:
-			# 	enemy_bullet.m_player.update_eq_regime()
 			if enemy_bullet.Active == False:
 				self.enemy_bullet_group.remove(enemy_bullet)
     
@@ -104,8 +111,6 @@ class sprite_group():
 			if not pause_game:
 				enemy_bullet.animate()
 				enemy_bullet.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list, player_direction, obj_list)
-			# elif update_vol:
-			# 	enemy_bullet.m_player.update_eq_regime()
 			if enemy_bullet.Active == False:
 				self.enemy_bullet_group2.remove(enemy_bullet)
 	
@@ -114,8 +119,6 @@ class sprite_group():
 			if not pause_game:
 				player_bullet.animate()
 				player_bullet.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list, player_direction, obj_list)
-			# elif update_vol:
-			# 	player_bullet.m_player.update_eq_regime()
 			if player_bullet.Active == False:
 				self.player_bullet_group.remove(player_bullet)
 
