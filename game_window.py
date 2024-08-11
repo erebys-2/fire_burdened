@@ -356,7 +356,7 @@ while run:
 	#dialogue trigger sent here
 	the_sprite_group.update_groups_behind_player(pause_game, screen, player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, player0.direction, obj_list, 
                                               dialogue_enable, next_dialogue)
-	the_sprite_group.update_item_group(pause_game, player0.hitbox_rect, True, scroll_x, screen)
+	the_sprite_group.update_item_group(pause_game, player0.hitbox_rect, scroll_x, screen)
 	player0.draw(screen)
 	the_sprite_group.update_groups_infront_player(pause_game, screen, scroll_x, world.solids, player0.hitbox_rect, player0.atk_rect_scaled, player0.action)
    

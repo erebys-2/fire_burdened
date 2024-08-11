@@ -56,11 +56,11 @@ class sprite_group():
    
 		self.textbox_output = ('', False, False, '', 0)
   
-	def update_item_group(self, pause_game, player_hitbox_rect, pick_up_confirmation, scroll_x, screen):
+	def update_item_group(self, pause_game, player_hitbox_rect, scroll_x, screen):
 		for item in self.item_group:
 			item.draw(screen)
 			item.scroll_along(scroll_x)
-			item.enable(player_hitbox_rect, pick_up_confirmation, pause_game)#player has to send pick up confirmation
+			item.enable(player_hitbox_rect, pause_game)#player has to send pick up confirmation
 			
 			
 	def update_groups_behind_player(self, pause_game, screen, player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, player_direction, obj_list, 

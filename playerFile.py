@@ -3,6 +3,7 @@ import os
 from bullet import bullet_ #type: ignore
 from particle import particle_ #type: ignore
 from music_player import music_player #type: ignore
+from ItemFile import inventory_handler
 import math
 import random
 #print('directory: ' + os.getcwd())
