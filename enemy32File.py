@@ -104,9 +104,9 @@ class enemy_32wide(pygame.sprite.Sprite):
         self.atk_rect.height = 0
         self.atk_rect_scaled = self.atk_rect
         
-    def do_obj_list_collisions(self, obj_list, dx, dy):
+    def do_p_int_group_collisions(self, p_int_group, dx, dy):
        
-        for p_int in obj_list[1]:
+        for p_int in p_int_group:
             if p_int.collision_and_hostility[p_int.type][0]:
                 if (p_int.rect.colliderect(self.rect.x+2, self.rect.y + dy, self.width-4, self.height) and self.action != 2):
                     if self.rect.bottom >= p_int.rect.top and self.rect.bottom <= p_int.rect.y + 32:
@@ -141,7 +141,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                         self.hits_tanked += rate
         return (dx,dy)
         
-    def move(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list, obj_list):
+    def move(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list):
         dx = 0
         dy = 0
         moving = False
@@ -365,7 +365,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                     dx += self.direction * 2
 
 
-        dxdy = self.do_obj_list_collisions(obj_list, dx, dy)
+        dxdy = self.do_p_int_group_collisions(sp_group_list[8], dx, dy)
         dx = dxdy[0]
         dy = dxdy[1]
         #world collisions
@@ -444,15 +444,15 @@ class enemy_32wide(pygame.sprite.Sprite):
         self.rect.x += (dx - scrollx)
         self.rect.y += dy
     
-    def animate(self, sp_group_list, obj_list):
+    def animate(self, sp_group_list):
         
         if self.dead == True:
             self.m_player.play_sound(self.m_player.sfx[0])
             self.explode(sp_group_list)
             self.Alive = False
-            #print(obj_list[0].index(self))
-            #obj_list[0].pop(obj_list[0].index(self))
-            del obj_list[0][obj_list[0].index(self)]
+            # #print(obj_list[0].index(self))
+            # #obj_list[0].pop(obj_list[0].index(self))
+            # del obj_list[0][obj_list[0].index(self)]
             sp_group_list[12].add(Item('test', self.rect.centerx, self.rect.centery, 1))
             self.kill()
         

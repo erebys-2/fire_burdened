@@ -83,27 +83,38 @@ class inventory_handler():
         #create a limited list of lists
         self.inventory = []
         for i in range(self.slot_count):
-            self.inventory[i] = ['empty', 0] #[ID, count]
+            self.inventory.append(['empty', 0]) #[ID, count]
+            i += 1
+
+        print(self.inventory)
             
+    #will probably need a csv reader for this one somewhere along the process
+    #used for loading inventory from save file        
+    def load_saved_inventory(self, inventory):
+        self.inventory = inventory
     
     def find_available_slot(self, item_id):
         slot_index = 0
+        stacked = False
+        allocated = False
         
-        #first check if there's a slot with a matching item ID
+        #first check if there's a slot with a matching item ID (item can stack)
         for slot in self.inventory:
             if slot[0] == item_id:
                 slot_index = self.inventory.index(slot)
+                stacked = True
                 break
                 
-        #then check for the next available slot
-        if slot_index == 0: #slot with matching item id not found
+        #then check for the next available slot (item can be allocated to another slot)
+        if slot_index == 0 and not stacked: #slot with matching item id not found
             for slot in self.inventory:
                 if slot == ['empty', 0]:
                     slot_index = self.inventory.index(slot)
+                    allocated = True
                     break
         
         #then check if there's any empty slots at all, or if there's no items
-        if slot_index == 0 and self.inventory[slot_index] != ['empty', 0]:
+        if slot_index == 0 and not allocated and not stacked:
             slot_index = -1 #do not pick up item, inventory full
                 
         return slot_index

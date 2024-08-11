@@ -38,12 +38,6 @@ class World():
         self.t_set_index = 0
         tile_set_types = ['standard', 'bg_oversized']
         
-        self.enemy_list = []
-        self.obstacle_list = []
-        self.textprompt_list = []
-        self.bullet_list = []
-        self.obj_list = [self.enemy_list, self.obstacle_list, self.textprompt_list]
-        
         #self.horiz_scrolling = False
         #self.vert_scrolling = False
         
@@ -91,27 +85,25 @@ class World():
         
     #pil_update_flag will be set to true everytime plot index list is updated for a textprompt obj
     #useful method incase multiple npc's with plot sensitive lines are in a single level
-    def update_all_plot_index_lists(self):
-        for obj in self.textprompt_list:
+    def update_all_plot_index_lists(self, textprompt_group):
+        for obj in textprompt_group:
             if obj.pil_update_flag:
                 self.plot_index_list = obj.plot_index_list
                 obj.pil_update_flag = False
                 #print(self.plot_index_list)
-                for obj in self.textprompt_list:
+                for obj in textprompt_group:
                     obj.plot_index_list = self.plot_index_list
                     
                 
     #for saving
-    def get_plot_index_list(self):
-        self.update_all_plot_index_lists()
+    def get_plot_index_list(self, textprompt_group):
+        self.update_all_plot_index_lists(textprompt_group)
         return self.plot_index_list
     
     def clear_data(self):
         for lvl_data in self.lvl_data_list:
             lvl_data *= 0
             
-        for obj in self.obj_list:
-            obj *= 0
 
     #loading the level
     def process_data(self, level, level_data_list, the_sprite_group, screenW, screenH, level_transitions, ini_vol):
@@ -153,37 +145,31 @@ class World():
                         enemy0 = enemy_32wide(x * 32, y * 32, 3, 2, 'dog', enemy0_id, ini_vol)
                         the_sprite_group.enemy0_group.add(enemy0)
                         enemy0_id += 1#for enemy-enemy collisions/ anti stacking
-                        self.enemy_list.append(enemy0)
                     elif tile == 29:
                         enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'shooter', enemy0_id, ini_vol)
                         the_sprite_group.enemy0_group.add(enemy0)
                         enemy0_id += 1#for enemy-enemy collisions/ anti stacking
-                        self.enemy_list.append(enemy0)
                     elif tile == 45:
                         p_int = player_interactable_(x * 32, y * 32, 1, 1, 'crusher_top', ini_vol, True, False)
                         the_sprite_group.p_int_group.add(p_int)
-                        self.obstacle_list.append(p_int)
                     elif tile == 46:
                         p_int2 = player_interactable_(x * 32, y * 32, 2, 1, 'spinning_blades', ini_vol, True, False)
                         the_sprite_group.p_int_group2.add(p_int2)
                     elif tile == 47:
                         p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_h', ini_vol, True, False)
                         the_sprite_group.p_int_group.add(p_int)
-                        self.obstacle_list.append(p_int)
                     elif tile == 48:
                         p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_v', ini_vol, True, False)
                         the_sprite_group.p_int_group.add(p_int)
-                        self.obstacle_list.append(p_int)
                     elif tile == 49:
                         dialogue_list = self.csv_f0.get_specific_npc_data('Test', self.csv_f0.get_all_npc_data('dialogue_data'))
                         Testnpc = Test(x * 32, y * 32, 2, 1, 'Test', ini_vol, True, dialogue_list, self.plot_index_list, level, player_inventory= [])
                         the_sprite_group.textprompt_group.add(Testnpc)
-                        self.textprompt_list.append(Testnpc)
+                        
                     elif tile == 50:
                         dialogue_list = self.csv_f0.get_specific_npc_data('Test2', self.csv_f0.get_all_npc_data('dialogue_data'))
                         Testnpc2 = Test2(x * 32, y * 32, 2, 1, 'Test2', ini_vol, True, dialogue_list, self.plot_index_list, level, player_inventory= [])
                         the_sprite_group.textprompt_group.add(Testnpc2)
-                        self.textprompt_list.append(Testnpc2)
                         
                         
             

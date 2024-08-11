@@ -146,6 +146,8 @@ class player(pygame.sprite.Sprite):
             False, #
             False #turn_around
         )
+        
+        self.inventory_handler = inventory_handler(9)
        
     #methods
     
@@ -264,7 +266,7 @@ class player(pygame.sprite.Sprite):
             the_sprite_group.particle_group_fg.add(particle)
     
     
-    def do_entity_collisions(self, the_sprite_group, obj_list, level_transitioning):
+    def do_entity_collisions(self, the_sprite_group, level_transitioning):
         #----------------------------------------------entity collisions
         damage = 0
         if ((self.action < 7 or self.action > 10) and not self.i_frames_en and not self.hurting and self.Alive and not level_transitioning):
@@ -291,16 +293,29 @@ class player(pygame.sprite.Sprite):
                 damage = 0
 
             #rect based collisions
-            for enemy in obj_list[0]:
+            for enemy in the_sprite_group.enemy0_group:
                 if (self.hitbox_rect.colliderect(enemy.atk_rect_scaled)):
                     damage += 1.5
                     self.hurting = True
                     self.take_damage(damage) 
                 damage = 0
+
+        for item in the_sprite_group.item_group:
+            if (self.hitbox_rect.colliderect(item.rect)):
+                #print("gotteem")
+                self.inventory_handler.pick_up_item(self.collision_rect, the_sprite_group.item_group)
+    
+    def do_npc_collisions(self, dx, textprompt_group):
+        for obj in textprompt_group:
+            if self.collision_rect.colliderect(obj.rect) and self.action == 0 and dx == 0:
+                self.dialogue_trigger_ready = True
+        #     #print(obj.name)
+        # else:
+        #     self.dialogue_trigger_ready = False
                 
-    def do_obj_list_collisions(self, obj_list, dx, dy, the_sprite_group):
+    def do_platform_sprite_collisions(self, dx, dy, platform_sprite_group):
         in_air = self.in_air
-        for p_int in obj_list[1]:
+        for p_int in platform_sprite_group:
             if p_int.collision_and_hostility[p_int.type][0]:
                 #self.atk1_grinding(p_int.rect, the_sprite_group)
                 #y collisions
@@ -346,25 +361,20 @@ class player(pygame.sprite.Sprite):
                         self.hits_tanked = self.hp
                     else:
                         self.hits_tanked += rate
-                        
-            for obj in obj_list[2]:
-                if self.collision_rect.colliderect(obj.rect) and self.action == 0 and dx == 0:
-                    self.dialogue_trigger_ready = True
-                #     #print(obj.name)
-                # else:
-                #     self.dialogue_trigger_ready = False
                 
         return (dx, dy, in_air)
             
-    def do_tile_collisions(self, world_solids, the_sprite_group, dx, dy, obj_list):
+    def do_tile_collisions(self, world_solids, the_sprite_group, dx, dy):
         lvl_transition_flag = False
         lvl_transition_data = []
-        dxdy = self.do_obj_list_collisions(obj_list, dx, dy, the_sprite_group)
+        dxdy = self.do_platform_sprite_collisions(dx, dy, the_sprite_group.p_int_group)
         
         dx = dxdy[0]
         dy = dxdy[1] 
         self.in_air = dxdy[2]
         #self.hitting_wall = False
+        
+        self.do_npc_collisions(dx, the_sprite_group.textprompt_group)
         
         
         #size adjust for displaced rects
@@ -497,7 +507,7 @@ class player(pygame.sprite.Sprite):
             
         return (dx, dy, (lvl_transition_flag, lvl_transition_data))
     
-    def move(self, pause_game, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, screenW, screenH, obj_list, the_sprite_group):
+    def move(self, pause_game, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, screenW, screenH, the_sprite_group):
         #reset mvmt variables
         self.dialogue_trigger_ready = False
         self.collision_rect.x = self.rect.x + self.width
@@ -721,7 +731,7 @@ class player(pygame.sprite.Sprite):
             dxdy = (0,0)
             lvl_transition_flag_and_data = (False, [])
         else:
-            dxdy = self.do_tile_collisions(world_solids, the_sprite_group, dx, dy, obj_list)
+            dxdy = self.do_tile_collisions(world_solids, the_sprite_group, dx, dy)
             
         dx = dxdy[0]
         dy = dxdy[1]

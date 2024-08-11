@@ -63,7 +63,7 @@ class sprite_group():
 			item.enable(player_hitbox_rect, pause_game)#player has to send pick up confirmation
 			
 			
-	def update_groups_behind_player(self, pause_game, screen, player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, player_direction, obj_list, 
+	def update_groups_behind_player(self, pause_game, screen, player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, player_direction, 
                                  dialogue_enable, next_dialogue):
 		for particle in self.particle_group_bg:
 			particle.draw(screen)
@@ -93,8 +93,8 @@ class sprite_group():
 		for enemy0 in self.enemy0_group:
 			enemy0.draw(screen)
 			if not pause_game:
-				enemy0.animate(self.sp_group_list, obj_list)
-				enemy0.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list, obj_list)
+				enemy0.animate(self.sp_group_list)
+				enemy0.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list)
 			if enemy0.Alive == False:
 				self.enemy0_group.remove(enemy0)
 
@@ -102,7 +102,7 @@ class sprite_group():
 			enemy_bullet.draw(screen)
 			if not pause_game:
 				enemy_bullet.animate()
-				enemy_bullet.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list, player_direction, obj_list)
+				enemy_bullet.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list, player_direction)
 			if enemy_bullet.Active == False:
 				self.enemy_bullet_group.remove(enemy_bullet)
     
@@ -110,7 +110,7 @@ class sprite_group():
 			enemy_bullet.draw(screen)
 			if not pause_game:
 				enemy_bullet.animate()
-				enemy_bullet.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list, player_direction, obj_list)
+				enemy_bullet.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list, player_direction)
 			if enemy_bullet.Active == False:
 				self.enemy_bullet_group2.remove(enemy_bullet)
 	
@@ -118,7 +118,7 @@ class sprite_group():
 			player_bullet.draw(screen)
 			if not pause_game:
 				player_bullet.animate()
-				player_bullet.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list, player_direction, obj_list)
+				player_bullet.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, scroll_x, player_action, self.sp_group_list, player_direction)
 			if player_bullet.Active == False:
 				self.player_bullet_group.remove(player_bullet)
 

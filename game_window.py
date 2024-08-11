@@ -110,7 +110,6 @@ level_data_str_tuple = ( #names of the corresponding csv files
 )
 
 world = World()
-obj_list = world.obj_list
 
 #instantiate status bars
 status_bars = StatusBars()
@@ -208,7 +207,7 @@ def load_level_data(level, level_data_list, level_data_str_tuple, level_tuple, v
 	#world has self data lists that get cleared each time this is called
 	world.process_data(level, level_data_list, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_tuple[level][4], vol_lvl)
 	
-	return [level_tuple[level][1], level_tuple[level][0], level_tuple[level][5], world.obj_list]# gradient, BG_color, player enable
+	return [level_tuple[level][1], level_tuple[level][0], level_tuple[level][5]]# gradient, BG_color, player enable
 
 #reading settings data
 def read_settings_data(data):
@@ -250,7 +249,6 @@ normal_speed = player0.speed
 the_sprite_group.purge_sprite_groups()#does as the name suggests at the start of each load of the game
 lvl_data = load_level_data(0, level_data_list, level_data_str_tuple, level_tuple, vol_lvl)
 gradient_BGcolor_playerEN = lvl_data[0:3]
-obj_list = lvl_data[3]
 
 
 #running the game----------------------------------------------------------------------------------------------------------------------
@@ -305,7 +303,6 @@ while run:
 		level = next_level
 		lvl_data = load_level_data(level, level_data_list, level_data_str_tuple, level_tuple, vol_lvl)
 		gradient_BGcolor_playerEN = lvl_data[0:3]
-		obj_list = lvl_data[3]
 		
 		if move_L:
 			temp_move_L = move_L
@@ -343,9 +340,9 @@ while run:
 	if not pause_game:
 		player0.animate(the_sprite_group)
 		if player_enable_master: 
-			player0.do_entity_collisions(the_sprite_group, obj_list, level_transitioning)
+			player0.do_entity_collisions(the_sprite_group, level_transitioning)
 			player0_lvl_transition_data = player0.move(pause_game, move_L, move_R, world.solids, world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
-														SCREEN_WIDTH, SCREEN_HEIGHT, obj_list, the_sprite_group)
+														SCREEN_WIDTH, SCREEN_HEIGHT, the_sprite_group)
 		scroll_x = player0.scrollx + camera.scrollx
 	else:
 		scroll_x = 0
@@ -354,7 +351,7 @@ while run:
 	
 
 	#dialogue trigger sent here
-	the_sprite_group.update_groups_behind_player(pause_game, screen, player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, player0.direction, obj_list, 
+	the_sprite_group.update_groups_behind_player(pause_game, screen, player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, player0.direction, 
                                               dialogue_enable, next_dialogue)
 	the_sprite_group.update_item_group(pause_game, player0.hitbox_rect, scroll_x, screen)
 	player0.draw(screen)
@@ -381,14 +378,14 @@ while run:
 		if not do_screenshake_master:
 			do_screenshake_master = True
 
-	for p_int in obj_list[1]:
+	for p_int in the_sprite_group.p_int_group:
 		if p_int.do_screenshake:
 			p_int.do_screenshake = False
 			if not do_screenshake_master:
 				do_screenshake_master = True
 				screenshake_profile = (8, 8, 3)
 
-	for enemy in obj_list[0]:
+	for enemy in the_sprite_group.enemy0_group:
 		if enemy.do_screenshake:
 			enemy.do_screenshake = False
 			if not do_screenshake_master:
@@ -488,7 +485,7 @@ while run:
 		player0.atk1_kill_hitbox()
 		player0.action = 0
 		player0.rolled_into_wall = True
-		world.update_all_plot_index_lists()
+		world.update_all_plot_index_lists(the_sprite_group.textprompt_group)
 
 	if player0.hurting or not player0.dialogue_trigger_ready:
 		dialogue_enable = False
