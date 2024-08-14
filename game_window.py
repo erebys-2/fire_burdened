@@ -15,6 +15,7 @@ from button import Button #type: ignore
 from textManager import text_manager, dialogue_box #type: ignore
 from ui_manager import ui_manager #type: ignore
 from spriteGroup import sprite_group #type: ignore
+from ItemFile import inventory_UI
 import gc
 import random
 #from pygame.locals import *
@@ -45,7 +46,7 @@ change_once = True
 level_trans_timing = pygame.time.get_ticks()
 
 pause_game = False
-#exit_to_title = False
+inventory_opened = False
 
 text_delay = pygame.time.get_ticks()
 
@@ -118,8 +119,6 @@ status_bars = StatusBars()
 font = pygame.font.SysFont('SimSun', 12)
 font_larger = pygame.font.SysFont('SimSun', 16)
 font_massive = pygame.font.SysFont('SimSun', 48)
-
-
 
 #camera instance
 camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -235,6 +234,9 @@ m_player = music_player(m_player_sfx_list_main, vol_lvl)
 ui_manager0 = ui_manager(SCREEN_WIDTH, SCREEN_HEIGHT, [font, font_larger, font_massive], vol_lvl, monitor_size)
 update_vol = False
 
+#player inventory manager
+player_inv_UI = inventory_UI(3, 3, [font, font_larger, font_massive], SCREEN_WIDTH, SCREEN_HEIGHT, vol_lvl)
+
 #instantiate sprite groups=========
 the_sprite_group = sprite_group()
 
@@ -280,7 +282,7 @@ while run:
 	temp_move_L = False
 	player_enable_master = (gradient_BGcolor_playerEN[2] and not dialogue_enable)
  
-	if level == 0 or pause_game or not player0.Alive:#delete mouse when out of the main menu
+	if level == 0 or pause_game or not player0.Alive or inventory_opened:#delete mouse when out of the main menu
 		pygame.mouse.set_visible(1)
 	else:
 		pygame.mouse.set_visible(0)
@@ -437,6 +439,13 @@ while run:
 			player_new_x = 32
 			player_new_y = 32
    
+	#opening inventory
+	if inventory_opened:
+
+		player_inv_UI.open_inventory(player0.inventory_handler.inventory, screen)
+		
+		
+   
 	#---------------------------------updates from ui manager-----------------------------------------
 	if ui_manager0.ctrls_updated:
 		ctrls_list = read_settings_data('ctrls_data')
@@ -450,6 +459,7 @@ while run:
 		m_player.set_vol_all_sounds(vol_lvl)
 		the_sprite_group.update_vol_lvl(vol_lvl)
 		player0.m_player.set_vol_all_sounds(vol_lvl)
+		player_inv_UI.m_player.set_vol_all_sounds(vol_lvl)
   
 	update_vol = ui_manager0.raise_volume or ui_manager0.lower_volume #2 different signals from ui_manager or'd together
   
@@ -459,6 +469,10 @@ while run:
     
 	if player0.hits_tanked >= player0.hp:#killing the player------------------------------------------------
 		player0.Alive = False
+
+		if inventory_opened:#exit inventory if opened
+			inventory_opened = False
+			player_inv_UI.close_inventory()
 
 		if ui_manager0.show_death_menu(screen):
 			next_level = 0
@@ -485,6 +499,7 @@ while run:
 		player0.atk1_kill_hitbox()
 		player0.action = 0
 		player0.rolled_into_wall = True
+		inventory_opened = False
 		world.update_all_plot_index_lists(the_sprite_group.textprompt_group)
 
 	if player0.hurting or not player0.dialogue_trigger_ready:
@@ -614,6 +629,17 @@ while run:
 					player0.speed = normal_speed + 1
 					player0.sprint = True
 
+				if event.key == pygame.K_u and not dialogue_enable:
+					# print("this is the inventory key")
+					
+					# player0.inventory_handler.inventory = player_inv_UI.clear_inventory(player0.inventory_handler.inventory)
+					# print(player0.inventory_handler.inventory)
+
+					inventory_opened = not inventory_opened
+					if inventory_opened:
+						player_inv_UI.close_inventory()
+    
+    
 				#debugging flight button
 				#if you fly over the camera object the level breaks
 				if event.key == pygame.K_0:
@@ -626,29 +652,33 @@ while run:
 			# if event.key == pygame.K_c:
 			# 	show_controls_en = True
 
-			if (event.key == pygame.K_BACKSPACE or event.key == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable: #escape exits the window when testing...
-				#run = False
+			if (event.key == pygame.K_BACKSPACE or event.key == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable: 
+       		#escape exits UI ONLY before the options sub menu is shown and any deeper into sub menus
 				if level != 0:
 					ui_manager0.trigger_once = True
-					if (pause_game or not player0.Alive) and not dialogue_enable:
+     
+					if inventory_opened:#exit inventory if opened
+						inventory_opened = False
+						player_inv_UI.close_inventory()
+      
+					if (pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
 						next_level = 0
 						player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl)
 						player_new_x = 32
 						player_new_y = 32
-						#m_player.stop_sound()
 						dialogue_box0.reset_internals()
 						pygame.mixer.stop()
 						m_player.play_sound(m_player.sfx[1])
 
-					elif not dialogue_enable:
-						#print("game is paused")
+					elif not dialogue_enable: #pause game, will trigger if player is not in dialogue
 						pause_game = True
 						pygame.mixer.pause()
 						m_player.play_sound(m_player.sfx[1])
-					elif dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list:
+      
+					elif dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list: #exits dialogue window if an NPC finishes speaking (is this way to avoid bugs)
 						dialogue_enable = False
 						
-				else:
+				else:#if on the main menu, the game will exit on button press
 					run = False
 			
     
