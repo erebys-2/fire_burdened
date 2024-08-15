@@ -1,10 +1,10 @@
 import pygame
 import os
 import math
-import copy
 from button import Button 
 from textManager import text_manager 
 from music_player import music_player 
+from dialogueCSVformatter import csv_extracter
 
 #Items exist in 2 spaces: level spaces and inventory spaces
 #This file contains code to support an item existing in the level space and being able to interact with the player.
@@ -42,7 +42,6 @@ class Item(pygame.sprite.Sprite):
             
         elif not pause_game:#bob up and down
             self.rect.y -= math.sin(self.increment)
-            #print(2*math.sin(self.increment))
             if self.increment < 6.283:
                 self.increment += 0.1
             else:#reset position
@@ -77,7 +76,8 @@ class Item(pygame.sprite.Sprite):
                 screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
         else:
             screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
-            
+
+#============================================================================================================================================ 
             
 class inventory_handler(): #handles setting up inventory, picking up items, and storing items
     #add on for player file
@@ -102,9 +102,9 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
         stacked = False
         allocated = False
         
-        #first check if there's a slot with a matching item ID (item can stack)
+        #first check if there's a slot with a matching item ID (item can stack) and that the max count (99) hasn't been reshced
         for slot in self.inventory:
-            if slot[0] == item_id:
+            if slot[0] == item_id and slot[1] < 99:
                 slot_index = self.inventory.index(slot)
                 stacked = True
                 break
@@ -133,15 +133,17 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
                     self.inventory[slot_index][0] = item.id
                     self.inventory[slot_index][1] += item.count
                     item.disable() #item is deleted on the player side by calling an internal method
-                print(self.inventory)
-                
+                #print(self.inventory)
+      
+#=============================================================================================================================================  
+#note: due to the implementation of a delay in the button file, the game will slow down whenever a button is pressed
+#this is so for general menu navigating the mechanical signal of a click doesn't carry on when the next set of buttons is loaded in        
                 
 class inventory_UI(): #handles displaying inventory and 
     def __init__(self, rows, cols, fontlist, SCREEN_WIDTH, SCREEN_HEIGHT, ini_vol):
         m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav']
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
-        
-        self.current_item_index = 0
+
         self.rows = rows
         self.cols = cols
         self.size = rows * cols
@@ -150,6 +152,7 @@ class inventory_UI(): #handles displaying inventory and
         
         self.fontlist = fontlist
         self.button_list = []
+        self.button_list2 = [] #for displaying inventory items
         
         self.S_W = SCREEN_WIDTH
         self.S_H = SCREEN_HEIGHT
@@ -159,6 +162,12 @@ class inventory_UI(): #handles displaying inventory and
         self.slot = 0
         
         self.generic_img = pygame.image.load('sprites/generic_btn.png').convert_alpha()
+        self.inventory_btn = pygame.image.load('sprites/inventory_btn.png').convert_alpha()
+        self.inv_bg = pygame.image.load('sprites/pause_bg.png').convert_alpha()
+        
+        self.inv_disp = [160,160] #inventory displacement for displaying slot
+        self.text_manager0 = text_manager()
+     
         
         #load all items into a list
         item_img_list = []
@@ -168,9 +177,8 @@ class inventory_UI(): #handles displaying inventory and
         #create dictionary
         #dictionaries are mutable btw!
         self.item_img_dict = dict(item_img_list)
-        #print(self.item_img_dict)
+        self.item_details0 = item_details()
         
-        self.text_manager0 = text_manager()
         
     def clear_inventory(self, inventory):
         temp_inventory = inventory 
@@ -179,20 +187,11 @@ class inventory_UI(): #handles displaying inventory and
             
         return temp_inventory
         
-    #might not be used
-    def format_into_grid(self, inventory):
-        inventory_grid = []
-        for i in range(self.rows):
-            inventory_grid.append(inventory[i * self.cols: (i + 1) * self.cols])
-            
-        return inventory_grid
         
     #will be called constantly   
-    def open_inventory(self, inventory, screen):
+    def open_inventory(self, inventory, screen, inv_key):
         
         if self.trigger_once:#will be set to true again by either escape or inventory key
-            print("true")
-            #self.temp_inventory = copy.deepcopy(inventory)
             self.temp_inventory = []
             
             #CREATE A DEEP COPY OF INVENTORY
@@ -202,31 +201,71 @@ class inventory_UI(): #handles displaying inventory and
                 for element in slot:
                     temp_list.append(element)
                 self.temp_inventory.append(temp_list)
-            
 
-                
-            #self.slot = 0 #set current inventory slot to 0
             #deploy buttons
-            #the locations of these buttons are probably gonna be giga fucked first execution
             self.button_list *= 0
+            self.button_list2 *= 0
             
             for i in range(self.rows):
                 for j in range(self.cols):
-                    self.button_list.append(Button(32*j , 24*i*self.cols, self.item_img_dict[inventory[i*self.cols + j][0]], 1))
+                    self.button_list.append(Button(32*j + self.inv_disp[0], 32*i + self.inv_disp[0], self.inventory_btn, 1))
+                    self.button_list2.append(Button(32*j + 8 + self.inv_disp[0], 32*i + 8 + self.inv_disp[0], self.item_img_dict[inventory[i*self.cols + j][0]], 1))
+                    #self.item_img_dict[inventory[i*self.cols + j][0]]
                     
-            self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +64 +36, self.generic_img, 1))
-            self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +64 +64, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +64 +16, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +64 +56, self.generic_img, 1))
             
             self.trigger_once = False
             
         if not self.trigger_once:
+            #draw shaded bg
+            screen.blit(self.inv_bg, (0,0))
+            
+            #draw item description box
+            pygame.draw.rect(screen, (24,23,25), (self.S_W//2, self.S_H//2 - 128, 224, 192))
+            pygame.draw.rect(screen, (38,37,41), (self.S_W//2 + 2, self.S_H//2 - 126, 220, 188))
+            
+            #set up and draw text
+            is_key_item = self.item_details0.is_key_item(inventory[self.slot][0])
+
+            item_details = ['Slot: ' + inventory[self.slot][0],
+                            'Count: ' + str(inventory[self.slot][1]),
+                            'Is Key Item: ' + str(is_key_item),
+                            'Description: ',
+                            ' '
+                            ]
+            
+            item_description = self.item_details0.get_formatted_description(inventory[self.slot][0])
+            for item in item_description:
+                item_details.append(item)
+            
+            self.text_manager0.disp_text_box(screen, self.fontlist[1], item_details,
+                                             (-1,-1,-1), (200,200,200), (self.S_W//2 + 4, self.S_H//2 - 124, 220, 188), False, False, 'none')
+            
+            self.text_manager0.disp_text_box(screen, self.fontlist[1], ('Exit:(' + pygame.key.name(inv_key) + ') or (esc)', ''), 
+                                             (-1,-1,-1), (100,100,100), ((480 - 8*len(pygame.key.name(inv_key))), 456, 32, 32), False, False, 'none')
+            
+            #buttons and drawing buttons--------------------------------------------------------------------------------------
+            
+            #highlighting selected inventory slot
+            self.button_list[self.slot].draw_border(screen)
             
             #selecting the current slot
             for slot in self.button_list[0:self.size]:
                 if slot.draw(screen):
+                    self.m_player.play_sound(self.m_player.sfx[1])
                     self.slot = self.button_list.index(slot)
+                    
+            #draw items in slots
+            for btn in self.button_list2:
+                btn.draw(screen)
+                if inventory[self.button_list2.index(btn)][0] != 'empty':
+                    item_count = str(inventory[self.button_list2.index(btn)][1])
+                    if int(item_count) < 10:
+                        item_count = ' ' + item_count
+                    btn.show_text(screen, self.fontlist[1], ('', item_count))
             
-            #use button---------------------------------------------------------------------------------------------
+            #use button
             if self.button_list[len(self.button_list)-2].draw(screen):
                 self.m_player.play_sound(self.m_player.sfx[1])
                 if inventory[self.slot][1] > 0:
@@ -234,11 +273,10 @@ class inventory_UI(): #handles displaying inventory and
                     
                 if inventory[self.slot][1] == 0:
                     inventory[self.slot][0] = 'empty'
-                print(inventory)
 
             self.button_list[len(self.button_list)-2].show_text(screen, self.fontlist[1], ('','Use Item'))
             
-            #discard button-----------------------------------------------------------------------------------
+            #discard button
             if self.button_list[len(self.button_list)-1].draw(screen):
                 self.m_player.play_sound(self.m_player.sfx[1])
                 if inventory[self.slot][1] > 0:
@@ -246,8 +284,7 @@ class inventory_UI(): #handles displaying inventory and
                     
                 if inventory[self.slot][1] == 0:
                     inventory[self.slot][0] = 'empty'
-                print(self.slot)
-            
+
             self.button_list[len(self.button_list)-1].show_text(screen, self.fontlist[1], ('','Discard'))
         
         #test for if the items in inventory changed
@@ -261,3 +298,39 @@ class inventory_UI(): #handles displaying inventory and
         self.button_list *= 0
         self.trigger_once = True
 
+class item_details():
+    def __init__(self):
+        self.key_items = [] #list of strings that are id's of key items
+        self.item_desc_dict = {
+            'empty':'Slot is empty.',
+            'test':'This is a test item used for debugging.',
+            'test2':'The quick brown fox jumped over the lazy dog. The over quick fox brown lazy jumped the dog.'
+        }
+        self.csv_extract0 = csv_extracter(20)#the int doesn't do anything
+        
+        self.f_item_desc_dict = self.format_into_str_list(self.item_desc_dict, 26)
+        
+    def format_into_str_list(self, input_dict, limit):
+        temp_list = []
+        for key in input_dict:
+            str_list = self.csv_extract0.split_string(input_dict[key], limit, (',', '.', ' ', ':', ';', '-'))
+            temp_list.append([key, str_list])
+            
+        return dict(temp_list)
+        
+    def is_key_item(self, item_id):
+        return item_id in self.key_items
+    
+    def get_formatted_description(self, item_id):
+        if item_id in self.f_item_desc_dict:
+            f_description = self.f_item_desc_dict[item_id]
+        else:
+            f_description = ('')
+            
+        return f_description
+            
+
+            
+# item_details0 = item_details()
+# print(item_details0.f_item_desc_dict)
+# print(item_details0.get_formatted_description('test2'))

@@ -19,6 +19,8 @@ class Button():
 		self.action = False
   
 		self.text_manager0 = text_manager()
+  
+		self.highligh_rect = self.rect.scale_by(1.2)
 		
 	def show_text(self, screen, font, text):
 		# self.text_manager0.disp_text_box(screen, font, text, (-1,-1,-1), (0,0,0), 
@@ -31,6 +33,9 @@ class Button():
 		self.text_manager0.disp_text_box(screen, font, text, (-1,-1,-1), color, 
                                    (self.rect.x + 8, self.rect.y - 10, 32, 64), False, False, 'none')
 		
+	def draw_border(self, surface):
+		pygame.draw.rect(surface, (200,200,120), self.rect)
+  
 
 	def draw(self, surface):
 		#print(self.clicked)
@@ -46,7 +51,7 @@ class Button():
 				
 				self.action = True
 				self.clicked = True
-				pygame.time.wait(100)   
+				pygame.time.wait(100) #add delay so that the next button in a menu isn't also clicked
 				
 		else:
 			self.highlight = False

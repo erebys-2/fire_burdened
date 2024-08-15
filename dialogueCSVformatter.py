@@ -6,11 +6,7 @@ class csv_extracter():
     def __init__(self, cut_off_length):
         self.cut_off_length = cut_off_length
         self.endcase_char = (',', '.', ' ', ':', ';', '-')
-    #     self.eatpoop()
-        
-    # def eatpoop(self):
-    #     print("i eat poop")
-        
+
     #reads csv file and fills a list with entries as strings    
     def read_npc_data(self, data_name):
         temp_list = []
@@ -73,35 +69,46 @@ class csv_extracter():
         
         return break_index
     
+    def split_string(self, string_, limit, endcase_char):
+        str_list = []
+        if len(string_) > limit:
+            #cut string into limit sized pieces and append them into a str list
+            num_strings = len(string_)//limit
+            i = 0
+            for i in range(num_strings):
+                string_to_append = string_[0+limit*(i):limit*(i+1)]
+                
+                #check against list of sentence splitting chars to add '-' when a word is split
+                if (limit*(i+1) != len(string_) and 
+                    all(string_[limit*(i+1)-1] != char and string_[limit*(i+1)] != char for char in endcase_char)
+                    ):
+                    string_to_append = string_to_append + '-'
+                
+                if string_to_append[0] == ' ':
+                    string_to_append = string_to_append[1:len(string_to_append)]
+                str_list.append(string_to_append)
+            
+            #append final length of string into the str list
+            if limit*(i+1) != len(string_):
+                string_to_append = string_[limit*(i+1):len(string_)]
+                if string_to_append[0] == ' ':
+                    string_to_append = string_to_append[1:len(string_to_append)]
+                
+                str_list.append(string_to_append)
+        else:
+            str_list.append(string_[0:len(string_)])
+        str_list.append('')
+        
+        return str_list
+
     #formats the string in the list of lists into a string list that is compatible with textManager's methods 
     #will split a large string into segments as long as the provided length of the text box (in units of chars)
     #words have '-' added if split in the middle
     def str_to_str_list(self, input_list):
         destination_list = []
         for item in input_list:
-            string = item[0]
-            str_list = []
-            if len(string) > self.cut_off_length:
-                #cut string into cut_off_length sized pieces and append them into a str list
-                num_strings = len(string)//self.cut_off_length
-                i = 0
-                for i in range(num_strings):
-                    string_to_append = string[0+self.cut_off_length*(i):self.cut_off_length*(i+1)]
-                    
-                    #check against list of sentence splitting chars to add '-' when a word is split
-                    if (self.cut_off_length*(i+1) != len(string) and 
-                        all(string[self.cut_off_length*(i+1)-1] != char and string[self.cut_off_length*(i+1)] != char for char in self.endcase_char)
-                        ):
-                        string_to_append = string_to_append + '-'
-                        
-                    str_list.append(string_to_append)
-                
-                #append final length of string into the str list
-                if self.cut_off_length*(i+1) != len(string):
-                    str_list.append(string[self.cut_off_length*(i+1):len(string)])
-            else:
-                str_list.append(string[0:len(string)])
-            str_list.append('')
+           
+            str_list = self.split_string(item[0], self.cut_off_length, self.endcase_char)
             destination_list.append((tuple(str_list),item[1],item[2]))
             
         return destination_list

@@ -153,7 +153,7 @@ level_tuple = (
 #lists for dynamic CSVs
 #plot_index_list = [-1,-1]
 vol_lvl = [10,10]
-ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054]
+ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054, 121, 117]
 
 #text manager instance
 text_manager0 = text_manager()
@@ -441,8 +441,7 @@ while run:
    
 	#opening inventory
 	if inventory_opened:
-
-		player_inv_UI.open_inventory(player0.inventory_handler.inventory, screen)
+		player_inv_UI.open_inventory(player0.inventory_handler.inventory, screen, ctrls_list[8])
 		
 		
    
@@ -628,13 +627,15 @@ while run:
 				if event.key == ctrls_list[7]: #pygame.K_RALT
 					player0.speed = normal_speed + 1
 					player0.sprint = True
-
-				if event.key == pygame.K_u and not dialogue_enable:
-					# print("this is the inventory key")
-					
-					# player0.inventory_handler.inventory = player_inv_UI.clear_inventory(player0.inventory_handler.inventory)
-					# print(player0.inventory_handler.inventory)
-
+				
+				#use item-- TEMPORARILY LOAD TEST INVENTORY
+				if event.key == ctrls_list[9]:
+					#insert test inventory:
+					player0.inventory_handler.load_saved_inventory([['a', 1], ['b', 1], ['c', 1], ['d', 1], ['e', 1],
+                                                     						['f', 1], ['g', 1], ['h', 1], ['i', 1]])
+				
+				#open inventory
+				if event.key == ctrls_list[8] and not dialogue_enable:
 					inventory_opened = not inventory_opened
 					if inventory_opened:
 						player_inv_UI.close_inventory()
