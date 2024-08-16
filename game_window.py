@@ -481,7 +481,7 @@ while run:
    
 	if player0.brain_damage:
 		temp_list = []
-		for i in range(8):
+		for i in range(len(ctrls_list)):
 			temp_list.append(random.randint(90,120))
 		ui_manager0.write_csv_data('ctrls_data',  temp_list)
 		ctrls_list = read_settings_data('ctrls_data')

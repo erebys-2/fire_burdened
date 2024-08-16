@@ -732,10 +732,11 @@ class player(pygame.sprite.Sprite):
             lvl_transition_flag_and_data = (False, [])
         else:
             dxdy = self.do_tile_collisions(world_solids, the_sprite_group, dx, dy)
+            lvl_transition_flag_and_data = dxdy[2]
             
         dx = dxdy[0]
         dy = dxdy[1]
-        lvl_transition_flag_and_data = dxdy[2]
+        
 
         #update pos------------------------------------------------------------------------------------------------------------------------
 

@@ -164,6 +164,9 @@ class inventory_UI(): #handles displaying inventory and
         self.generic_img = pygame.image.load('sprites/generic_btn.png').convert_alpha()
         self.inventory_btn = pygame.image.load('sprites/inventory_btn.png').convert_alpha()
         self.inv_bg = pygame.image.load('sprites/pause_bg.png').convert_alpha()
+        self.aria_frame_list = []
+        for i in range (len(os.listdir(f'sprites/misc_art/aria'))):
+            self.aria_frame_list.append(pygame.image.load(f'sprites/misc_art/aria/{i}.png').convert_alpha())
         
         self.inv_disp = [160,160] #inventory displacement for displaying slot
         self.text_manager0 = text_manager()
@@ -220,6 +223,7 @@ class inventory_UI(): #handles displaying inventory and
         if not self.trigger_once:
             #draw shaded bg
             screen.blit(self.inv_bg, (0,0))
+            screen.blit(self.aria_frame_list[0], (-32,0))
             
             #draw item description box
             pygame.draw.rect(screen, (24,23,25), (self.S_W//2, self.S_H//2 - 128, 224, 192))

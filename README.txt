@@ -23,7 +23,6 @@ Currently there are 2 conjoined debugging levels that loop back to one another.
 Disclaimer:
 This is my first major coding project outside of school assignments so there will be some bad code.
 Now and then I go back and try to clean up older code as I learn better coding.
-For now there is sadness and desperation in these lines.
 
 
 ------------------------------------------------------------------------------------------------
@@ -55,8 +54,6 @@ RUNNING GAME:
 
 Open game_window.py in your IDE and run it.
 
-
-
 ------------------------------------------------------------------------------------------------
 HOW TO PLAY:
 ------------------------------------------------------------------------------------------------
@@ -65,7 +62,15 @@ HOW TO PLAY:
 the base mechanics. I recommend trying the default settings. The philosophy was to have one
 hand deal with purely movement, and the other hand deal with attacks and special moves.
 
-The controls are WAD to move, I to melee, O to shoot, S to roll, and ALT to sprint.
+The controls are:
+-WAD to move
+-I to melee
+-O to shoot
+-S to roll
+-ALT to sprint
+-Enter and Escape for textboxes, pausing game, and some UI
+-Y to open inventory
+-U to use the current item in your selected inventory slot
 
 Jumping:
     Jumping is variable height. Hold the key for longer and you'll jump higher and farther.
@@ -91,7 +96,7 @@ Melee:
     You can deflect bullets by hitting them back.
 
 Sprint:
-    Holding ALT increases your movement AND animation speed (all your actions will be faster too), 
+    Holding right ALT increases your movement AND animation speed (all your actions will be faster too), 
     but your stamina regeneration rate is significantly lowered.
 
 Shoot: 
@@ -105,6 +110,13 @@ Taking Damage:
     There is NO contact damage. 
     The current enemies are so simple that there might seem like contact damage since they're coded to deploy
     their attack hitboxes when close to the player. When damaged, their attack hitboxes are removed.
+
+Inventory:
+    The game is not paused while your inventory is open, so keep it open at your own peril!
+
+Use Item:
+    If you select an inventory slot it will still be selected when your inventory is closed. 
+    You can quickly use the item in that slot using this key.
 
 **Note 2: Toggle screen will change your resolution while the game is running; it does not work on Mac.
 
