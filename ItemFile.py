@@ -223,7 +223,7 @@ class inventory_UI(): #handles displaying inventory and
         if not self.trigger_once:
             #draw shaded bg
             screen.blit(self.inv_bg, (0,0))
-            screen.blit(self.aria_frame_list[0], (-32,0))
+            screen.blit(self.aria_frame_list[0], (-40,0))
             
             #draw item description box
             pygame.draw.rect(screen, (24,23,25), (self.S_W//2, self.S_H//2 - 128, 224, 192))

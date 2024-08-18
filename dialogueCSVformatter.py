@@ -143,12 +143,4 @@ class csv_extracter():
 #Player choices will also be handled through the npc file as well, (each npc will have to be passed the player dialogue list as a consequence)
 #NPC dialogue will be displayed ontop the screen, player reponses in the bottom
     
-    
-# csv_ex0 = csv_extracter(120)
-# full_dialogue_list = csv_ex0.get_all_npc_data('dialogue_data')
-
-# npc_dialogue_list = csv_ex0.get_specific_npc_data('Jane', full_dialogue_list)
-# print(npc_dialogue_list)
-
-# npc_dialogue_list2 = csv_ex0.get_specific_npc_data('Jon', full_dialogue_list)
-# print(npc_dialogue_list2)
+ 
