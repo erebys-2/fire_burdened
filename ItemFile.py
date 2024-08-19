@@ -15,6 +15,8 @@ class Item(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.id = id
         self.image = pygame.image.load(f'sprites/items/{self.id}.png').convert_alpha()
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
         
         self.count = count
         self.rect = self.image.get_rect()
@@ -71,11 +73,12 @@ class Item(pygame.sprite.Sprite):
         self.rect.x += ( - scrollx)
         
     def draw(self, screen):
-        if self.flicker:
-            if pygame.time.get_ticks() % 2 == 0:
+        if self.rect.x > -self.width and self.rect.x < 640:
+            if self.flicker:
+                if pygame.time.get_ticks() % 2 == 0:
+                    screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+            else:
                 screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
-        else:
-            screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
 #============================================================================================================================================ 
             

@@ -236,17 +236,16 @@ class World():
                     img_rect.x = x * 32
                     img_rect.y = y * 32
                     tile_data = (img, img_rect, tile)
-                    if tile != 36 and tile != 39:
+                    if tile != 36 and tile != 39 and tile != 31:
                         rtrn_list.append(tile_data)
                     
                                        
-    def draw_bg_layers(self, w_screen, scroll_X, scroll_Y, data):
+    def draw_bg_layers(self, screen, scroll_X, scroll_Y, data):
         #currently only handles x scrolling
         #scroll_amnt = scroll_X
         #logic for looping bg, maximum sprite size is 480x480
         for tile in data:
             if (data == self.bg3 or data == self.bg4 or data == self.bg5 or data == self.bg6):
-                #tile[1] is position, afterwards [0] = x, [1] = y
                 if tile[1][0] > 960:
                     tile[1][0] -= (960+960)
                 elif tile[1][0] < -960:
@@ -255,22 +254,27 @@ class World():
             tile[1][0] -= scroll_X
             tile[1][1] -= scroll_Y
             
-            if tile[1].x <= 640:
-                w_screen.blit(tile[0], tile[1]) # (image, position)
+            if tile[1].x <= 640 and tile[1].x > -960:
+                screen.blit(tile[0], tile[1]) # (image, position)
+                
+    def draw_filter_layer(self, screen, data):#filter layer doesn't scroll, for efficiency it should be 640x480
+        for tile in data:
+            screen.blit(tile[0], tile[1])
+        
                     
-    def draw(self, w_screen, scroll_X, scroll_Y):
+    def draw(self, screen, scroll_X, scroll_Y):
         
         if scroll_X > 0:
             correction = 1
         else:
             correction = 0
         
-        self.draw_bg_layers(w_screen, (scroll_X + correction)//3, 0, self.bg6)
-        self.draw_bg_layers(w_screen, 4*(scroll_X + correction)//7, 0, self.bg5)
-        self.draw_bg_layers(w_screen, 7*(scroll_X + correction)//9, 0, self.bg4)
-        self.draw_bg_layers(w_screen, (scroll_X), 0, self.bg3)#filter layer
-        self.draw_bg_layers(w_screen, (scroll_X), scroll_Y, self.bg2)#detailed 1:1 bg layer 2
-        self.draw_bg_layers(w_screen, (scroll_X), scroll_Y, self.bg1)
+        self.draw_bg_layers(screen, (scroll_X + correction)//3, 0, self.bg6)
+        self.draw_bg_layers(screen, 4*(scroll_X + correction)//7, 0, self.bg5)
+        self.draw_bg_layers(screen, 7*(scroll_X + correction)//9, 0, self.bg4)
+        self.draw_filter_layer(screen, self.bg3)
+        self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg2)#detailed 1:1 bg layer 2
+        self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg1)
         
         for tile in self.solids:
             #this code below basically means the first index: [1], gets the tile's rect, 
@@ -278,14 +282,15 @@ class World():
             #if you were to swap [0] with [1] you'd get the y coord
             tile[1][0] -= scroll_X
             tile[1][1] -= scroll_Y
-            w_screen.blit(tile[0], tile[1]) # (image, position)
+            if tile[1][0] > -32 and tile[1][0] < 640 + 32:
+                screen.blit(tile[0], tile[1]) # (image, position)
         
         for tile in self.coords:
             tile[0][0] -= scroll_X #the coords file does not have an image
             tile[0][1] -= scroll_Y
             
             
-        self.draw_bg_layers(w_screen, scroll_X, scroll_Y, self.fg)
+        self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg)
         
         return (self.coords[0][0][0], self.coords[0][0][1]) #x and y of first tile
             

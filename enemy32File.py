@@ -97,6 +97,12 @@ class enemy_32wide(pygame.sprite.Sprite):
 
     #methods----------------------------------------------------------------------------------------
     
+    def check_if_onscreen(self):
+        return (self.rect.x > -self.rect.width and self.rect.x < 640)
+    
+    def check_if_in_simulation_range(self):
+        return (self.rect.right > - 160 and self.rect.x < 640 + 160)
+    
     def atk1_kill_hitbox(self):
         self.atk_rect.x = 0
         self.atk_rect.y = 0
@@ -148,7 +154,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         
         
         # if player is within left range, or right range
-        if self.inundated == False:
+        if self.inundated == False and self.check_if_in_simulation_range():
             #enemy type specific behaviors--------------------------------------------------------------------------------------
             if self.enemy_type == 'dog':
                 
@@ -369,71 +375,77 @@ class enemy_32wide(pygame.sprite.Sprite):
         dx = dxdy[0]
         dy = dxdy[1]
         #world collisions
-        for tile in world_solids:
-            if tile[2] != 2 and tile[2] != 17:
-                #x tile collisions
-                if tile[1].colliderect(self.rect.x + dx, self.rect.y + self.height//4, self.width , 3*self.height//4 - 12):
-                    dx = 0
-                    if self.in_air == False:
-                        if self.enemy_type == 'shooter':
-                            self.jump = True
-                        if self.enemy_type == 'dog' and self.rect.bottom == tile[1].top + 16 and self.inundated == False:
-                            self.vel_y = -5
+        if self.check_if_in_simulation_range():
+            for tile in world_solids:
+                if tile[2] != 2 and tile[2] != 17:
+                    #x tile collisions
+                    if tile[1].colliderect(self.rect.x + dx, self.rect.y + self.height//4, self.width , 3*self.height//4 - 12):
+                        dx = 0
+                        if self.in_air == False:
+                            if self.enemy_type == 'shooter':
+                                self.jump = True
+                            if self.enemy_type == 'dog' and self.rect.bottom == tile[1].top + 16 and self.inundated == False:
+                                self.vel_y = -5
 
-                #make sure to not get pushed into blocks        
-                if tile[1].colliderect(self.rect.x , self.rect.y , self.width//2 , self.height*0.8):     #+ self.height//4
-                    if self.rect.x <= tile[1].right:
-                        dx += 8
-                    self.on_ground = False
-                    self.in_air = True
-                    self.jump = False 
-                elif tile[1].colliderect(self.rect.x + self.width//2, self.rect.y , self.width//2 , self.height*0.8):     #+ self.height//4
-                    if self.rect.right > tile[1].x:
-                        dx += -8
-                    self.on_ground = False
-                    self.in_air = True
-                    self.jump = False    
+                    #make sure to not get pushed into blocks        
+                    if tile[1].colliderect(self.rect.x , self.rect.y , self.width//2 , self.height*0.8):     #+ self.height//4
+                        if self.rect.x <= tile[1].right:
+                            dx += 8
+                        self.on_ground = False
+                        self.in_air = True
+                        self.jump = False 
+                    elif tile[1].colliderect(self.rect.x + self.width//2, self.rect.y , self.width//2 , self.height*0.8):     #+ self.height//4
+                        if self.rect.right > tile[1].x:
+                            dx += -8
+                        self.on_ground = False
+                        self.in_air = True
+                        self.jump = False    
 
-                #y collisions
-                if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width , self.height):
-                    if self.vel_y >= 0:
-                        #self.vel_y = 0 
-                        if tile[1].colliderect(self.rect.x + self.width//4 + 2, self.rect.y + (self.height//2), self.width//2 - 4, self.height//2):
-                            if tile[1].bottom > self.rect.bottom:
-                                dy = tile[1].top  - self.rect.bottom #-1
-                                #print('hi')
-                            self.on_ground = True
+                    #y collisions
+                    if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width , self.height):
+                        if self.vel_y >= 0:
+                            #self.vel_y = 0 
+                            if tile[1].colliderect(self.rect.x + self.width//4 + 2, self.rect.y + (self.height//2), self.width//2 - 4, self.height//2):
+                                if tile[1].bottom > self.rect.bottom:
+                                    dy = tile[1].top  - self.rect.bottom #-1
+                                    #print('hi')
+                                self.on_ground = True
+                                self.in_air = False
+                                self.vel_y = 0 
+                                
+                                if self.action == 5:
+                                    self.hit_ground = True
+
+                        elif self.vel_y < 0:
+                            if tile[1].colliderect(self.rect.x + self.width//8, self.rect.y, self.width - self.width//4, self.height//2):
+                                dy = 32
+                                self.on_ground = False
+                                self.in_air = True
+                                self.jump = False
+                elif tile[2] == 2:
+                    if tile[1].colliderect(self.rect.x + self.width//8, self.rect.y, self.width - self.width//4, self.height - 8):
+                        self.dead = True
+                        self.m_player.play_sound(self.m_player.sfx[2])
+                elif(tile[2] == 17):#one way tiles
+                    if tile[1].colliderect(self.rect.x + dx, self.rect.bottom - 16 + dy, self.width, 17):
+                        if self.vel_y >= 0: 
+                            self.vel_y = 0
                             self.in_air = False
-                            self.vel_y = 0 
+                            self.on_ground = True
                             
                             if self.action == 5:
                                 self.hit_ground = True
-
-                    elif self.vel_y < 0:
-                        if tile[1].colliderect(self.rect.x + self.width//8, self.rect.y, self.width - self.width//4, self.height//2):
-                            dy = 32
-                            self.on_ground = False
+                        elif self.vel_y < 0:
+                            self.vel_y *= 0.6#velocity dampening when passing thru tile
                             self.in_air = True
-                            self.jump = False
-            elif tile[2] == 2:
-                if tile[1].colliderect(self.rect.x + self.width//8, self.rect.y, self.width - self.width//4, self.height - 8):
-                    self.dead = True
-                    self.m_player.play_sound(self.m_player.sfx[2])
-            elif(tile[2] == 17):#one way tiles
-                if tile[1].colliderect(self.rect.x + dx, self.rect.bottom - 16 + dy, self.width, 17):
-                    if self.vel_y >= 0: 
-                        self.vel_y = 0
-                        self.in_air = False
-                        self.on_ground = True
-                        
-                        if self.action == 5:
-                            self.hit_ground = True
-                    elif self.vel_y < 0:
-                        self.vel_y *= 0.6#velocity dampening when passing thru tile
-                        self.in_air = True
-                        self.on_ground = False
+                            self.on_ground = False
 
-                    dy = tile[1].top - self.rect.bottom
+                        dy = tile[1].top - self.rect.bottom
+        else:
+            dy = 0
+            dx = 0
+            self.in_air = False
+            self.vel_y = 0
                     
         if self.rect.bottom + dy > 480:
             dy = 480 - self.rect.bottom
@@ -568,7 +580,8 @@ class enemy_32wide(pygame.sprite.Sprite):
 
     def draw(self, p_screen):
         #self.animate()
-        p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+        if self.check_if_onscreen():
+            p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
         #pygame.draw.rect(p_screen, (255,0,0), self.atk_rect_scaled)
     
     def update_action(self, new_action):

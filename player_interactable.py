@@ -84,7 +84,9 @@ class player_interactable_(pygame.sprite.Sprite):
         #     'moving_plat_v':False
         # }
         self.atk_rect = pygame.Rect(0,0,0,0)
-        
+    
+    def check_if_onscreen(self):
+        return (self.rect.x > -self.rect.width and self.rect.x < 640)
         
     def do_tile_y_collisions(self, world_solids, dy):
         for tile in world_solids:
@@ -115,14 +117,14 @@ class player_interactable_(pygame.sprite.Sprite):
     def enable(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list):
         if self.enabled:
             if self.type == 'spinning_blades':
-                if self.rect.x < 640 and self.rect.right >= 0:
+                if self.check_if_onscreen():
                     self.animate()
                     
             elif self.type == 'moving_plat_h':
                 self.do_tile_x_collisions(world_solids, self.vel_x)
                 self.vel_x = 4*self.direction
 
-            elif self.type == 'moving_plat_v':
+            elif self.type == 'moving_plat_v' and self.check_if_onscreen():
                 self.do_tile_y_collisions(world_solids, self.vel_x)
 
                 if (self.dropping and not self.on_ground):
@@ -133,7 +135,7 @@ class player_interactable_(pygame.sprite.Sprite):
                     
                 self.rect.y += self.vel_y
                 
-            elif self.type == 'crusher_top':
+            elif self.type == 'crusher_top' and self.check_if_onscreen():
                 self.atk_rect = pygame.Rect(self.rect.x + 4, self.rect.bottom - 32, self.width - 8, 32)
                 if pygame.time.get_ticks() - self.update_time2 > 720:
                     self.update_time2 = pygame.time.get_ticks()
@@ -193,7 +195,7 @@ class player_interactable_(pygame.sprite.Sprite):
         #setting the image
         self.image = self.frame_list[self.action][self.frame_index]
 
-        if pygame.time.get_ticks() - self.update_time > frame_update:
+        if pygame.time.get_ticks() - self.update_time > frame_update and self.check_if_onscreen():
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1 
 
@@ -215,6 +217,7 @@ class player_interactable_(pygame.sprite.Sprite):
             self.update_time = pygame.time.get_ticks()
 
     
-    def draw(self, p_screen):
-        p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+    def draw(self, screen):
+        if self.check_if_onscreen():
+            screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
         

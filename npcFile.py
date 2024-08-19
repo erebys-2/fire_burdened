@@ -133,7 +133,7 @@ class npc(pygame.sprite.Sprite):
     #draw and animate methods
     
     def draw(self, screen):
-        if self.enabled:
+        if self.enabled and self.rect.x > -self.width and self.rect.x < 640 + self.width:
             screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
         
     def animate(self, sp_group_list):
