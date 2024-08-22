@@ -21,7 +21,7 @@ class World():
         self.bg5 = []
         self.bg6 = []
 
-        self.lvl_data_list = [
+        self.enhanced_lvl_data_list = [
             self.coords,
             self.fg,
             self.solids,
@@ -69,6 +69,12 @@ class World():
             self.tileList.append(temp_list)
             
         self.csv_f0 = csv_extracter(60)
+        self.player_choices_list = self.csv_f0.csv_nonformatted('player_choices')
+        self.player_prompt_list = []
+        for prompt in self.csv_f0.csv_nonformatted('player_prompts'):
+            str_list = self.csv_f0.split_string(prompt, self.csv_f0.cut_off_length, self.csv_f0.endcase_char)
+            self.player_prompt_list.append(str_list)
+            
         #self.full_dialogue_list = self.csv_f0.get_all_npc_data('dialogue_data')
         
         # print(self.csv_f0.get_specific_npc_data('Test', full_dialogue_list))
@@ -101,14 +107,14 @@ class World():
         return self.plot_index_list
     
     def clear_data(self):
-        for lvl_data in self.lvl_data_list:
+        for lvl_data in self.enhanced_lvl_data_list:
             lvl_data *= 0
             
 
     #loading the level
     def process_data(self, level, level_data_list, the_sprite_group, screenW, screenH, level_transitions, ini_vol):
         self.clear_data()
-        self.process_coords(level_data_list[0], screenW, screenH, self.lvl_data_list[0])
+        self.process_coords(level_data_list[0], screenW, screenH, self.enhanced_lvl_data_list[0])
         enemy0_id = 0
         transition_index = 0
         transition_data = []
@@ -174,10 +180,10 @@ class World():
                         
             
         #load bg
-        for i in range(len(self.lvl_data_list) -3):
-            self.process_bg(level_data_list[i+3], self.lvl_data_list[i+3], the_sprite_group)
+        for i in range(len(self.enhanced_lvl_data_list) -3):
+            self.process_bg(level_data_list[i+3], self.enhanced_lvl_data_list[i+3], the_sprite_group)
         #load fg
-        self.process_bg(level_data_list[1], self.lvl_data_list[1], the_sprite_group)
+        self.process_bg(level_data_list[1], self.enhanced_lvl_data_list[1], the_sprite_group)
 
 
     def process_coords(self, data, screenW, screenH, rtrn_list):

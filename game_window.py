@@ -16,6 +16,7 @@ from textManager import text_manager, dialogue_box #type: ignore
 from ui_manager import ui_manager #type: ignore
 from spriteGroup import sprite_group #type: ignore
 from ItemFile import inventory_UI
+from playerChoiceHandler import player_choice_handler
 import gc
 import random
 #from pygame.locals import *
@@ -230,6 +231,10 @@ dialogue_box0 = dialogue_box(vol_lvl)
 m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav']
 m_player = music_player(m_player_sfx_list_main, vol_lvl)
 
+
+#player choice handler
+p_choice_handler0 = player_choice_handler(world.player_choices_list, world.player_prompt_list, [font, font_larger, font_massive], m_player_sfx_list_main, vol_lvl)
+
 #ui manager
 ui_manager0 = ui_manager(SCREEN_WIDTH, SCREEN_HEIGHT, [font, font_larger, font_massive], vol_lvl, monitor_size)
 update_vol = False
@@ -282,7 +287,7 @@ while run:
 	temp_move_L = False
 	player_enable_master = (gradient_BGcolor_playerEN[2] and not dialogue_enable)
  
-	if level == 0 or pause_game or not player0.Alive or inventory_opened:#delete mouse when out of the main menu
+	if level == 0 or pause_game or not player0.Alive or inventory_opened or dialogue_enable:#delete mouse when out of the main menu
 		pygame.mouse.set_visible(1)
 	else:
 		pygame.mouse.set_visible(0)
@@ -364,12 +369,30 @@ while run:
 	#--------------------------------------------------------------------handling drawing text boxes------------------------------------------------------------------
 	#textboxes have a maximum of 240 characters
 	
-	if the_sprite_group.textbox_output[0] != '' and the_sprite_group.textbox_output[1] and the_sprite_group.textbox_output[2]:
-		#print(the_sprite_group.textbox_output)
-		#the_sprite_group.textbox_output = (name, player_collision, dialogue_enable, message, expression, self.character_index_dict[self.name])
+	if the_sprite_group.textbox_output[0] != '' and the_sprite_group.textbox_output[1] and the_sprite_group.textbox_output[2] and not the_sprite_group.textbox_output[6][0]:
+		#the_sprite_group.textbox_output = (
+  		# name, player_collision, 
+    	# dialogue_enable, message, 
+     	# expression, 
+    	# self.character_index_dict[self.name], 
+  		# (player choice tuple)
+    	# )
 		dialogue_box0.draw_text_box(the_sprite_group.textbox_output[3], font_larger, screen, the_sprite_group.textbox_output[0], 
                               		the_sprite_group.textbox_output[4], the_sprite_group.textbox_output[5], text_speed)
-		
+  
+	elif the_sprite_group.textbox_output[6][0] and the_sprite_group.textbox_output[2]: #handling player choice
+     
+		dialogue_box0.draw_box_and_portrait(screen, the_sprite_group.textbox_output[4], the_sprite_group.textbox_output[5])
+		next_dialogue_index = p_choice_handler0.deploy_buttons(the_sprite_group.textbox_output[6][1], screen)
+  
+		if next_dialogue_index != -3:
+			for npc in the_sprite_group.textprompt_group: #look for npc in sprite group what has a player choice open
+				if npc.player_choice_flag:
+					npc.force_dialogue_index(next_dialogue_index)
+					p_choice_handler0.trigger_once = True
+					dialogue_box0.type_out = True
+
+					
 		 
 	
  
@@ -459,6 +482,7 @@ while run:
 		the_sprite_group.update_vol_lvl(vol_lvl)
 		player0.m_player.set_vol_all_sounds(vol_lvl)
 		player_inv_UI.m_player.set_vol_all_sounds(vol_lvl)
+		p_choice_handler0.m_player.set_vol_all_sounds(vol_lvl)
   
 	update_vol = ui_manager0.raise_volume or ui_manager0.lower_volume #2 different signals from ui_manager or'd together
   
@@ -617,11 +641,11 @@ while run:
 					status_bars.warning = True
      
 
-				if event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate <= player0.stamina: #pygame.K_s
+				if event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + 0.5 <= player0.stamina: #pygame.K_s
 					player0.squat = False
 					player0.rolling = True
 					hold_jump = False
-				elif event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate > player0.stamina: #pygame.K_s
+				elif event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + 0.5 > player0.stamina: #pygame.K_s
 					status_bars.warning = True
      
 				if event.key == ctrls_list[7]: #pygame.K_RALT
@@ -676,8 +700,9 @@ while run:
 						pygame.mixer.pause()
 						m_player.play_sound(m_player.sfx[1])
       
-					elif dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list: #exits dialogue window if an NPC finishes speaking (is this way to avoid bugs)
+					elif dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list or the_sprite_group.textbox_output[6][0]: #exits dialogue window if an NPC finishes speaking (is this way to avoid bugs)
 						dialogue_enable = False
+						p_choice_handler0.disable()
 						
 				else:#if on the main menu, the game will exit on button press
 					run = False
@@ -692,7 +717,7 @@ while run:
 				
 				if dialogue_trigger_ready:
 					dialogue_enable = True
-				if dialogue_enable:
+				if dialogue_enable and not the_sprite_group.textbox_output[6][0]:
 					if dialogue_box0.str_list_rebuilt != dialogue_box0.current_str_list:
 						text_speed = 0
 						m_player.play_sound(m_player.sfx[1])

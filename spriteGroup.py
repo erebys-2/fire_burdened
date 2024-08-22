@@ -43,7 +43,7 @@ class sprite_group():
 		]
   
 		self.hostiles_group = (self.enemy0_group, self.enemy_bullet_group, self.enemy_bullet_group2, self.p_int_group2)
-		self.textbox_output = ('', False, False, '', 0)
+		self.textbox_output = ('', False, False, '', 0, 0, (False, ''))
   
 	def update_vol_lvl(self, level):
 		for sp_group in self.sp_groups_with_vol:
@@ -54,7 +54,7 @@ class sprite_group():
 		for group in self.sp_group_list:
 			group.empty()
    
-		self.textbox_output = ('', False, False, '', 0)
+		self.textbox_output = ('', False, False, '', 0, 0, (False, ''))
   
 	def update_item_group(self, pause_game, player_hitbox_rect, scroll_x, screen):
 		for item in self.item_group:
@@ -88,6 +88,7 @@ class sprite_group():
 				obj.scroll_along(scroll_x)
 				if obj.player_collision:
 					self.textbox_output = obj.enable(dialogue_enable, next_dialogue)
+					
 					#print(obj.enable(dialogue_enable, next_dialogue, screen, player_hitbox_rect, scroll_x))
 
 		for enemy0 in self.enemy0_group:

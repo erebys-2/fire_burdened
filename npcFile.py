@@ -67,6 +67,8 @@ class npc(pygame.sprite.Sprite):
         self.player_collision = False
         self.get_dialogue_flag = False
         
+        self.player_choice_flag = False #signal
+        self.player_choice_key = '' #key
         
     #after every textbox, this is called, need to specify name so that npcs can modify the plot index's of other npcs
     def update_plot_index(self, name, new_plot_index):
@@ -87,24 +89,46 @@ class npc(pygame.sprite.Sprite):
     def enable(self, dialogue_enable, next_dialogue):
         if self.enabled:
             
-            #dialogue_enable and next_dialogue are global signals; they might cause multiple NPC's on the same level to speak at once
-            #self.display_interaction_prompt adds an additional conditional that will pass only if the player is in the collision range for this specific NPC
+            #dialogue_enable and next_dialogue are global booleans in the game window file
             message = ''
-            #self.player_collision = self.display_interaction_prompt(dialogue_enable, player_rect, screen)
             if self.player_collision and dialogue_enable:
+                
                 dialogue = self.get_message(self.current_dialogue_index) #returns message and index of next dialogue
-                message = dialogue[0]
+                
                 expression = dialogue[2]
                 
+                if not self.player_choice_flag:
+                    message = dialogue[0]
+                else:
+                    message = ('','')
+                
+                if dialogue[1] == -3 and not self.player_choice_flag: #impulse signal
+                    self.player_choice_flag = True
+                    self.player_choice_key = message[0]
+                    #print(message)
+                
                 if next_dialogue:#convert continuous signal next_dialogue into an impulse
-                    if self.trigger_once != next_dialogue:
-                        if not self.is_initial_index:
-                            #print(self.plot_index_list)
-                            self.last_dialogue_index = self.current_dialogue_index
-                            self.current_dialogue_index = dialogue[1]#updates to next dialogue index
+                    if self.trigger_once != next_dialogue and not self.get_dialogue_flag:
+                        if dialogue[1] == -3: #if the index is -3, then a player choice is in progress.
+                            #do not change variables and set player_choice_flag to true
+                            #self.current_dialogue_index = 0
+                            message = ('','')
+                            print('poopcock')
                             self.get_dialogue_flag = True
-                        else:
+                        #doesn't do dialogue index changing if is_initial_index is true
+                        #you don't want the first interaction iterate through the indexes
+                        elif not self.is_initial_index: 
+                            #updates to next dialogue index
+                            self.last_dialogue_index = self.current_dialogue_index
+                            self.current_dialogue_index = dialogue[1]
+                            self.get_dialogue_flag = True
+                            
+                        elif self.is_initial_index: #skips changing index for first dialogue box
                             self.is_initial_index = False
+                            
+                        
+                            
+                            
                     self.trigger_once = True
                     message = (' ',' ')#prevents lingering text from previous textbox
                 else:
@@ -112,7 +136,24 @@ class npc(pygame.sprite.Sprite):
             else:
                 expression = 0
         
-        return (message, self.player_collision, dialogue_enable, self.name, expression, self.character_index_dict[self.name])
+        return (message, 
+                self.player_collision, 
+                dialogue_enable, 
+                self.name, 
+                expression, 
+                self.character_index_dict[self.name], 
+                (self.player_choice_flag, self.player_choice_key))
+    
+    
+    def force_dialogue_index(self, new_index):
+        
+        self.player_choice_flag = False
+        self.player_choice_key = ''
+        self.current_dialogue_index = new_index
+
+        
+    
+    
     
     def display_interaction_prompt(self, dialogue_enable, player_rect, screen):
         self.player_collision = self.rect.colliderect(player_rect)

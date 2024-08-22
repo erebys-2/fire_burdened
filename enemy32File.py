@@ -355,7 +355,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         elif player_action == 6 and self.rect.colliderect(player_rect):
             dx = 0
         
-        if self.direction == 0:
+        if self.direction == 0 and player_action != 9:
             if self.flip:
                 self.direction = 1
             else:

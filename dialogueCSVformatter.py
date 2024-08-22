@@ -143,4 +143,18 @@ class csv_extracter():
 #Player choices will also be handled through the npc file as well, (each npc will have to be passed the player dialogue list as a consequence)
 #NPC dialogue will be displayed ontop the screen, player reponses in the bottom
     
+    def csv_nonformatted(self, file_name):
+        temp_list = self.read_npc_data(file_name)
+        return temp_list
  
+    #create separate file and class for player choices with independent methods
+    #choice processing will happen in the NPC file, current dialogue and frame will have to be suspended during a player choice
+    #choice processing will have a structure like: [[[message, next_index]...]....] where both are ints
+    #message will refer to an index in temp_list above, next_index will be the return value when a choiee is selected
+    #the actual buttons will have to be instantiated in the text box subclass
+    #if there were to be a single instantiation of a player choice handler, it'd probably be in the textbox subclass
+    #an NPC just needs to pass a player choice int to access the choice processing structure
+    
+# csv0 = csv_extracter(1)
+
+# print(csv0.decode_player_choice())

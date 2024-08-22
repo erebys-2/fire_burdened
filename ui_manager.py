@@ -70,7 +70,7 @@ class ui_manager():
             for row in reader:
                 for entry in row:
                     temp_list.append(int(entry))
-                    
+     
         return temp_list
         
     def write_csv_data(self, data_name, data):

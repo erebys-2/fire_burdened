@@ -144,7 +144,7 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
                 
 class inventory_UI(): #handles displaying inventory and 
     def __init__(self, rows, cols, fontlist, SCREEN_WIDTH, SCREEN_HEIGHT, ini_vol):
-        m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav']
+        m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav', 'woop.wav']
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
 
         self.rows = rows

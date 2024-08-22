@@ -125,7 +125,7 @@ class player(pygame.sprite.Sprite):
         self.atk_rect = pygame.Rect(-32, -32, 0,0)#self.rect.x, self.rect.y, self.rect.height, 2*self.rect.width
         self.atk_rect_scaled = pygame.Rect(-32, -32, 0,0)
         
-        self.m_player = music_player(['hat.wav', 'hat2.wav', 'step.wav', 'step2.wav', 'slash.wav', 'shoot.wav', 'slash2.wav', 'boonk.wav'], ini_vol)
+        self.m_player = music_player(['hat.wav', 'hat2.wav', 'step.wav', 'step2.wav', 'slash.wav', 'shoot.wav', 'slash2.wav', 'boonk.wav', 'woop.wav'], ini_vol)
         self.ini_vol = ini_vol
         self.play_sound_once_en = True
         
@@ -303,6 +303,7 @@ class player(pygame.sprite.Sprite):
         for item in the_sprite_group.item_group:
             if (self.hitbox_rect.colliderect(item.rect)):
                 #print("gotteem")
+                self.m_player.play_sound(self.m_player.sfx[8])
                 self.inventory_handler.pick_up_item(self.collision_rect, the_sprite_group.item_group)
     
     def do_npc_collisions(self, dx, textprompt_group):
