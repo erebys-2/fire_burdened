@@ -115,7 +115,7 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
         #then check for the next available slot (item can be allocated to another slot)
         if slot_index == 0 and not stacked: #slot with matching item id not found
             for slot in self.inventory:
-                if slot == ['empty', 0]:
+                if slot == ['empty', 0] and self.inventory.index(slot) != len(self.inventory) - 1: #last slot is off reserved
                     slot_index = self.inventory.index(slot)
                     allocated = True
                     break
@@ -126,17 +126,29 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
                 
         return slot_index
                 
+    def include_exclude(self, exclude, id_, list_):
+        if exclude:
+            boolean = id_ not in list_
+        else:
+            boolean = id_ in list_
+            
+        return boolean
                 
     #call this whenever the player collides with an item
-    def pick_up_item(self, player_rect, item_group):
+    def pick_up_item(self, player_rect, item_group, item_id_list, exclude):
+        picked_up = False
+
         for item in item_group:
             if player_rect.colliderect(item.rect):
                 slot_index = self.find_available_slot(item.id)
-                if slot_index != -1: #inventory not full
+                if slot_index != -1 and self.include_exclude(exclude, item.id, item_id_list): #inventory not full
                     self.inventory[slot_index][0] = item.id
                     self.inventory[slot_index][1] += item.count
                     item.disable() #item is deleted on the player side by calling an internal method
-                #print(self.inventory)
+                    picked_up = True
+                print(self.inventory)
+        
+        return picked_up
       
 #=============================================================================================================================================  
 #note: due to the implementation of a delay in the button file, the game will slow down whenever a button is pressed
@@ -161,7 +173,7 @@ class inventory_UI(): #handles displaying inventory and
         self.S_H = SCREEN_HEIGHT
         
         self.temp_inventory = []
-        self.temp_inv_2 = []
+        
         self.slot = 0
         
         self.generic_img = pygame.image.load('sprites/generic_btn.png').convert_alpha()
@@ -178,7 +190,7 @@ class inventory_UI(): #handles displaying inventory and
         #load all items into a list
         item_img_list = []
         for item in os.listdir(f'sprites/items'):
-            item_img_list.append([item[0:len(item)-4], pygame.image.load(f'sprites/items/{item}').convert_alpha()])
+            item_img_list.append([item[0:len(item)-4], pygame.image.load(f'sprites/items/{item}').convert_alpha()])#-4 to remove '.png'
             
         #create dictionary
         #dictionaries are mutable btw!
@@ -218,6 +230,9 @@ class inventory_UI(): #handles displaying inventory and
                     self.button_list2.append(Button(32*j + 8 + self.inv_disp[0], 32*i + 8 + self.inv_disp[0], self.item_img_dict[inventory[i*self.cols + j][0]], 1))
                     #self.item_img_dict[inventory[i*self.cols + j][0]]
                     
+            #create a final inventory slot that's set out from the rest
+            
+                    
             self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +64 +16, self.generic_img, 1))
             self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +64 +56, self.generic_img, 1))
             
@@ -242,9 +257,10 @@ class inventory_UI(): #handles displaying inventory and
                             ' '
                             ]
             
-            item_description = self.item_details0.get_formatted_description(inventory[self.slot][0])
-            for item in item_description:
-                item_details.append(item)
+            item_description = self.item_details0.get_formatted_description(inventory[self.slot][0])#string list
+            for line in item_description:
+                item_details.append(line)#add to the established stringlist
+                
             
             self.text_manager0.disp_text_box(screen, self.fontlist[1], item_details,
                                              (-1,-1,-1), (200,200,200), (self.S_W//2 + 4, self.S_H//2 - 124, 220, 188), False, False, 'none')

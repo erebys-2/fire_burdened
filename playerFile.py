@@ -147,7 +147,7 @@ class player(pygame.sprite.Sprite):
             False #turn_around
         )
         
-        self.inventory_handler = inventory_handler(9)
+        self.inventory_handler = inventory_handler(10)
        
     #methods
     
@@ -303,8 +303,9 @@ class player(pygame.sprite.Sprite):
         for item in the_sprite_group.item_group:
             if (self.hitbox_rect.colliderect(item.rect)):
                 #print("gotteem")
-                self.m_player.play_sound(self.m_player.sfx[8])
-                self.inventory_handler.pick_up_item(self.collision_rect, the_sprite_group.item_group)
+                #last param is a boolean for exluding items in the item id list prior, when set to False it will only include those items
+                if self.inventory_handler.pick_up_item(self.collision_rect, the_sprite_group.item_group, [], True): 
+                    self.m_player.play_sound(self.m_player.sfx[8])
     
     def do_npc_collisions(self, dx, textprompt_group):
         for obj in textprompt_group:
