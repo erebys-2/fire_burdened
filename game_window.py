@@ -722,7 +722,7 @@ while run:
 						text_speed = 0
 						m_player.play_sound(m_player.sfx[1])
 					else:
-						text_speed = 80
+						text_speed = 60
 						next_dialogue = True
 						dialogue_box0.type_out = True
 				

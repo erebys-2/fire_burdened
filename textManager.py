@@ -190,7 +190,7 @@ class dialogue_box(text_manager):
                 self.type_out_en = True
                 
                 
-                if text_speed > 0 and (self.counter%2 == 0):
+                if text_speed > 0 and (self.counter == 0):
                     self.m_player.play_sound(self.m_player.sfx[0])
                 self.counter += 1
             else:

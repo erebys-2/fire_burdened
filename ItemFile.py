@@ -338,7 +338,7 @@ class item_details():
             'empty':'Slot is empty.',
             'test':'This is a test item used for debugging.',
             'test2':'The quick brown fox jumped over the lazy dog. The over quick fox brown lazy jumped the dog.',
-            'Cursed Flesh':'It pulsates with aura.'
+            'Cursed Flesh':'Flesh that pulsates with aura. It smells funny but might be edible.'
         }
         self.csv_extract0 = csv_extracter(20)#the int doesn't do anything
         

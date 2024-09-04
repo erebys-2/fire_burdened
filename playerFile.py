@@ -304,7 +304,7 @@ class player(pygame.sprite.Sprite):
             if (self.hitbox_rect.colliderect(item.rect)):
                 #print("gotteem")
                 #last param is a boolean for exluding items in the item id list prior, when set to False it will only include those items
-                if self.inventory_handler.pick_up_item(self.collision_rect, the_sprite_group.item_group, ['test'], True): 
+                if self.inventory_handler.pick_up_item(self.collision_rect, the_sprite_group.item_group, ['Cursed Flesh'], True): 
                     self.m_player.play_sound(self.m_player.sfx[8])
     
     def do_npc_collisions(self, dx, textprompt_group):
