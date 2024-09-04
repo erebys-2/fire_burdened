@@ -304,7 +304,7 @@ class player(pygame.sprite.Sprite):
             if (self.hitbox_rect.colliderect(item.rect)):
                 #print("gotteem")
                 #last param is a boolean for exluding items in the item id list prior, when set to False it will only include those items
-                if self.inventory_handler.pick_up_item(self.collision_rect, the_sprite_group.item_group, [], True): 
+                if self.inventory_handler.pick_up_item(self.collision_rect, the_sprite_group.item_group, ['test'], True): 
                     self.m_player.play_sound(self.m_player.sfx[8])
     
     def do_npc_collisions(self, dx, textprompt_group):
@@ -410,9 +410,10 @@ class player(pygame.sprite.Sprite):
                 #displaced hitbox x collisions
                 elif (self.action != 9
                     and self.disp_flag #and self.action == 67
-                    and tile[1].colliderect(self.collision_rect.x + disp_x + dx, self.collision_rect.y, self.width, self.height - 17)
+                    and tile[1].colliderect(self.collision_rect.x + disp_x + dx, self.collision_rect.y, self.width + disp_x, self.height - 17)
                     ):
                     dx = -16*self.direction
+                    dy = 0
                     self.hitting_wall = True
                 
                 #wall collisions while NOT rolling
@@ -459,7 +460,7 @@ class player(pygame.sprite.Sprite):
                         #basically there's 2 collision checks that each make up half of the collision rect, upper and lower
                         
                         if tile[1].colliderect(self.collision_rect.x + 1, self.collision_rect.y + self.height//2 + dy, self.width - 2, self.height//2):
-                            dy = tile[1].top  - self.rect.bottom #-1
+                            dy = tile[1].top - self.rect.bottom #-1
                             self.rolled_into_wall = False
                             self.in_air = False
                             
@@ -952,7 +953,7 @@ class player(pygame.sprite.Sprite):
                 self.atk1 = False
                     
             if self.action == 9: 
-                #self.image = pygame.image.load('sprites/player/end_of_roll/0.png') #this fucks everything do not add back
+                #self.image = pygame.image.load('sprites/player/end_of_roll/0.png') #this messes up everything do not add back
                 if self.roll_count == self.roll_limit:# or self.rolled_into_wall:#roll limit, this ends up getting incremented once more after 
                     self.rolling = False
                 self.roll_count += 1

@@ -128,9 +128,9 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
                 
     def include_exclude(self, exclude, id_, list_):
         if exclude:
-            boolean = id_ not in list_
+            boolean = id_ not in list_ #if an item is not in the exclude list
         else:
-            boolean = id_ in list_
+            boolean = id_ in list_ #if an item is in the include list
             
         return boolean
                 
@@ -146,7 +146,12 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
                     self.inventory[slot_index][1] += item.count
                     item.disable() #item is deleted on the player side by calling an internal method
                     picked_up = True
-                print(self.inventory)
+                elif self.include_exclude(not exclude, item.id, item_id_list): #if item is included in the item_id_list then put it in the special slot
+                    self.inventory[len(self.inventory) - 1][0] = item.id
+                    self.inventory[len(self.inventory) - 1][1] += item.count
+                    item.disable()
+                    picked_up = True
+                #print(self.inventory)
         
         return picked_up
       
@@ -161,7 +166,7 @@ class inventory_UI(): #handles displaying inventory and
 
         self.rows = rows
         self.cols = cols
-        self.size = rows * cols
+        self.size = 0
         self.trigger_once = True
         self.inventory_grid = []
         
@@ -183,7 +188,8 @@ class inventory_UI(): #handles displaying inventory and
         for i in range (len(os.listdir(f'sprites/misc_art/aria'))):
             self.aria_frame_list.append(pygame.image.load(f'sprites/misc_art/aria/{i}.png').convert_alpha())
         
-        self.inv_disp = [160,160] #inventory displacement for displaying slot
+        self.inv_disp = (160,128) #inventory displacement for displaying slot
+        self.isolated_slot_pos = (192, self.inv_disp[1] + self.rows*32 + 32)
         self.text_manager0 = text_manager()
      
         
@@ -226,11 +232,15 @@ class inventory_UI(): #handles displaying inventory and
             
             for i in range(self.rows):
                 for j in range(self.cols):
-                    self.button_list.append(Button(32*j + self.inv_disp[0], 32*i + self.inv_disp[0], self.inventory_btn, 1))
-                    self.button_list2.append(Button(32*j + 8 + self.inv_disp[0], 32*i + 8 + self.inv_disp[0], self.item_img_dict[inventory[i*self.cols + j][0]], 1))
+                    self.button_list.append(Button(32*j + self.inv_disp[0], 32*i + self.inv_disp[1], self.inventory_btn, 1))
+                    self.button_list2.append(Button(32*j + 8 + self.inv_disp[0], 32*i + 8 + self.inv_disp[1], self.item_img_dict[inventory[i*self.cols + j][0]], 1))
                     #self.item_img_dict[inventory[i*self.cols + j][0]]
+                    self.size += 1
                     
             #create a final inventory slot that's set out from the rest
+            self.button_list.append(Button(self.isolated_slot_pos[0], self.isolated_slot_pos[1], self.inventory_btn, 1))
+            self.button_list2.append(Button(self.isolated_slot_pos[0] + 8, self.isolated_slot_pos[1] + 8, self.item_img_dict[inventory[len(inventory) - 1][0]], 1))
+            self.size += 1
             
                     
             self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +64 +16, self.generic_img, 1))
@@ -327,7 +337,8 @@ class item_details():
         self.item_desc_dict = {
             'empty':'Slot is empty.',
             'test':'This is a test item used for debugging.',
-            'test2':'The quick brown fox jumped over the lazy dog. The over quick fox brown lazy jumped the dog.'
+            'test2':'The quick brown fox jumped over the lazy dog. The over quick fox brown lazy jumped the dog.',
+            'Cursed Flesh':'It pulsates with aura.'
         }
         self.csv_extract0 = csv_extracter(20)#the int doesn't do anything
         

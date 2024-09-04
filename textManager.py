@@ -207,12 +207,12 @@ class dialogue_box(text_manager):
 # str_list = [
 #     'hello',
 #     'world',
-#     'mofo',
+#     'friend!',
 #     ]
 # str_list2 = [
 #     'suck',
-#     'my fat',
-#     'cock'    
+#     'my delicious',
+#     'carrot!'    
 # ]
 
 # #---------------------------------main-------------------------------------
