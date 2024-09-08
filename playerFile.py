@@ -10,7 +10,7 @@ import random
 
 class player(pygame.sprite.Sprite):
     #constructors
-    def __init__(self, x, y, speed, hp, stamina, hits_tanked, stamina_used, ini_vol):
+    def __init__(self, x, y, speed, hp, stamina, hits_tanked, stamina_usage_cap, ini_vol):
         pygame.sprite.Sprite.__init__(self)
         #internal variables
         scale = 2
@@ -76,7 +76,8 @@ class player(pygame.sprite.Sprite):
         
         self.hp = hp
         self.stamina = stamina
-        self.stamina_used = stamina_used
+        self.stamina_usage_cap = stamina_usage_cap
+        self.stamina_used = 0
         self.ini_stamina = 0
 
         self.frame_list = []
@@ -146,6 +147,8 @@ class player(pygame.sprite.Sprite):
             False, #
             False #turn_around
         )
+        
+        #self.stamina_usage_cap = 0
         
         self.inventory_handler = inventory_handler(10)
        
@@ -799,43 +802,41 @@ class player(pygame.sprite.Sprite):
     def stamina_regen(self):
         if (self.shot_charging == False):
             rate = 80
-            # if self.rolling:
-            #     unit = -0.05
-            # else:
+ 
             if self.speed > self.default_speed and not self.rolling:
-                unit = -0.12
+                stamina_increment_unit = -0.12
             elif self.rolling and self.stamina_used + self.roll_stam_rate <= self.stamina:
-                unit = self.roll_stam_rate
+                stamina_increment_unit = self.roll_stam_rate
             else:
-                unit = -0.22
-            # if self.action >= 7 and self.frame_index <= 1:
-            #     unit = 0
-            # else:
-            #     unit = -0.25
+                stamina_increment_unit = -0.20
             
                 
             self.ini_stamina = self.stamina_used
             
-            if self.stamina_used + unit >= 0:
-                boolean = True
-            elif (self.stamina_used > 0 and self.stamina_used + unit <= 0):
-                self.stamina_used = 0
-                boolean = False
+
+            
+            if self.stamina_used + stamina_increment_unit >= self.stamina_usage_cap: #change 0 to some int, the int will be the limit to which stamina will regen
+                do_stam_regen = True
+
+            elif (self.stamina_used > 0 and self.stamina_used + stamina_increment_unit <= self.stamina_usage_cap): #regen to max stamina cap
+                self.stamina_used = self.stamina_usage_cap #change this to change stamina cap
+                do_stam_regen = False
+                
             else:
-                boolean = False
+                do_stam_regen = False
         else:
             rate = 150
-            unit = 0.15
+            stamina_increment_unit = 0.15
             self.charge_built = self.stamina_used - self.ini_stamina
-            if self.stamina_used + unit <= self.stamina:
-                boolean = True
+            if self.stamina_used + stamina_increment_unit <= self.stamina:
+                do_stam_regen = True
             else:
-                boolean = False
+                do_stam_regen = False
             
-        if boolean: 
+        if do_stam_regen: 
             if pygame.time.get_ticks() - self.update_time3 > rate:
                 self.update_time3 = pygame.time.get_ticks()
-                self.stamina_used += unit
+                self.stamina_used += stamina_increment_unit
                 
     def take_damage(self, damage):
         self.hits_tanked += damage

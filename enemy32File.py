@@ -344,7 +344,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             elif player_action == 7 or player_action == 8:
                 self.dmg_multiplier = 2
                 
-        elif (self.rect.colliderect(player_rect.scale_by(0.8)) or (self.rect.x < player_rect.x and self.rect.right > player_rect.right )
+        elif (self.rect.colliderect(player_rect.scale_by(0.2)) or (self.rect.x < player_rect.x and self.rect.right > player_rect.right )
             #and not (self.inundated or self.rect.colliderect(player_atk_rect))
               ):
             dx = -dx
@@ -466,6 +466,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             # #obj_list[0].pop(obj_list[0].index(self))
             # del obj_list[0][obj_list[0].index(self)]
             sp_group_list[12].add(Item('Cursed Flesh', self.rect.centerx, self.rect.centery, 1))
+            sp_group_list[12].add(Item('test', self.rect.centerx, self.rect.centery, 1))
             self.kill()
         
         #colliding with bullet 

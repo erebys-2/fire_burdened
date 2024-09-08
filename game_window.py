@@ -147,8 +147,8 @@ gradient_dict = {
 #lvl trans data: (width, height, next_level, player_new_x, player_new_y)
 level_tuple = (
     [black, 'none', 15, 30, [], False], #lvl 0
-    [maroonish, 'rain', 15, 200, [(2, 15*32, 2, 44*32 -2, 288), (2, 15*32, 2, 2, 384)], True], #lvl 1
-    [maroonish, 'rain', 15, 45, [(2, 15*32, 1, 199*32 -2, 384), (2, 15*32, 1, 2, 288)], True] #lvl 2
+    [maroonish, 'none', 15, 200, [(2, 15*32, 2, 44*32 -2, 288), (2, 15*32, 2, 2, 384)], True], #lvl 1
+    [maroonish, 'none', 15, 45, [(2, 15*32, 1, 199*32 -2, 384), (2, 15*32, 1, 2, 288)], True] #lvl 2
 )
 
 #lists for dynamic CSVs
@@ -350,6 +350,11 @@ while run:
 			player0.do_entity_collisions(the_sprite_group, level_transitioning)
 			player0_lvl_transition_data = player0.move(pause_game, move_L, move_R, world.solids, world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
 														SCREEN_WIDTH, SCREEN_HEIGHT, the_sprite_group)
+			use_item_tuple = player0.inventory_handler.item_usage_hander0.process_use_signal(player_inv_UI.use_item_flag, player_inv_UI.item_to_use, player0)
+			player_inv_UI.use_item_flag = use_item_tuple[0]
+			if use_item_tuple[1]:
+				player_inv_UI.discard_item(player0.inventory_handler.inventory)
+   
 		scroll_x = player0.scrollx + camera.scrollx
 	else:
 		scroll_x = 0
@@ -631,6 +636,7 @@ while run:
 				if event.key == ctrls_list[4] and player0.stamina_used + 1 <= player0.stamina and event.key != ctrls_list[0]: #pygame.K_i, pygame.K_w
 					change_once = True
 					player0.atk1 = (event.key == ctrls_list[4])
+					#player0.stamina_usage_cap += 1
 					#player0.squat = False
 				elif event.key == ctrls_list[4] and player0.stamina_used + 1 > player0.stamina: #pygame.K_i
 					status_bars.warning = True
@@ -655,8 +661,8 @@ while run:
 				#use item-- TEMPORARILY LOAD TEST INVENTORY
 				if event.key == ctrls_list[9]:
 					#insert test inventory:
-					player0.inventory_handler.load_saved_inventory([['a', 1], ['b', 1], ['c', 1], ['d', 1], ['e', 1],
-                                                     				['f', 1], ['g', 1], ['h', 1], ['i', 1], ['empty', 0]])
+					player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory)
+					#player0.inventory_handler.load_saved_inventory([['a', 1], ['b', 1], ['c', 1], ['d', 1], ['e', 1], ['f', 1], ['g', 1], ['h', 1], ['i', 1], ['empty', 0]])
 				
 				#open inventory
 				if event.key == ctrls_list[8] and not dialogue_enable:
