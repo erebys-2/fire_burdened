@@ -1,0 +1,2 @@
+Cursed Flesh: heal, reduce_stamina.
+test: heal, restore_stamina.

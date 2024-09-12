@@ -5,7 +5,10 @@ from button import Button
 from textManager import text_manager 
 from music_player import music_player 
 from dialogueCSVformatter import csv_extracter
+from textfile_handler import textfile_formatter
 import random
+
+config_path = 'config_textfiles/item_config'
 
 #Items exist in 2 spaces: level spaces and inventory spaces
 #This file contains code to support an item existing in the level space and being able to interact with the player.
@@ -198,10 +201,10 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
 
 class item_usage_hander():
     def __init__ (self):
-        self.sub_function_dict = {
-            'Cursed Flesh': ('heal', 'reduce_stamina'),
-            'test': ('heal', 'restore_stamina')
-        }
+        t = textfile_formatter()
+        self.sub_function_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'item_subfunctions.txt')), 'list')
+        self.instant_heal_items_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'instant_heal_items_config.txt')), 'int')
+        self.st_reduction_factor_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'st_reduction_factor_config.txt')), 'float')
         
         #make a separate dict for particles and sfx for each item used
     
@@ -223,6 +226,10 @@ class item_usage_hander():
     #note this can only deal with instant effects, persistent status effects probably need a separate class or function
     
     #however, another perk of passing the player is that this class has access to the player's music player, particles, and sounds
+    
+    #plain text file game/ game modular
+    #recode this a little bit so that it uses more dictionaries with values that can be initially loaded thru a text file
+    
     def use_item(self, item_id, player):
         if item_id in self.sub_function_dict:
             sub_function_tuple = self.sub_function_dict[item_id]
@@ -237,7 +244,7 @@ class item_usage_hander():
             elif function == 'heal':
                 self.heal(item_id, player)
             elif function == 'reduce_stamina':
-                self.reduce_stamina(player)
+                self.reduce_stamina(item_id, player)
             elif function == 'restore_stamina':
                 self.restore_stamina(player)
         
@@ -247,22 +254,19 @@ class item_usage_hander():
     def heal(self, item_id, player):
         #player hp works with hits tanked getting added up
         hp_increment = 0
-        if item_id == 'Cursed Flesh':
-            hp_increment = player.hp/3
-        elif item_id == 'test':
-            hp_increment = player.hp
+        hp_increment = self.instant_heal_items_dict[item_id]
         
         if player.hits_tanked - hp_increment < 0: #if healing overflows set player hp to max
             player.hits_tanked = 0
         else:
             player.hits_tanked -= hp_increment
       
-    def reduce_stamina(self, player):
+    def reduce_stamina(self, item_id, player):
         #this is how stamina works: there's this thing called stamina_used and it's incremented with each move that costs stamina
         #in game window, whenever the player uses stamina, it tests if the stamina_used will be greater than player stamina (which is essentially max stamina)
         #so effectively player stamina is the limit for how much the player can use
 
-        player.stamina_usage_cap += (player.stamina - player.stamina_usage_cap)*0.33 #exponentially decreases stamina regen cap
+        player.stamina_usage_cap += (player.stamina - player.stamina_usage_cap)*self.st_reduction_factor_dict[item_id] #exponentially decreases stamina regen cap
 
         if player.stamina_used < player.stamina_usage_cap: #set stamina to new cap
             player.stamina_used = player.stamina_usage_cap
@@ -460,13 +464,10 @@ class inventory_UI(): #handles displaying inventory and
 
 class item_details():
     def __init__(self):
-        self.key_items = () #list of strings that are id's of key items
-        self.item_desc_dict = {
-            'empty':'Slot is empty.',
-            'test':'This is a test item used for debugging.',
-            'test2':'The quick brown fox jumped over the lazy dog. The over quick fox brown lazy jumped the dog.',
-            'Cursed Flesh':'It smells funny but might be edible. Instantly restores health at the cost of max stamina.'
-        }
+        t = textfile_formatter()
+        
+        self.key_items = t.read_text_from_file(os.path.join(config_path, 'keyitems_list.txt')) #list of strings that are id's of key items
+        self.item_desc_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'item_descriptions.txt')), 'none')
         self.csv_extract0 = csv_extracter(20)#the int doesn't do anything
         
         self.f_item_desc_dict = self.format_into_str_list(self.item_desc_dict, 26)

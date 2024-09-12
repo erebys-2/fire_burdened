@@ -687,11 +687,7 @@ while run:
        		#escape exits UI ONLY before the options sub menu is shown and any deeper into sub menus
 				if level != 0:
 					ui_manager0.trigger_once = True
-     
-					if inventory_opened:#exit inventory if opened
-						inventory_opened = False
-						player_inv_UI.close_inventory()
-      
+
 					if (pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
 						next_level = 0
 						player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl)
@@ -701,7 +697,7 @@ while run:
 						pygame.mixer.stop()
 						m_player.play_sound(m_player.sfx[1])
 
-					elif not dialogue_enable: #pause game, will trigger if player is not in dialogue
+					elif not dialogue_enable and not inventory_opened: #pause game, will trigger if player is not in dialogue
 						pause_game = True
 						pygame.mixer.pause()
 						m_player.play_sound(m_player.sfx[1])
@@ -709,6 +705,10 @@ while run:
 					elif dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list or the_sprite_group.textbox_output[6][0]: #exits dialogue window if an NPC finishes speaking (is this way to avoid bugs)
 						dialogue_enable = False
 						p_choice_handler0.disable()
+
+					if inventory_opened:#exit inventory if opened
+						inventory_opened = False
+						player_inv_UI.close_inventory()
 						
 				else:#if on the main menu, the game will exit on button press
 					run = False

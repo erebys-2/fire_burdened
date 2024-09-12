@@ -1,0 +1,4 @@
+empty: Slot is empty.
+test: This is a test item used for debugging.
+test2: The quick brown fox jumped over the lazy dog. The over quick fox brown lazy jumped the dog.
+Cursed Flesh: It smells funny but might be edible. Instantly restores health at the cost of max stamina.
