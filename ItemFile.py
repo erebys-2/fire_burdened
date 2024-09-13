@@ -9,6 +9,7 @@ from textfile_handler import textfile_formatter
 import random
 
 config_path = 'config_textfiles/item_config'
+item_sprites_path = 'sprites/items'
 
 #Items exist in 2 spaces: level spaces and inventory spaces
 #This file contains code to support an item existing in the level space and being able to interact with the player.
@@ -18,7 +19,7 @@ class Item(pygame.sprite.Sprite):
     def __init__(self, id, x, y, count):
         pygame.sprite.Sprite.__init__(self)
         self.id = id
-        self.image = pygame.image.load(f'sprites/items/{self.id}.png').convert_alpha()
+        self.image = pygame.image.load(os.path.join(item_sprites_path, f'{self.id}.png')).convert_alpha()
         self.width = self.image.get_width()
         self.height = self.image.get_height()
         
@@ -314,8 +315,8 @@ class inventory_UI(): #handles displaying inventory and
         
         #load all items into a list
         item_img_list = []
-        for item in os.listdir(f'sprites/items'):
-            item_img_list.append([item[0:len(item)-4], pygame.image.load(f'sprites/items/{item}').convert_alpha()])#-4 to remove '.png'
+        for item in os.listdir(item_sprites_path):
+            item_img_list.append([item[0:len(item)-4], pygame.image.load(os.path.join(item_sprites_path, f'{item}')).convert_alpha()])#-4 to remove '.png'
             
         #create dictionary
         #dictionaries are mutable btw!
