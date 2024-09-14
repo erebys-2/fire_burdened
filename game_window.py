@@ -77,39 +77,6 @@ damage = 0
 scroll_x = 0
 scroll_y = 0
 
-fg_data = []
-coord_data = []
-world_data = []
-bg1_data = []
-bg2_data = []
-bg3_data = []
-bg4_data = []
-bg5_data = []
-bg6_data = []
-
-level_data_list = [
-	coord_data,
-	fg_data,
-	world_data,
-	bg1_data,
-	bg2_data,
-	bg3_data,
-	bg4_data,
-	bg5_data,
-	bg6_data
-]
-
-level_data_str_tuple = ( #names of the corresponding csv files
-	'coord_data',
-	'fg_data',
-	'data',
-	'bg1_data',
-	'bg2_data',
-	'bg3_data',
-	'bg4_data',
-	'bg5_data',
-	'bg6_data'
-)
 
 world = World()
 
@@ -176,38 +143,7 @@ def draw_bg(screen, gradient_dict, gradient_type, bg_color):
 	else:
 		screen.fill(bg_color)
   
-
-#reading and loading level data-----------------------------------------------------------------------------------------------------------------
-
-def read_level_data(level, rows, cols, data_, data_str):
-
-	for current_row in range(rows):
-		r = [-1] * cols
-		data_.append(r)
-
-	with open(f'level_files/level{level}_{data_str}.csv', newline= '') as csvfile:
-		reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
-		for x, current_row in enumerate(reader):
-			for y, tile in enumerate(current_row):
-				data_[x][y] = int(tile)
-    
-def clear_world_data(level_data_list):
-	for level_data in level_data_list:
-		level_data *= 0
-	
-def load_level_data(level, level_data_list, level_data_str_tuple, level_tuple, vol_lvl):
-	#level_tuple[level]: 0:BG_color, 1:gradient_type, 2:rows, 3:cols, 4:level_transitions, 5:player_en
-	#print(level_tuple[level][2:5])
-	#reading csv files, fills the list of lists with lists that contain the csv data (ints)
-	index = 0
-	for level_data in level_data_list:
-		read_level_data(level, level_tuple[level][2], level_tuple[level][3], level_data, level_data_str_tuple[index])
-		index += 1
-	
-	#takes the lists from the list of lists and create a new list of lists, this time containing game data
- 
-	#world has self data lists that get cleared each time this is called
-	world.process_data(level, level_data_list, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_tuple[level][4], vol_lvl)
+  
 
 #reading settings data
 def read_settings_data(data):
@@ -255,8 +191,8 @@ normal_speed = player0.speed
 #load initial level-------------------------------------------------------------------------------------------------
 the_sprite_group.purge_sprite_groups()#does as the name suggests at the start of each load of the game
 
-load_level_data(0, level_data_list, level_data_str_tuple, level_tuple, vol_lvl)
-
+# load level data
+world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_tuple[level][2:5], vol_lvl)
 
 #running the game----------------------------------------------------------------------------------------------------------------------
 #https://www.youtube.com/watch?v=XPHDiibNiCM <- motivational music
@@ -304,12 +240,13 @@ while run:
 		scroll_y = 0
 		the_sprite_group.purge_sprite_groups()
 		dialogue_box0.reset_internals()
-		clear_world_data(level_data_list)
+
 		world.clear_data()
 		level_transitioning = True
 		level = next_level
 
-		load_level_data(level, level_data_list, level_data_str_tuple, level_tuple, vol_lvl)
+		# load level data
+		world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_tuple[level][2:5], vol_lvl)
 		
 		if move_L:
 			temp_move_L = move_L

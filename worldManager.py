@@ -21,6 +21,19 @@ class World():
         self.bg4 = []
         self.bg5 = []
         self.bg6 = []
+        
+        self.level_data_str_tuple = ( #names of the corresponding csv files
+            'coord_data',
+            'fg_data',
+            'data',
+            'bg1_data',
+            'bg2_data',
+            'bg3_data',
+            'bg4_data',
+            'bg5_data',
+            'bg6_data'
+        )
+        
 
         self.enhanced_lvl_data_list = [
             self.coords,
@@ -103,6 +116,14 @@ class World():
                     
         return level_csv_data
     
+    def get_raw_csv_data(self, level, lvl_size):
+        raw_lvl_data_list = []
+        for level_data_str in self.level_data_str_tuple:
+            raw_lvl_data_list.append(self.read_level_csv_data(level, lvl_size[0], lvl_size[1], level_data_str))
+            
+        return raw_lvl_data_list
+        
+    
     #called in main menu where either a new game or save file is loaded
 
     def set_plot_index_list(self, plot_index_list):
@@ -131,21 +152,20 @@ class World():
             
 
     #loading the level
-    def process_data(self, level, level_data_list, the_sprite_group, screenW, screenH, level_transitions, ini_vol):
-        # index = 0
-        # for level_data in self.enhanced_lvl_data_list:
-        #     self.read_level_csv_data(level, level_tuple[level][2], level_tuple[level][3], level_data, level_data_str_tuple[index])
-        #     index += 1
-        
-        
+    def process_data(self, level, the_sprite_group, screenW, screenH, level_data, ini_vol):
+        raw_lvl_data_list = []
         self.clear_data()
-        self.process_coords(level_data_list[0], screenW, screenH, self.enhanced_lvl_data_list[0])
+
+        
+        raw_lvl_data_list = self.get_raw_csv_data(level, level_data[0:2])
+        
+        self.process_coords(raw_lvl_data_list[0], screenW, screenH, self.enhanced_lvl_data_list[0])
         enemy0_id = 0
         transition_index = 0
         transition_data = []
         
         #processing interactable layer
-        for y, row in enumerate(level_data_list[2]):
+        for y, row in enumerate(raw_lvl_data_list[2]):
             for x, tile in enumerate(row):
                 if tile >= 0:
 
@@ -156,8 +176,8 @@ class World():
                         img_rect = pygame.Rect(0, 0, 32, 16)
                     elif(tile == 10):#level transition tile
                         img = self.tileList[0][9]
-                        img_rect = pygame.Rect(0, 0, level_transitions[transition_index][0], level_transitions[transition_index][1])
-                        transition_data = level_transitions[transition_index][2:5] #passed to the player: next_level, next coords
+                        img_rect = pygame.Rect(0, 0, level_data[2][transition_index][0], level_data[2][transition_index][1])
+                        transition_data = level_data[2][transition_index][2:5] #passed to the player: next_level, next coords
                         transition_index += 1
                         
                     #if you want to resize the screen you might need to change 32 to a variable
@@ -206,9 +226,9 @@ class World():
             
         #load bg
         for i in range(len(self.enhanced_lvl_data_list) -3):
-            self.process_bg(level_data_list[i+3], self.enhanced_lvl_data_list[i+3], the_sprite_group)
+            self.process_bg(raw_lvl_data_list[i+3], self.enhanced_lvl_data_list[i+3], the_sprite_group)
         #load fg
-        self.process_bg(level_data_list[1], self.enhanced_lvl_data_list[1], the_sprite_group)
+        self.process_bg(raw_lvl_data_list[1], self.enhanced_lvl_data_list[1], the_sprite_group)
 
 
     def process_coords(self, data, screenW, screenH, rtrn_list):
