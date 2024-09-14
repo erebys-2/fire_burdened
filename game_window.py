@@ -197,17 +197,17 @@ def clear_world_data(level_data_list):
 	
 def load_level_data(level, level_data_list, level_data_str_tuple, level_tuple, vol_lvl):
 	#level_tuple[level]: 0:BG_color, 1:gradient_type, 2:rows, 3:cols, 4:level_transitions, 5:player_en
-
-	#reading csv files 
+	#print(level_tuple[level][2:5])
+	#reading csv files, fills the list of lists with lists that contain the csv data (ints)
 	index = 0
 	for level_data in level_data_list:
 		read_level_data(level, level_tuple[level][2], level_tuple[level][3], level_data, level_data_str_tuple[index])
 		index += 1
-  
+	
+	#takes the lists from the list of lists and create a new list of lists, this time containing game data
+ 
 	#world has self data lists that get cleared each time this is called
 	world.process_data(level, level_data_list, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_tuple[level][4], vol_lvl)
-	
-	return [level_tuple[level][1], level_tuple[level][0], level_tuple[level][5]]# gradient, BG_color, player enable
 
 #reading settings data
 def read_settings_data(data):
@@ -254,8 +254,8 @@ normal_speed = player0.speed
 
 #load initial level-------------------------------------------------------------------------------------------------
 the_sprite_group.purge_sprite_groups()#does as the name suggests at the start of each load of the game
-lvl_data = load_level_data(0, level_data_list, level_data_str_tuple, level_tuple, vol_lvl)
-gradient_BGcolor_playerEN = lvl_data[0:3]
+
+load_level_data(0, level_data_list, level_data_str_tuple, level_tuple, vol_lvl)
 
 
 #running the game----------------------------------------------------------------------------------------------------------------------
@@ -285,7 +285,7 @@ while run:
  
 	temp_move_R = False
 	temp_move_L = False
-	player_enable_master = (gradient_BGcolor_playerEN[2] and not dialogue_enable)
+	player_enable_master = (level_tuple[level][5] and not dialogue_enable)
  
 	if level == 0 or pause_game or not player0.Alive or inventory_opened or dialogue_enable:#delete mouse when out of the main menu
 		pygame.mouse.set_visible(1)
@@ -308,8 +308,8 @@ while run:
 		world.clear_data()
 		level_transitioning = True
 		level = next_level
-		lvl_data = load_level_data(level, level_data_list, level_data_str_tuple, level_tuple, vol_lvl)
-		gradient_BGcolor_playerEN = lvl_data[0:3]
+
+		load_level_data(level, level_data_list, level_data_str_tuple, level_tuple, vol_lvl)
 		
 		if move_L:
 			temp_move_L = move_L
@@ -336,7 +336,7 @@ while run:
 	
 	#---------------------------------------------------------drawing level and sprites------------------------------------------------------------------
 	#---------------------------------------------------------handling movement and collisions and AI----------------------------------------------------
-	draw_bg(screen, gradient_dict, gradient_BGcolor_playerEN[0], gradient_BGcolor_playerEN[1])#this just draws the color
+	draw_bg(screen, gradient_dict, level_tuple[level][1], level_tuple[level][0])#this just draws the color
 	#camera.draw(screen)#for camera debugging
 	if world.x_scroll_en:
 		camera.auto_correct(player0.rect, world.coords, world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -440,7 +440,7 @@ while run:
  
 	#--------------------------------------------------------------MAIN MENU CODE---------------------------------------------------------------------
 	if level == 0: 
-		draw_bg(screen, gradient_dict, gradient_BGcolor_playerEN[0], gradient_BGcolor_playerEN[1])
+		draw_bg(screen, gradient_dict, level_tuple[level][1], level_tuple[level][0])
 		pause_game = False
 		exit_to_title = False
 
@@ -606,7 +606,7 @@ while run:
 		if(event.type == pygame.KEYDOWN):
 			#print(pygame.key.name(event.key))
    
-			if player0.Alive and gradient_BGcolor_playerEN[2] and not pause_game and not dialogue_enable:
+			if player0.Alive and level_tuple[level][5] and not pause_game and not dialogue_enable:
 				if event.key == ctrls_list[1]: #pygame.K_a
 					move_L = True
 				if event.key == ctrls_list[3]: #pygame.K_d

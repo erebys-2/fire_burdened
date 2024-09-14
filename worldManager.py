@@ -6,6 +6,7 @@ from particle import particle_ #type: ignore
 from player_interactable import player_interactable_
 from dialogueCSVformatter import csv_extracter
 from BGspritesFile import tree, fountain, lamp
+import csv
 
 from npcFile import npc, Test, Test2
 
@@ -83,6 +84,24 @@ class World():
         #plot index list will be a dynamic list under world for convenience since NPCs that access/modify it will be instantiated under world
         #it will be initially set when the main menu code is executed
         self.plot_index_list = []
+        
+        
+    def read_level_csv_data(self, level, rows, cols, csv_data_name):
+        
+        #populate a rows x cols sized list with -1
+        level_csv_data = []
+        for current_row in range(rows):
+            r = [-1] * cols
+            level_csv_data.append(r)
+
+        #change list with values from CSV file
+        with open(f'level_files/level{level}_{csv_data_name}.csv', newline= '') as csvfile:
+            reader = csv.reader(csvfile, delimiter= ',') 
+            for x, current_row in enumerate(reader):
+                for y, tile in enumerate(current_row):
+                    level_csv_data[x][y] = int(tile)
+                    
+        return level_csv_data
     
     #called in main menu where either a new game or save file is loaded
 
@@ -113,6 +132,12 @@ class World():
 
     #loading the level
     def process_data(self, level, level_data_list, the_sprite_group, screenW, screenH, level_transitions, ini_vol):
+        # index = 0
+        # for level_data in self.enhanced_lvl_data_list:
+        #     self.read_level_csv_data(level, level_tuple[level][2], level_tuple[level][3], level_data, level_data_str_tuple[index])
+        #     index += 1
+        
+        
         self.clear_data()
         self.process_coords(level_data_list[0], screenW, screenH, self.enhanced_lvl_data_list[0])
         enemy0_id = 0
