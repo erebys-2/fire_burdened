@@ -35,7 +35,10 @@ def main():
 	#flags = pygame.DOUBLEBUF|pygame.FULLSCREEN #full screen mode
 	screen = pygame.display.set_mode(standard_size, flags)
 
-	pygame.display.set_caption('game window')
+	icon = pygame.image.load('icon.png')
+	pygame.display.set_icon(icon)
+
+	pygame.display.set_caption('Fire Burdened 0.7')
 
 	#framerate set up------------------------------------
 	clock = pygame.time.Clock()
