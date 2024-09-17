@@ -47,20 +47,21 @@ class Camera():
         
     
     def get_pos_data(self, player_rect, world_coords):
-        for tile in world_coords:
-            if tile[0].colliderect(self.rect.x + 30, self.rect.y, 1, 1):
-                x_coord = tile[1][0]
+        for loaded_tile in [tile for tile in world_coords if tile[1].x > -32 and tile[1].x < 640]:
+            #print(loaded_tile)
+            if loaded_tile[1].colliderect(self.rect.x + 30, self.rect.y, 1, 1):
+                x_coord = loaded_tile[2][0]
                 if self.x_coord != x_coord:
                     self.x_coord = x_coord
-            if tile[0].colliderect(self.rect.x - 30, self.rect.y, 1, 1):
-                x_coord = tile[1][0]
+            if loaded_tile[1].colliderect(self.rect.x - 30, self.rect.y, 1, 1):
+                x_coord = loaded_tile[2][0]
                 if self.x_coord2 != x_coord:
                     self.x_coord2 = x_coord
                     #print(self.x_coord2)
-            if tile[0].colliderect(player_rect.x, player_rect.y, 1, 1):
-                x_coord = tile[1][0]
-                if self.Px_coord != x_coord:
-                    self.Px_coord = x_coord
+            # if tile[1].colliderect(player_rect.x, player_rect.y, 1, 1):
+            #     x_coord = tile[2][0]
+            #     if self.Px_coord != x_coord:
+            #         self.Px_coord = x_coord
                     
     def auto_correct(self, player_rect, world_coords, world_tile0_coord, world_limit, screenW, screenH):
         self.scrollx = 0
@@ -103,10 +104,10 @@ class Camera():
             dx = player_rect.x - self.x_coord #adjustment for if the player is not on the right edge
             dx2 = dx - (screenW//2 ) #adjustment for if the player is on the right edge
             
-            if self.on_r_edge == False: #idk why this is faster?? the camera will lag without this boolean
-                temp_x = player_rect.x #probably has to do with this statement
-            else:
-                temp_x = self.Px_coord
+            # if self.on_r_edge == False: #idk why this is faster?? the camera will lag without this boolean
+            #     temp_x = player_rect.x #probably has to do with this statement
+            # else:
+            temp_x = player_rect.x
             
             if player_rect.x < world_limit[0] - screenW//2 and self.on_r_edge == False:
                 self.scrollx += dx

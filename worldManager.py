@@ -33,9 +33,8 @@ class World():
             'bg5_data',
             'bg6_data'
         )
-        
 
-        self.enhanced_lvl_data_list = [
+        self.detailed_lvl_data_list = [
             self.coords,
             self.fg,
             self.solids,
@@ -47,6 +46,20 @@ class World():
             self.bg6
         ]
         
+        
+        # self.active_coords = []
+        # self.active_fg = []
+        # self.active_solids = []
+        # self.active_bg1 = []
+        # self.active_bg2 = []
+        
+        # self.loaded_lvl_data_list = [
+        #     self.active_coords,
+        #     self.active_fg,
+        #     self.active_solids,
+        #     self.active_bg1,
+        #     self.active_bg2
+        # ]
         
         self.tileList = []
         self.t_set_index = 0
@@ -98,6 +111,53 @@ class World():
         #it will be initially set when the main menu code is executed
         self.plot_index_list = []
         
+        self.lvl_slice_lists = []
+            
+        self.slice_width = 1 #tiles
+        self.slice_height = 15
+        self.num_slices = 0
+        
+        self.screen_rect = pygame.rect.Rect(300, 0 , 40, 480)
+    
+    def get_num_slices(self, rows):
+        num_slices = rows/self.slice_width
+        if num_slices > int(num_slices):
+            self.num_slices = int(num_slices) + 1 #there's a partial slice at the end
+        else:
+            self.num_slices = int(num_slices)
+            
+    def clear_slice_lists(self):
+        for slice_list in self.lvl_slice_lists:
+            for slice in slice_list:
+                slice *= 0
+        self.lvl_slice_lists *= 0
+            
+    def initialize_slice_lists(self, rows, data_layers):
+        self.clear_slice_lists()
+        self.get_num_slices(rows)
+        
+        for i in range(data_layers):
+            temp_list = []
+            for slice_num in range(self.num_slices):
+                slice_x_coord = slice_num * self.slice_width * 32
+                slice_rect = pygame.rect.Rect(slice_x_coord, 0, self.slice_width * 32, self.slice_height * 32)
+                temp_list.append([slice_rect, False, []])
+            
+            self.lvl_slice_lists.append(temp_list)
+            
+        #print(slice_coord_list)
+        #print(self.lvl_slice_lists[0])
+        
+            
+    def fill_slice_list(self, layer, tile_x_coord, tile_data):
+        # [ slices for layer 0
+        #   slices for layer 1
+        #   etc
+        # ]
+        for slice_index in range(self.num_slices):
+            if tile_x_coord >= slice_index * self.slice_width * 32 and tile_x_coord < (slice_index + 1) * self.slice_width * 32:
+                self.lvl_slice_lists[layer][slice_index][2].append(tile_data)
+                
         
     def read_level_csv_data(self, level, rows, cols, csv_data_name):
         
@@ -114,7 +174,7 @@ class World():
                 for y, tile in enumerate(current_row):
                     level_csv_data[x][y] = int(tile)
                     
-        return level_csv_data
+        return level_csv_data #returns 2d array
     
     def get_raw_csv_data(self, level, lvl_size):
         raw_lvl_data_list = []
@@ -147,19 +207,28 @@ class World():
         return self.plot_index_list
     
     def clear_data(self):
-        for lvl_data in self.enhanced_lvl_data_list:
+        for lvl_data in self.detailed_lvl_data_list:
             lvl_data *= 0
             
 
     #loading the level
     def process_data(self, level, the_sprite_group, screenW, screenH, level_data, ini_vol):
+        #clear old data
         raw_lvl_data_list = []
         self.clear_data()
-
         
+
+        #populate raw_lvl_data_list with lists of int values from level csv files
         raw_lvl_data_list = self.get_raw_csv_data(level, level_data[0:2])
         
-        self.process_coords(raw_lvl_data_list[0], screenW, screenH, self.enhanced_lvl_data_list[0])
+        #set up slice processing
+        #self.clear_slice_lists()
+        #self.initialize_slice_lists(level_data[1], len(self.level_data_str_tuple))
+        
+        
+        
+        #process int lists into detailed list
+        self.process_coords_vslice(raw_lvl_data_list[0], screenW, screenH, self.detailed_lvl_data_list[0])
         enemy0_id = 0
         transition_index = 0
         transition_data = []
@@ -186,12 +255,14 @@ class World():
                         img_rect.y = (y * 32) + 16
                     else:
                         img_rect.y = y * 32
-
+                    
                     tile_data = (img, img_rect, tile, transition_data)
+                    
                     
                         
                     if all(tile != s_tile for s_tile in self.special_tiles):
                         self.solids.append(tile_data)
+                        #self.fill_slice_list(2, img_rect.x, tile_data)
                     elif tile == 28:
                         enemy0 = enemy_32wide(x * 32, y * 32, 3, 2, 'dog', enemy0_id, ini_vol)
                         the_sprite_group.enemy0_group.add(enemy0)
@@ -225,10 +296,21 @@ class World():
                         
             
         #load bg
-        for i in range(len(self.enhanced_lvl_data_list) -3):
-            self.process_bg(raw_lvl_data_list[i+3], self.enhanced_lvl_data_list[i+3], the_sprite_group)
+        for i in range(len(self.detailed_lvl_data_list) -3):
+            self.process_bg(raw_lvl_data_list[i+3], self.detailed_lvl_data_list[i+3], the_sprite_group, i+3)
         #load fg
-        self.process_bg(raw_lvl_data_list[1], self.enhanced_lvl_data_list[1], the_sprite_group)
+        self.process_bg(raw_lvl_data_list[1], self.detailed_lvl_data_list[1], the_sprite_group, 1)
+        
+        
+        #print(len(self.lvl_slice_lists[2]))
+        # num = 0
+        # for slice_list in self.lvl_slice_lists:
+        #     print("layer " + str(num) )
+        #     for slice in slice_list:
+        #         print(slice[1])
+        #     num += 1
+        #print(self.lvl_slice_lists[3][0])
+        
 
 
     def process_coords(self, data, screenW, screenH, rtrn_list):
@@ -244,8 +326,9 @@ class World():
                     img_rect.x = x_coord
                     img_rect.y = y_coord
                     
-                    tile_data = (img_rect, (x_coord, y_coord))
+                    tile_data = (0, img_rect, (x_coord, y_coord))
                     #print(tile_data)
+                    #self.fill_slice_list(0, x_coord, tile_data)
                     
                     rtrn_list.append(tile_data)
         self.world_limit = (x_coord, y_coord)
@@ -262,8 +345,44 @@ class World():
             
         # print(self.x_scroll_en)
         # print(self.y_scroll_en)
-    
-    def process_bg(self, data, rtrn_list, the_sprite_group):   
+        #print(self.lvl_slice_lists[0][0])
+        
+    def process_coords_vslice(self, data, screenW, screenH, rtrn_list):
+        x_coord = 0
+        y_coord = 0
+        for y, row in enumerate(data):
+            if y == 0:
+                for x, tile in enumerate(row):
+                    if tile == -1:
+                        x_coord = x * 32
+                        y_coord = 0
+                        
+                        img_rect = pygame.Rect(0, 0, 32, screenH)
+                        img_rect.x = x_coord
+                        img_rect.y = y_coord
+                        
+                        tile_data = (0, img_rect, (x_coord, y_coord))
+                        #print(tile_data)
+                        #self.fill_slice_list(0, x_coord, tile_data)
+                        
+                        rtrn_list.append(tile_data)
+            else:
+                break
+        self.world_limit = (x_coord, screenH)
+        #scroll enables
+        if x_coord + 32 > screenW:
+            self.x_scroll_en = True
+        else:
+            self.x_scroll_en = False
+            
+        self.y_scroll_en = False
+            
+        # print(self.x_scroll_en)
+        # print(self.y_scroll_en)
+        #print(self.lvl_slice_lists[0][0])
+        
+        
+    def process_bg(self, data, rtrn_list, the_sprite_group, index_):   
         for y, row in enumerate(data):
             for x, tile in enumerate(row):
                 if tile >= 0:
@@ -287,9 +406,40 @@ class World():
                     img_rect.x = x * 32
                     img_rect.y = y * 32
                     tile_data = (img, img_rect, tile)
+                    
+                    # if index_ <= 4: #do not fill slices for filter and parallax layers
+                    #     self.fill_slice_list(index_, img_rect.x, tile_data)
+                    
                     if tile != 36 and tile != 39 and tile != 31:
                         rtrn_list.append(tile_data)
                     
+    def scroll_slices_all_layers(self, scroll_x):
+        for slice_list in self.lvl_slice_lists[0:5]: #cutting out filter and parallax layers
+            for slice in slice_list: #slice = [rect, loaded, tile list[]]
+                slice[0][0] -= scroll_x
+                if slice[1]: #slice is loaded
+                    for tile in slice[2]:
+                        tile[1][0] = slice[0][0]
+            
+    def load_unload_slices(self, window_rect):
+        for i in range(len(self.lvl_slice_lists[0:5])): #cutting out filter and parallax layers
+            for slice in self.lvl_slice_lists[i]:
+                if window_rect.colliderect(slice[0]) and not slice[1]: #load
+                    
+                    for tile in slice[2]:
+                        self.loaded_lvl_data_list[i].append(tile)
+                        
+                    slice[1] = True
+                elif not window_rect.colliderect(slice[0]) and slice[1]: #unload
+                    for loaded_tile in self.loaded_lvl_data_list[i]:
+                        for tile in slice[2]:
+                            if loaded_tile == tile:
+                                self.loaded_lvl_data_list[i].pop(self.loaded_lvl_data_list[i].index(loaded_tile))
+                         
+                    slice[1] = False
+                        
+            #print(i)
+                        
                                        
     def draw_bg_layers(self, screen, scroll_X, scroll_Y, data):
         #currently only handles x scrolling
@@ -301,8 +451,11 @@ class World():
                     tile[1][0] -= (960+960)
                 elif tile[1][0] < -960:
                     tile[1][0] += (960+960)
+                tile[1][0] -= scroll_X
+            else:
+                tile[1][0] -= scroll_X
 
-            tile[1][0] -= scroll_X
+           
             tile[1][1] -= scroll_Y
             
             if tile[1].x <= 640 and tile[1].x > -960:
@@ -313,7 +466,10 @@ class World():
             screen.blit(tile[0], tile[1])
         
                     
-    def draw(self, screen, scroll_X, scroll_Y):
+    def draw(self, screen, scroll_X, scroll_Y): #MOVE sliceS HERE
+        
+        self.load_unload_slices(self.screen_rect)
+        self.scroll_slices_all_layers(scroll_X)
         
         if scroll_X > 0:
             correction = 1
@@ -327,6 +483,8 @@ class World():
         self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg2)#detailed 1:1 bg layer 2
         self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg1)
         
+        #these scroll every tile in a layer
+        
         for tile in self.solids:
             #this code below basically means the first index: [1], gets the tile's rect, 
             #then the [0] right after gets the x coordinate
@@ -337,13 +495,13 @@ class World():
                 screen.blit(tile[0], tile[1]) # (image, position)
         
         for tile in self.coords:
-            tile[0][0] -= scroll_X #the coords file does not have an image
-            tile[0][1] -= scroll_Y
+            tile[1][0] -= scroll_X #the coords file does not have an image
+            tile[1][1] -= scroll_Y
             
             
         self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg)
         
-        return (self.coords[0][0][0], self.coords[0][0][1]) #x and y of first tile
+        return (self.coords[0][1][0], self.coords[0][1][1]) #x and y of first tile
             
         
             

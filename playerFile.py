@@ -388,7 +388,7 @@ class player(pygame.sprite.Sprite):
         else:
             disp_x = self.width//2
         
-        for tile in world_solids:
+        for tile in [tile for tile in world_solids if tile[1].x > -32 and tile[1].x < 640]:
             #x collisions
             if (tile[2] != 17 and tile[2] != 10 and tile[2] != 2):
                 self.atk1_grinding(tile[1], the_sprite_group)
@@ -714,10 +714,10 @@ class player(pygame.sprite.Sprite):
         
         #--------------------------------------------------------------coordinate test
         #USED FOR CAMERA SCROLLING
-        for tile in world_coords:
-            if tile[0].colliderect(self.collision_rect.x + dx, self.collision_rect.y + dy, 1, 1):
-                x_coord = tile[1][0]
-                y_coord = tile[1][1]
+        for loaded_tile in [tile for tile in world_coords if tile[1].x > -32 and tile[1].x < 640]:
+            if (loaded_tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + dy, 1, 1)):
+                x_coord = loaded_tile[2][0]
+                y_coord = loaded_tile[2][1]
                 if self.x_coord != x_coord or self.y_coord != y_coord:
                     self.x_coord = x_coord
                     self.y_coord = y_coord

@@ -93,7 +93,7 @@ class bullet_(pygame.sprite.Sprite):
                 
             
         #tile collisions
-        for tile in world_solids:
+        for tile in [tile for tile in world_solids if tile[1].y >= self.rect.y - 32 and tile[1].bottom <= self.rect.bottom + 32 and tile[1].x > -160 and tile[1].x < 800]:
             if self.rect.colliderect(tile[1]) and tile[2] != 10:
                 self.Active = False
                 self.explode(sp_group_list)

@@ -376,7 +376,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         dy = dxdy[1]
         #world collisions
         if self.check_if_in_simulation_range():
-            for tile in world_solids:
+            for tile in [tile for tile in world_solids if tile[1].x > -320 and tile[1].x < 960]:
                 if tile[2] != 2 and tile[2] != 17:
                     #x tile collisions
                     if tile[1].colliderect(self.rect.x + dx, self.rect.y + self.height//4, self.width , 3*self.height//4 - 12):
