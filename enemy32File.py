@@ -112,7 +112,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         
     def do_p_int_group_collisions(self, p_int_group, dx, dy):
        
-        for p_int in p_int_group:
+        for p_int in [p_int for p_int in p_int_group if p_int.rect.x > -160 and p_int.rect.x < 800]:
             if p_int.collision_and_hostility[p_int.type][0]:
                 if (p_int.rect.colliderect(self.rect.x+2, self.rect.y + dy, self.width-4, self.height) and self.action != 2):
                     if self.rect.bottom >= p_int.rect.top and self.rect.bottom <= p_int.rect.y + 32:
@@ -313,7 +313,8 @@ class enemy_32wide(pygame.sprite.Sprite):
         
         #player collisions------------------------------------------------------------------------------------------------------------------
         
-        if (self.rect.colliderect(player_atk_rect)
+        if (player_atk_rect.width != 0
+            and self.rect.colliderect(player_atk_rect)
             and self.inundated == False
             ):
            
@@ -344,7 +345,8 @@ class enemy_32wide(pygame.sprite.Sprite):
             elif player_action == 7 or player_action == 8:
                 self.dmg_multiplier = 2
                 
-        elif (self.rect.colliderect(player_rect.scale_by(0.2)) or (self.rect.x < player_rect.x and self.rect.right > player_rect.right )
+        elif (  player_rect.x > self.rect.x - 64 and player_rect.right < self.rect.right + 64 and
+                self.rect.colliderect(player_rect.scale_by(0.2)) or (self.rect.x < player_rect.x and self.rect.right > player_rect.right )
             #and not (self.inundated or self.rect.colliderect(player_atk_rect))
               ):
             dx = -dx
@@ -362,7 +364,13 @@ class enemy_32wide(pygame.sprite.Sprite):
                 self.direction = -1
         
         #enemy0 collisions
-        for enemy0 in sp_group_list[0]:
+        for enemy0 in [enemy0 for enemy0 in sp_group_list[0] 
+                       if enemy0.rect.x > -32 and enemy0.rect.x < 640 and
+                          enemy0.rect.x > self.rect.x - 64 and enemy0.rect.right < self.rect.right + 64 and 
+                          enemy0.rect.y > self.rect.y - 64 and enemy0.rect.bottom < self.rect.bottom + 64 or
+                         (enemy0.rect.bottom > self.rect.bottom and enemy0.rect.y < self.rect.y) or
+                         (enemy0.rect.right > self.rect.bottom and enemy0.rect.x < self.rect.x)
+                       ]:
             if self.rect.colliderect(enemy0.rect) and self.id != enemy0.id:
 
                 if self.id < enemy0.id:
@@ -375,10 +383,19 @@ class enemy_32wide(pygame.sprite.Sprite):
         dx = dxdy[0]
         dy = dxdy[1]
         #world collisions
+        
+        
         if self.check_if_in_simulation_range():
-            for tile in [tile for tile in world_solids if tile[1].x > -320 and tile[1].x < 960]:
+            for tile in [tile for tile in world_solids 
+                         if tile[1].x > -160 and tile[1].x < 800 and 
+                            tile[1].bottom < self.rect.bottom + 64 and tile[1].y > self.rect.y - 64 or
+                            (tile[1].bottom > self.rect.bottom and tile[1].y < self.rect.y)
+                            ]:
                 if tile[2] != 2 and tile[2] != 17:
                     #x tile collisions
+                    
+                    
+                    
                     if tile[1].colliderect(self.rect.x + dx, self.rect.y + self.height//4, self.width , 3*self.height//4 - 12):
                         dx = 0
                         if self.in_air == False:

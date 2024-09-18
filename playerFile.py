@@ -274,6 +274,7 @@ class player(pygame.sprite.Sprite):
         damage = 0
         if ((self.action < 7 or self.action > 10) and not self.i_frames_en and not self.hurting and self.Alive and not level_transitioning):
             #sprite based collisions
+            #expensive
             for enemy in enumerate(the_sprite_group.hostiles_group):
                 if pygame.sprite.spritecollide(self, enemy[1], False): 
                     if pygame.sprite.spritecollide(self, enemy[1], False, pygame.sprite.collide_mask):
@@ -296,7 +297,14 @@ class player(pygame.sprite.Sprite):
                 damage = 0
 
             #rect based collisions
-            for enemy in the_sprite_group.enemy0_group:
+            for enemy in [enemy for enemy in the_sprite_group.enemy0_group 
+                          if enemy.rect.x > -32 and enemy.rect.x < 640 and
+                             enemy.rect.x > self.rect.x - 64 and enemy.rect.right < self.rect.right + 64 and 
+                             enemy.rect.y > self.rect.y - 64 and enemy.rect.bottom < self.rect.bottom + 64 or
+                            (enemy.rect.bottom > self.rect.bottom and enemy.rect.y < self.rect.y) or
+                            (enemy.rect.right > self.rect.bottom and enemy.rect.x < self.rect.x)
+                            
+                          ]:
                 if (self.hitbox_rect.colliderect(enemy.atk_rect_scaled)):
                     damage += 1.5
                     self.hurting = True
@@ -311,7 +319,9 @@ class player(pygame.sprite.Sprite):
                     self.m_player.play_sound(self.m_player.sfx[8])
     
     def do_npc_collisions(self, dx, textprompt_group):
-        for obj in textprompt_group:
+        for obj in [obj for obj in textprompt_group 
+                    if obj.rect.x > -32 and obj.rect.x < 640
+                    ]:
             if self.collision_rect.colliderect(obj.rect) and self.action == 0 and dx == 0:
                 self.dialogue_trigger_ready = True
         #     #print(obj.name)
@@ -320,7 +330,7 @@ class player(pygame.sprite.Sprite):
                 
     def do_platform_sprite_collisions(self, dx, dy, platform_sprite_group):
         in_air = self.in_air
-        for p_int in platform_sprite_group:
+        for p_int in [p_int for p_int in platform_sprite_group if p_int.rect.x > -32 and p_int.rect.x < 640]:
             if p_int.collision_and_hostility[p_int.type][0]:
                 #self.atk1_grinding(p_int.rect, the_sprite_group)
                 #y collisions
@@ -388,7 +398,11 @@ class player(pygame.sprite.Sprite):
         else:
             disp_x = self.width//2
         
-        for tile in [tile for tile in world_solids if tile[1].x > -32 and tile[1].x < 640]:
+        for tile in [tile for tile in world_solids 
+                     if tile[1].x > self.rect.x - 64 and tile[1].right < self.rect.right + 64 and 
+                        tile[1].y > self.rect.y - 64 and tile[1].bottom < self.rect.bottom + 64 or
+                        (tile[1].bottom > self.rect.bottom and tile[1].y < self.rect.y)
+                     ]:
             #x collisions
             if (tile[2] != 17 and tile[2] != 10 and tile[2] != 2):
                 self.atk1_grinding(tile[1], the_sprite_group)
@@ -420,8 +434,9 @@ class player(pygame.sprite.Sprite):
                     self.hitting_wall = True
                 
                 #wall collisions while NOT rolling
-                elif (tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y, self.width, self.height - 17) 
-                    and self.action != 9 #this line is important for consistency
+                elif (self.action != 9 and #this line is important for consistency
+                      dx != 0 and
+                    tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y, self.width, self.height - 17) 
                     ):
                     dx = 0
                     self.hitting_wall = True
@@ -442,7 +457,7 @@ class player(pygame.sprite.Sprite):
                         
                 #dy collision stuff, sinking through tiles etc
                 
-                if (tile[1].colliderect(self.collision_rect.x + 1, self.collision_rect.y + dy, self.width - 2, self.height)
+                if (self.vel_y != 0 and tile[1].colliderect(self.collision_rect.x + 1, self.collision_rect.y + dy, self.width - 2, self.height)
                     #and not self.disp_flag
                     ):
 
@@ -469,9 +484,9 @@ class player(pygame.sprite.Sprite):
                             
                         elif tile[1].colliderect(self.collision_rect.x + 1, self.collision_rect.y + dy, self.width - 2, self.height//2):
                             dy = tile[1].bottom  - self.rect.top
-                elif  (not tile[1].colliderect(self.collision_rect.x, self.collision_rect.y + dy, self.width , self.height)
-                        and not self.in_air
+                elif  ( not self.in_air
                         and self.vel_y > 6 #velocity based coyote jump
+                        and not tile[1].colliderect(self.collision_rect.x, self.collision_rect.y + dy, self.width , self.height)
                         ):
                     self.curr_state = True
                     self.in_air = True
@@ -714,15 +729,16 @@ class player(pygame.sprite.Sprite):
         
         #--------------------------------------------------------------coordinate test
         #USED FOR CAMERA SCROLLING
-        for loaded_tile in [tile for tile in world_coords if tile[1].x > -32 and tile[1].x < 640]:
-            if (loaded_tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + dy, 1, 1)):
-                x_coord = loaded_tile[2][0]
-                y_coord = loaded_tile[2][1]
-                if self.x_coord != x_coord or self.y_coord != y_coord:
-                    self.x_coord = x_coord
-                    self.y_coord = y_coord
-                    #curr_coord = (self.x_coord, self.y_coord)
-                    #print(curr_coord)
+        if dx != 0:
+            for loaded_tile in [tile for tile in world_coords if tile[1].x > self.rect.x - 64 and tile[1].x < self.rect.right + 64]:
+                if (loaded_tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + dy, 1, 1)):
+                    x_coord = loaded_tile[2][0]
+                    y_coord = loaded_tile[2][1]
+                    if self.x_coord != x_coord or self.y_coord != y_coord:
+                        self.x_coord = x_coord
+                        self.y_coord = y_coord
+                        #curr_coord = (self.x_coord, self.y_coord)
+                        #print(curr_coord)
 
         #---------------------------------------------------------world boundaries------------------------------------------------------------------
         if self.collision_rect.x < 0:

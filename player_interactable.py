@@ -87,9 +87,12 @@ class player_interactable_(pygame.sprite.Sprite):
     
     def check_if_onscreen(self):
         return (self.rect.x > -self.rect.width and self.rect.x < 640)
-        
+         
     def do_tile_y_collisions(self, world_solids, dy):
-        for tile in [tile for tile in world_solids if tile[1].x >= self.rect.x and tile[1].right <= self.rect.right]:
+        for tile in [tile for tile in world_solids 
+                     if tile[1].x >= self.rect.x and tile[1].right <= self.rect.right
+                     #and tile[1].y >= self.rect.y - 64 and tile[1].bottom <= self.rect.bottom + 64
+                     ]:
             # if tile[1].colliderect(self.rect.x + dx, self.rect.y + 4, self.width//2, self.height - 8):
 
             # elif tile[1].colliderect(self.rect.x + self.width//2 + dx, self.rect.y + 4, self.width//2, self.height - 8):
@@ -107,7 +110,10 @@ class player_interactable_(pygame.sprite.Sprite):
                 self.already_falling = False
 
     def do_tile_x_collisions(self, world_solids, dx):
-         for tile in [tile for tile in world_solids if tile[1].y >= self.rect.y and tile[1].bottom <= self.rect.bottom]:
+         for tile in [tile for tile in world_solids 
+                      if tile[1].y >= self.rect.y and tile[1].bottom <= self.rect.bottom
+                      and tile[1].x >= self.rect.x - 64 and tile[1].right <= self.rect.right + 64
+                      ]:
             if tile[1].colliderect(self.rect.x + dx, self.rect.y + 4, self.width//2, self.height - 8):
                 self.direction = 1
 
