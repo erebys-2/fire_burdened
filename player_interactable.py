@@ -129,6 +129,7 @@ class player_interactable_(pygame.sprite.Sprite):
             elif self.type == 'moving_plat_h':
                 self.do_tile_x_collisions(world_solids, self.vel_x)
                 self.vel_x = 4*self.direction
+                #print(self.rect.x)
 
             elif self.type == 'moving_plat_v' and self.check_if_onscreen():
                 self.do_tile_y_collisions(world_solids, self.vel_x)

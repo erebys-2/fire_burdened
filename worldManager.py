@@ -117,7 +117,10 @@ class World():
         self.slice_height = 15
         self.num_slices = 0
         
-        self.screen_rect = pygame.rect.Rect(300, 0 , 40, 480)
+        self.screen_rect = pygame.rect.Rect(0, 0, 640, 480)
+        
+        self.world_map_non_parallax = pygame.Surface((32,32), pygame.SRCALPHA)
+        self.world_map_non_parallax.fill(pygame.Color(0,0,0,0))
     
     def get_num_slices(self, rows):
         num_slices = rows/self.slice_width
@@ -157,6 +160,18 @@ class World():
         for slice_index in range(self.num_slices):
             if tile_x_coord >= slice_index * self.slice_width * 32 and tile_x_coord < (slice_index + 1) * self.slice_width * 32:
                 self.lvl_slice_lists[layer][slice_index][2].append(tile_data)
+                
+    # Rabbid76's game map method, modified, from https://stackoverflow.com/questions/66781952/
+    def create_map(self, size, level_tile_lists): #apply to all 1:1 layers
+        #print(size[1])
+        game_map = pygame.Surface((size[1] * 32, size[0] * 32), pygame.SRCALPHA)#create a surface the size of the whole level
+        game_map.fill(pygame.Color(0,0,0,0))
+        for layer in range(len(level_tile_lists)):
+            for tile in level_tile_lists[len(level_tile_lists)-1-layer]:
+                x_pixel = tile[1][0]
+                y_pixel = tile[1][1]
+                game_map.blit(tile[0], (x_pixel, y_pixel))
+        return game_map          
                 
         
     def read_level_csv_data(self, level, rows, cols, csv_data_name):
@@ -217,7 +232,6 @@ class World():
         raw_lvl_data_list = []
         self.clear_data()
         
-
         #populate raw_lvl_data_list with lists of int values from level csv files
         raw_lvl_data_list = self.get_raw_csv_data(level, level_data[0:2])
         
@@ -300,6 +314,9 @@ class World():
             self.process_bg(raw_lvl_data_list[i+3], self.detailed_lvl_data_list[i+3], the_sprite_group, i+3)
         #load fg
         self.process_bg(raw_lvl_data_list[1], self.detailed_lvl_data_list[1], the_sprite_group, 1)
+        
+        
+        #self.world_map_non_parallax = self.create_map(level_data[0:2], self.detailed_lvl_data_list[1:4])
         
         
         #print(len(self.lvl_slice_lists[2]))
@@ -446,31 +463,38 @@ class World():
         #scroll_amnt = scroll_X
         #logic for looping bg, maximum sprite size is 480x480
         for tile in data:
-            if (data == self.bg3 or data == self.bg4 or data == self.bg5 or data == self.bg6):
+            if (data == self.bg4 or data == self.bg5 or data == self.bg6):
                 if tile[1][0] > 960:
                     tile[1][0] -= (960+960)
                 elif tile[1][0] < -960:
                     tile[1][0] += (960+960)
                 tile[1][0] -= scroll_X
+                if tile[1].x <= 640 and tile[1].x > -960:
+                    screen.blit(tile[0], tile[1]) # (image, position)
             else:
                 tile[1][0] -= scroll_X
-
-           
-            tile[1][1] -= scroll_Y
+                tile[1][1] -= scroll_Y
+                if tile[1].x <= 640 and tile[1].x > -320:
+                    screen.blit(tile[0], tile[1]) # (image, position)
             
-            if tile[1].x <= 640 and tile[1].x > -960:
-                screen.blit(tile[0], tile[1]) # (image, position)
+          
                 
     def draw_filter_layer(self, screen, data):#filter layer doesn't scroll, for efficiency it should be 640x480
         for tile in data:
             screen.blit(tile[0], tile[1])
         
+    def update_tiles(self, tile, screen, scroll_X, scroll_Y):
+        tile[1][0] -= scroll_X
+        tile[1][1] -= scroll_Y
+        if tile[1][0] > -32 and tile[1][0] < 640 + 32:
+            screen.blit(tile[0], tile[1]) # (image, position)
                     
     def draw(self, screen, scroll_X, scroll_Y): #MOVE sliceS HERE
         
-        self.load_unload_slices(self.screen_rect)
-        self.scroll_slices_all_layers(scroll_X)
+        # self.load_unload_slices(self.screen_rect)
+        # self.scroll_slices_all_layers(scroll_X)
         
+        #self.screen_rect.x += scroll_X
         if scroll_X > 0:
             correction = 1
         else:
@@ -493,13 +517,18 @@ class World():
             tile[1][1] -= scroll_Y
             if tile[1][0] > -32 and tile[1][0] < 640 + 32:
                 screen.blit(tile[0], tile[1]) # (image, position)
+                
+      
         
         for tile in self.coords:
             tile[1][0] -= scroll_X #the coords file does not have an image
-            tile[1][1] -= scroll_Y
+            #tile[1][1] -= scroll_Y
             
             
         self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg)
+        
+        #screen.blit(self.world_map_non_parallax, (0,0), self.screen_rect)
+        
         
         return (self.coords[0][1][0], self.coords[0][1][1]) #x and y of first tile
             

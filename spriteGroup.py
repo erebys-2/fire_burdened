@@ -91,7 +91,7 @@ class sprite_group():
 					
 					#print(obj.enable(dialogue_enable, next_dialogue, screen, player_hitbox_rect, scroll_x))
 
-		for enemy0 in self.enemy0_group:
+		for enemy0 in self.enemy0_group: #[enemy0 for enemy0 in list(self.enemy0_group) if enemy0.rect.x > -32 and enemy0.rect.x < 640]:
 			enemy0.draw(screen)
 			if not pause_game:
 				enemy0.animate(self.sp_group_list)

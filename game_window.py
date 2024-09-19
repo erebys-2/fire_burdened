@@ -20,7 +20,7 @@ from playerChoiceHandler import player_choice_handler
 import gc
 import random
 from profilehooks import profile
-#from pygame.locals import *
+#from pygame.locals import 
 #@profile
 
 def main():
@@ -31,7 +31,7 @@ def main():
 	SCREEN_WIDTH = 640
 	SCREEN_HEIGHT = 480
 	standard_size = (SCREEN_WIDTH, SCREEN_HEIGHT)
-	flags = pygame.SHOWN #windowed mode
+	flags = pygame.DOUBLEBUF|pygame.SHOWN #windowed mode
 	#flags = pygame.DOUBLEBUF|pygame.FULLSCREEN #full screen mode
 	screen = pygame.display.set_mode(standard_size, flags)
 
@@ -228,7 +228,7 @@ def main():
 
 	while run:
 		clock.tick(FPS)
-	
+		#screen.fill((0, 0, 0)) 
 		temp_move_R = False
 		temp_move_L = False
 		player_enable_master = (level_tuple[level][5] and not dialogue_enable)
@@ -265,6 +265,7 @@ def main():
 				temp_move_R = move_R
 				move_R = False
 			player0.rect.x = player_new_x - 32 #set player location
+			world.screen_rect.x = camera.rect.x - SCREEN_WIDTH//2 + 32
 			
 			#player0.rect.y = player_new_y #disabling this makes it so that you can jump between levels
 			player0.vel_y = 0
@@ -286,7 +287,7 @@ def main():
 		draw_bg(screen, gradient_dict, level_tuple[level][1], level_tuple[level][0])#this just draws the color
 		#camera.draw(screen)#for camera debugging
 		if world.x_scroll_en:
-			camera.auto_correct(player0.rect, world.coords, world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
+			camera.auto_correct(player0.rect, [tile for tile in world.coords if tile[1][0] > -32 and tile[1][0] < 640], world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
 		
 		world_tile0_coord = world.draw(screen, scroll_x, scroll_y)#this draws the world and scrolls it 
 		
@@ -295,7 +296,8 @@ def main():
 			player0.animate(the_sprite_group)
 			if player_enable_master: 
 				player0.do_entity_collisions(the_sprite_group, level_transitioning)
-				player0_lvl_transition_data = player0.move(pause_game, move_L, move_R, world.solids, world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
+				player0_lvl_transition_data = player0.move(pause_game, move_L, move_R, [tile for tile in world.solids if tile[1][0] > -32 and tile[1][0] < 640], 
+                                               				world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
 															SCREEN_WIDTH, SCREEN_HEIGHT, the_sprite_group)
 				use_item_tuple = player0.inventory_handler.item_usage_hander0.process_use_signal(player_inv_UI.use_item_flag, player_inv_UI.item_to_use, player0)
 				player_inv_UI.use_item_flag = use_item_tuple[0]
@@ -310,7 +312,7 @@ def main():
 		
 
 		#dialogue trigger sent here
-		the_sprite_group.update_groups_behind_player(pause_game, screen, player0.hitbox_rect, player0.atk_rect_scaled, world.solids, scroll_x, player0.action, player0.direction, 
+		the_sprite_group.update_groups_behind_player(pause_game, screen, player0.hitbox_rect, player0.atk_rect_scaled, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800], scroll_x, player0.action, player0.direction, 
 												dialogue_enable, next_dialogue)
 		the_sprite_group.update_item_group(pause_game, player0.hitbox_rect, scroll_x, screen)
 		player0.draw(screen)
@@ -355,22 +357,20 @@ def main():
 			if not do_screenshake_master:
 				do_screenshake_master = True
 
-		for p_int in the_sprite_group.p_int_group:
-			if p_int.do_screenshake:
-				p_int.do_screenshake = False
-				if not do_screenshake_master:
-					do_screenshake_master = True
-					screenshake_profile = (8, 8, 3)
+		for p_int in [p_int for p_int in the_sprite_group.p_int_group if p_int.do_screenshake]: #the_sprite_group.p_int_group: 
+			p_int.do_screenshake = False
+			if not do_screenshake_master:
+				do_screenshake_master = True
+				screenshake_profile = (8, 8, 3)
 
-		for enemy in the_sprite_group.enemy0_group:
-			if enemy.do_screenshake:
-				enemy.do_screenshake = False
-				if not do_screenshake_master:
-					do_screenshake_master = True
-					if player0.sprint:
-						screenshake_profile = (10, 6, 2)
-					else:
-						screenshake_profile = (6, 4, 2)
+		for enemy in [enemy for enemy in the_sprite_group.enemy0_group if enemy.do_screenshake]: #the_sprite_group.enemy0_group:
+			enemy.do_screenshake = False
+			if not do_screenshake_master:
+				do_screenshake_master = True
+				if player0.sprint:
+					screenshake_profile = (10, 6, 2)
+				else:
+					screenshake_profile = (6, 4, 2)
 
 		if do_screenshake_master:
 			ss_output = camera.screen_shake(screenshake_profile, do_screenshake_master)
@@ -748,6 +748,7 @@ def main():
 					next_dialogue = False
 
 		pygame.display.update()
+		#pygame.display.set_caption(f"FPS: {clock.get_fps():.1f}")
 
 	pygame.quit()
 

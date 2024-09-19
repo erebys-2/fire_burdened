@@ -47,7 +47,7 @@ class Camera():
         
     
     def get_pos_data(self, player_rect, world_coords):
-        for loaded_tile in [tile for tile in world_coords if tile[1].x > -32 and tile[1].x < 640]:
+        for loaded_tile in [tile for tile in world_coords if tile[1].x >= self.rect.x - 64 and tile[1].right <= self.rect.right + 64]:
             #print(loaded_tile)
             if loaded_tile[1].colliderect(self.rect.x + 30, self.rect.y, 1, 1):
                 x_coord = loaded_tile[2][0]

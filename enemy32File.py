@@ -101,7 +101,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         return (self.rect.x > -self.rect.width and self.rect.x < 640)
     
     def check_if_in_simulation_range(self):
-        return (self.rect.right > - 160 and self.rect.x < 640 + 160)
+        return (self.rect.x > - 160 and self.rect.right < 640 + 160)
     
     def atk1_kill_hitbox(self):
         self.atk_rect.x = 0
@@ -299,7 +299,7 @@ class enemy_32wide(pygame.sprite.Sprite):
  
         
         #gravity 
-        if self.Alive == True:  
+        if self.Alive == True and self.check_if_in_simulation_range():  
            
             g = 0.4
             self.vel_y += g

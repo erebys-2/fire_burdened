@@ -298,14 +298,15 @@ class player(pygame.sprite.Sprite):
 
             #rect based collisions
             for enemy in [enemy for enemy in the_sprite_group.enemy0_group 
-                          if enemy.rect.x > -32 and enemy.rect.x < 640 and
-                             enemy.rect.x > self.rect.x - 64 and enemy.rect.right < self.rect.right + 64 and 
-                             enemy.rect.y > self.rect.y - 64 and enemy.rect.bottom < self.rect.bottom + 64 or
-                            (enemy.rect.bottom > self.rect.bottom and enemy.rect.y < self.rect.y) or
-                            (enemy.rect.right > self.rect.bottom and enemy.rect.x < self.rect.x)
+                          if enemy.atk_rect_scaled.width != 0 and
+                             enemy.rect.x > -32 and enemy.rect.x < 640 #and
+                            #  enemy.rect.x > self.rect.x - 64 and enemy.rect.right < self.rect.right + 64 and 
+                            #  enemy.rect.y > self.rect.y - 64 and enemy.rect.bottom < self.rect.bottom + 64 or
+                            # (enemy.rect.bottom > self.rect.bottom and enemy.rect.y < self.rect.y) or
+                            # (enemy.rect.right > self.rect.bottom and enemy.rect.x < self.rect.x)
                             
                           ]:
-                if (self.hitbox_rect.colliderect(enemy.atk_rect_scaled)):
+                if ( self.hitbox_rect.colliderect(enemy.atk_rect_scaled)):
                     damage += 1.5
                     self.hurting = True
                     self.take_damage(damage) 

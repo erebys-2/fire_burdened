@@ -212,7 +212,7 @@ class ui_manager():
             
             if self.button_list[2].draw(screen):
                 self.m_player.play_sound(self.m_player.sfx[1])
-                if self.disp_flags == pygame.SHOWN: #windowed mode
+                if self.disp_flags == pygame.DOUBLEBUF|pygame.SHOWN: #windowed mode
                     self.disp_flags = pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN #full screen mode
                     screen = pygame.display.set_mode(self.std_size, self.disp_flags)
                 elif self.disp_flags == pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN:
