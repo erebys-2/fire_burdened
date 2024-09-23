@@ -423,7 +423,7 @@ class player(pygame.sprite.Sprite):
                             self.m_player.play_sound(self.m_player.sfx[7])
                             if self.stamina_used >= 5:
                                 self.hits_tanked += 0.1
-                                if random.randint(1,69) == 69:
+                                if random.randint(1,10) == 10:
                                     self.brain_damage = True
                         self.rolling = False
                     #self.debuggin_rect  = (self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//4 - 2)
@@ -621,7 +621,7 @@ class player(pygame.sprite.Sprite):
                 if (self.frame_index == 0 and self.rolled_into_wall == False):#fast initial impulse
                     # if pygame.time.get_ticks() < self.update_time + 20:
                     #     self.m_player.play_sound(self.m_player.sfx[1])
-                    if self.crit:
+                    if self.crit and self.check_if_in_ss_range():
                         dx = self.direction * 2 * self.speed
                         self.rect.x += self.direction * 2 * self.speed
                         if self.in_air and self.vel_y + 5 <= 20:
@@ -639,10 +639,10 @@ class player(pygame.sprite.Sprite):
                             self.vel_y += 7
 
                 elif self.frame_index > 1 :# slow forward speed
-                    if self.crit:
+                    if self.crit and self.check_if_in_ss_range():
                         dx = self.direction * 2
                     else:
-                        if self.action == 7 and self.frame_index <= 1 and self.vel_y > 0:
+                        if self.action == 7 and self.frame_index <= 2 and self.vel_y > 0:
                             self.vel_y = 0
                         
                         if (moveL and self.direction == 1) or (moveR and self.direction == -1):
@@ -760,9 +760,12 @@ class player(pygame.sprite.Sprite):
         elif self.x_coord > world_limit[0]:
             dx = -1
         
-        if (self.collision_rect.x < -32 or self.collision_rect.right > 640):
+        if self.collision_rect.x < -8:
             dy = 0
-            dx = -10 * self.direction
+            dx = 4
+        elif self.collision_rect.x >= 608:
+            dy = 0
+            dx = -4
         
         #----------------------------------------------------------------------------------------------------------------------------------
         #================================================================TILE COLLISIONS=====================================================================

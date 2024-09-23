@@ -245,6 +245,7 @@ def main():
 
 		#----------------------------------------------------------------------level changing-------------------------------------------------
 		if level != next_level:
+			player_en = False
 			scroll_x = 0
 			scroll_y = 0
 			the_sprite_group.purge_sprite_groups()
@@ -383,8 +384,20 @@ def main():
 			scroll_y = -ss_output[1][3]
 		# elif not do_screenshake_master and world.screen_rect.y != 0:
 		# 	world.screen_rect.y = 0
-   
 		
+		if not do_screenshake_master and world.coords[0][1][1] != 0:
+			if world.coords[0][1][1] < 0:
+				correction_y = -1
+			elif world.coords[0][1][1] > 0:
+				correction_y = 1
+			else:
+				correction_y = 0
+			
+			for data_list in world.detailed_lvl_data_list:
+				for tile in data_list:
+					tile[1][1] -= correction_y
+
+			player0.rect.x += player0.direction * 5
 	
 	
 		#----------black screen while transitioning---------------------------------------------------------
@@ -754,7 +767,7 @@ def main():
 					next_dialogue = False
 
 		pygame.display.update()
-		#pygame.display.set_caption(f"FPS: {clock.get_fps():.1f}")
+		pygame.display.set_caption(f"Fire Burdened 0.7 FPS: {clock.get_fps():.1f}")
 
 	pygame.quit()
 

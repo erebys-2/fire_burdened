@@ -80,6 +80,7 @@ class bullet_(pygame.sprite.Sprite):
                 and player_direction != self.direction
                 and self.deflected == False
                 ):
+                    pygame.time.wait(12)
                     if player_direction == 1:
                         self.rect.centerx = player_atk_rect.right
                     else:

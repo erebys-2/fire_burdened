@@ -122,6 +122,8 @@ class World():
         self.slice_height = 15
         self.num_slices = 0
         
+        self.screen_w = screen_w
+        self.screen_h = screen_h
         #self.screen_rect = pygame.rect.Rect(0, 0, screen_w, screen_h)
         
         self.world_map_non_parallax = pygame.Surface((32,32), pygame.SRCALPHA).convert_alpha
@@ -478,18 +480,18 @@ class World():
         #logic for looping bg, maximum sprite size is 480x480
         for tile in data:
             if (data == self.bg4 or data == self.bg5 or data == self.bg6):
-                if tile[1][0] > 960:
-                    tile[1][0] -= (960+960)
-                elif tile[1][0] < -960:
-                    tile[1][0] += (960+960)
+                if tile[1][0] > tile[1].width:
+                    tile[1][0] -= (2 * tile[1].width)
+                elif tile[1][0] < -tile[1].width:
+                    tile[1][0] += (2 * tile[1].width)
                 tile[1][0] -= scroll_X
-                if tile[1].x <= 640 and tile[1].x > -960:
+                if tile[1].x <= self.screen_w and tile[1].x > -tile[1].width:
                     screen.blit(tile[0], tile[1]) # (image, position)
                
             else:
                 tile[1][0] -= scroll_X
                 tile[1][1] -= scroll_Y
-                if tile[1].x <= 640 and tile[1].x > -320:
+                if tile[1].x <= self.screen_w and tile[1].x > -self.screen_w//2:
                     screen.blit(tile[0], tile[1]) # (image, position)
                     
                 
@@ -542,7 +544,7 @@ class World():
         
         for tile in self.coords:
             tile[1][0] -= scroll_X #the coords file does not have an image
-            #tile[1][1] -= scroll_Y
+            tile[1][1] -= scroll_Y
             
             
         self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg)

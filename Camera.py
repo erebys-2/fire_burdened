@@ -68,16 +68,28 @@ class Camera():
         self.get_pos_data(player_rect, world_coords)
                 
         #when the player is on the left half screen of the level
-        if player_rect.x + 32 < self.rect.x and self.x_coord < screenW - 32 and world_tile0_coord[0] > 0:
+        if ((player_rect.x + 32 < self.rect.x 
+             and self.x_coord < screenW - 32 
+             and world_tile0_coord[0] > 0)
+            ):
             player_rect.x -= world_tile0_coord[0]
             self.scrollx += world_tile0_coord[0]
             
         #when the player on the right half screen of the level
-        elif player_rect.right - 16 > self.rect.right and self.x_coord2 < world_limit[0] - (screenW//2 + 32) and player_rect.right - 16 < self.x_coord2 + screenW//2 - 32: 
+        elif ((player_rect.right - 16 > self.rect.right 
+              and self.x_coord2 < world_limit[0] - (screenW//2 + 32) 
+              and player_rect.right - 16 < self.x_coord2 + screenW//2 - 32)
+              ): 
             player_rect.x -= 1
             self.scrollx += 1
             #self.on_right_edge = True
             #print("working")
+            
+        elif (  player_rect.right - 16 < self.rect.right
+                and world_tile0_coord[0] < -(world_limit[0] - 640)
+                ):
+            player_rect.x += 1
+            self.scrollx -= 1
     
         else:
             #set player to center screen
