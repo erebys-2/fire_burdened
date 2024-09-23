@@ -122,7 +122,7 @@ class World():
         self.slice_height = 15
         self.num_slices = 0
         
-        self.screen_rect = pygame.rect.Rect(0, 0, screen_w, screen_h)
+        #self.screen_rect = pygame.rect.Rect(0, 0, screen_w, screen_h)
         
         self.world_map_non_parallax = pygame.Surface((32,32), pygame.SRCALPHA).convert_alpha
         #self.world_map_non_parallax.fill(pygame.Color(0,0,0,0))
@@ -244,7 +244,7 @@ class World():
         self.clear_data()
         
         #reset level window
-        self.screen_rect.topleft = (0,0)
+        #self.screen_rect.topleft = (0,0)
         
         #populate raw_lvl_data_list with lists of int values from level csv files
         raw_lvl_data_list = self.get_raw_csv_data(level, level_data[0:2])
@@ -330,7 +330,7 @@ class World():
         self.process_bg(raw_lvl_data_list[1], self.detailed_lvl_data_list[1], the_sprite_group, 1)
         
         
-        self.world_map_non_parallax = self.create_map(level_data[0:2], self.detailed_lvl_data_list[1:4]).convert_alpha()
+        #self.world_map_non_parallax = self.create_map(level_data[0:2], self.detailed_lvl_data_list[1:4]).convert_alpha()
         
         
         #print(len(self.lvl_slice_lists[2]))
@@ -511,8 +511,8 @@ class World():
         # self.load_unload_slices(self.screen_rect)
         # self.scroll_slices_all_layers(scroll_X)
         
-        self.screen_rect.x += scroll_X
-        self.screen_rect.y += scroll_Y
+        # self.screen_rect.x += scroll_X
+        # self.screen_rect.y += scroll_Y
         
         if scroll_X > 0:
             correction = 1
@@ -523,8 +523,8 @@ class World():
         self.draw_bg_layers(screen, 4*(scroll_X + correction)//7, 0, self.bg5)
         self.draw_bg_layers(screen, 7*(scroll_X + correction)//9, 0, self.bg4)
         self.draw_filter_layer(screen, self.bg3)
-        # self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg2)#detailed 1:1 bg layer 2
-        # self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg1)
+        self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg2)#detailed 1:1 bg layer 2
+        self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg1)
         
         #these scroll every tile in a layer
         
@@ -535,8 +535,8 @@ class World():
             
             tile[1][0] -= scroll_X
             tile[1][1] -= scroll_Y
-            # if tile[1][0] > -32 and tile[1][0] < 640 + 32:
-            #     screen.blit(tile[0], tile[1]) # (image, position)
+            if tile[1][0] > -32 and tile[1][0] < 640 + 32:
+                screen.blit(tile[0], tile[1]) # (image, position)
                 
       
         
@@ -545,9 +545,9 @@ class World():
             #tile[1][1] -= scroll_Y
             
             
-        # self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg)
+        self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg)
         
-        screen.blit(self.world_map_non_parallax, (0,0), self.screen_rect)
+        #screen.blit(self.world_map_non_parallax, (0,0), self.screen_rect)
         
         
         return (self.coords[0][1][0], self.coords[0][1][1]) #x and y of first tile

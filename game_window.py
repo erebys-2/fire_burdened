@@ -264,7 +264,7 @@ def main():
 				temp_move_R = move_R
 				move_R = False
 			player0.rect.x = player_new_x - 32 #set player location
-			world.screen_rect.x = camera.rect.x - SCREEN_WIDTH//2 + 32
+			#world.screen_rect.x = camera.rect.x - SCREEN_WIDTH//2 + 32 #update screen rect location
 			
 			#player0.rect.y = player_new_y #disabling this makes it so that you can jump between levels
 			player0.vel_y = 0
@@ -381,12 +381,10 @@ def main():
 			scroll_x += ss_output[1][1]
 			player0.vel_y += ss_output[1][2]*1.02
 			scroll_y = -ss_output[1][3]
-		elif not do_screenshake_master and world.screen_rect.y != 0:
-			world.screen_rect.y = 0
+		# elif not do_screenshake_master and world.screen_rect.y != 0:
+		# 	world.screen_rect.y = 0
    
-		# if not do_screenshake_master and world_tile0_coord[1] != 0:
-		# 	scroll_y = world_tile0_coord[1]
-		# 	print("worked")
+		
 	
 	
 		#----------black screen while transitioning---------------------------------------------------------
