@@ -110,7 +110,7 @@ class csv_extracter():
            
             str_list = self.split_string(item[0], self.cut_off_length, self.endcase_char)
             destination_list.append((tuple(str_list),item[1],item[2]))
-            
+        
         return destination_list
         
     #used to format a raw csv reading into a list of npc dialogue lists

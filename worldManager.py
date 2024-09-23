@@ -5,13 +5,14 @@ from enemy32File import enemy_32wide #type: ignore
 from particle import particle_ #type: ignore
 from player_interactable import player_interactable_
 from dialogueCSVformatter import csv_extracter
+from textfile_handler import textfile_formatter
 from BGspritesFile import tree, fountain, lamp
 import csv
 
 from npcFile import npc, Test, Test2
 
 class World():
-    def __init__(self):
+    def __init__(self, screen_w, screen_h):
         self.coords = []
         self.fg = []
         self.solids = []
@@ -102,6 +103,9 @@ class World():
             str_list = self.csv_f0.split_string(prompt, self.csv_f0.cut_off_length, self.csv_f0.endcase_char)
             self.player_prompt_list.append(str_list)
             
+        self.t1 = textfile_formatter()
+        #print(self.csv_f0.str_to_str_list(self.t1.str_list_to_dialogue_list(self.t1.read_text_from_file('npc_dialogue_files/npc_dialogue_txt_files/Test.txt'))))
+            
         #self.full_dialogue_list = self.csv_f0.get_all_npc_data('dialogue_data')
         
         # print(self.csv_f0.get_specific_npc_data('Test', full_dialogue_list))
@@ -110,6 +114,7 @@ class World():
         #plot index list will be a dynamic list under world for convenience since NPCs that access/modify it will be instantiated under world
         #it will be initially set when the main menu code is executed
         self.plot_index_list = []
+        self.npc_current_dialogue_list = [0,0]
         
         self.lvl_slice_lists = []
             
@@ -117,10 +122,16 @@ class World():
         self.slice_height = 15
         self.num_slices = 0
         
-        self.screen_rect = pygame.rect.Rect(0, 0, 640, 480)
+        self.screen_rect = pygame.rect.Rect(0, 0, screen_w, screen_h)
         
-        self.world_map_non_parallax = pygame.Surface((32,32), pygame.SRCALPHA)
-        self.world_map_non_parallax.fill(pygame.Color(0,0,0,0))
+        self.world_map_non_parallax = pygame.Surface((32,32), pygame.SRCALPHA).convert_alpha
+        #self.world_map_non_parallax.fill(pygame.Color(0,0,0,0))
+        
+    def get_specific_npc_dialogue(self, name):
+        path = 'npc_dialogue_files/npc_dialogue_txt_files/'
+        rtn_list = tuple(self.csv_f0.str_to_str_list(self.t1.str_list_to_dialogue_list(self.t1.read_text_from_file(path + name + '.txt'))))
+        
+        return rtn_list
     
     def get_num_slices(self, rows):
         num_slices = rows/self.slice_width
@@ -204,16 +215,16 @@ class World():
     def set_plot_index_list(self, plot_index_list):
         self.plot_index_list = plot_index_list
         
-    #pil_update_flag will be set to true everytime plot index list is updated for a textprompt obj
-    #useful method incase multiple npc's with plot sensitive lines are in a single level
-    def update_all_plot_index_lists(self, textprompt_group):
-        for obj in textprompt_group:
-            if obj.pil_update_flag:
-                self.plot_index_list = obj.plot_index_list
-                obj.pil_update_flag = False
-                #print(self.plot_index_list)
-                for obj in textprompt_group:
-                    obj.plot_index_list = self.plot_index_list
+    # #pil_update_flag will be set to true everytime plot index list is updated for a textprompt obj
+    # #useful method incase multiple npc's with plot sensitive lines are in a single level
+    # def update_all_plot_index_lists(self, textprompt_group):
+    #     for obj in textprompt_group:
+    #         if obj.pil_update_flag:
+    #             self.plot_index_list = obj.plot_index_list
+    #             obj.pil_update_flag = False
+    #             #print(self.plot_index_list)
+    #             for obj in textprompt_group:
+    #                 obj.plot_index_list = self.plot_index_list
                     
                 
     #for saving
@@ -231,6 +242,9 @@ class World():
         #clear old data
         raw_lvl_data_list = []
         self.clear_data()
+        
+        #reset level window
+        self.screen_rect.topleft = (0,0)
         
         #populate raw_lvl_data_list with lists of int values from level csv files
         raw_lvl_data_list = self.get_raw_csv_data(level, level_data[0:2])
@@ -298,13 +312,13 @@ class World():
                         p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_v', ini_vol, True, False)
                         the_sprite_group.p_int_group.add(p_int)
                     elif tile == 49:
-                        dialogue_list = self.csv_f0.get_specific_npc_data('Test', self.csv_f0.get_all_npc_data('dialogue_data'))
-                        Testnpc = Test(x * 32, y * 32, 2, 1, 'Test', ini_vol, True, dialogue_list, self.plot_index_list, level, player_inventory= [])
+                        dialogue_list = self.get_specific_npc_dialogue('Test')
+                        Testnpc = Test(x * 32, y * 32, 2, 1, 'Test', ini_vol, True, dialogue_list, self.plot_index_list, self.npc_current_dialogue_list, level, player_inventory= [])
                         the_sprite_group.textprompt_group.add(Testnpc)
                         
                     elif tile == 50:
-                        dialogue_list = self.csv_f0.get_specific_npc_data('Test2', self.csv_f0.get_all_npc_data('dialogue_data'))
-                        Testnpc2 = Test2(x * 32, y * 32, 2, 1, 'Test2', ini_vol, True, dialogue_list, self.plot_index_list, level, player_inventory= [])
+                        dialogue_list = self.get_specific_npc_dialogue('Test2')
+                        Testnpc2 = Test2(x * 32, y * 32, 2, 1, 'Test2', ini_vol, True, dialogue_list, self.plot_index_list, self.npc_current_dialogue_list, level, player_inventory= [])
                         the_sprite_group.textprompt_group.add(Testnpc2)
                         
                         
@@ -316,7 +330,7 @@ class World():
         self.process_bg(raw_lvl_data_list[1], self.detailed_lvl_data_list[1], the_sprite_group, 1)
         
         
-        #self.world_map_non_parallax = self.create_map(level_data[0:2], self.detailed_lvl_data_list[1:4])
+        self.world_map_non_parallax = self.create_map(level_data[0:2], self.detailed_lvl_data_list[1:4]).convert_alpha()
         
         
         #print(len(self.lvl_slice_lists[2]))
@@ -471,11 +485,14 @@ class World():
                 tile[1][0] -= scroll_X
                 if tile[1].x <= 640 and tile[1].x > -960:
                     screen.blit(tile[0], tile[1]) # (image, position)
+               
             else:
                 tile[1][0] -= scroll_X
                 tile[1][1] -= scroll_Y
                 if tile[1].x <= 640 and tile[1].x > -320:
                     screen.blit(tile[0], tile[1]) # (image, position)
+                    
+                
             
           
                 
@@ -494,7 +511,9 @@ class World():
         # self.load_unload_slices(self.screen_rect)
         # self.scroll_slices_all_layers(scroll_X)
         
-        #self.screen_rect.x += scroll_X
+        self.screen_rect.x += scroll_X
+        self.screen_rect.y += scroll_Y
+        
         if scroll_X > 0:
             correction = 1
         else:
@@ -504,8 +523,8 @@ class World():
         self.draw_bg_layers(screen, 4*(scroll_X + correction)//7, 0, self.bg5)
         self.draw_bg_layers(screen, 7*(scroll_X + correction)//9, 0, self.bg4)
         self.draw_filter_layer(screen, self.bg3)
-        self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg2)#detailed 1:1 bg layer 2
-        self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg1)
+        # self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg2)#detailed 1:1 bg layer 2
+        # self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg1)
         
         #these scroll every tile in a layer
         
@@ -513,10 +532,11 @@ class World():
             #this code below basically means the first index: [1], gets the tile's rect, 
             #then the [0] right after gets the x coordinate
             #if you were to swap [0] with [1] you'd get the y coord
+            
             tile[1][0] -= scroll_X
             tile[1][1] -= scroll_Y
-            if tile[1][0] > -32 and tile[1][0] < 640 + 32:
-                screen.blit(tile[0], tile[1]) # (image, position)
+            # if tile[1][0] > -32 and tile[1][0] < 640 + 32:
+            #     screen.blit(tile[0], tile[1]) # (image, position)
                 
       
         
@@ -525,9 +545,9 @@ class World():
             #tile[1][1] -= scroll_Y
             
             
-        self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg)
+        # self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg)
         
-        #screen.blit(self.world_map_non_parallax, (0,0), self.screen_rect)
+        screen.blit(self.world_map_non_parallax, (0,0), self.screen_rect)
         
         
         return (self.coords[0][1][0], self.coords[0][1][1]) #x and y of first tile

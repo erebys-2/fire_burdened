@@ -1,0 +1,4 @@
+This is another test NPC.# 1# 0#
+How are you today?# 2# 3#
+Go eat  chocolate.# 2# 1#
+You talked to Test.# 0# 2#

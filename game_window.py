@@ -1,4 +1,3 @@
-
 import pygame
 import os
 os.environ['SDL_VIDEO_CENTERED'] = '1' 
@@ -86,7 +85,7 @@ def main():
 	scroll_y = 0
 
 
-	world = World()
+	world = World(SCREEN_WIDTH, SCREEN_HEIGHT)
 
 	#instantiate status bars
 	status_bars = StatusBars()
@@ -312,11 +311,13 @@ def main():
 		
 
 		#dialogue trigger sent here
-		the_sprite_group.update_groups_behind_player(pause_game, screen, player0.hitbox_rect, player0.atk_rect_scaled, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800], scroll_x, player0.action, player0.direction, 
-												dialogue_enable, next_dialogue)
-		the_sprite_group.update_item_group(pause_game, player0.hitbox_rect, scroll_x, screen)
+		the_sprite_group.pause_game = pause_game
+		the_sprite_group.scroll_x = scroll_x
+		the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, player0.direction, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
+		the_sprite_group.update_text_prompt_group(screen, player0.hitbox_rect, dialogue_enable, next_dialogue, world.plot_index_list, world.npc_current_dialogue_list)
+		the_sprite_group.update_item_group(screen, player0.hitbox_rect)
 		player0.draw(screen)
-		the_sprite_group.update_groups_infront_player(pause_game, screen, scroll_x, world.solids, player0.hitbox_rect, player0.atk_rect_scaled, player0.action)
+		the_sprite_group.update_groups_infront_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, world.solids)
 	
 		status_bars.draw(screen, player0.get_status_bars(), font)
 	
@@ -345,6 +346,7 @@ def main():
 						npc.force_dialogue_index(next_dialogue_index)
 						p_choice_handler0.trigger_once = True
 						dialogue_box0.type_out = True
+
 
 						
 			
@@ -379,6 +381,12 @@ def main():
 			scroll_x += ss_output[1][1]
 			player0.vel_y += ss_output[1][2]*1.02
 			scroll_y = -ss_output[1][3]
+		elif not do_screenshake_master and world.screen_rect.y != 0:
+			world.screen_rect.y = 0
+   
+		# if not do_screenshake_master and world_tile0_coord[1] != 0:
+		# 	scroll_y = world_tile0_coord[1]
+		# 	print("worked")
 	
 	
 		#----------black screen while transitioning---------------------------------------------------------
@@ -475,7 +483,7 @@ def main():
 			player0.action = 0
 			player0.rolled_into_wall = True
 			inventory_opened = False
-			world.update_all_plot_index_lists(the_sprite_group.textprompt_group)
+			#world.update_all_plot_index_lists(the_sprite_group.textprompt_group)
 
 		if player0.hurting or not player0.dialogue_trigger_ready:
 			dialogue_enable = False

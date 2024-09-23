@@ -317,7 +317,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             and self.rect.colliderect(player_atk_rect)
             and self.inundated == False
             ):
-           
+            pygame.time.wait(11)
             #the average point in a collision between rects is literally just the average of the coords opposite respective corners of rects
             x_avg = (self.rect.x + player_atk_rect.right)/2
             y_avg = (self.rect.y + player_atk_rect.bottom)/2
@@ -345,7 +345,8 @@ class enemy_32wide(pygame.sprite.Sprite):
             elif player_action == 7 or player_action == 8:
                 self.dmg_multiplier = 2
                 
-        elif (  player_rect.x > self.rect.x - 64 and player_rect.right < self.rect.right + 64 and
+        elif (player_atk_rect.width == 0 and   
+              player_rect.x > self.rect.x - 64 and player_rect.right < self.rect.right + 64 and
                 self.rect.colliderect(player_rect.scale_by(0.2)) or (self.rect.x < player_rect.x and self.rect.right > player_rect.right )
             #and not (self.inundated or self.rect.colliderect(player_atk_rect))
               ):

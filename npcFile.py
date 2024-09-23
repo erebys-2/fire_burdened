@@ -6,6 +6,7 @@ from particle import particle_ #type: ignore
 from music_player import music_player #type: ignore
 import random
 from textManager import text_manager
+from textfile_handler import textfile_formatter
 
 class npc(pygame.sprite.Sprite):
     #constructor
@@ -17,7 +18,7 @@ class npc(pygame.sprite.Sprite):
         self.dialogue_list = dialogue_list
         self.name = name
         self.flip = False
-        self.pil_update_flag = False
+        #self.pil_update_flag = False
         
         self.npc_index_id = (os.listdir('sprites/npcs')).index(name)
 
@@ -68,13 +69,19 @@ class npc(pygame.sprite.Sprite):
         
         self.player_choice_flag = False #signal
         self.player_choice_key = '' #key
+        
+        t1 = textfile_formatter()
+        #plot index, dialogue index to jump to
+        self.plot_index_jumps_dict = t1.str_list_to_dict(t1.read_text_from_file('config_textfiles/npc_plot_index_config/' + self.name + '.txt'), 'int')
+        #print(self.plot_index_jumps_dict)
+        
     
         
     #after every textbox, this is called, need to specify name so that npcs can modify the plot index's of other npcs
-    def update_plot_index(self, name, new_plot_index):
-        if new_plot_index != self.plot_index_list[self.npc_index_id]:
-            self.plot_index_list[self.npc_index_id] = new_plot_index
-        self.pil_update_flag = True
+    # def update_plot_index(self, name, new_plot_index):
+    #     if new_plot_index != self.plot_index_list[self.npc_index_id]:
+    #         self.plot_index_list[self.npc_index_id] = new_plot_index
+    #     self.pil_update_flag = True
 
     def get_message(self, current_dialogue_index):
         message = self.dialogue_list[current_dialogue_index][0]
@@ -86,34 +93,39 @@ class npc(pygame.sprite.Sprite):
     #generally, current_dialogue_index will advance itself by following the next index in the dialogue array
     #self.get_dialogue_index() will only be triggered by specific conditions: level, plot index, current dialogue index and will be called right before
     #and will force current_dialogue_index to some other value in that moment
-    def enable(self, dialogue_enable, next_dialogue):
+    def enable(self, dialogue_enable, next_dialogue, current_dialogue_list):
         if self.enabled:
             
             #dialogue_enable and next_dialogue are global booleans in the game window file
             message = ''
             if self.player_collision and dialogue_enable:
+                #print(self.current_dialogue_index)
                 
                 dialogue = self.get_message(self.current_dialogue_index) #returns message and index of next dialogue
-                
                 expression = dialogue[2]
                 
                 if not self.player_choice_flag:
-                    message = dialogue[0]
+                    message = dialogue[0] #reformat here
                 else:
                     message = ('','')
                 
                 if dialogue[1] == -3 and not self.player_choice_flag: #impulse signal
                     self.player_choice_flag = True
                     self.player_choice_key = message[0]
+                    next_dialogue = True
                     #print(message)
+                else:
+                    current_dialogue_list[self.npc_index_id] = dialogue[1]
                 
                 if next_dialogue:#convert continuous signal next_dialogue into an impulse
+                    #print(self.is_initial_index)
                     if self.trigger_once != next_dialogue and not self.get_dialogue_flag:
+                        #print(current_dialogue_list) the indexing is really weird
+                        #print(dialogue[1])
                         if dialogue[1] == -3: #if the index is -3, then a player choice is in progress.
                             #do not change variables and set player_choice_flag to true
                             #self.current_dialogue_index = 0
                             message = ('','')
-                            print('poopcock')
                             self.get_dialogue_flag = True
                         #doesn't do dialogue index changing if is_initial_index is true
                         #you don't want the first interaction iterate through the indexes
@@ -121,6 +133,7 @@ class npc(pygame.sprite.Sprite):
                             #updates to next dialogue index
                             self.last_dialogue_index = self.current_dialogue_index
                             self.current_dialogue_index = dialogue[1]
+                            
                             self.get_dialogue_flag = True
                             
                         elif self.is_initial_index: #skips changing index for first dialogue box
@@ -128,7 +141,7 @@ class npc(pygame.sprite.Sprite):
                             
                         
                             
-                            
+                    
                     self.trigger_once = True
                     message = (' ',' ')#prevents lingering text from previous textbox
                 else:
@@ -203,25 +216,30 @@ class npc(pygame.sprite.Sprite):
     
     #npc sub classes take plot index and current level to decide the dialogue index
     
+#each level, NPC's dialogue indexes are reset
+    
 class Test(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_list, level, player_inventory):
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_list, current_dialogue_list, level, player_inventory):
         super().__init__(x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_list)
-        #get plot index 
+        #get plot index
         self.plot_index = self.plot_index_list[self.npc_index_id]
 
         #self.current_dialogue_index = 0
         self.current_level = level
         self.current_p_inv = player_inventory
         
-        self.get_dialogue_index(level, player_inventory, self.current_dialogue_index)
+        self.get_dialogue_index(level, player_inventory, self.current_dialogue_index, plot_index_list, current_dialogue_list)
 
     #npc specific method called at the start of each self.enable()
     
     #using the inputs: level, plot_index, current_dialogue_index
     #set the next dialogue index or advance the plot index if specific parameters are met
     #immediately change 1 or 2 of them such as advancing plot index or switching the dialogue index
-    def get_dialogue_index(self, level, player_inventory, current_dialogue_index):
-        plot_index = self.plot_index_list[self.npc_index_id]
+    def get_dialogue_index(self, level, player_inventory, current_dialogue_index, plot_index_list, current_dialogue_list):
+        plot_index = plot_index_list[self.npc_index_id]
+        if plot_index != -1:
+            self.current_dialogue_index = self.plot_index_jumps_dict[plot_index]
+            self.is_initial_index = False
         
         #2ndary constructor
         if self.is_initial_index:
@@ -231,6 +249,7 @@ class Test(npc):
                 
     
         if self.player_collision and self.get_dialogue_flag:
+            #print(current_dialogue_index)
             if current_dialogue_index == 0:
                 if level == 1 and plot_index == -1:
                     self.current_dialogue_index = 0
@@ -241,9 +260,9 @@ class Test(npc):
             # elif level == 1 and plot_index == -1 and current_dialogue_index == 3:
             #     self.update_plot_index(1)
             #     current_dialogue_index = 4
-            elif level == 1 and current_dialogue_index == 3 and self.plot_index_list[1] == -1:
-                self.plot_index_list[1] = 1
-                self.pil_update_flag = True
+            elif level == 1 and current_dialogue_index == 3:# and self.plot_index_list[1] == -1:
+                plot_index_list[1] = 1
+                #self.pil_update_flag = True
             
             else:
                 self.current_dialogue_index = self.current_dialogue_index
@@ -253,7 +272,7 @@ class Test(npc):
             
 
 class Test2(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_list, level, player_inventory):
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_list, current_dialogue_list, level, player_inventory):
         super().__init__(x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_list)
         #get plot index 
         self.plot_index = self.plot_index_list[self.npc_index_id]
@@ -262,16 +281,22 @@ class Test2(npc):
         self.current_level = level
         self.current_p_inv = player_inventory
         
-        self.get_dialogue_index(level, player_inventory, self.current_dialogue_index)
+        self.get_dialogue_index(level, player_inventory, self.current_dialogue_index, plot_index_list, current_dialogue_list)
 
-    def get_dialogue_index(self, level, player_inventory, current_dialogue_index):
-        plot_index = self.plot_index_list[self.npc_index_id]
+    def get_dialogue_index(self, level, player_inventory, current_dialogue_index, plot_index_list, current_dialogue_list):
+        plot_index = plot_index_list[self.npc_index_id]
+        if plot_index != -1:
+            self.current_dialogue_index = self.plot_index_jumps_dict[plot_index]
+            self.is_initial_index = False
+        
+        
         if self.is_initial_index:
             if level == 1 and plot_index == -1:
                 self.current_dialogue_index = 0
+                
             
         if self.player_collision and self.get_dialogue_flag:
-            if current_dialogue_index == 0:
+            if current_dialogue_index == 0 and plot_index == -1:
                 if level == 1 and plot_index == -1:
                     self.current_dialogue_index = 0
                     #self.next_dialogue_index = 0
@@ -281,10 +306,10 @@ class Test2(npc):
             # elif level == 1 and plot_index == -1 and current_dialogue_index == 3:
             #     self.update_plot_index(1)
             #     current_dialogue_index = 4
-            elif level == 1 and plot_index == 1 and self.last_dialogue_index == 2:
-                self.plot_index_list[self.npc_index_id] = -1
-                self.current_dialogue_index = 3
-                self.pil_update_flag = True
+            elif self.current_dialogue_index == 3:# and self.last_dialogue_index == 2:
+                plot_index_list[self.npc_index_id] = -1
+                
+                #self.pil_update_flag = True
 
             
             else:

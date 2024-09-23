@@ -32,7 +32,7 @@ class ui_manager():
         self.fontlist = fontlist
         self.button_list = []
         
-        self.disp_flags = pygame.SHOWN
+        self.disp_flags = pygame.DOUBLEBUF|pygame.SHOWN
 
         self.stop = False
         self.btn_selected = 0
@@ -216,7 +216,7 @@ class ui_manager():
                     self.disp_flags = pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN #full screen mode
                     screen = pygame.display.set_mode(self.std_size, self.disp_flags)
                 elif self.disp_flags == pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN:
-                    self.disp_flags = pygame.SHOWN
+                    self.disp_flags = pygame.DOUBLEBUF|pygame.SHOWN
                     screen = pygame.display.set_mode(self.std_size, self.disp_flags)
             self.button_list[2].show_text(screen, self.fontlist[1], ('','Screen Toggle')) 
                 

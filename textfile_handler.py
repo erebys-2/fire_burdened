@@ -22,9 +22,9 @@ class textfile_formatter():
         for line in str_list:
             for char in line:
                 if char == ':':
-                    key = line[0:line.index(char)]
+                    key = self.auto_string_to_number(line[0:line.index(char)])
                     if format_mode == 'list':
-                        value = self.format_line_to_list(line[line.index(char)+2: len(line)])
+                        value = self.format_line_to_list(line[line.index(char)+2: len(line)], ',')
                     elif format_mode == 'int':
                         value = int(line[line.index(char)+2: len(line)])
                     elif format_mode == 'float':
@@ -36,18 +36,26 @@ class textfile_formatter():
             
         return rtn_dict
     
+    def str_list_to_dialogue_list(self, str_list):
+        rtn_list = []
+        for str_ in str_list:
+            rtn_list.append(self.format_line_to_list(str_, '#'))
+        
+        return tuple(rtn_list)
+        
+    
     #takes a formatted string and returns a list, ints and floats will be automatically processed
     #appropriate formatting: 
     # 'this, is, the, future, of, many, parameters.'
     # '1, 2, 4, 45345, 1234!, -90, .807, -.0008.'
     #note the space after ',' and ending with '.'
-    def format_line_to_list(self, line): 
+    def format_line_to_list(self, line, delimiter): 
         start_index = 0
         end_index = 0
         str_list = []
         for i in range(len(line)):
             char = line[i]
-            if char == ',' or i == len(line) - 1:
+            if char == delimiter or i == len(line) - 1:
                 end_index = i
                 str_list.append(self.auto_string_to_number(line[start_index: end_index]))
                 start_index = end_index + 2
