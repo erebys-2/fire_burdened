@@ -46,7 +46,7 @@ class Camera():
             
         
     
-    def get_pos_data(self, player_rect, world_coords):
+    def get_pos_data(self, world_coords):
         for loaded_tile in [tile for tile in world_coords if tile[1].x >= self.rect.x - 64 and tile[1].right <= self.rect.right + 64]:
             #print(loaded_tile)
             if loaded_tile[1].colliderect(self.rect.x + 30, self.rect.y, 1, 1):
@@ -63,54 +63,73 @@ class Camera():
             #     if self.Px_coord != x_coord:
             #         self.Px_coord = x_coord
                     
-    def auto_correct(self, player_rect, world_coords, world_tile0_coord, world_limit, screenW, screenH):
+    def auto_correct(self, player_rect, player_direction, world_coords, world_tile0_coord, world_limit, screenW, screenH):
         self.scrollx = 0
-        self.get_pos_data(player_rect, world_coords)
-                
-        #when the player is on the left half screen of the level
-        if ((player_rect.x + 32 < self.rect.x 
+        self.get_pos_data(world_coords)
+        
+        #============================================= MAIN AUTOCORRECTING LOGIC ==============================================
+        # if player_direction > 0:
+        #     displacement = 64
+        # else:
+        #     displacement = -64
+        displacement = 0
+        
+        #aligns player to a vertical axis when the player is traversing level rightwards
+        if ((player_rect.right - self.rect.right > 16 - displacement
+              and player_rect.right - 16 < self.x_coord2 + screenW//2 - 32)
+              and self.x_coord2 < world_limit[0] - (screenW//2 + 32) #prevents from over scrolling on the rightmost edge
+              ): 
+            player_rect.x -= 1
+            self.scrollx += 1
+            # if pygame.time.get_ticks() %10 == 0:
+            #     print("b")    
+        
+        #aligns player to a vertical axis screen when the player is traversing level leftwards
+        elif (self.rect.x - player_rect.x > 16 + displacement
+              and self.x_coord >= screenW//2 
+              and self.x_coord < world_limit[0] - (screenW//2)): #prevents from over scrolling on the leftmost edge
+            player_rect.x += 1
+            self.scrollx -= 1
+            # if pygame.time.get_ticks() %10 == 0:
+            #     print("a")
+            
+        #========================================= OVERSCROLL CORRECTION AT LEVEL EDGES ====================================    
+            
+        #when the player is on the left half screen of the level, I think it prevents underscrolling
+        elif ((player_rect.x + 32 < self.rect.x 
              and self.x_coord < screenW - 32 
              and world_tile0_coord[0] > 0)
             ):
             player_rect.x -= world_tile0_coord[0]
             self.scrollx += world_tile0_coord[0]
-            
-        #when the player on the right half screen of the level
-        elif ((player_rect.right - 16 > self.rect.right 
-              and self.x_coord2 < world_limit[0] - (screenW//2 + 32) 
-              and player_rect.right - 16 < self.x_coord2 + screenW//2 - 32)
-              ): 
-            player_rect.x -= 1
-            self.scrollx += 1
-            #self.on_right_edge = True
-            #print("working")
-            
+            # if pygame.time.get_ticks() %10 == 0:
+            #     print("a")   
+ 
+        #prevents over scroll at the right edge of a level
         elif (  player_rect.right - 16 < self.rect.right
                 and world_tile0_coord[0] < -(world_limit[0] - 640)
                 ):
             player_rect.x += 1
             self.scrollx -= 1
-    
+            # if pygame.time.get_ticks() %10 == 0:
+            #     print("c")
+        
         else:
-            #set player to center screen
-            #self.on_right_edge = False
-            if self.rect.x - player_rect.x > 16  and self.x_coord >= screenW//2 and self.x_coord < world_limit[0] - (screenW//2):
-                player_rect.x += 1
-                self.scrollx -= 1
-            # elif self.x_coord < screenW//2 - 32:
-            #     print(self.x_coord)
-            #     print(screenW//2)
-            #     player_rect.x -= 1
-            #     self.scrollx += 1
-            else:
-                self.scrollx = 0
+            self.scrollx = 0
             
         #I am delirious, but the player can be loaded into any part of the level now and the camera will immediately autocorrect
         #and center itself on the player's location, except in the edge cases of being at half screen widths from the start and end
         #of a level
         #holy shit kms
+        if self.set_ini_pos:
+            self.set_initial_position(player_rect, world_coords, world_limit, screenW, screenH)
         
-        if player_rect.x > screenW//2 and (player_rect.x - self.x_coord > 0) and self.set_ini_pos: 
+    def set_initial_position(self, player_rect, world_coords, world_limit, screenW, screenH):
+        self.scrollx = 0
+        self.get_pos_data(world_coords)
+        #==================================== SETTING INITIAL POSITION ON LEVEL LOAD ===============================
+        
+        if self.set_ini_pos and player_rect.x > screenW//2 and (player_rect.x - self.x_coord > 0): 
             #tests if the player is beyond the first screen half of the level and if the initial position needs to be set, middle boolean is a limiter
             
             dx = player_rect.x - self.x_coord #adjustment for if the player is not on the right edge

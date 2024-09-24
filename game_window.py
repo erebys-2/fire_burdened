@@ -269,8 +269,8 @@ def main():
 			
 			#player0.rect.y = player_new_y #disabling this makes it so that you can jump between levels
 			player0.vel_y = 0
-			camera.set_ini_pos = True #force camera into position
 			player0.current_x = player_new_x #set player internal position
+			camera.set_ini_pos = True #force camera into position
 	
 			if temp_move_R:
 				move_R = temp_move_R
@@ -287,7 +287,8 @@ def main():
 		draw_bg(screen, gradient_dict, level_tuple[level][1], level_tuple[level][0])#this just draws the color
 		#camera.draw(screen)#for camera debugging
 		if world.x_scroll_en:
-			camera.auto_correct(player0.rect, [tile for tile in world.coords if tile[1][0] > -32 and tile[1][0] < 640], world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
+			camera.auto_correct(player0.rect, player0.direction, [tile for tile in world.coords if tile[1][0] > -32 and tile[1][0] < 640], world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
+			
 		
 		world_tile0_coord = world.draw(screen, scroll_x, scroll_y)#this draws the world and scrolls it 
 		
@@ -767,7 +768,7 @@ def main():
 					next_dialogue = False
 
 		pygame.display.update()
-		pygame.display.set_caption(f"Fire Burdened 0.7 FPS: {clock.get_fps():.1f}")
+		pygame.display.set_caption(f"Fire Burdened 0.7 @ {clock.get_fps():.1f} FPS")
 
 	pygame.quit()
 
