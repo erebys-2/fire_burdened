@@ -38,6 +38,7 @@ def main():
 	pygame.display.set_icon(icon)
 
 	pygame.display.set_caption('Fire Burdened 0.7')
+	
 
 	#framerate set up------------------------------------
 	clock = pygame.time.Clock()
@@ -96,7 +97,8 @@ def main():
 	font_massive = pygame.font.SysFont('SimSun', 48)
 
 	#camera instance
-	camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
+	camera_displacement = 16
+	camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, camera_displacement)
 
 	#colors
 	blue_0 = [100, 82, 88]
@@ -191,7 +193,8 @@ def main():
 	#instantiate player at the start of load
 	hp = 6
 	speed = 4
-	player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl)#6368 #5856 #6240 #test coords for camera autocorrect
+	
+	player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_displacement)#6368 #5856 #6240 #test coords for camera autocorrect
 	#good news is that the player's coordinates can go off screen and currently the camera's auto scroll will eventually correct it
 	normal_speed = player0.speed
 
@@ -430,7 +433,7 @@ def main():
 			pause_game = ui_tuple0[0]
 			if ui_tuple0[1]:
 				next_level = 0
-				player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl)
+				player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_displacement)
 				player_new_x = 32
 				player_new_y = 32
 	
@@ -471,7 +474,7 @@ def main():
 
 			if ui_manager0.show_death_menu(screen):
 				next_level = 0
-				player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl)
+				player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_displacement)
 				player_new_x = 32
 				player_new_y = 32
 	
@@ -657,7 +660,7 @@ def main():
 
 						if (pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
 							next_level = 0
-							player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl)
+							player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_displacement)
 							player_new_x = 32
 							player_new_y = 32
 							dialogue_box0.reset_internals()

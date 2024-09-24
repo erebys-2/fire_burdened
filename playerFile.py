@@ -10,7 +10,7 @@ import random
 
 class player(pygame.sprite.Sprite):
     #constructors
-    def __init__(self, x, y, speed, hp, stamina, hits_tanked, stamina_usage_cap, ini_vol):
+    def __init__(self, x, y, speed, hp, stamina, hits_tanked, stamina_usage_cap, ini_vol, camera_displacement):
         pygame.sprite.Sprite.__init__(self)
         #internal variables
         scale = 2
@@ -151,6 +151,8 @@ class player(pygame.sprite.Sprite):
         #self.stamina_usage_cap = 0
         
         self.inventory_handler = inventory_handler(10)
+        
+        self.camera_displacement = camera_displacement
        
     #methods
     
@@ -622,8 +624,10 @@ class player(pygame.sprite.Sprite):
                     # if pygame.time.get_ticks() < self.update_time + 20:
                     #     self.m_player.play_sound(self.m_player.sfx[1])
                     if self.crit and self.check_if_in_ss_range():
+                        
                         dx = self.direction * 2 * self.speed
                         self.rect.x += self.direction * 2 * self.speed
+                        
                         if self.in_air and self.vel_y + 5 <= 20:
                             self.vel_y += 5
                     else:
@@ -631,8 +635,10 @@ class player(pygame.sprite.Sprite):
                             multiplier = 2
                         else:
                             multiplier = 1
+                            
                         dx = self.direction * (multiplier * (self.speed))
                         self.rect.x += self.direction * multiplier * 2
+                        
                         if self.action == 7:
                             self.vel_y -= 0.6
                         elif self.action == 8 and self.vel_y + 7 <= 28 and self.vel_y > 0 and self.in_air: #25 max 
@@ -789,11 +795,11 @@ class player(pygame.sprite.Sprite):
         #rudimentary scrolling adjust====================================================================================================================
         if self.Alive:
             if x_scroll_en:
-                if self.x_coord < screenW//2 or self.shoot_recoil or self.hurting: 
+                if self.x_coord < screenW//2 + self.camera_displacement or self.shoot_recoil or self.hurting: 
                     self.rect.x += dx
-                elif self.x_coord >= world_limit[0] - (screenW//2 + 32) or self.shoot_recoil or self.action == 5:
+                elif self.x_coord >= world_limit[0] - (screenW//2 + 32 + self.camera_displacement) or self.shoot_recoil or self.action == 5:
                     self.rect.x += dx
-                elif self.x_coord >= screenW//2  and self.x_coord < world_limit[0] - (screenW//2 - 16): 
+                elif self.x_coord >= screenW//2 + self.camera_displacement and self.x_coord < world_limit[0] - (screenW//2 - 16 + self.camera_displacement): 
                     self.scrollx = dx
             else:
                 self.rect.x += dx

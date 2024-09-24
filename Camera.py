@@ -3,7 +3,7 @@ import pygame
 class Camera():
     #rudimentary camera, but it works
     #can possibly implement screenshake here
-    def __init__(self, screenW, screenH):
+    def __init__(self, screenW, screenH, camera_displacement):
         
         self.scrollx = 0
         self.x_coord = screenW//2 - 32
@@ -16,9 +16,14 @@ class Camera():
         self.rect.centerx = screenW//2 #- 32
         self.rect.centery = screenH//2
 
+        self.camera_displacement = camera_displacement
+        self.curr_direction = 0
+        self.shift_dist = 1
+        
         self.on_right_edge = False
         
         self.cycle = 0
+        
         
         
     def screen_shake(self, profile, trigger):
@@ -68,19 +73,29 @@ class Camera():
         self.get_pos_data(world_coords)
         
         #============================================= MAIN AUTOCORRECTING LOGIC ==============================================
-        # if player_direction > 0:
-        #     displacement = 64
-        # else:
-        #     displacement = -64
-        displacement = 0
+        displacement = self.camera_displacement * player_direction
+        
+        if (self.curr_direction != player_direction
+            and not self.set_ini_pos
+            and self.x_coord2 < world_limit[0] - (screenW//2 - 48)
+            and self.x_coord > screenW//2 - 48
+            ):
+            self.shift_dist = self.camera_displacement//8
+            self.curr_direction = player_direction
+            #print("working")
+        
+        if self.shift_dist > 1:
+            self.shift_dist -= 1
+        
+        #displacement = 0
         
         #aligns player to a vertical axis when the player is traversing level rightwards
         if ((player_rect.right - self.rect.right > 16 - displacement
               and player_rect.right - 16 < self.x_coord2 + screenW//2 - 32)
               and self.x_coord2 < world_limit[0] - (screenW//2 + 32) #prevents from over scrolling on the rightmost edge
               ): 
-            player_rect.x -= 1
-            self.scrollx += 1
+            player_rect.x -= self.shift_dist
+            self.scrollx += self.shift_dist
             # if pygame.time.get_ticks() %10 == 0:
             #     print("b")    
         
@@ -88,8 +103,8 @@ class Camera():
         elif (self.rect.x - player_rect.x > 16 + displacement
               and self.x_coord >= screenW//2 
               and self.x_coord < world_limit[0] - (screenW//2)): #prevents from over scrolling on the leftmost edge
-            player_rect.x += 1
-            self.scrollx -= 1
+            player_rect.x += self.shift_dist
+            self.scrollx -= self.shift_dist
             # if pygame.time.get_ticks() %10 == 0:
             #     print("a")
             
@@ -125,8 +140,9 @@ class Camera():
             self.set_initial_position(player_rect, world_coords, world_limit, screenW, screenH)
         
     def set_initial_position(self, player_rect, world_coords, world_limit, screenW, screenH):
+        self.shift_dist = 1
         self.scrollx = 0
-        self.get_pos_data(world_coords)
+        #self.get_pos_data(world_coords)
         #==================================== SETTING INITIAL POSITION ON LEVEL LOAD ===============================
         
         if self.set_ini_pos and player_rect.x > screenW//2 and (player_rect.x - self.x_coord > 0): 
