@@ -91,7 +91,11 @@ class enemy_32wide(pygame.sprite.Sprite):
         self.atk_rect = pygame.Rect(-32, -32, 0,0)
         self.atk_rect_scaled = pygame.Rect(-32, -32, 0,0)#self.atk_rect.scale_by(0.8)
         self.width = self.image.get_width()
+        self.half_width = self.width//2
+        self.quarter_width = self.half_width//2
         self.height = self.image.get_height()
+        self.half_height = self.height//2
+        self.quarter_height = self.half_width//2
         
         
 
@@ -177,9 +181,11 @@ class enemy_32wide(pygame.sprite.Sprite):
                 if self.action == 1: #when the dog is running it has an attack hitbox
                     
                     if self.direction == -1:
-                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.width//2 + 16, self.height - 32)
+                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.half_width + 16, self.height - 32)
                     elif self.direction == 1:
-                        self.atk_rect = pygame.Rect(self.rect.x + self.width//2 - 8, self.rect.y + 16, self.width//2 + 16, self.height - 32)
+                        self.atk_rect = pygame.Rect(self.rect.x + self.half_width - 8, self.rect.y + 16, self.half_width + 16, self.height - 32)
+                    else:
+                        self.atk_rect.centerx = self.rect.centerx
                     self.atk_rect_scaled = self.atk_rect.scale_by(0.8)
                 else:
                     self.atk1_kill_hitbox()
@@ -241,7 +247,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                             self.jump = True
                             
                     if self.action == 5: #when the shooter is jumping it has an attack hitbox
-                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + self.height//2, self.width, self.height//2)
+                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + self.half_height, self.width, self.half_height)
                         self.atk_rect_scaled = self.atk_rect.scale_by(0.8)
                     else:
                         self.atk1_kill_hitbox()
@@ -397,7 +403,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                     
                     
                     
-                    if tile[1].colliderect(self.rect.x + dx, self.rect.y + self.height//4, self.width , 3*self.height//4 - 12):
+                    if tile[1].colliderect(self.rect.x + dx, self.rect.y + self.quarter_height, self.width , 3*self.height//4 - 12):
                         dx = 0
                         if self.in_air == False:
                             if self.enemy_type == 'shooter':
@@ -406,13 +412,13 @@ class enemy_32wide(pygame.sprite.Sprite):
                                 self.vel_y = -5
 
                     #make sure to not get pushed into blocks        
-                    if tile[1].colliderect(self.rect.x , self.rect.y , self.width//2 , self.height*0.8):     #+ self.height//4
+                    if tile[1].colliderect(self.rect.x , self.rect.y , self.half_width , self.height*0.8):     
                         if self.rect.x <= tile[1].right:
                             dx += 8
                         self.on_ground = False
                         self.in_air = True
                         self.jump = False 
-                    elif tile[1].colliderect(self.rect.x + self.width//2, self.rect.y , self.width//2 , self.height*0.8):     #+ self.height//4
+                    elif tile[1].colliderect(self.rect.x + self.half_width, self.rect.y , self.half_width , self.height*0.8):     
                         if self.rect.right > tile[1].x:
                             dx += -8
                         self.on_ground = False
@@ -423,7 +429,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                     if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width , self.height):
                         if self.vel_y >= 0:
                             #self.vel_y = 0 
-                            if tile[1].colliderect(self.rect.x + self.width//4 + 2, self.rect.y + (self.height//2), self.width//2 - 4, self.height//2):
+                            if tile[1].colliderect(self.rect.x + self.quarter_width + 2, self.rect.y + (self.half_height), self.half_width - 4, self.half_height):
                                 if tile[1].bottom > self.rect.bottom:
                                     dy = tile[1].top  - self.rect.bottom #-1
                                     #print('hi')
@@ -435,13 +441,13 @@ class enemy_32wide(pygame.sprite.Sprite):
                                     self.hit_ground = True
 
                         elif self.vel_y < 0:
-                            if tile[1].colliderect(self.rect.x + self.width//8, self.rect.y, self.width - self.width//4, self.height//2):
+                            if tile[1].colliderect(self.rect.x + self.quarter_width//2, self.rect.y, self.width - self.quarter_width, self.half_height):
                                 dy = 32
                                 self.on_ground = False
                                 self.in_air = True
                                 self.jump = False
                 elif tile[2] == 2:
-                    if tile[1].colliderect(self.rect.x + self.width//8, self.rect.y, self.width - self.width//4, self.height - 8):
+                    if tile[1].colliderect(self.rect.x + self.quarter_width//2, self.rect.y, self.width - self.quarter_width, self.height - 8):
                         self.dead = True
                         self.m_player.play_sound(self.m_player.sfx[2])
                 elif(tile[2] == 17):#one way tiles
@@ -591,10 +597,10 @@ class enemy_32wide(pygame.sprite.Sprite):
     
     def explode(self, sp_group_list):
         if self.enemy_type == 'shooter':   
-            particle = particle_(self.rect.x - self.width//2, self.rect.y - self.height//2, self.direction, self.scale, 'shooter_death', False, 0, False)
+            particle = particle_(self.rect.x - self.half_width, self.rect.y - self.half_height, self.direction, self.scale, 'shooter_death', False, 0, False)
             sp_group_list[3].add(particle)
         elif self.enemy_type == 'dog':
-            particle = particle_(self.rect.x - self.width//2, self.rect.y - self.height//2, self.direction, self.scale, 'dog_death', False, 0, False)
+            particle = particle_(self.rect.x - self.half_width, self.rect.y - self.half_height, self.direction, self.scale, 'dog_death', False, 0, False)
             sp_group_list[3].add(particle)
 
     def draw(self, p_screen):

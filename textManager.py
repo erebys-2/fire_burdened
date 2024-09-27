@@ -173,7 +173,12 @@ class dialogue_box(text_manager):
         screen.blit(pygame.transform.flip(img, False, False), self.character_art_rect)
         pygame.draw.rect(screen, (0,0,0), self.dialogue_box_rect)#can make a custom dialogue window later
         
-    def draw_text_box(self, name, font, screen, message, image_index, name_index, text_speed):
+    def draw_text_box(self, textbox_output, font, screen, text_speed):
+        name = textbox_output[3]
+        message = textbox_output[0]
+        image_index = textbox_output[4]
+        name_index = textbox_output[5]
+   
         self.draw_box_and_portrait(screen, image_index, name_index)
         
         self.disp_text_box(screen, font, (name + ':', ' '), (-1,-1,-1),  (200,200,200), (16, 372, 112, 120), False, False, 'none')
@@ -188,8 +193,7 @@ class dialogue_box(text_manager):
             if pygame.time.get_ticks() - self.text_delay > text_speed:
                 self.text_delay = pygame.time.get_ticks()
                 self.type_out_en = True
-                
-                
+
                 if text_speed > 0 and (self.counter == 0):
                     self.m_player.play_sound(self.m_player.sfx[0])
                 self.counter += 1

@@ -28,6 +28,7 @@ def main():
 
 	#setting the screen-----------------------------------------------------------
 	SCREEN_WIDTH = 640
+	HALF_SCREEN_W = SCREEN_WIDTH//2
 	SCREEN_HEIGHT = 480
 	standard_size = (SCREEN_WIDTH, SCREEN_HEIGHT)
 	flags = pygame.DOUBLEBUF|pygame.SHOWN #windowed mode
@@ -97,7 +98,7 @@ def main():
 	font_massive = pygame.font.SysFont('SimSun', 48)
 
 	#camera instance
-	camera_displacement = 16
+	camera_displacement = 24
 	camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, camera_displacement)
 
 	#colors
@@ -193,6 +194,7 @@ def main():
 	#instantiate player at the start of load
 	hp = 6
 	speed = 4
+	ccsn_chance = 10
 	
 	player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_displacement)#6368 #5856 #6240 #test coords for camera autocorrect
 	#good news is that the player's coordinates can go off screen and currently the camera's auto scroll will eventually correct it
@@ -288,9 +290,10 @@ def main():
 		#---------------------------------------------------------drawing level and sprites------------------------------------------------------------------
 		#---------------------------------------------------------handling movement and collisions and AI----------------------------------------------------
 		draw_bg(screen, gradient_dict, level_tuple[level][1], level_tuple[level][0])#this just draws the color
-		#camera.draw(screen)#for camera debugging
+		if camera.is_visible:
+			camera.draw(screen)#for camera debugging
 		if world.x_scroll_en:
-			camera.auto_correct(player0.rect, player0.direction, [tile for tile in world.coords if tile[1][0] > -32 and tile[1][0] < 640], world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
+			camera.auto_correct(player0.rect, player0.direction, player0.scrollx, [tile for tile in world.coords if tile[1][0] > -32 and tile[1][0] < 640], world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
 			
 		
 		world_tile0_coord = world.draw(screen, scroll_x, scroll_y)#this draws the world and scrolls it 
@@ -302,7 +305,7 @@ def main():
 				player0.do_entity_collisions(the_sprite_group, level_transitioning)
 				player0_lvl_transition_data = player0.move(pause_game, move_L, move_R, [tile for tile in world.solids if tile[1][0] > -32 and tile[1][0] < 640], 
                                                				world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
-															SCREEN_WIDTH, SCREEN_HEIGHT, the_sprite_group)
+															HALF_SCREEN_W, SCREEN_HEIGHT, the_sprite_group, ccsn_chance)
 				use_item_tuple = player0.inventory_handler.item_usage_hander0.process_use_signal(player_inv_UI.use_item_flag, player_inv_UI.item_to_use, player0)
 				player_inv_UI.use_item_flag = use_item_tuple[0]
 				if use_item_tuple[1]:
@@ -318,10 +321,13 @@ def main():
 		#dialogue trigger sent here
 		the_sprite_group.pause_game = pause_game
 		the_sprite_group.scroll_x = scroll_x
-		the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, player0.direction, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
+		the_sprite_group.update_bg_sprite_group(screen, player0.hitbox_rect, player0.atk_rect_scaled)
 		the_sprite_group.update_text_prompt_group(screen, player0.hitbox_rect, dialogue_enable, next_dialogue, world.plot_index_list, world.npc_current_dialogue_list)
+		the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, player0.direction, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
 		the_sprite_group.update_item_group(screen, player0.hitbox_rect)
+  
 		player0.draw(screen)
+  
 		the_sprite_group.update_groups_infront_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, world.solids)
 	
 		status_bars.draw(screen, player0.get_status_bars(), font)
@@ -331,15 +337,17 @@ def main():
 		
 		if the_sprite_group.textbox_output[0] != '' and the_sprite_group.textbox_output[1] and the_sprite_group.textbox_output[2] and not the_sprite_group.textbox_output[6][0]:
 			#the_sprite_group.textbox_output = (
-			# name, player_collision, 
-			# dialogue_enable, message, 
-			# expression, 
-			# self.character_index_dict[self.name], 
+			# name, (string)
+   			# player_collision, (boolean)
+			# dialogue_enable, (boolean)
+   			# message, (string)
+			# expression, (int)
+			# self.character_index_dict[self.name], (int)
 			# (player choice tuple)
 			# )
-			dialogue_box0.draw_text_box(the_sprite_group.textbox_output[3], font_larger, screen, the_sprite_group.textbox_output[0], 
-										the_sprite_group.textbox_output[4], the_sprite_group.textbox_output[5], text_speed)
-	
+			
+			dialogue_box0.draw_text_box(the_sprite_group.textbox_output, font_larger, screen, text_speed)
+
 		elif the_sprite_group.textbox_output[6][0] and the_sprite_group.textbox_output[2]: #handling player choice
 		
 			dialogue_box0.draw_box_and_portrait(screen, the_sprite_group.textbox_output[4], the_sprite_group.textbox_output[5])
@@ -485,6 +493,10 @@ def main():
 			ui_manager0.write_csv_data('ctrls_data',  temp_list)
 			ctrls_list = read_settings_data('ctrls_data')
 			temp_list *= 0
+			if ccsn_chance > 1:
+				ccsn_chance = ccsn_chance//2
+			move_L = False
+			move_R = False
 			player0.brain_damage = False
 
 		#============================================================update player action for animation=======================================================
@@ -595,8 +607,6 @@ def main():
 							player0.squat = True
 						elif player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:
 							hold_jump_update = pygame.time.get_ticks()
-							#print(hold_jump_update)
-							#extends jump signal if the player is in air but close to the ground, the effect will be like a preemptive jump
 							player0.squat = True 
 
 						if player0.rolling and player0.in_air == False:
@@ -606,8 +616,7 @@ def main():
 					if event.key == ctrls_list[4] and player0.stamina_used + 1 <= player0.stamina and event.key != ctrls_list[0]: #pygame.K_i, pygame.K_w
 						change_once = True
 						player0.atk1 = (event.key == ctrls_list[4])
-						#player0.stamina_usage_cap += 1
-						#player0.squat = False
+
 					elif event.key == ctrls_list[4] and player0.stamina_used + 1 > player0.stamina: #pygame.K_i
 						status_bars.warning = True
 					
@@ -650,8 +659,8 @@ def main():
 
 				# if event.key == pygame.K_m:
 				# 	m_player.play_song('newsong18.wav')
-				# if event.key == pygame.K_c:
-				# 	show_controls_en = True
+				if event.key == pygame.K_c:
+					camera.is_visible = not camera.is_visible
 
 				if (event.key == pygame.K_BACKSPACE or event.key == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable: 
 				#escape exits UI ONLY before the options sub menu is shown and any deeper into sub menus

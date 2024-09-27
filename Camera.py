@@ -6,23 +6,26 @@ class Camera():
     def __init__(self, screenW, screenH, camera_displacement):
         
         self.scrollx = 0
-        self.x_coord = screenW//2 - 32
-        self.x_coord2 = screenW//2 + 32
+        self.half_screen = screenW//2
+        self.x_coord = self.half_screen - 32
+        self.x_coord2 = self.half_screen + 32
         self.on_r_edge = False
         self.Px_coord = 0
         self.set_ini_pos = True
 
         self.rect = pygame.Rect(0, 0, 64, screenH)
-        self.rect.centerx = screenW//2 #- 32
+        self.rect.centerx = self.half_screen #- 32
         self.rect.centery = screenH//2
 
         self.camera_displacement = camera_displacement
         self.curr_direction = 0
         self.shift_dist = 1
+        self.max_shift_dist = self.camera_displacement//8
         
         self.on_right_edge = False
         
         self.cycle = 0
+        self.is_visible = False
         
         
         
@@ -67,32 +70,34 @@ class Camera():
             #     x_coord = tile[2][0]
             #     if self.Px_coord != x_coord:
             #         self.Px_coord = x_coord
+            
+    def get_shift_dist(self, player_direction, world_limit, screenW):
+        if self.shift_dist > 1:
+            self.shift_dist -= 1
+        
+        if (self.camera_displacement >= 8
+            and self.curr_direction != player_direction #player changes direction
+            and not self.set_ini_pos #level is not being loaded
+            and self.x_coord > self.half_screen - 48 and self.x_coord2 < world_limit[0] - (self.half_screen - 48) #within scrollable part of level
+            ):
+            self.shift_dist = self.max_shift_dist
+            self.curr_direction = player_direction
                     
-    def auto_correct(self, player_rect, player_direction, world_coords, world_tile0_coord, world_limit, screenW, screenH):
+    def auto_correct(self, player_rect, player_direction, player_scrollx, world_coords, world_tile0_coord, world_limit, screenW, screenH):
         self.scrollx = 0
         self.get_pos_data(world_coords)
         
         #============================================= MAIN AUTOCORRECTING LOGIC ==============================================
         displacement = self.camera_displacement * player_direction
         
-        if (self.curr_direction != player_direction
-            and not self.set_ini_pos
-            and self.x_coord2 < world_limit[0] - (screenW//2 - 48)
-            and self.x_coord > screenW//2 - 48
-            ):
-            self.shift_dist = self.camera_displacement//8
-            self.curr_direction = player_direction
-            #print("working")
-        
-        if self.shift_dist > 1:
-            self.shift_dist -= 1
-        
-        #displacement = 0
-        
+        #gets how much the autocorrect should adjust given the camera displacement value
+        #should set shift_dist = 1 by default if camera disp is small or if there's no level scrolling
+        self.get_shift_dist(player_direction, world_limit, screenW)
+
         #aligns player to a vertical axis when the player is traversing level rightwards
         if ((player_rect.right - self.rect.right > 16 - displacement
-              and player_rect.right - 16 < self.x_coord2 + screenW//2 - 32)
-              and self.x_coord2 < world_limit[0] - (screenW//2 + 32) #prevents from over scrolling on the rightmost edge
+              and player_rect.right - 16 < self.x_coord2 + self.half_screen - 32)
+              and self.x_coord2 < world_limit[0] - (self.half_screen + 32) #prevents from over scrolling on the rightmost edge
               ): 
             player_rect.x -= self.shift_dist
             self.scrollx += self.shift_dist
@@ -101,8 +106,8 @@ class Camera():
         
         #aligns player to a vertical axis screen when the player is traversing level leftwards
         elif (self.rect.x - player_rect.x > 16 + displacement
-              and self.x_coord >= screenW//2 
-              and self.x_coord < world_limit[0] - (screenW//2)): #prevents from over scrolling on the leftmost edge
+              and self.x_coord >= self.half_screen 
+              and self.x_coord < world_limit[0] - (self.half_screen)): #prevents from over scrolling on the leftmost edge
             player_rect.x += self.shift_dist
             self.scrollx -= self.shift_dist
             # if pygame.time.get_ticks() %10 == 0:
@@ -145,22 +150,22 @@ class Camera():
         #self.get_pos_data(world_coords)
         #==================================== SETTING INITIAL POSITION ON LEVEL LOAD ===============================
         
-        if self.set_ini_pos and player_rect.x > screenW//2 and (player_rect.x - self.x_coord > 0): 
+        if self.set_ini_pos and player_rect.x > self.half_screen and (player_rect.x - self.x_coord > 0): 
             #tests if the player is beyond the first screen half of the level and if the initial position needs to be set, middle boolean is a limiter
             
             dx = player_rect.x - self.x_coord #adjustment for if the player is not on the right edge
-            dx2 = dx - (screenW//2 ) #adjustment for if the player is on the right edge
+            dx2 = dx - (self.half_screen ) #adjustment for if the player is on the right edge
             
             # if self.on_r_edge == False: #idk why this is faster?? the camera will lag without this boolean
             #     temp_x = player_rect.x #probably has to do with this statement
             # else:
             temp_x = player_rect.x
             
-            if player_rect.x < world_limit[0] - screenW//2 and self.on_r_edge == False:
+            if player_rect.x < world_limit[0] - self.half_screen and self.on_r_edge == False:
                 self.scrollx += dx
                 player_rect.x -= dx
                
-            elif world_limit[0] - temp_x < screenW//2 + 32:
+            elif world_limit[0] - temp_x < self.half_screen + 32:
                 self.on_r_edge = True
                 player_rect.x -= (dx2 + world_limit[0]-temp_x - 2)
                 self.scrollx += (dx2 + world_limit[0]-temp_x - 2)

@@ -334,51 +334,22 @@ class World():
         
         #self.world_map_non_parallax = self.create_map(level_data[0:2], self.detailed_lvl_data_list[1:4]).convert_alpha()
         
-        
-        #print(len(self.lvl_slice_lists[2]))
-        # num = 0
-        # for slice_list in self.lvl_slice_lists:
-        #     print("layer " + str(num) )
-        #     for slice in slice_list:
-        #         print(slice[1])
-        #     num += 1
-        #print(self.lvl_slice_lists[3][0])
-        
-
-
-    def process_coords(self, data, screenW, screenH, rtrn_list):
+    def process_coords_hslice(self, data, screenW, screenH, rtrn_list):
         x_coord = 0
         y_coord = 0
-        for y, row in enumerate(data):
-            for x, tile in enumerate(row):
-                if tile == -1:
-                    x_coord = x * 32
-                    y_coord = y * 32
-                    
-                    img_rect = pygame.Rect(0, 0, 32, 32)
-                    img_rect.x = x_coord
-                    img_rect.y = y_coord
-                    
-                    tile_data = (0, img_rect, (x_coord, y_coord))
-                    #print(tile_data)
-                    #self.fill_slice_list(0, x_coord, tile_data)
-                    
-                    rtrn_list.append(tile_data)
-        self.world_limit = (x_coord, y_coord)
-        #scroll enables
-        if x_coord + 32 > screenW:
-            self.x_scroll_en = True
-        else:
-            self.x_scroll_en = False
+        for y in enumerate(data):
+            y_coord = y * 32
             
-        if y_coord + 32 > screenH:
-            self.y_scroll_en = True
-        else:
-            self.y_scroll_en = False
+            img_rect = pygame.Rect(0, 0, screenW, 32)
+            img_rect.x = x_coord
+            img_rect.y = y_coord
             
-        # print(self.x_scroll_en)
-        # print(self.y_scroll_en)
-        #print(self.lvl_slice_lists[0][0])
+            tile_data = (0, img_rect, (x_coord, y_coord))
+            #print(tile_data)
+            #self.fill_slice_list(0, x_coord, tile_data)
+            
+            rtrn_list.append(tile_data)
+
         
     def process_coords_vslice(self, data, screenW, screenH, rtrn_list):
         x_coord = 0

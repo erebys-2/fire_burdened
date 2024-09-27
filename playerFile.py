@@ -13,6 +13,7 @@ class player(pygame.sprite.Sprite):
     def __init__(self, x, y, speed, hp, stamina, hits_tanked, stamina_usage_cap, ini_vol, camera_displacement):
         pygame.sprite.Sprite.__init__(self)
         #internal variables
+        
         scale = 2
         self.scale = scale
         self.Alive = True
@@ -385,7 +386,7 @@ class player(pygame.sprite.Sprite):
                 
         return (dx, dy, in_air)
             
-    def do_tile_collisions(self, world_solids, the_sprite_group, dx, dy):
+    def do_tile_collisions(self, world_solids, the_sprite_group, dx, dy, ccsn_chance):
         lvl_transition_flag = False
         lvl_transition_data = []
         dxdy = self.do_platform_sprite_collisions(dx, dy, the_sprite_group.p_int_group)
@@ -417,7 +418,7 @@ class player(pygame.sprite.Sprite):
                 
                 #hitting wall while rolling
                 if self.action == 9 and tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//4 - 2):
-                    dx = -1 * self.direction 
+                    dx = 0 #-1 * self.direction 
                     self.rolled_into_wall = True
                     self.hitting_wall = True
                     if self.frame_index > 0:
@@ -425,7 +426,7 @@ class player(pygame.sprite.Sprite):
                             self.m_player.play_sound(self.m_player.sfx[7])
                             if self.stamina_used >= 5:
                                 self.hits_tanked += 0.1
-                                if random.randint(1,10) == 10:
+                                if random.randint(1, ccsn_chance) == 1:
                                     self.brain_damage = True
                         self.rolling = False
                     #self.debuggin_rect  = (self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//4 - 2)
@@ -516,7 +517,7 @@ class player(pygame.sprite.Sprite):
                     dy = tile[1].top - self.collision_rect.bottom
                     self.rolled_into_wall = False
                            
-            elif(tile[2] == 10 ):#and not self.disp_flag):#level transition tiles
+            elif(tile[2] == 10 and not self.disp_flag):#level transition tiles
                 if tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + dy, 4, self.height):
                     #this collision will be used to initiate a level change
                     #tile[3][0]: next_level, [1]: player new x, [2]: player new y
@@ -538,7 +539,7 @@ class player(pygame.sprite.Sprite):
     
     
     
-    def move(self, pause_game, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, screenW, screenH, the_sprite_group):
+    def move(self, pause_game, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, half_screen, screenH, the_sprite_group, ccsn_chance):
         #reset mvmt variables
         self.dialogue_trigger_ready = False
         self.collision_rect.x = self.rect.x + self.width
@@ -780,7 +781,7 @@ class player(pygame.sprite.Sprite):
             dxdy = (0,0)
             lvl_transition_flag_and_data = (False, [])
         else:
-            dxdy = self.do_tile_collisions(world_solids, the_sprite_group, dx, dy)
+            dxdy = self.do_tile_collisions(world_solids, the_sprite_group, dx, dy, ccsn_chance)
             lvl_transition_flag_and_data = dxdy[2]
             
         dx = dxdy[0]
@@ -795,11 +796,11 @@ class player(pygame.sprite.Sprite):
         #rudimentary scrolling adjust====================================================================================================================
         if self.Alive:
             if x_scroll_en:
-                if self.x_coord < screenW//2 + self.camera_displacement or self.shoot_recoil or self.hurting: 
+                if self.x_coord < half_screen + self.camera_displacement or self.shoot_recoil or self.hurting: 
                     self.rect.x += dx
-                elif self.x_coord >= world_limit[0] - (screenW//2 + 32 + self.camera_displacement) or self.shoot_recoil or self.action == 5:
+                elif self.x_coord >= world_limit[0] - (half_screen + 32 + self.camera_displacement) or self.shoot_recoil or self.action == 5:
                     self.rect.x += dx
-                elif self.x_coord >= screenW//2 + self.camera_displacement and self.x_coord < world_limit[0] - (screenW//2 - 16 + self.camera_displacement): 
+                elif self.x_coord >= half_screen + self.camera_displacement and self.x_coord < world_limit[0] - (half_screen - 16 + self.camera_displacement): 
                     self.scrollx = dx
             else:
                 self.rect.x += dx

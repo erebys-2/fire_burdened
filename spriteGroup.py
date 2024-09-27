@@ -90,9 +90,8 @@ class sprite_group():
 			item.draw(screen)
 			item.scroll_along(self.scroll_x)
 			item.enable(player_hitbox_rect, self.pause_game)#player has to send pick up confirmation
-			
-			
-	def update_groups_behind_player(self, screen, player_hitbox_rect, player_atk_rect_scaled, player_action, player_direction, world_solids):
+	
+	def update_bg_sprite_group(self, screen, player_hitbox_rect, player_atk_rect_scaled):
 		for particle in self.particle_group_bg:
 			particle.draw(screen)
 			if not self.pause_game:
@@ -100,13 +99,15 @@ class sprite_group():
 				particle.move(self.scroll_x)
 			if particle.Active == False:
 				self.particle_group_bg.remove(particle)
-    
+
 		for bg_sprite in self.bg_sprite_group:
 			bg_sprite.draw(screen)
 			if not self.pause_game:
 				bg_sprite.enable(self.scroll_x, player_hitbox_rect, player_atk_rect_scaled, self.particle_group)
 				bg_sprite.animate(bg_sprite.frame_rate)		
-
+			
+			
+	def update_groups_behind_player(self, screen, player_hitbox_rect, player_atk_rect_scaled, player_action, player_direction, world_solids):
 		for enemy0 in self.enemy0_group: #[enemy0 for enemy0 in list(self.enemy0_group) if enemy0.rect.x > -32 and enemy0.rect.x < 640]:
 			enemy0.draw(screen)
 			if not self.pause_game:
