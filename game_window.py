@@ -307,9 +307,9 @@ def main():
                                                				world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
 															HALF_SCREEN_W, SCREEN_HEIGHT, the_sprite_group, ccsn_chance)
 				use_item_tuple = player0.inventory_handler.item_usage_hander0.process_use_signal(player_inv_UI.use_item_flag, player_inv_UI.item_to_use, player0)
-				player_inv_UI.use_item_flag = use_item_tuple[0]
-				if use_item_tuple[1]:
-					player_inv_UI.discard_item(player0.inventory_handler.inventory)
+				player_inv_UI.use_item_flag = use_item_tuple[0] #use_item_flag (internal variable) is set to false
+				if use_item_tuple[1]: #item_was_used, once item_was_used returns true the item gets discarded
+					player_inv_UI.discard_item(player0.inventory_handler.inventory)#discard will discard the item in the current slot
 	
 			scroll_x = player0.scrollx + camera.scrollx
 		else:
@@ -444,13 +444,21 @@ def main():
 				player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_displacement)
 				player_new_x = 32
 				player_new_y = 32
-	
+		
+		#-----------------------------------------inventory and items
 		#opening inventory
 		if inventory_opened:
 			player_inv_UI.open_inventory(player0.inventory_handler.inventory, screen, ctrls_list[8])
-			
-			
-	
+			if player_inv_UI.use_item_btn_output and player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory) and player0.action != 15:
+				player0.using_item = player_inv_UI.use_item_btn_output #start use item animation
+				player0.speed = 0
+				player_inv_UI.use_item_btn_output = False
+				
+  
+		if player0.finished_use_item_animation:
+			player_inv_UI.use_item_flag = True
+			player0.finished_use_item_animation = False
+
 		#---------------------------------updates from ui manager-----------------------------------------
 		if ui_manager0.ctrls_updated:
 			ctrls_list = read_settings_data('ctrls_data')
@@ -548,7 +556,14 @@ def main():
 							player0.update_action(7)	
 						else:
 							player0.update_action(8)#8: atk1
-		
+				elif player0.using_item:#and player0.action != 15:
+					player0.update_action(15)
+					# move_L = False
+					# move_R = False
+					player0.rolling = False
+					player0.atk1 = False
+					player0.shoot = False
+					
 				elif player0.rolling: 
 					player0.update_action(9)#rolling
 					player0.atk1_alternate = False
@@ -589,6 +604,7 @@ def main():
 				#print(pygame.key.name(event.key))
 	
 				if player0.Alive and level_tuple[level][5] and not pause_game and not dialogue_enable:
+					
 					if event.key == ctrls_list[1]: #pygame.K_a
 						move_L = True
 					if event.key == ctrls_list[3]: #pygame.K_d
@@ -613,11 +629,11 @@ def main():
 							player0.roll_count = player0.roll_limit
 							player0.squat = True
 
-					if event.key == ctrls_list[4] and player0.stamina_used + 1 <= player0.stamina and event.key != ctrls_list[0]: #pygame.K_i, pygame.K_w
+					if event.key == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and event.key != ctrls_list[0]: #pygame.K_i, pygame.K_w
 						change_once = True
 						player0.atk1 = (event.key == ctrls_list[4])
 
-					elif event.key == ctrls_list[4] and player0.stamina_used + 1 > player0.stamina: #pygame.K_i
+					elif event.key == ctrls_list[4] and player0.stamina_used + 1 > player0.atk1_stamina_cost: #pygame.K_i
 						status_bars.warning = True
 					
 					if event.key == ctrls_list[5] and player0.stamina_used + 2 <= player0.stamina: #pygame.K_o
@@ -636,11 +652,20 @@ def main():
 					if event.key == ctrls_list[7]: #pygame.K_RALT
 						player0.speed = normal_speed + 1
 						player0.sprint = True
-					
-					#use item-- TEMPORARILY LOAD TEST INVENTORY
-					if event.key == ctrls_list[9]:
+					#press button and check if item selected can be used
+					if (event.key == ctrls_list[9] or player_inv_UI.use_item_btn_output) and player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory):
+						
+						#trigger an animation here
+						#let the last frame of the animation trigger the method below
+						#player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory)
+						if not player_inv_UI.use_item_btn_output:
+							player0.using_item = (event.key == ctrls_list[9])
+						elif event.key != ctrls_list[9]:
+							player0.using_item = player_inv_UI.use_item_btn_output
+							player_inv_UI.use_item_btn_output = False
+						#player0.using_item = (event.key == ctrls_list[9])
+						player0.speed = 0 #set speed to 0, it will be reset to default speed at the end of the animation
 						#insert test inventory:
-						player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory)
 						#player0.inventory_handler.load_saved_inventory([['a', 1], ['b', 1], ['c', 1], ['d', 1], ['e', 1], ['f', 1], ['g', 1], ['h', 1], ['i', 1], ['empty', 0]])
 					
 					#open inventory

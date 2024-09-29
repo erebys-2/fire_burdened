@@ -215,7 +215,7 @@ class item_usage_hander():
     def process_use_signal(self, use_item_flag, item_id, player):
         #print(use_item_flag)
         item_was_used = False
-        if use_item_flag:
+        if use_item_flag: #and some internal variable in player indicating the animation finished
             item_was_used = self.use_item(item_id, player)
             use_item_flag = False
             
@@ -325,6 +325,7 @@ class inventory_UI(): #handles displaying inventory and
         
         self.use_item_flag = False
         self.item_to_use = 'empty'
+        self.use_item_btn_output = False
         
     def clear_inventory(self, inventory):
         temp_inventory = inventory 
@@ -335,9 +336,14 @@ class inventory_UI(): #handles displaying inventory and
         
     def press_use_item_btn(self, inventory):
         #print(self.slot)
-        if inventory[self.slot][1] > 0:
-            self.use_item_flag = True
+        item_can_be_used = False
+        if inventory[self.slot][1] > 0 and not self.item_details0.is_key_item(inventory[self.slot][0]):#add some additional logic for key items
+            #self.use_item_flag = True#sets internal flag to true
             self.item_to_use = inventory[self.slot][0]
+            item_can_be_used = True
+        #elif self.item_details0.is_key_item(inventory[self.slot][0]:
+        
+        return item_can_be_used
             
     def discard_item(self, inventory):
         if inventory[self.slot][1] > 0:
@@ -439,9 +445,11 @@ class inventory_UI(): #handles displaying inventory and
                     btn.show_text(screen, self.fontlist[1], ('', item_count))
             
             #use button
+            self.use_item_btn_output = False
             if self.button_list[len(self.button_list)-2].draw(screen):
                 self.m_player.play_sound(self.m_player.sfx[1])
-                self.press_use_item_btn(inventory)
+                #self.press_use_item_btn(inventory)
+                self.use_item_btn_output = True
 
             self.button_list[len(self.button_list)-2].show_text(screen, self.fontlist[1], ('','Use Item'))
             
@@ -459,6 +467,7 @@ class inventory_UI(): #handles displaying inventory and
         
         
     def close_inventory(self):
+        self.use_item_btn_output = False
         self.temp_inventory *= 0
         self.button_list *= 0
         self.trigger_once = True

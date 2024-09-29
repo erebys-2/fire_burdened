@@ -71,6 +71,9 @@ class player(pygame.sprite.Sprite):
         self.roll_stam_rate = 0.25
         self.hitting_wall = False
         
+        self.using_item = False
+        self.finished_use_item_animation = False
+        
         self.sprint = False
         self.change_direction = False
         self.last_direction = self.direction
@@ -99,7 +102,7 @@ class player(pygame.sprite.Sprite):
         #fill animation frames
         animation_types = ('idle', 'run', 'jump', 'land', 'squat', 'hurt', 
                            'die', 'atk1', 'atk1_2', 'roll', 'atk1_3', 'shoot',
-                           'charging', 'atk1_2_particle', 'turn_around')
+                           'charging', 'atk1_2_particle', 'turn_around', 'use_item')
         for animation in animation_types:
             temp_list = []
             frames = len(os.listdir(f'sprites/player/{animation}'))
@@ -118,7 +121,7 @@ class player(pygame.sprite.Sprite):
 
         self.mask = pygame.mask.from_surface(self.image)
         
-        self.width = self.collision_rect.width #THIS NEEDS TO CHANGE WHEN YOU CHANGE THE SPRITE SIZE
+        self.width = self.collision_rect.width 
         self.height = self.collision_rect.height
        
         self.hitbox_rect = pygame.Rect(self.collision_rect.x + 2, self.collision_rect.y + 8, self.width - 4, self.height*0.75 - 6)
@@ -127,7 +130,7 @@ class player(pygame.sprite.Sprite):
         self.atk_rect = pygame.Rect(-32, -32, 0,0)#self.rect.x, self.rect.y, self.rect.height, 2*self.rect.width
         self.atk_rect_scaled = pygame.Rect(-32, -32, 0,0)
         
-        self.m_player = music_player(['hat.wav', 'hat2.wav', 'step.wav', 'step2.wav', 'slash.wav', 'shoot.wav', 'slash2.wav', 'boonk.wav', 'woop.wav'], ini_vol)
+        self.m_player = music_player(['hat.wav', 'hat2.wav', 'step.wav', 'step2.wav', 'slash.wav', 'shoot.wav', 'slash2.wav', 'boonk.wav', 'woop.wav', 'woop2.wav'], ini_vol)
         self.ini_vol = ini_vol
         self.play_sound_once_en = True
         
@@ -146,17 +149,32 @@ class player(pygame.sprite.Sprite):
             True, #shoot
             False, #
             False, #
-            False #turn_around
+            False, #turn_around
+            False  #use_item
         )
         
-        #self.stamina_usage_cap = 0
-        
+        self.action_history = []
+        self.atk1_stamina_cost = 1
+
         self.inventory_handler = inventory_handler(10)
         
         self.camera_displacement = camera_displacement
        
     #methods
     
+    def update_action_history(self, action):
+        if action != 0 and action != 1: 
+            self.action_history.append(action)
+            if len(self.action_history) > 3:#pop first element if the list goes over 3
+                self.action_history.pop(0)
+                
+    def check_atk1_history(self):
+        count = 0
+        for action in self.action_history:
+            if action == 7 or action == 8:
+                count += 1
+        return count
+        
 
     def rotate(self, rate, angle):
         self.angle += rate
@@ -171,7 +189,7 @@ class player(pygame.sprite.Sprite):
             
     def update_landing(self, the_sprite_group):
         
-        if self.in_air != self.curr_state and not self.disp_flag and self.action != 1:#self.action < 5:
+        if self.in_air != self.curr_state and not self.disp_flag and self.action != 1:
             if not self.in_air:
                 particle = particle_(self.rect.centerx, self.rect.centery, -self.direction, self.scale, 'player_mvmt', True, 0, False)
                 the_sprite_group.particle_group.add(particle)
@@ -182,8 +200,8 @@ class player(pygame.sprite.Sprite):
             self.curr_state = self.in_air
             
     def particles_by_frame(self, particle_index, the_sprite_group, sound):
-        if self.frame_index != self.last_frame:# or self.frame_index == 0:
-            if not self.disp_flag: #self.action < 5:
+        if self.frame_index != self.last_frame:
+            if not self.disp_flag: 
                 x = self.rect.centerx
             else:
                 x = self.rect.right
@@ -579,12 +597,11 @@ class player(pygame.sprite.Sprite):
         elif self.action == 6:
             dx = 0
             
-        #does not work   
-        # if self.direction != self.last_direction and not self.in_air and not (moveL and moveR):
-        #     self.last_direction = self.direction
-        #     self.flip = not self.flip
-        #     self.change_direction = True
-        #     dx = 0
+        #check for changing in direction
+        if self.direction != self.last_direction:
+            self.update_action_history(-1)
+            self.last_direction = self.direction
+            
 
 
 
@@ -932,7 +949,9 @@ class player(pygame.sprite.Sprite):
             110, #crit
             85, #shoot
             145, #idk
-            100
+            145, #idk
+            145, #idk
+            90 #use item
         )
         #everything speeds up when pressing alt/sprint except shooting at the cost of slower stamina regen
         adjustment = 0
@@ -969,9 +988,22 @@ class player(pygame.sprite.Sprite):
             self.landing = False
             if self.action != 5 and self.action != 6:
                 self.frame_index = 0
-
-            if self.action == 14:
-                self.change_direction = False
+            if self.action == 1 or self.action == 0:
+                self.update_action_history(-1)
+            
+            if self.action == 15:
+                for i in range(5):
+                    particle = particle_(self.rect.centerx + random.randrange(-48,48), self.rect.centery + random.randrange(-24,24), -self.direction, 0.3*self.scale, 
+                                          'player_bullet_explosion', True, random.randrange(0,3), False)
+                    the_sprite_group.particle_group_fg.add(particle)
+                self.m_player.play_sound(self.m_player.sfx[9])
+                self.using_item = False
+                self.speed = self.default_speed
+                self.finished_use_item_animation = True
+ 
+            
+            # if self.action == 14:
+            #     self.change_direction = False
     
             if self.action == 5:
                 self.hurting = False
@@ -1067,6 +1099,7 @@ class player(pygame.sprite.Sprite):
     def update_action(self, new_action):
         #check if action has changed
         if new_action != self.action:
+            self.update_action_history(self.action)
             if (self.action == 7 or self.action == 8) and (self.rolling or self.action == 9):
                 self.crit = False
                 self.atk1 = False
@@ -1091,8 +1124,13 @@ class player(pygame.sprite.Sprite):
             #update stamina bar
             #should play a sound when there's no stamina
             if new_action == 7 or new_action == 8:
-                self.stamina_used += 1
-                self.ini_stamina += 1
+                if self.check_atk1_history() == 3: #stamina cost for melee will exponentially increase if the action history is just all atk1
+                    self.atk1_stamina_cost*= 1.3
+                else:
+                    self.atk1_stamina_cost = 1
+                    
+                self.stamina_used += self.atk1_stamina_cost
+                self.ini_stamina += self.atk1_stamina_cost
             if new_action == 9:
                 self.stamina_used += self.roll_stam_rate
                 self.ini_stamina += self.roll_stam_rate
