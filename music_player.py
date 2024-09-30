@@ -64,7 +64,7 @@ class music_player():
             self.set_sound_vol(sound, level[0])
             
     #--------------------------------------------------------------------equalizing-----------------------------------------
-    def auto_equalize(self): #for setting volume, self.euqalization_regime will have to be turned into a paraneter passed in from game_window
+    def auto_equalize(self): #for setting volume, self.equalization_regime will have to be turned into a parameter passed in from game_window
         #check how many channels are being used
         
         self.concurrent_sounds = 0

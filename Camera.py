@@ -3,7 +3,7 @@ import pygame
 class Camera():
     #rudimentary camera, but it works
     #can possibly implement screenshake here
-    def __init__(self, screenW, screenH, camera_displacement):
+    def __init__(self, screenW, screenH, camera_offset):
         
         self.scrollx = 0
         self.half_screen = screenW//2
@@ -17,10 +17,10 @@ class Camera():
         self.rect.centerx = self.half_screen #- 32
         self.rect.centery = screenH//2
 
-        self.camera_displacement = camera_displacement
+        self.camera_offset = camera_offset
         self.curr_direction = 0
         self.shift_dist = 1
-        self.max_shift_dist = self.camera_displacement//8
+        self.max_shift_dist = self.camera_offset//8
         
         self.on_right_edge = False
         
@@ -75,7 +75,7 @@ class Camera():
         if self.shift_dist > 1:
             self.shift_dist -= 1
         
-        if (self.camera_displacement >= 8
+        if (self.camera_offset >= 8
             and self.curr_direction != player_direction #player changes direction
             and not self.set_ini_pos #level is not being loaded
             and self.x_coord > self.half_screen - 48 and self.x_coord2 < world_limit[0] - (self.half_screen - 48) #within scrollable part of level
@@ -88,7 +88,7 @@ class Camera():
         self.get_pos_data(world_coords)
         
         #============================================= MAIN AUTOCORRECTING LOGIC ==============================================
-        displacement = self.camera_displacement * player_direction
+        displacement = self.camera_offset * player_direction
         
         #gets how much the autocorrect should adjust given the camera displacement value
         #should set shift_dist = 1 by default if camera disp is small or if there's no level scrolling

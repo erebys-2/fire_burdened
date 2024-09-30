@@ -10,7 +10,7 @@ import random
 
 class player(pygame.sprite.Sprite):
     #constructors
-    def __init__(self, x, y, speed, hp, stamina, hits_tanked, stamina_usage_cap, ini_vol, camera_displacement):
+    def __init__(self, x, y, speed, hp, stamina, hits_tanked, stamina_usage_cap, ini_vol, camera_offset):
         pygame.sprite.Sprite.__init__(self)
         #internal variables
         
@@ -158,7 +158,7 @@ class player(pygame.sprite.Sprite):
 
         self.inventory_handler = inventory_handler(10)
         
-        self.camera_displacement = camera_displacement
+        self.camera_offset = camera_offset
        
     #methods
     
@@ -559,6 +559,7 @@ class player(pygame.sprite.Sprite):
     
     def move(self, pause_game, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, half_screen, screenH, the_sprite_group, ccsn_chance):
         #reset mvmt variables
+        
         self.dialogue_trigger_ready = False
         self.collision_rect.x = self.rect.x + self.width
         self.collision_rect.y = self.rect.y
@@ -596,15 +597,12 @@ class player(pygame.sprite.Sprite):
             self.squat_done = False
         elif self.action == 6:
             dx = 0
-            
-        #check for changing in direction
+
+        #check for change direction
         if self.direction != self.last_direction:
             self.update_action_history(-1)
+            self.atk1_stamina_cost = 1
             self.last_direction = self.direction
-            
-
-
-
 
 		#rolling 
         if self.rolling and not self.hurting:
@@ -813,11 +811,11 @@ class player(pygame.sprite.Sprite):
         #rudimentary scrolling adjust====================================================================================================================
         if self.Alive:
             if x_scroll_en:
-                if self.x_coord < half_screen + self.camera_displacement or self.shoot_recoil or self.hurting: 
+                if self.x_coord < half_screen + self.camera_offset or self.shoot_recoil or self.hurting: 
                     self.rect.x += dx
-                elif self.x_coord >= world_limit[0] - (half_screen + 32 + self.camera_displacement) or self.shoot_recoil or self.action == 5:
+                elif self.x_coord >= world_limit[0] - (half_screen + 32 + self.camera_offset) or self.shoot_recoil or self.action == 5:
                     self.rect.x += dx
-                elif self.x_coord >= half_screen + self.camera_displacement and self.x_coord < world_limit[0] - (half_screen - 16 + self.camera_displacement): 
+                elif self.x_coord >= half_screen + self.camera_offset and self.x_coord < world_limit[0] - (half_screen - 16 + self.camera_offset): 
                     self.scrollx = dx
             else:
                 self.rect.x += dx
@@ -951,7 +949,7 @@ class player(pygame.sprite.Sprite):
             145, #idk
             145, #idk
             145, #idk
-            90 #use item
+            120 #use item
         )
         #everything speeds up when pressing alt/sprint except shooting at the cost of slower stamina regen
         adjustment = 0
@@ -990,6 +988,7 @@ class player(pygame.sprite.Sprite):
                 self.frame_index = 0
             if self.action == 1 or self.action == 0:
                 self.update_action_history(-1)
+                self.atk1_stamina_cost = 1
             
             if self.action == 15:
                 for i in range(5):
@@ -1124,13 +1123,13 @@ class player(pygame.sprite.Sprite):
             #update stamina bar
             #should play a sound when there's no stamina
             if new_action == 7 or new_action == 8:
-                if self.check_atk1_history() == 3: #stamina cost for melee will exponentially increase if the action history is just all atk1
-                    self.atk1_stamina_cost*= 1.3
-                else:
-                    self.atk1_stamina_cost = 1
-                    
                 self.stamina_used += self.atk1_stamina_cost
                 self.ini_stamina += self.atk1_stamina_cost
+                if self.check_atk1_history() == 3: #stamina cost for melee will exponentially increase if the action history is just all atk1
+                    self.atk1_stamina_cost *= 2
+                else:
+                    self.atk1_stamina_cost = 1
+                
             if new_action == 9:
                 self.stamina_used += self.roll_stam_rate
                 self.ini_stamina += self.roll_stam_rate

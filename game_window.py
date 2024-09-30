@@ -98,8 +98,8 @@ def main():
 	font_massive = pygame.font.SysFont('SimSun', 48)
 
 	#camera instance
-	camera_displacement = 24
-	camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, camera_displacement)
+	camera_offset = 24
+	camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, camera_offset)
 
 	#colors
 	blue_0 = [100, 82, 88]
@@ -196,7 +196,7 @@ def main():
 	speed = 4
 	ccsn_chance = 10
 	
-	player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_displacement)#6368 #5856 #6240 #test coords for camera autocorrect
+	player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_offset)#6368 #5856 #6240 #test coords for camera autocorrect
 	#good news is that the player's coordinates can go off screen and currently the camera's auto scroll will eventually correct it
 	normal_speed = player0.speed
 
@@ -441,7 +441,7 @@ def main():
 			pause_game = ui_tuple0[0]
 			if ui_tuple0[1]:
 				next_level = 0
-				player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_displacement)
+				player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 				player_new_x = 32
 				player_new_y = 32
 		
@@ -490,7 +490,7 @@ def main():
 
 			if ui_manager0.show_death_menu(screen):
 				next_level = 0
-				player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_displacement)
+				player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 				player_new_x = 32
 				player_new_y = 32
 	
@@ -633,7 +633,7 @@ def main():
 						change_once = True
 						player0.atk1 = (event.key == ctrls_list[4])
 
-					elif event.key == ctrls_list[4] and player0.stamina_used + 1 > player0.atk1_stamina_cost: #pygame.K_i
+					elif event.key == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
 						status_bars.warning = True
 					
 					if event.key == ctrls_list[5] and player0.stamina_used + 2 <= player0.stamina: #pygame.K_o
@@ -694,7 +694,7 @@ def main():
 
 						if (pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
 							next_level = 0
-							player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_displacement)
+							player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 							player_new_x = 32
 							player_new_y = 32
 							dialogue_box0.reset_internals()
