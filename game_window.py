@@ -458,6 +458,7 @@ def main():
 		if player0.finished_use_item_animation:
 			player_inv_UI.use_item_flag = True
 			player0.finished_use_item_animation = False
+   
 
 		#---------------------------------updates from ui manager-----------------------------------------
 		if ui_manager0.ctrls_updated:
@@ -533,6 +534,12 @@ def main():
 	
 		if player0.Alive:
 			dialogue_trigger_ready = player0.dialogue_trigger_ready
+   
+			if player0.sprint and player0.using_item:
+				player0.speed = 0
+			elif player0.sprint and not player0.using_item:
+				player0.speed = normal_speed + 1
+    
 			if (player0.hurting):
 				player0.update_action(5) #hurting
 			else:
@@ -645,12 +652,11 @@ def main():
 					if event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost <= player0.stamina: #pygame.K_s
 						player0.squat = False
 						player0.rolling = True
-						hold_jump = False
+
 					elif event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost > player0.stamina: #pygame.K_s
 						status_bars.warning = True
 		
 					if event.key == ctrls_list[7]: #pygame.K_RALT
-						player0.speed = normal_speed + 1
 						player0.sprint = True
 					#press button and check if item selected can be used
 					if (event.key == ctrls_list[9] or player_inv_UI.use_item_btn_output) and player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory):

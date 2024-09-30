@@ -31,12 +31,12 @@ SET UP: (This is for Windows, GG Mac bros)
 
     Download the following:
     1. Python, 
-    2. Pygame, 
+    2. Pygame CE, 
 
-        To install Pygame on Windows:
-        Win + R, type "cmd", enter, then paste: "python -m pip install -U pygame"
+        To install Pygame CE on Windows:
+        Win + R, type "cmd", enter, then paste: "pip install pygame-ce"
 
-    3. Visual Studio Code or some other IDE, 
+    3. (OPTIONAL) Visual Studio Code or some other IDE, 
 
         Download the microsoft python extension, then go into settings and search "Execute in File Dir", set it as enable.
 
@@ -52,7 +52,9 @@ This zip file has all the directories in right places.
 RUNNING GAME:
 ------------------------------------------------------------------------------------------------
 
-Open game_window.py in your IDE and run it.
+Open game_window.py in your IDE and run it. 
+Or 
+Open command prompt and cd to the fire_burdened folder; type "python game_window.py".
 
 ------------------------------------------------------------------------------------------------
 HOW TO PLAY:
