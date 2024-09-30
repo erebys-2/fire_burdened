@@ -4,6 +4,7 @@ from bullet import bullet_ #type: ignore
 from particle import particle_ #type: ignore
 from music_player import music_player #type: ignore
 from ItemFile import inventory_handler
+from textfile_handler import textfile_formatter
 import math
 import random
 #print('directory: ' + os.getcwd())
@@ -153,8 +154,14 @@ class player(pygame.sprite.Sprite):
             False  #use_item
         )
         
+        t = textfile_formatter()
+        config_path = 'config_textfiles/player_config'
+        stamina_ini_cost_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'player_stamina_base_costs_config.txt')), 'float')
         self.action_history = []
-        self.atk1_stamina_cost = 1
+        self.atk1_stamina_cost = stamina_ini_cost_dict['atk1']
+        self.roll_stamina_cost = stamina_ini_cost_dict['roll']
+        self.shoot_stamina_cost = stamina_ini_cost_dict['shoot']
+        
 
         self.inventory_handler = inventory_handler(10)
         
@@ -1135,7 +1142,7 @@ class player(pygame.sprite.Sprite):
                 self.ini_stamina += self.roll_stam_rate
         
         if self.shot_charging == True and self.ini_cost_spent == False:
-            self.stamina_used += 2
+            self.stamina_used += self.shoot_stamina_cost
             self.ini_cost_spent = True
             
         

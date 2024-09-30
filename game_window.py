@@ -5,21 +5,21 @@ pygame.init()
 
 #print('directory: ' + os.getcwd())
 import csv
-from playerFile import player #type: ignore
-from worldManager import World #type: ignore
-from StatusBarsFile import StatusBars #type: ignore
-from Camera import Camera #type: ignore
-from music_player import music_player #type: ignore
-from button import Button #type: ignore
-from textManager import text_manager, dialogue_box #type: ignore
-from ui_manager import ui_manager #type: ignore
-from spriteGroup import sprite_group #type: ignore
+from playerFile import player 
+from worldManager import World 
+from StatusBarsFile import StatusBars 
+from Camera import Camera 
+from music_player import music_player 
+from button import Button 
+from textManager import text_manager, dialogue_box 
+from ui_manager import ui_manager 
+from spriteGroup import sprite_group 
 from ItemFile import inventory_UI
 from playerChoiceHandler import player_choice_handler
 import gc
 import random
 from profilehooks import profile
-#from pygame.locals import 
+
 #@profile
 
 def main():
@@ -636,17 +636,17 @@ def main():
 					elif event.key == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
 						status_bars.warning = True
 					
-					if event.key == ctrls_list[5] and player0.stamina_used + 2 <= player0.stamina: #pygame.K_o
+					if event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina: #pygame.K_o
 						player0.shot_charging = True
-					elif event.key == ctrls_list[5] and player0.stamina_used + 2 > player0.stamina: #pygame.K_o
+					elif event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost > player0.stamina: #pygame.K_o
 						status_bars.warning = True
 		
 
-					if event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + 0.5 <= player0.stamina: #pygame.K_s
+					if event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost <= player0.stamina: #pygame.K_s
 						player0.squat = False
 						player0.rolling = True
 						hold_jump = False
-					elif event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + 0.5 > player0.stamina: #pygame.K_s
+					elif event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost > player0.stamina: #pygame.K_s
 						status_bars.warning = True
 		
 					if event.key == ctrls_list[7]: #pygame.K_RALT
@@ -656,14 +656,13 @@ def main():
 					if (event.key == ctrls_list[9] or player_inv_UI.use_item_btn_output) and player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory):
 						
 						#trigger an animation here
-						#let the last frame of the animation trigger the method below
+						#let the last frame of the animation trigger apply the effects of the item
 						#player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory)
-						if not player_inv_UI.use_item_btn_output:
+						if not player_inv_UI.use_item_btn_output: #using the use item key
 							player0.using_item = (event.key == ctrls_list[9])
-						elif event.key != ctrls_list[9]:
+						elif event.key != ctrls_list[9]: #using the use item button
 							player0.using_item = player_inv_UI.use_item_btn_output
 							player_inv_UI.use_item_btn_output = False
-						#player0.using_item = (event.key == ctrls_list[9])
 						player0.speed = 0 #set speed to 0, it will be reset to default speed at the end of the animation
 						#insert test inventory:
 						#player0.inventory_handler.load_saved_inventory([['a', 1], ['b', 1], ['c', 1], ['d', 1], ['e', 1], ['f', 1], ['g', 1], ['h', 1], ['i', 1], ['empty', 0]])
