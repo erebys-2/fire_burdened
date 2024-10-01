@@ -53,7 +53,7 @@ class player(pygame.sprite.Sprite):
         self.hits_tanked = hits_tanked
         self.i_frames_en = False
         self.crit = False
-        self.flicker = False
+ 
         self.i_frames_time = 0
         self.do_screenshake = False
         self.screenshake_profile = (0,0,0)
@@ -653,7 +653,7 @@ class player(pygame.sprite.Sprite):
                         
                         if self.in_air and self.vel_y + 5 <= 20:
                             self.vel_y += 5
-                    else:
+                    elif self.atk1_stamina_cost == 1:
                         if moveL or moveR:
                             multiplier = 2
                         else:
@@ -856,15 +856,10 @@ class player(pygame.sprite.Sprite):
         
     #i frames method    -----------------------------------------------------------------------------------------
     def i_frames(self, i_frames_duration, update_time):
-        #i_frames_duration = 736
         if self.i_frames_en:
             if pygame.time.get_ticks() - update_time > i_frames_duration:
                 self.i_frames_en = False
-                self.flicker = False
-            else:
-                self.i_frames_en = True
         
-
     def stamina_regen(self):
         if (self.shot_charging == False):
             rate = 80
@@ -962,6 +957,8 @@ class player(pygame.sprite.Sprite):
         adjustment = 0
         if self.sprint and self.action != 11 and self.action != 6: 
             adjustment = 12
+        elif self.atk1 and self.atk1_stamina_cost > 1:
+            adjustment = -20
         else:
             adjustment = 0
         frame_update = framerates[self.action] - adjustment
@@ -1016,7 +1013,6 @@ class player(pygame.sprite.Sprite):
                 self.i_frames_en = True #triggers i_frames for next tick
                 self.update_time2 = pygame.time.get_ticks()
                 self.i_frames_time = 836
-                self.flicker = True
 
             if self.action == 4:
                 self.squat_done = True #squatting finished when it loops frames
@@ -1080,26 +1076,29 @@ class player(pygame.sprite.Sprite):
                 self.roll_count = 3
                 
                 self.rolling = False
+                
+    def draw_with_flicker(self, image, rect, screen, flicker):
+        if flicker:
+            if pygame.time.get_ticks()%2 == 0:
+                screen.blit(pygame.transform.flip(image, self.flip, False), rect)
+        else:
+            screen.blit(pygame.transform.flip(image, self.flip, False), rect)
+        
     
-    def draw(self, p_screen):
+    def draw(self, screen):
         if self.shot_charging and self.action < 5:
             self.BP_animate()
-            p_screen.blit(pygame.transform.flip(self.image2, self.flip, False), self.BP_rect)
+            screen.blit(pygame.transform.flip(self.image2, self.flip, False), self.BP_rect)
         
         # pygame.draw.rect(p_screen, (0,0,255), self.collision_rect)
         # pygame.draw.rect(p_screen, (255,0,0), self.hitbox_rect)
         # pygame.draw.rect(p_screen, (0,255,0), self.atk_rect_scaled)
         # pygame.draw.rect(p_screen, (0,0,255), self.debuggin_rect)
         
-        if self.flicker == False:
-            p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
-        else: 
-            if pygame.time.get_ticks()%2 == 0:
-                p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
-                
-        if self.atk_show_sprite:
-            p_screen.blit(pygame.transform.flip(self.image3, self.flip, False), self.atk_rect)
-        
+        self.draw_with_flicker(self.image, self.rect, screen, self.i_frames_en)#drawing sprite
+       
+        if self.atk_show_sprite: #drawing melee sprite
+            self.draw_with_flicker(self.image3, self.atk_rect, screen, self.atk1_stamina_cost > 1)
     
     
     def update_action(self, new_action):
@@ -1133,7 +1132,7 @@ class player(pygame.sprite.Sprite):
                 self.stamina_used += self.atk1_stamina_cost
                 self.ini_stamina += self.atk1_stamina_cost
                 if self.check_atk1_history() == 3: #stamina cost for melee will exponentially increase if the action history is just all atk1
-                    self.atk1_stamina_cost *= 2
+                    self.atk1_stamina_cost *= 1.5
                 else:
                     self.atk1_stamina_cost = 1
                 
