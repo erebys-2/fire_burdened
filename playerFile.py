@@ -159,6 +159,7 @@ class player(pygame.sprite.Sprite):
         stamina_ini_cost_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'player_stamina_base_costs_config.txt')), 'float')
         self.action_history = []
         self.atk1_stamina_cost = stamina_ini_cost_dict['atk1']
+        self.atk1_default_stam = self.atk1_stamina_cost
         self.roll_stamina_cost = stamina_ini_cost_dict['roll']
         self.shoot_stamina_cost = stamina_ini_cost_dict['shoot']
         
@@ -170,7 +171,7 @@ class player(pygame.sprite.Sprite):
     #methods
     
     def update_action_history(self, action):
-        if action != 0 and action != 1: 
+        if action != 0 and action != 1 and action != 4: 
             self.action_history.append(action)
             if len(self.action_history) > 3:#pop first element if the list goes over 3
                 self.action_history.pop(0)
@@ -957,7 +958,7 @@ class player(pygame.sprite.Sprite):
         adjustment = 0
         if self.sprint and self.action != 11 and self.action != 6: 
             adjustment = 12
-        elif self.atk1 and self.atk1_stamina_cost > 1:
+        elif self.atk1 and self.atk1_stamina_cost > self.atk1_default_stam:
             adjustment = -20
         else:
             adjustment = 0
@@ -1098,7 +1099,7 @@ class player(pygame.sprite.Sprite):
         self.draw_with_flicker(self.image, self.rect, screen, self.i_frames_en)#drawing sprite
        
         if self.atk_show_sprite: #drawing melee sprite
-            self.draw_with_flicker(self.image3, self.atk_rect, screen, self.atk1_stamina_cost > 1)
+            self.draw_with_flicker(self.image3, self.atk_rect, screen, self.atk1_stamina_cost > self.atk1_default_stam)
     
     
     def update_action(self, new_action):
@@ -1132,9 +1133,9 @@ class player(pygame.sprite.Sprite):
                 self.stamina_used += self.atk1_stamina_cost
                 self.ini_stamina += self.atk1_stamina_cost
                 if self.check_atk1_history() == 3: #stamina cost for melee will exponentially increase if the action history is just all atk1
-                    self.atk1_stamina_cost *= 1.5
+                    self.atk1_stamina_cost = 3*self.atk1_default_stam
                 else:
-                    self.atk1_stamina_cost = 1
+                    self.atk1_stamina_cost = self.atk1_default_stam
                 
             if new_action == 9:
                 self.stamina_used += self.roll_stam_rate

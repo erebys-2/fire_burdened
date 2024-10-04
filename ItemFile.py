@@ -55,14 +55,13 @@ class Item(pygame.sprite.Sprite):
             pass
             
         elif not pause_game and not self.gravitate(player_rect):#bob up and down
-            self.rect.centery -= 2*math.cos(self.increment)
-            # if self.id == 'test':
-            #     print(math.sin(self.increment))
-            if self.increment + 0.1 <= 2*math.pi:
-                self.increment += 0.1
-            else:#reset position
-                self.increment = 0
+            self.rect.centery = self.ini_y - 9*math.sin(self.increment)
+
+            if self.increment > 2*math.pi:
                 self.rect.centery = self.ini_y
+                self.increment = 0
+                
+            self.increment += math.pi/24
                 
         #player can get item data from the sprite group
         

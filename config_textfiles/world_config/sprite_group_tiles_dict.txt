@@ -1,0 +1,12 @@
+26: grass
+28: dog
+29: shooter
+31: lamp
+36: tree
+39: fountain
+45: crusher_top
+46: spinning_blades
+47: moving_plat_h
+48: moving_plat_v
+49: Test
+50: Test2

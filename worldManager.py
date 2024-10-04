@@ -104,15 +104,13 @@ class World():
             self.player_prompt_list.append(str_list)
             
         self.t1 = textfile_formatter()
-        #print(self.csv_f0.str_to_str_list(self.t1.str_list_to_dialogue_list(self.t1.read_text_from_file('npc_dialogue_files/npc_dialogue_txt_files/Test.txt'))))
-            
-        #self.full_dialogue_list = self.csv_f0.get_all_npc_data('dialogue_data')
         
-        # print(self.csv_f0.get_specific_npc_data('Test', full_dialogue_list))
-        # print(self.csv_f0.get_specific_npc_data('Test2', full_dialogue_list))
+        #create dicitonary from special tiles text file
+        path = 'config_textfiles/world_config/'
+        self.sprite_group_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'sprite_group_tiles_dict.txt')), 'none')
+        self.static_bg_oversized_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'static_bg_oversized_tiles_dict.txt')), 'int')
         
-        #plot index list will be a dynamic list under world for convenience since NPCs that access/modify it will be instantiated under world
-        #it will be initially set when the main menu code is executed
+        
         self.plot_index_list = []
         self.npc_current_dialogue_list = [0,0]
         
@@ -217,16 +215,6 @@ class World():
     def set_plot_index_list(self, plot_index_list):
         self.plot_index_list = plot_index_list
         
-    # #pil_update_flag will be set to true everytime plot index list is updated for a textprompt obj
-    # #useful method incase multiple npc's with plot sensitive lines are in a single level
-    # def update_all_plot_index_lists(self, textprompt_group):
-    #     for obj in textprompt_group:
-    #         if obj.pil_update_flag:
-    #             self.plot_index_list = obj.plot_index_list
-    #             obj.pil_update_flag = False
-    #             #print(self.plot_index_list)
-    #             for obj in textprompt_group:
-    #                 obj.plot_index_list = self.plot_index_list
                     
                 
     #for saving
@@ -267,62 +255,61 @@ class World():
         for y, row in enumerate(raw_lvl_data_list[2]):
             for x, tile in enumerate(row):
                 if tile >= 0:
-
-                    img = self.tileList[0][tile]
-                    img_rect = img.get_rect()
-                    if(tile == 17):#pass thru 1 way
-                        #img = pygame.transform.scale(img, (32,32))
-                        img_rect = pygame.Rect(0, 0, 32, 16)
-                    elif(tile == 10):#level transition tile
-                        img = self.tileList[0][9]
-                        img_rect = pygame.Rect(0, 0, level_data[2][transition_index][0], level_data[2][transition_index][1])
-                        transition_data = level_data[2][transition_index][2:5] #passed to the player: next_level, next coords
-                        transition_index += 1
+                    if tile not in self.sprite_group_tiles_dict:#avoid key errors
+                        img = self.tileList[0][tile]
+                        img_rect = img.get_rect()
+                        if(tile == 17):#pass thru 1 way
+                            #img = pygame.transform.scale(img, (32,32))
+                            img_rect = pygame.Rect(0, 0, 32, 16)
+                        elif(tile == 10):#level transition tile
+                            img = self.tileList[0][9]
+                            img_rect = pygame.Rect(0, 0, level_data[2][transition_index][0], level_data[2][transition_index][1])
+                            transition_data = level_data[2][transition_index][2:5] #passed to the player: next_level, next coords
+                            transition_index += 1
+                            
+                        #if you want to resize the screen you might need to change 32 to a variable
+                        img_rect.x = x * 32
+                        if(tile == 15 or tile == 16 or tile == 18 or tile == 2):#if half tile
+                            img_rect.y = (y * 32) + 16
+                        else:
+                            img_rect.y = y * 32
                         
-                    #if you want to resize the screen you might need to change 32 to a variable
-                    img_rect.x = x * 32
-                    if(tile == 15 or tile == 16 or tile == 18 or tile == 2):#if half tile
-                        img_rect.y = (y * 32) + 16
-                    else:
-                        img_rect.y = y * 32
-                    
-                    tile_data = (img, img_rect, tile, transition_data)
-                    
-                    
+                        tile_data = (img, img_rect, tile, transition_data)
                         
-                    if all(tile != s_tile for s_tile in self.special_tiles):
                         self.solids.append(tile_data)
-                        #self.fill_slice_list(2, img_rect.x, tile_data)
-                    elif tile == 28:
-                        enemy0 = enemy_32wide(x * 32, y * 32, 3, 2, 'dog', enemy0_id, ini_vol)
-                        the_sprite_group.enemy0_group.add(enemy0)
-                        enemy0_id += 1#for enemy-enemy collisions/ anti stacking
-                    elif tile == 29:
-                        enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'shooter', enemy0_id, ini_vol)
-                        the_sprite_group.enemy0_group.add(enemy0)
-                        enemy0_id += 1#for enemy-enemy collisions/ anti stacking
-                    elif tile == 45:
-                        p_int = player_interactable_(x * 32, y * 32, 1, 1, 'crusher_top', ini_vol, True, False)
-                        the_sprite_group.p_int_group.add(p_int)
-                    elif tile == 46:
-                        p_int2 = player_interactable_(x * 32, y * 32, 2, 1, 'spinning_blades', ini_vol, True, False)
-                        the_sprite_group.p_int_group2.add(p_int2)
-                    elif tile == 47:
-                        p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_h', ini_vol, True, False)
-                        the_sprite_group.p_int_group.add(p_int)
-                    elif tile == 48:
-                        p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_v', ini_vol, True, False)
-                        the_sprite_group.p_int_group.add(p_int)
-                    elif tile == 49:
-                        dialogue_list = self.get_specific_npc_dialogue('Test')
-                        Testnpc = Test(x * 32, y * 32, 2, 1, 'Test', ini_vol, True, dialogue_list, self.plot_index_list, self.npc_current_dialogue_list, level, player_inventory= [])
-                        the_sprite_group.textprompt_group.add(Testnpc)
-                        
-                    elif tile == 50:
-                        dialogue_list = self.get_specific_npc_dialogue('Test2')
-                        Testnpc2 = Test2(x * 32, y * 32, 2, 1, 'Test2', ini_vol, True, dialogue_list, self.plot_index_list, self.npc_current_dialogue_list, level, player_inventory= [])
-                        the_sprite_group.textprompt_group.add(Testnpc2)
-                        
+                    
+                    else:
+                  
+                        if self.sprite_group_tiles_dict[tile] == 'dog':
+                            enemy0 = enemy_32wide(x * 32, y * 32, 3, 2, 'dog', enemy0_id, ini_vol)
+                            the_sprite_group.enemy0_group.add(enemy0)
+                            enemy0_id += 1#for enemy-enemy collisions/ anti stacking
+                        elif self.sprite_group_tiles_dict[tile] == 'shooter':
+                            enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'shooter', enemy0_id, ini_vol)
+                            the_sprite_group.enemy0_group.add(enemy0)
+                            enemy0_id += 1#for enemy-enemy collisions/ anti stacking
+                        elif self.sprite_group_tiles_dict[tile] == 'crusher_top':
+                            p_int = player_interactable_(x * 32, y * 32, 1, 1, 'crusher_top', ini_vol, True, False)
+                            the_sprite_group.p_int_group.add(p_int)
+                        elif self.sprite_group_tiles_dict[tile] == 'spinning_blades':
+                            p_int2 = player_interactable_(x * 32, y * 32, 2, 1, 'spinning_blades', ini_vol, True, False)
+                            the_sprite_group.p_int_group2.add(p_int2)
+                        elif self.sprite_group_tiles_dict[tile] == 'moving_plat_h':
+                            p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_h', ini_vol, True, False)
+                            the_sprite_group.p_int_group.add(p_int)
+                        elif self.sprite_group_tiles_dict[tile] == 'moving_plat_v':
+                            p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_v', ini_vol, True, False)
+                            the_sprite_group.p_int_group.add(p_int)
+                        elif self.sprite_group_tiles_dict[tile] == 'Test':
+                            dialogue_list = self.get_specific_npc_dialogue('Test')
+                            Testnpc = Test(x * 32, y * 32, 2, 1, 'Test', ini_vol, True, dialogue_list, self.plot_index_list, self.npc_current_dialogue_list, level, player_inventory= [])
+                            the_sprite_group.textprompt_group.add(Testnpc)
+                            
+                        elif self.sprite_group_tiles_dict[tile] == 'Test2':
+                            dialogue_list = self.get_specific_npc_dialogue('Test2')
+                            Testnpc2 = Test2(x * 32, y * 32, 2, 1, 'Test2', ini_vol, True, dialogue_list, self.plot_index_list, self.npc_current_dialogue_list, level, player_inventory= [])
+                            the_sprite_group.textprompt_group.add(Testnpc2)
+
                         
             
         #load bg
@@ -391,20 +378,21 @@ class World():
             for x, tile in enumerate(row):
                 if tile >= 0:
                     
-                    if tile < 30:
-                        img = self.tileList[0][tile]
-                    elif tile >= 30 and tile < 50:
-                        img = self.tileList[1][tile-30]
-                        
-                    if tile == 31:
-                        bg_sprite = lamp(x*32, y*32, 1, False, 'lamp')
-                        the_sprite_group.bg_sprite_group.add(bg_sprite)
-                    elif tile == 36:
-                        bg_sprite = tree(x*32, y*32, 1, False, 'tree')
-                        the_sprite_group.bg_sprite_group.add(bg_sprite)
-                    elif tile == 39:        
-                        bg_sprite = fountain(x*32, y*32, 1, False, 'fountain')
-                        the_sprite_group.bg_sprite_group.add(bg_sprite)
+                    if tile in self.sprite_group_tiles_dict: #avoid key errors
+                        if self.sprite_group_tiles_dict[tile] == 'lamp':
+                            bg_sprite = lamp(x*32, y*32, 1, False, 'lamp')
+                            the_sprite_group.bg_sprite_group.add(bg_sprite)
+                        elif self.sprite_group_tiles_dict[tile] == 'tree':
+                            bg_sprite = tree(x*32, y*32, 1, False, 'tree')
+                            the_sprite_group.bg_sprite_group.add(bg_sprite)
+                        elif self.sprite_group_tiles_dict[tile] == 'fountain':        
+                            bg_sprite = fountain(x*32, y*32, 1, False, 'fountain')
+                            the_sprite_group.bg_sprite_group.add(bg_sprite)
+                    else:
+                        if tile in self.static_bg_oversized_tiles_dict:
+                            img = self.tileList[1][self.static_bg_oversized_tiles_dict[tile]]
+                        else:
+                            img = self.tileList[0][tile]
                     
                     img_rect = img.get_rect()
                     img_rect.x = x * 32

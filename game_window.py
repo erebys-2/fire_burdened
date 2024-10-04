@@ -292,7 +292,7 @@ def main():
 		draw_bg(screen, gradient_dict, level_tuple[level][1], level_tuple[level][0])#this just draws the color
 		if camera.is_visible:
 			camera.draw(screen)#for camera debugging
-		if world.x_scroll_en:
+		if world.x_scroll_en and not pause_game:
 			camera.auto_correct(player0.rect, player0.direction, player0.scrollx, [tile for tile in world.coords if tile[1][0] > -32 and tile[1][0] < 640], world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
 			
 		
@@ -636,14 +636,14 @@ def main():
 							player0.roll_count = player0.roll_limit
 							player0.squat = True
 
-					if event.key == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and event.key != ctrls_list[0]: #pygame.K_i, pygame.K_w
+					if event.key == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and event.key != ctrls_list[0] and not player0.using_item: #pygame.K_i, pygame.K_w
 						change_once = True
 						player0.atk1 = (event.key == ctrls_list[4])
 
 					elif event.key == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
 						status_bars.warning = True
 					
-					if event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina: #pygame.K_o
+					if event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina and not player0.using_item: #pygame.K_o
 						player0.shot_charging = True
 					elif event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost > player0.stamina: #pygame.K_o
 						status_bars.warning = True
