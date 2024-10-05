@@ -101,6 +101,9 @@ class Item(pygame.sprite.Sprite):
     def scroll_along(self, scrollx):
         self.rect.x += ( - scrollx)
         
+    def force_ini_position(self, scrollx):
+        self.rect.x -= scrollx
+        
     def draw(self, screen):
         if self.rect.x > -self.width and self.rect.x < 640:
             if self.flicker:

@@ -52,23 +52,13 @@ def main():
 
 	change_once = True
 
-
-	level_trans_timing = pygame.time.get_ticks()
-
 	pause_game = False
 	inventory_opened = False
 
 	text_delay = pygame.time.get_ticks()
 
-	level_transitions = []
 	player0_lvl_transition_data = (False, [])#flag, data
-	#level transition system:
-	#each level in load_level_data will have its own level_transitions list which will (in order) contain the next levels
-	#each level will have level transition objects, that can be placed with the level editor,
-	#and their order will correspond to the level's respective level_tranisition list's index
-	#upon player collision the object will trigger a level change to the next level
-	#the player's position in the new level should be set
-	#update: the list should contain tuples: (width, height, next_level, player_new_x, player_new_y)
+
 	player_en = True
 	level = 0
 	next_level = 0
@@ -119,14 +109,14 @@ def main():
 		'rain':(-1,1,2)
 	}
 
-	#dictionary for level transitions
-	#level_tuple: (color, gradient, y tile count, x tile count, lvl trans data, player enable)
+	#tuple for level transitions
+	#level_dict: (color, gradient, y tile count, x tile count, lvl trans data, player enable)
 	#lvl trans data: (width, height, next_level, player_new_x, player_new_y)
-	level_tuple = (
-		[black, 'none', 15, 30, [], False], #lvl 0
-		[maroonish, 'none', 15, 200, [(2, 15*32, 2, 44*32 -2, 288), (2, 15*32, 2, 2, 384)], True], #lvl 1
-		[maroonish, 'none', 15, 45, [(2, 15*32, 1, 199*32 -2, 384), (2, 15*32, 1, 2, 288)], True] #lvl 2
-	)
+	level_dict = {
+		0:[black, 'none', 15, 30, [], False], #lvl 0
+		1:[maroonish, 'none', 15, 200, [(2, 15*32, 2, 44*32 -2, 288), (2, 15*32, 2, 2, 384)], True], #lvl 1
+		2:[maroonish, 'none', 15, 45, [(2, 15*32, 1, 199*32 -2, 384), (2, 15*32, 1, 2, 288)], True] #lvl 2
+	}
 
 	#lists for dynamic CSVs
 	#plot_index_list = [-1,-1]
@@ -204,7 +194,7 @@ def main():
 	the_sprite_group.purge_sprite_groups()#does as the name suggests at the start of each load of the game
 
 	# load level data
-	world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_tuple[level][2:5], vol_lvl)
+	world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][2:5], vol_lvl)
 
 	#running the game----------------------------------------------------------------------------------------------------------------------
 	#https://www.youtube.com/watch?v=XPHDiibNiCM <- motivational music
@@ -235,7 +225,7 @@ def main():
 		#screen.fill((0, 0, 0)) 
 		temp_move_R = False
 		temp_move_L = False
-		player_enable_master = (level_tuple[level][5] and not dialogue_enable)
+		player_enable_master = (level_dict[level][5] and not dialogue_enable and not level_transitioning)
 	
 		if level == 0 or pause_game or not player0.Alive or inventory_opened or dialogue_enable:#delete mouse when out of the main menu
 			pygame.mouse.set_visible(1)
@@ -255,13 +245,12 @@ def main():
 			scroll_y = 0
 			the_sprite_group.purge_sprite_groups()
 			dialogue_box0.reset_internals()
-			#world.clear_slice_lists()
 			world.clear_data()
 			level_transitioning = True
 			level = next_level
 
 			# load level data
-			world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_tuple[level][2:5], vol_lvl)
+			world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][2:5], vol_lvl)
 			
 			if move_L:
 				temp_move_L = move_L
@@ -270,39 +259,44 @@ def main():
 				temp_move_R = move_R
 				move_R = False
 			player0.rect.x = player_new_x - 32 #set player location
-			#world.screen_rect.x = camera.rect.x - SCREEN_WIDTH//2 + 32 #update screen rect location
 			
 			#player0.rect.y = player_new_y #disabling this makes it so that you can jump between levels
 			player0.vel_y = 0
-			player0.current_x = player_new_x #set player internal position
-			camera.set_ini_pos = True #force camera into position
+			
+			camera.rect.centerx = HALF_SCREEN_W
+			if world.x_scroll_en:
+				camera.set_ini_pos = True #signal to force camera into position next cycle
 	
 			if temp_move_R:
 				move_R = temp_move_R
 			if temp_move_L:
 				move_L = temp_move_L
 	
-		elif level_transitioning and pygame.time.get_ticks() - 180 > level_trans_timing:
-			level_trans_timing = pygame.time.get_ticks()
+		# elif level_transitioning and pygame.time.get_ticks() - 180 > level_trans_timing:
+		# 	level_trans_timing = pygame.time.get_ticks()
+		# 	level_transitioning = False
+		elif not camera.set_ini_pos:
 			level_transitioning = False
 		
 		
 		#---------------------------------------------------------drawing level and sprites------------------------------------------------------------------
 		#---------------------------------------------------------handling movement and collisions and AI----------------------------------------------------
-		draw_bg(screen, gradient_dict, level_tuple[level][1], level_tuple[level][0])#this just draws the color
+		draw_bg(screen, gradient_dict, level_dict[level][1], level_dict[level][0])#this just draws the color
 		if camera.is_visible:
 			camera.draw(screen)#for camera debugging
 		if world.x_scroll_en and not pause_game:
-			camera.auto_correct(player0.rect, player0.direction, player0.scrollx, [tile for tile in world.coords if tile[1][0] > -32 and tile[1][0] < 640], world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
-			
+			camera.auto_correct(player0.rect, player0.direction, player0.x_coord, 
+                       [tile for tile in world.coords if tile[1][0] > -32 and tile[1][0] < 640], 
+                       world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
 		
 		world_tile0_coord = world.draw(screen, scroll_x, scroll_y)#this draws the world and scrolls it 
 		
 		
 		if not pause_game:
-			player0.animate(the_sprite_group)
+			
 			if player_enable_master: 
-				player0.do_entity_collisions(the_sprite_group, level_transitioning)
+				player0.animate(the_sprite_group)
+				player0.do_entity_collisions(the_sprite_group)
 				player0_lvl_transition_data = player0.move(pause_game, move_L, move_R, [tile for tile in world.solids if tile[1][0] > -32 and tile[1][0] < 640], 
                                                				world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
 															HALF_SCREEN_W, SCREEN_HEIGHT, the_sprite_group, ccsn_chance)
@@ -310,28 +304,34 @@ def main():
 				player_inv_UI.use_item_flag = use_item_tuple[0] #use_item_flag (internal variable) is set to false
 				if use_item_tuple[1]: #item_was_used, once item_was_used returns true the item gets discarded
 					player_inv_UI.discard_item(player0.inventory_handler.inventory)#discard will discard the item in the current slot
-	
+
 			scroll_x = player0.scrollx + camera.scrollx
 		else:
 			scroll_x = 0
 	
 
 		
+		if not level_transitioning:
+			#dialogue trigger sent here
+			the_sprite_group.pause_game = pause_game
+			the_sprite_group.scroll_x = scroll_x
+			#if not level_transitioning: #surpress sprite logic while level transitioning
+				
+			the_sprite_group.update_bg_sprite_group(screen, player0.hitbox_rect, player0.atk_rect_scaled)
+			the_sprite_group.update_text_prompt_group(screen, player0.hitbox_rect, dialogue_enable, next_dialogue, world.plot_index_list, world.npc_current_dialogue_list)
+			the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, player0.direction, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
+			the_sprite_group.update_item_group(screen, player0.hitbox_rect)
 
-		#dialogue trigger sent here
-		the_sprite_group.pause_game = pause_game
-		the_sprite_group.scroll_x = scroll_x
-		the_sprite_group.update_bg_sprite_group(screen, player0.hitbox_rect, player0.atk_rect_scaled)
-		the_sprite_group.update_text_prompt_group(screen, player0.hitbox_rect, dialogue_enable, next_dialogue, world.plot_index_list, world.npc_current_dialogue_list)
-		the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, player0.direction, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
-		the_sprite_group.update_item_group(screen, player0.hitbox_rect)
-  
-		player0.draw(screen)
-  
-		the_sprite_group.update_groups_infront_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, world.solids)
-	
-		status_bars.draw(screen, player0.get_status_bars(), font)
-	
+			player0.draw(screen)
+
+			the_sprite_group.update_groups_infront_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, world.solids)
+		
+			status_bars.draw(screen, player0.get_status_bars(), font)
+		else:
+			for group in the_sprite_group.sp_group_list:
+				for sprite_ in group:
+					sprite_.force_ini_position(scroll_x)
+
 		#--------------------------------------------------------------------handling drawing text boxes------------------------------------------------------------------
 		#textboxes have a maximum of 240 characters
 		
@@ -418,7 +418,7 @@ def main():
 	
 		#--------------------------------------------------------------MAIN MENU CODE---------------------------------------------------------------------
 		if level == 0: 
-			draw_bg(screen, gradient_dict, level_tuple[level][1], level_tuple[level][0])
+			draw_bg(screen, gradient_dict, level_dict[level][1], level_dict[level][0])
 			pause_game = False
 			exit_to_title = False
 
@@ -610,7 +610,7 @@ def main():
 			if(event.type == pygame.KEYDOWN):
 				#print(pygame.key.name(event.key))
 	
-				if player0.Alive and level_tuple[level][5] and not pause_game and not dialogue_enable:
+				if player0.Alive and level_dict[level][5] and not pause_game and not dialogue_enable:
 					
 					if event.key == ctrls_list[1]: #pygame.K_a
 						move_L = True

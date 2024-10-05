@@ -27,6 +27,9 @@ class animated_bg_sprite(pygame.sprite.Sprite):
         
     def check_if_onscreen(self):
         return (self.rect.x > -self.rect.width and self.rect.x < 640)
+    
+    def force_ini_position(self, scrollx):
+        self.rect.x -= scrollx
 
     #only draws and animates if the sprite is on screen
     def animate(self, frame_rate):
@@ -42,6 +45,7 @@ class animated_bg_sprite(pygame.sprite.Sprite):
     def draw(self, screen):
         if self.check_if_onscreen():
             screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+            
             
 class tree(animated_bg_sprite):
     def __init__(self, x, y, scale, flip, name):

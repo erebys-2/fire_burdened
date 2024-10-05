@@ -301,10 +301,10 @@ class player(pygame.sprite.Sprite):
         return self.collision_rect.x >= 64 and self.collision_rect.right <= 576
     
     
-    def do_entity_collisions(self, the_sprite_group, level_transitioning):
+    def do_entity_collisions(self, the_sprite_group):
         #----------------------------------------------entity collisions
         damage = 0
-        if ((self.action < 7 or self.action > 10) and not self.i_frames_en and not self.hurting and self.Alive and not level_transitioning):
+        if ((self.action < 7 or self.action > 10) and not self.i_frames_en and not self.hurting and self.Alive):
             #sprite based collisions
             #expensive
             for enemy in enumerate(the_sprite_group.hostiles_group):
@@ -781,8 +781,8 @@ class player(pygame.sprite.Sprite):
                     if self.x_coord != x_coord or self.y_coord != y_coord:
                         self.x_coord = x_coord
                         self.y_coord = y_coord
-                        #curr_coord = (self.x_coord, self.y_coord)
-                        #print(curr_coord)
+                        # curr_coord = (self.x_coord, self.y_coord)
+                        # print(curr_coord)
 
         #---------------------------------------------------------world boundaries------------------------------------------------------------------
         if self.collision_rect.x < 0:
@@ -821,7 +821,7 @@ class player(pygame.sprite.Sprite):
             if x_scroll_en:
                 if self.x_coord < half_screen + self.camera_offset or self.shoot_recoil or self.hurting: 
                     self.rect.x += dx
-                elif self.x_coord >= world_limit[0] - (half_screen + 32 + self.camera_offset) or self.shoot_recoil or self.action == 5:
+                elif self.x_coord >= world_limit[0] - (half_screen + 36 + self.camera_offset) or self.shoot_recoil or self.action == 5:
                     self.rect.x += dx
                 elif self.x_coord >= half_screen + self.camera_offset and self.x_coord < world_limit[0] - (half_screen - 16 + self.camera_offset): 
                     self.scrollx = dx

@@ -138,6 +138,9 @@ class bullet_(pygame.sprite.Sprite):
         
         self.rect.x += (dx - scrollx)
         
+    def force_ini_position(self, scrollx):
+        self.rect.x -= scrollx
+        
     def explode(self, sp_group_list):
         if self.frame_index % 2 == 0:
             frame = 0

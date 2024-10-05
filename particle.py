@@ -83,7 +83,8 @@ class particle_(pygame.sprite.Sprite):
 
         self.rect.x += (dx - scrollx)
         
-    
+    def force_ini_position(self, scrollx):
+        self.rect.x -= scrollx
         
     def animate(self):
         #adjust animation speed for different particle types here

@@ -479,6 +479,9 @@ class enemy_32wide(pygame.sprite.Sprite):
                 dx *=0.70
         self.rect.x += (dx - scrollx)
         self.rect.y += dy
+        
+    def force_ini_position(self, scrollx):
+        self.rect.x -= scrollx
     
     def animate(self, sp_group_list):
         

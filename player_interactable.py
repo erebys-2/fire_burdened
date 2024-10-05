@@ -187,6 +187,9 @@ class player_interactable_(pygame.sprite.Sprite):
                 
                 
         self.rect.x += ( - scrollx) + self.vel_x
+        
+    def force_ini_position(self, scrollx):
+        self.rect.x -= scrollx
                 
                 
     def animate(self):

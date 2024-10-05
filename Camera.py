@@ -75,15 +75,15 @@ class Camera():
         if self.shift_dist > 1:
             self.shift_dist -= 1
         
-        if (self.camera_offset >= 8
-            and self.curr_direction != player_direction #player changes direction
-            and not self.set_ini_pos #level is not being loaded
+        if (not self.set_ini_pos #level is not being loaded
+            and self.camera_offset >= 8
+            and self.curr_direction != player_direction #player changes direction 
             and self.x_coord > self.half_screen - 48 and self.x_coord2 < world_limit[0] - (self.half_screen - 48) #within scrollable part of level
             ):
             self.shift_dist = self.max_shift_dist
             self.curr_direction = player_direction
                     
-    def auto_correct(self, player_rect, player_direction, player_scrollx, world_coords, world_tile0_coord, world_limit, screenW, screenH):
+    def auto_correct(self, player_rect, player_direction, player_x_coord, world_coords, world_tile0_coord, world_limit, screenW, screenH):
         self.scrollx = 0
         self.get_pos_data(world_coords)
         
@@ -93,16 +93,14 @@ class Camera():
         #gets how much the autocorrect should adjust given the camera displacement value
         #should set shift_dist = 1 by default if camera disp is small or if there's no level scrolling
         self.get_shift_dist(player_direction, world_limit, screenW)
-
+        
         #aligns player to a vertical axis when the player is traversing level rightwards
         if ((player_rect.right - self.rect.right > 16 - displacement
               and player_rect.right - 16 < self.x_coord2 + self.half_screen - 32)
               and self.x_coord2 < world_limit[0] - (self.half_screen + 32) #prevents from over scrolling on the rightmost edge
               ): 
             player_rect.x -= self.shift_dist
-            self.scrollx += self.shift_dist
-            # if pygame.time.get_ticks() %10 == 0:
-            #     print("b")    
+            self.scrollx += self.shift_dist    
         
         #aligns player to a vertical axis screen when the player is traversing level leftwards
         elif (self.rect.x - player_rect.x > 16 + displacement
@@ -110,8 +108,6 @@ class Camera():
               and self.x_coord < world_limit[0] - (self.half_screen)): #prevents from over scrolling on the leftmost edge
             player_rect.x += self.shift_dist
             self.scrollx -= self.shift_dist
-            # if pygame.time.get_ticks() %10 == 0:
-            #     print("a")
             
         #========================================= OVERSCROLL CORRECTION AT LEVEL EDGES ====================================    
             
@@ -121,9 +117,7 @@ class Camera():
              and world_tile0_coord[0] > 0)
             ):
             player_rect.x -= world_tile0_coord[0]
-            self.scrollx += world_tile0_coord[0]
-            # if pygame.time.get_ticks() %10 == 0:
-            #     print("a")   
+            self.scrollx += world_tile0_coord[0] 
  
         #prevents over scroll at the right edge of a level
         elif (  player_rect.right - 16 < self.rect.right
@@ -131,48 +125,50 @@ class Camera():
                 ):
             player_rect.x += 1
             self.scrollx -= 1
-            # if pygame.time.get_ticks() %10 == 0:
-            #     print("c")
         
         else:
             self.scrollx = 0
             
-        #I am delirious, but the player can be loaded into any part of the level now and the camera will immediately autocorrect
-        #and center itself on the player's location, except in the edge cases of being at half screen widths from the start and end
-        #of a level
-        #holy shit kms
+        #not sure why, but level changing is most stable when this function is integrated with auto_correct and this happens after 
+        #a level change is complete
+        #if this is called during level change or even just by itself, there is a chance that aggressively changing levels will 
+        #send the player somewhere off the level or off screen
+        
+        #Everything is already loaded when this occurs, but it's so fast the player doesn't notice zooming across the level
+        #update: made it so that a black box is drawn over the screen and sprite logic is surpressed
         if self.set_ini_pos:
-            self.set_initial_position(player_rect, world_coords, world_limit, screenW, screenH)
+            self.set_initial_position(player_rect, player_x_coord, world_limit)
         
-    def set_initial_position(self, player_rect, world_coords, world_limit, screenW, screenH):
-        self.shift_dist = 1
+    def set_initial_position(self, player_rect, player_x_coord, world_limit):
         self.scrollx = 0
-        #self.get_pos_data(world_coords)
         #==================================== SETTING INITIAL POSITION ON LEVEL LOAD ===============================
+
+        #During a level transition player_rect.x is set to a real coordinate, NOT relative to the screen
+        #The camera doesn't move during level transition, its self.rect.x will always be set to relative to the screen at its center line 320 pixels
+        #so if player's new position is out of the camera's range, the camera will need to be moved-  
+        #basically if the NEW location of the player is beyond the first half screen 
         
-        if self.set_ini_pos and player_rect.x > self.half_screen and (player_rect.x - self.x_coord > 0): 
-            #tests if the player is beyond the first screen half of the level and if the initial position needs to be set, middle boolean is a limiter
+        #tests if the player is beyond the first screen half of the level
+        if self.set_ini_pos and player_rect.x > self.half_screen: 
             
+            #don't ask how I got these formulas
             dx = player_rect.x - self.x_coord #adjustment for if the player is not on the right edge
-            dx2 = dx - (self.half_screen ) #adjustment for if the player is on the right edge
-            
-            # if self.on_r_edge == False: #idk why this is faster?? the camera will lag without this boolean
-            #     temp_x = player_rect.x #probably has to do with this statement
-            # else:
-            temp_x = player_rect.x
-            
-            if player_rect.x < world_limit[0] - self.half_screen and self.on_r_edge == False:
+            dx2 = dx - self.half_screen #adjustment for if the player is on the right edge
+
+            #new player coord not on r edge, but somewhere in the middle of the level
+            if not self.on_r_edge and player_rect.x < world_limit[0] - self.half_screen:
                 self.scrollx += dx
                 player_rect.x -= dx
-               
-            elif world_limit[0] - temp_x < self.half_screen + 32:
+                
+            #new player coord on right edge of level
+            elif world_limit[0] - player_rect.x < self.half_screen + 32:
                 self.on_r_edge = True
-                player_rect.x -= (dx2 + world_limit[0]-temp_x - 2)
-                self.scrollx += (dx2 + world_limit[0]-temp_x - 2)
-               
+                temp_x = player_rect.x
+                player_rect.x -= (dx2 + world_limit[0]- player_rect.x - 2)
+                self.scrollx += (dx2 + world_limit[0]- temp_x - 2)
                 
             self.set_ini_pos = False
-        else:
+        else:#no logic required if player is being loaded on the left edge
             self.set_ini_pos = False
             self.on_r_edge = False
                 

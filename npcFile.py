@@ -156,6 +156,9 @@ class npc(pygame.sprite.Sprite):
                 expression, 
                 self.npc_index_id, 
                 (self.player_choice_flag, self.player_choice_key))
+        
+    def force_ini_position(self, scrollx):
+        self.rect.x -= scrollx
     
     
     def force_dialogue_index(self, new_index):

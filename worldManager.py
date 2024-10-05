@@ -1,15 +1,17 @@
 import pygame
 import os
-from playerFile import player #type: ignore
+
 from enemy32File import enemy_32wide #type: ignore
-from particle import particle_ #type: ignore
+from BGspritesFile import tree, fountain, lamp
 from player_interactable import player_interactable_
+from npcFile import npc, Test, Test2
+
 from dialogueCSVformatter import csv_extracter
 from textfile_handler import textfile_formatter
-from BGspritesFile import tree, fountain, lamp
+
 import csv
 
-from npcFile import npc, Test, Test2
+
 
 class World():
     def __init__(self, screen_w, screen_h):
@@ -48,20 +50,6 @@ class World():
         ]
         
         
-        # self.active_coords = []
-        # self.active_fg = []
-        # self.active_solids = []
-        # self.active_bg1 = []
-        # self.active_bg2 = []
-        
-        # self.loaded_lvl_data_list = [
-        #     self.active_coords,
-        #     self.active_fg,
-        #     self.active_solids,
-        #     self.active_bg1,
-        #     self.active_bg2
-        # ]
-        
         self.tileList = []
         self.t_set_index = 0
         tile_set_types = ['standard', 'bg_oversized']
@@ -75,18 +63,6 @@ class World():
 
         #load tiles/images
         
-        self.special_tiles = (
-            26,
-            28,
-            29,
-            45,
-            46,
-            47,
-            48,
-            49,
-            50
-        )
-
         for tile_set in tile_set_types:
             temp_list = []
             tile_count = len(os.listdir(f'sprites/tileset/{tile_set}'))
@@ -122,9 +98,8 @@ class World():
         
         self.screen_w = screen_w
         self.screen_h = screen_h
-        #self.screen_rect = pygame.rect.Rect(0, 0, screen_w, screen_h)
         
-        self.world_map_non_parallax = pygame.Surface((32,32), pygame.SRCALPHA).convert_alpha
+        #self.world_map_non_parallax = pygame.Surface((32,32), pygame.SRCALPHA).convert_alpha
         #self.world_map_non_parallax.fill(pygame.Color(0,0,0,0))
         
     def get_specific_npc_dialogue(self, name):
@@ -132,46 +107,8 @@ class World():
         rtn_list = tuple(self.csv_f0.str_to_str_list(self.t1.str_list_to_dialogue_list(self.t1.read_text_from_file(path + name + '.txt'))))
         
         return rtn_list
-    
-    def get_num_slices(self, rows):
-        num_slices = rows/self.slice_width
-        if num_slices > int(num_slices):
-            self.num_slices = int(num_slices) + 1 #there's a partial slice at the end
-        else:
-            self.num_slices = int(num_slices)
-            
-    def clear_slice_lists(self):
-        for slice_list in self.lvl_slice_lists:
-            for slice in slice_list:
-                slice *= 0
-        self.lvl_slice_lists *= 0
-            
-    def initialize_slice_lists(self, rows, data_layers):
-        self.clear_slice_lists()
-        self.get_num_slices(rows)
-        
-        for i in range(data_layers):
-            temp_list = []
-            for slice_num in range(self.num_slices):
-                slice_x_coord = slice_num * self.slice_width * 32
-                slice_rect = pygame.rect.Rect(slice_x_coord, 0, self.slice_width * 32, self.slice_height * 32)
-                temp_list.append([slice_rect, False, []])
-            
-            self.lvl_slice_lists.append(temp_list)
-            
-        #print(slice_coord_list)
-        #print(self.lvl_slice_lists[0])
         
             
-    def fill_slice_list(self, layer, tile_x_coord, tile_data):
-        # [ slices for layer 0
-        #   slices for layer 1
-        #   etc
-        # ]
-        for slice_index in range(self.num_slices):
-            if tile_x_coord >= slice_index * self.slice_width * 32 and tile_x_coord < (slice_index + 1) * self.slice_width * 32:
-                self.lvl_slice_lists[layer][slice_index][2].append(tile_data)
-                
     # Rabbid76's game map method, modified, from https://stackoverflow.com/questions/66781952/
     def create_map(self, size, level_tile_lists): #apply to all 1:1 layers
         #print(size[1])
@@ -215,8 +152,6 @@ class World():
     def set_plot_index_list(self, plot_index_list):
         self.plot_index_list = plot_index_list
         
-                    
-                
     #for saving
     def get_plot_index_list(self, textprompt_group):
         self.update_all_plot_index_lists(textprompt_group)
@@ -226,6 +161,56 @@ class World():
         for lvl_data in self.detailed_lvl_data_list:
             lvl_data *= 0
             
+    def instantiate_sprites_from_tiles(self, tile, x, y, the_sprite_group, ini_vol, enemy0_id, level, player_inventory= []):
+        
+        sprite_type = self.sprite_group_tiles_dict[tile]
+        
+        #enemies and player interactables/obstacles
+        if sprite_type == 'dog':
+            enemy0 = enemy_32wide(x * 32, y * 32, 3, 2, 'dog', enemy0_id, ini_vol)
+            the_sprite_group.enemy0_group.add(enemy0)
+            enemy0_id += 1#for enemy-enemy collisions/ anti stacking
+        elif sprite_type == 'shooter':
+            enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'shooter', enemy0_id, ini_vol)
+            the_sprite_group.enemy0_group.add(enemy0)
+            enemy0_id += 1#for enemy-enemy collisions/ anti stacking
+        elif sprite_type == 'crusher_top':
+            p_int = player_interactable_(x * 32, y * 32, 1, 1, 'crusher_top', ini_vol, True, False)
+            the_sprite_group.p_int_group.add(p_int)
+        elif sprite_type == 'spinning_blades':
+            p_int2 = player_interactable_(x * 32, y * 32, 2, 1, 'spinning_blades', ini_vol, True, False)
+            the_sprite_group.p_int_group2.add(p_int2)
+        elif sprite_type == 'moving_plat_h':
+            p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_h', ini_vol, True, False)
+            the_sprite_group.p_int_group.add(p_int)
+        elif sprite_type == 'moving_plat_v':
+            p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_v', ini_vol, True, False)
+            the_sprite_group.p_int_group.add(p_int)
+            
+        #bg type sprites
+        elif sprite_type == 'lamp':
+            bg_sprite = lamp(x*32, y*32, 1, False, 'lamp')
+            the_sprite_group.bg_sprite_group.add(bg_sprite)
+        elif sprite_type == 'tree':
+            bg_sprite = tree(x*32, y*32, 1, False, 'tree')
+            the_sprite_group.bg_sprite_group.add(bg_sprite)
+        elif sprite_type == 'fountain':        
+            bg_sprite = fountain(x*32, y*32, 1, False, 'fountain')
+            the_sprite_group.bg_sprite_group.add(bg_sprite)
+            
+        #npcs
+        elif sprite_type == 'Test':
+            dialogue_list = self.get_specific_npc_dialogue('Test')
+            Testnpc = Test(x * 32, y * 32, 2, 1, 'Test', ini_vol, True, dialogue_list, self.plot_index_list, self.npc_current_dialogue_list, level, player_inventory= [])
+            the_sprite_group.textprompt_group.add(Testnpc)
+            
+        elif sprite_type == 'Test2':
+            dialogue_list = self.get_specific_npc_dialogue('Test2')
+            Testnpc2 = Test2(x * 32, y * 32, 2, 1, 'Test2', ini_vol, True, dialogue_list, self.plot_index_list, self.npc_current_dialogue_list, level, player_inventory= [])
+            the_sprite_group.textprompt_group.add(Testnpc2)
+        
+
+                        
 
     #loading the level
     def process_data(self, level, the_sprite_group, screenW, screenH, level_data, ini_vol):
@@ -234,16 +219,9 @@ class World():
         self.clear_data()
         
         #reset level window
-        #self.screen_rect.topleft = (0,0)
         
         #populate raw_lvl_data_list with lists of int values from level csv files
         raw_lvl_data_list = self.get_raw_csv_data(level, level_data[0:2])
-        
-        #set up slice processing
-        #self.clear_slice_lists()
-        #self.initialize_slice_lists(level_data[1], len(self.level_data_str_tuple))
-        
-        
         
         #process int lists into detailed list
         self.process_coords_vslice(raw_lvl_data_list[0], screenW, screenH, self.detailed_lvl_data_list[0])
@@ -255,9 +233,13 @@ class World():
         for y, row in enumerate(raw_lvl_data_list[2]):
             for x, tile in enumerate(row):
                 if tile >= 0:
-                    if tile not in self.sprite_group_tiles_dict:#avoid key errors
+                    if tile in self.sprite_group_tiles_dict:#avoid key errors
+                        self.instantiate_sprites_from_tiles(tile, x, y, the_sprite_group, ini_vol, enemy0_id, level, player_inventory= [])
+                    else:
+                        
                         img = self.tileList[0][tile]
                         img_rect = img.get_rect()
+                        
                         if(tile == 17):#pass thru 1 way
                             #img = pygame.transform.scale(img, (32,32))
                             img_rect = pygame.Rect(0, 0, 32, 16)
@@ -278,40 +260,8 @@ class World():
                         
                         self.solids.append(tile_data)
                     
-                    else:
-                  
-                        if self.sprite_group_tiles_dict[tile] == 'dog':
-                            enemy0 = enemy_32wide(x * 32, y * 32, 3, 2, 'dog', enemy0_id, ini_vol)
-                            the_sprite_group.enemy0_group.add(enemy0)
-                            enemy0_id += 1#for enemy-enemy collisions/ anti stacking
-                        elif self.sprite_group_tiles_dict[tile] == 'shooter':
-                            enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'shooter', enemy0_id, ini_vol)
-                            the_sprite_group.enemy0_group.add(enemy0)
-                            enemy0_id += 1#for enemy-enemy collisions/ anti stacking
-                        elif self.sprite_group_tiles_dict[tile] == 'crusher_top':
-                            p_int = player_interactable_(x * 32, y * 32, 1, 1, 'crusher_top', ini_vol, True, False)
-                            the_sprite_group.p_int_group.add(p_int)
-                        elif self.sprite_group_tiles_dict[tile] == 'spinning_blades':
-                            p_int2 = player_interactable_(x * 32, y * 32, 2, 1, 'spinning_blades', ini_vol, True, False)
-                            the_sprite_group.p_int_group2.add(p_int2)
-                        elif self.sprite_group_tiles_dict[tile] == 'moving_plat_h':
-                            p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_h', ini_vol, True, False)
-                            the_sprite_group.p_int_group.add(p_int)
-                        elif self.sprite_group_tiles_dict[tile] == 'moving_plat_v':
-                            p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_v', ini_vol, True, False)
-                            the_sprite_group.p_int_group.add(p_int)
-                        elif self.sprite_group_tiles_dict[tile] == 'Test':
-                            dialogue_list = self.get_specific_npc_dialogue('Test')
-                            Testnpc = Test(x * 32, y * 32, 2, 1, 'Test', ini_vol, True, dialogue_list, self.plot_index_list, self.npc_current_dialogue_list, level, player_inventory= [])
-                            the_sprite_group.textprompt_group.add(Testnpc)
-                            
-                        elif self.sprite_group_tiles_dict[tile] == 'Test2':
-                            dialogue_list = self.get_specific_npc_dialogue('Test2')
-                            Testnpc2 = Test2(x * 32, y * 32, 2, 1, 'Test2', ini_vol, True, dialogue_list, self.plot_index_list, self.npc_current_dialogue_list, level, player_inventory= [])
-                            the_sprite_group.textprompt_group.add(Testnpc2)
-
-                        
-            
+                    
+ 
         #load bg
         for i in range(len(self.detailed_lvl_data_list) -3):
             self.process_bg(raw_lvl_data_list[i+3], self.detailed_lvl_data_list[i+3], the_sprite_group, i+3)
@@ -379,15 +329,8 @@ class World():
                 if tile >= 0:
                     
                     if tile in self.sprite_group_tiles_dict: #avoid key errors
-                        if self.sprite_group_tiles_dict[tile] == 'lamp':
-                            bg_sprite = lamp(x*32, y*32, 1, False, 'lamp')
-                            the_sprite_group.bg_sprite_group.add(bg_sprite)
-                        elif self.sprite_group_tiles_dict[tile] == 'tree':
-                            bg_sprite = tree(x*32, y*32, 1, False, 'tree')
-                            the_sprite_group.bg_sprite_group.add(bg_sprite)
-                        elif self.sprite_group_tiles_dict[tile] == 'fountain':        
-                            bg_sprite = fountain(x*32, y*32, 1, False, 'fountain')
-                            the_sprite_group.bg_sprite_group.add(bg_sprite)
+                        self.instantiate_sprites_from_tiles(tile, x, y, the_sprite_group, 0, 0, 0, player_inventory= [])
+
                     else:
                         if tile in self.static_bg_oversized_tiles_dict:
                             img = self.tileList[1][self.static_bg_oversized_tiles_dict[tile]]
@@ -399,38 +342,11 @@ class World():
                     img_rect.y = y * 32
                     tile_data = (img, img_rect, tile)
                     
-                    # if index_ <= 4: #do not fill slices for filter and parallax layers
-                    #     self.fill_slice_list(index_, img_rect.x, tile_data)
+
                     
                     if tile != 36 and tile != 39 and tile != 31:
                         rtrn_list.append(tile_data)
-                    
-    def scroll_slices_all_layers(self, scroll_x):
-        for slice_list in self.lvl_slice_lists[0:5]: #cutting out filter and parallax layers
-            for slice in slice_list: #slice = [rect, loaded, tile list[]]
-                slice[0][0] -= scroll_x
-                if slice[1]: #slice is loaded
-                    for tile in slice[2]:
-                        tile[1][0] = slice[0][0]
-            
-    def load_unload_slices(self, window_rect):
-        for i in range(len(self.lvl_slice_lists[0:5])): #cutting out filter and parallax layers
-            for slice in self.lvl_slice_lists[i]:
-                if window_rect.colliderect(slice[0]) and not slice[1]: #load
-                    
-                    for tile in slice[2]:
-                        self.loaded_lvl_data_list[i].append(tile)
-                        
-                    slice[1] = True
-                elif not window_rect.colliderect(slice[0]) and slice[1]: #unload
-                    for loaded_tile in self.loaded_lvl_data_list[i]:
-                        for tile in slice[2]:
-                            if loaded_tile == tile:
-                                self.loaded_lvl_data_list[i].pop(self.loaded_lvl_data_list[i].index(loaded_tile))
-                         
-                    slice[1] = False
-                        
-            #print(i)
+
                         
                                        
     def draw_bg_layers(self, screen, scroll_X, scroll_Y, data):
@@ -468,12 +384,7 @@ class World():
             screen.blit(tile[0], tile[1]) # (image, position)
                     
     def draw(self, screen, scroll_X, scroll_Y): #MOVE sliceS HERE
-        
-        # self.load_unload_slices(self.screen_rect)
-        # self.scroll_slices_all_layers(scroll_X)
-        
-        # self.screen_rect.x += scroll_X
-        # self.screen_rect.y += scroll_Y
+
         
         if scroll_X > 0:
             correction = 1
@@ -507,9 +418,7 @@ class World():
             
             
         self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg)
-        
-        #screen.blit(self.world_map_non_parallax, (0,0), self.screen_rect)
-        
+ 
         
         return (self.coords[0][1][0], self.coords[0][1][1]) #x and y of first tile
             
