@@ -20,8 +20,8 @@ class player_choice_handler():
         self.player_choice_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'choice_selection_dict.txt')), 'list_list')
         
         #2nd dictionary for prompts
-        self.player_prompt_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'prompt_dict.txt')), 'none')
-        
+        self.player_prompt_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'prompt_dict.txt')), 'text_box')
+
         self.trigger_once = True
         self.button_list = []
         self.btn_img = pygame.image.load('sprites/dialogue_btn.png').convert_alpha()
@@ -78,7 +78,7 @@ class player_choice_handler():
             self.button_list[i].show_text(screen, self.fontlist[1], ('', player_choices[i][0]))
             
         #draw text
-        self.text_manager0.disp_text_box(screen, self.fontlist[1], (self.prompt,''), (-1,-1,-1),  (200,200,200), (64, 12, 640, 120), False, False, 'none')
+        self.text_manager0.disp_text_box(screen, self.fontlist[1], self.prompt, (-1,-1,-1),  (200,200,200), (64, 12, 640, 120), False, False, 'none')
         self.text_manager0.disp_text_box(screen, self.fontlist[1], ('Exit:(Escape)', ''), (-1,-1,-1),  (80,80,80), (533, 456, 32, 32), False, False, 'none')
         
 

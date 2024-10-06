@@ -4,7 +4,7 @@ import math
 from button import Button 
 from textManager import text_manager 
 from music_player import music_player 
-from dialogueCSVformatter import csv_extracter
+
 from textfile_handler import textfile_formatter
 import random
 
@@ -478,18 +478,17 @@ class inventory_UI(): #handles displaying inventory and
 
 class item_details():
     def __init__(self):
-        t = textfile_formatter()
+        self.t = textfile_formatter()
         
-        self.key_items = t.read_text_from_file(os.path.join(config_path, 'keyitems_list.txt')) #list of strings that are id's of key items
-        self.item_desc_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'item_descriptions.txt')), 'none')
-        self.csv_extract0 = csv_extracter(20)#the int doesn't do anything
+        self.key_items = self.t.read_text_from_file(os.path.join(config_path, 'keyitems_list.txt')) #list of strings that are id's of key items
+        self.item_desc_dict = self.t.str_list_to_dict(self.t.read_text_from_file(os.path.join(config_path, 'item_descriptions.txt')), 'none')
         
         self.f_item_desc_dict = self.format_into_str_list(self.item_desc_dict, 26)
         
     def format_into_str_list(self, input_dict, limit):
         temp_list = []
         for key in input_dict:
-            str_list = self.csv_extract0.split_string(input_dict[key], limit, (',', '.', ' ', ':', ';', '-'))
+            str_list = self.t.split_string(input_dict[key], limit, (',', '.', ' ', ':', ';', '-'))
             temp_list.append([key, str_list])
             
         return dict(temp_list)

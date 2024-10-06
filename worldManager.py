@@ -6,7 +6,6 @@ from BGspritesFile import tree, fountain, lamp
 from player_interactable import player_interactable_
 from npcFile import npc, Test, Test2
 
-from dialogueCSVformatter import csv_extracter
 from textfile_handler import textfile_formatter
 
 import csv
@@ -72,8 +71,6 @@ class World():
                 temp_list.append(tile_img)
             self.tileList.append(temp_list)
             
-        self.csv_f0 = csv_extracter(60)
-            
         self.t1 = textfile_formatter()
         
         #create dicitonary from special tiles text file
@@ -102,7 +99,7 @@ class World():
         
     def get_specific_npc_dialogue(self, name):
         path = 'npc_dialogue_files/npc_dialogue_txt_files/'
-        rtn_list = tuple(self.csv_f0.str_to_str_list(self.t1.str_list_to_dialogue_list(self.t1.read_text_from_file(path + name + '.txt'))))
+        rtn_list = self.t1.str_list_to_dialogue_list(self.t1.read_text_from_file(path + name + '.txt'), 60, self.t1.endcase_char)
         
         return rtn_list
         
