@@ -72,7 +72,7 @@ class npc(pygame.sprite.Sprite):
         
         t1 = textfile_formatter()
         #plot index, dialogue index to jump to
-        self.plot_index_jumps_dict = t1.str_list_to_dict(t1.read_text_from_file('config_textfiles/npc_plot_index_config/' + self.name + '.txt'), 'int')
+        self.plot_index_jumps_dict = t1.str_list_to_dict(t1.read_text_from_file('npc_dialogue_files/npc_plot_index_config/' + self.name + '.txt'), 'int')
         #print(self.plot_index_jumps_dict)
         
     

@@ -1,12 +1,12 @@
-26: grass
-28: dog
-29: shooter
-31: lamp
-36: tree
-39: fountain
-45: crusher_top
-46: spinning_blades
-47: moving_plat_h
-48: moving_plat_v
-49: Test
-50: Test2
+26: p_int, grass
+28: enemy, dog
+29: enemy, shooter
+31: bg_sprite, lamp
+36: bg_sprite, tree
+39: bg_sprite, fountain
+45: p_int, crusher_top
+46: p_int, spinning_blades
+47: p_int, moving_plat_h
+48: p_int, moving_plat_v
+49: npc, Test
+50: npc, Test2

@@ -95,9 +95,9 @@ class Camera():
         self.get_shift_dist(player_direction, world_limit, screenW)
         
         #aligns player to a vertical axis when the player is traversing level rightwards
-        if ((player_rect.right - self.rect.right > 16 - displacement
-              and player_rect.right - 16 < self.x_coord2 + self.half_screen - 32)
-              and self.x_coord2 < world_limit[0] - (self.half_screen + 32) #prevents from over scrolling on the rightmost edge
+        if (player_rect.right - self.rect.right > 16 - displacement
+              #and player_rect.right - 16 < self.x_coord2 + self.half_screen
+              and self.x_coord2 < world_limit[0] - (self.half_screen + 40) #prevents from over scrolling on the rightmost edge
               ): 
             player_rect.x -= self.shift_dist
             self.scrollx += self.shift_dist    
@@ -111,7 +111,7 @@ class Camera():
             
         #========================================= OVERSCROLL CORRECTION AT LEVEL EDGES ====================================    
             
-        #when the player is on the left half screen of the level, I think it prevents underscrolling
+        # #when the player is on the left half screen of the level, I think it prevents underscrolling
         elif ((player_rect.x + 32 < self.rect.x 
              and self.x_coord < screenW - 32 
              and world_tile0_coord[0] > 0)
@@ -119,12 +119,14 @@ class Camera():
             player_rect.x -= world_tile0_coord[0]
             self.scrollx += world_tile0_coord[0] 
  
-        #prevents over scroll at the right edge of a level
-        elif (  player_rect.right - 16 < self.rect.right
-                and world_tile0_coord[0] < -(world_limit[0] - 640)
-                ):
-            player_rect.x += 1
-            self.scrollx -= 1
+        # #prevents over scroll at the right edge of a level
+        # elif (  player_rect.right < self.rect.x
+        #         and self.x_coord > world_limit[0] - (screenW + 32 )
+        #         and world_tile0_coord[0] < -(world_limit[0] - 641)
+        #         ):
+            
+        #     player_rect.x += 1
+        #     self.scrollx -= 1
         
         else:
             self.scrollx = 0

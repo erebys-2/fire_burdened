@@ -25,6 +25,13 @@ class textfile_formatter():
                     key = self.auto_string_to_number(line[0:line.index(char)])
                     if format_mode == 'list':
                         value = self.format_line_to_list(line[line.index(char)+2: len(line)], ',')
+                    elif format_mode == 'list_list':#used exclusively for player choice stuff
+                        value = []
+                        temp_value = self.format_line_to_list(line[line.index(char)+2: len(line)], ';')
+                        for element in temp_value:
+                            value.append(self.format_line_to_list(element, '#'))
+                        value = tuple(value)
+                            
                     elif format_mode == 'int':
                         value = int(line[line.index(char)+2: len(line)])
                     elif format_mode == 'float':
@@ -57,6 +64,8 @@ class textfile_formatter():
             char = line[i]
             if char == delimiter or i == len(line) - 1:
                 end_index = i
+                if i == len(line) - 1:
+                    end_index += 1
                 str_list.append(self.auto_string_to_number(line[start_index: end_index]))
                 start_index = end_index + 2
 

@@ -173,7 +173,7 @@ class player(pygame.sprite.Sprite):
     def update_action_history(self, action):
         if action != 0 and action != 1 and action != 4: 
             self.action_history.append(action)
-            if len(self.action_history) > 3:#pop first element if the list goes over 3
+            if len(self.action_history) > 4:#pop first element if the list goes over 3
                 self.action_history.pop(0)
                 
     def check_atk1_history(self):
@@ -445,6 +445,7 @@ class player(pygame.sprite.Sprite):
                 #hitting wall while rolling
                 if self.action == 9 and tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//4 - 2):
                     dx = 0 #-1 * self.direction 
+                    dy = dy//2
                     self.rolled_into_wall = True
                     self.hitting_wall = True
                     if self.frame_index > 0:
@@ -543,16 +544,18 @@ class player(pygame.sprite.Sprite):
                     dy = tile[1].top - self.collision_rect.bottom
                     self.rolled_into_wall = False
                            
-            elif(tile[2] == 10 and not self.disp_flag):#level transition tiles
+            elif(tile[2] == 10):#level transition tiles
                 if tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + dy, 4, self.height):
                     #this collision will be used to initiate a level change
                     #tile[3][0]: next_level, [1]: player new x, [2]: player new y
-                    #dx = -self.direction * dx
-                    self.do_screenshake = False
-                    #dx = 0
-                    dy = 0
-                    lvl_transition_flag = True
-                    lvl_transition_data = tile[3]
+                    if not self.disp_flag:
+                        self.do_screenshake = False
+                        dy = 0
+                        lvl_transition_flag = True
+                        lvl_transition_data = tile[3]
+                    else:
+                        dx = -self.direction*8
+                        
 
         
         #debuggin bottom boundary
@@ -614,10 +617,11 @@ class player(pygame.sprite.Sprite):
 
 		#rolling 
         if self.rolling and not self.hurting:
+            
             if self.flip:
-                dx = -(self.speed + 2)
+                dx = -(self.speed + 3)
             else:
-                dx = (self.speed + 2)
+                dx = (self.speed + 3)
             
             if ((moveL and self.direction == 1) or (moveR and self.direction == -1) #BREAK ROLLING
                 or self.squat
@@ -644,7 +648,7 @@ class player(pygame.sprite.Sprite):
                 and not (self.squat and self.frame_index > 2)
                 ): #not (self.rolling) and 
                 
-                if (self.frame_index == 0 and self.rolled_into_wall == False):#fast initial impulse
+                if (self.frame_index == 0):#fast initial impulse
                     # if pygame.time.get_ticks() < self.update_time + 20:
                     #     self.m_player.play_sound(self.m_player.sfx[1])
                     if self.crit and self.check_if_in_ss_range():
@@ -792,10 +796,10 @@ class player(pygame.sprite.Sprite):
         
         if self.collision_rect.x < -8:
             dy = 0
-            dx = 4
+            dx = 8
         elif self.collision_rect.x >= 608:
             dy = 0
-            dx = -4
+            dx = -8
         
         #----------------------------------------------------------------------------------------------------------------------------------
         #================================================================TILE COLLISIONS=====================================================================
@@ -866,7 +870,7 @@ class player(pygame.sprite.Sprite):
             rate = 80
  
             if self.speed > self.default_speed and not self.rolling:
-                stamina_increment_unit = -0.12
+                stamina_increment_unit = -0.14
             elif self.rolling and self.stamina_used + self.roll_stam_rate <= self.stamina:
                 stamina_increment_unit = self.roll_stam_rate
             else:
@@ -1132,7 +1136,7 @@ class player(pygame.sprite.Sprite):
             if new_action == 7 or new_action == 8:
                 self.stamina_used += self.atk1_stamina_cost
                 self.ini_stamina += self.atk1_stamina_cost
-                if self.check_atk1_history() == 3: #stamina cost for melee will exponentially increase if the action history is just all atk1
+                if self.check_atk1_history() == 4: #stamina cost for melee will exponentially increase if the action history is just all atk1
                     self.atk1_stamina_cost = 3*self.atk1_default_stam
                 else:
                     self.atk1_stamina_cost = self.atk1_default_stam

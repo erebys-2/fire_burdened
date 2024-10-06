@@ -114,8 +114,8 @@ def main():
 	#lvl trans data: (width, height, next_level, player_new_x, player_new_y)
 	level_dict = {
 		0:[black, 'none', 15, 30, [], False], #lvl 0
-		1:[maroonish, 'none', 15, 200, [(2, 15*32, 2, 44*32 -2, 288), (2, 15*32, 2, 2, 384)], True], #lvl 1
-		2:[maroonish, 'none', 15, 45, [(2, 15*32, 1, 199*32 -2, 384), (2, 15*32, 1, 2, 288)], True] #lvl 2
+		1:[maroonish, 'none', 15, 200, [(2, 15*32, 2, 44*32, 288), (2, 15*32, 2, 0, 384)], True], #lvl 1
+		2:[maroonish, 'none', 15, 45, [(2, 15*32, 1, 199*32, 384), (2, 15*32, 1, 0, 288)], True] #lvl 2
 	}
 
 	#lists for dynamic CSVs
@@ -157,6 +157,25 @@ def main():
 		return temp_list
 
 
+	def check_double_tap(tap, double_tap_time, double_tap_initiated, double_tap_interval):
+		double_tapped = False
+		#initial state, first single tap
+		#set timer
+		if not double_tap_initiated and tap:
+			double_tap_time = pygame.time.get_ticks()
+			double_tap_initiated = True
+		#check if second tap falls in range and reset
+		elif tap and double_tap_initiated and pygame.time.get_ticks() < double_tap_time + double_tap_interval:
+			double_tapped = True
+			double_tap_initiated = False
+		#reset timer if second tap falls out of range
+		elif tap and double_tap_initiated and pygame.time.get_ticks() > double_tap_time + double_tap_interval:
+			double_tap_time = pygame.time.get_ticks()
+			#double_tap_initiated = False
+
+		return (double_tapped, double_tap_time, double_tap_initiated)
+
+
 	vol_lvl = read_settings_data('vol_data') #read saved eq regime
 	#more instantiations
 
@@ -169,7 +188,7 @@ def main():
 
 
 	#player choice handler
-	p_choice_handler0 = player_choice_handler(world.player_choices_list, world.player_prompt_list, [font, font_larger, font_massive], m_player_sfx_list_main, vol_lvl)
+	p_choice_handler0 = player_choice_handler([font, font_larger, font_massive], m_player_sfx_list_main, vol_lvl)
 
 	#ui manager
 	ui_manager0 = ui_manager(SCREEN_WIDTH, SCREEN_HEIGHT, [font, font_larger, font_massive], vol_lvl, monitor_size)
@@ -218,6 +237,11 @@ def main():
 
 	hold_jump_update = pygame.time.get_ticks()
 
+	double_tap_time = pygame.time.get_ticks()
+	double_tap_initiated = False
+	
+
+	
 
 
 	while run:
@@ -614,8 +638,18 @@ def main():
 					
 					if event.key == ctrls_list[1]: #pygame.K_a
 						move_L = True
+						# output = check_double_tap(True, double_tap_time, double_tap_initiated, 320)
+						# double_tap_initiated = output[2]
+						# double_tap_time = output[1]
+						# if output[0]:
+						# 	player0.sprint = True
 					if event.key == ctrls_list[3]: #pygame.K_d
 						move_R = True
+						# output = check_double_tap(True, double_tap_time, double_tap_initiated, 320)
+						# double_tap_initiated = output[2]
+						# double_tap_time = output[1]
+						# if output[0]:
+						# 	player0.sprint = True
 					# if event.key == ctrls_list[0] and event.key == ctrls_list[4] and player0.stamina_used + 1 <= player0.stamina:
 					# 	player0.squat = True
 					# 	player0.squat_done = True
@@ -777,9 +811,10 @@ def main():
 			if(event.type == pygame.KEYUP):
 				if event.key == ctrls_list[1]:#pygame.K_a
 					move_L = False
+					
 				if event.key == ctrls_list[3]:#pygame.K_d
 					move_R = False
-		
+					
 				#delayed full jump bug:
 				#if the the animation for squatting before a jump is just slow enough, it might finish AFTER  the jump key is released
 				#so the code below to limit the jump height will not execute, resulting in a full height jump if the jump key is pressed sufficiently fast enough

@@ -3,29 +3,24 @@ import os
 from button import Button
 from music_player import music_player
 from textManager import text_manager
+from textfile_handler import textfile_formatter
 
 #addon class for the subclass dialogue box under text manager
 #it will overlay buttons over a blank text box and return the next index
 
 class player_choice_handler():
-    def __init__(self, choice_list, prompt_list, fontlist, m_player_sfx_list_main, ini_vol):
-        self.choice_list = choice_list
-        self.prompt_list = prompt_list
+    def __init__(self, fontlist, m_player_sfx_list_main, ini_vol):
+
         self.fontlist = fontlist
         self.next_index = -3
         self.prompt = ('','')
         
-        #a diectionary is going to be easier to modify and track choices than a pure list where I'd need to keep track of indices
-        self.player_choice_dict = {
-            # number of tuples in outer tuple = number of options, 
-            # inner tuple = (message list index, next dialogue index) for the NPC waiting on the player choice
-            'test_greeting' : ((2,2),(3,0)) 
-        }    
+        t1 = textfile_formatter()
+        path = 'npc_dialogue_files/player_choice_config/'
+        self.player_choice_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'choice_selection_dict.txt')), 'list_list')
         
         #2nd dictionary for prompts
-        self.player_prompt_dict = { #list of lists, each inner list being a message
-            'test_greeting' : self.prompt_list[0]
-        }    
+        self.player_prompt_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'prompt_dict.txt')), 'none')
         
         self.trigger_once = True
         self.button_list = []
@@ -80,10 +75,10 @@ class player_choice_handler():
                 self.next_index = player_choices[i][1]
                 #self.trigger_once = True
                 
-            self.button_list[i].show_text(screen, self.fontlist[1], ('', self.choice_list[player_choices[i][0]]))
+            self.button_list[i].show_text(screen, self.fontlist[1], ('', player_choices[i][0]))
             
         #draw text
-        self.text_manager0.disp_text_box(screen, self.fontlist[1], self.prompt, (-1,-1,-1),  (200,200,200), (64, 12, 640, 120), False, False, 'none')
+        self.text_manager0.disp_text_box(screen, self.fontlist[1], (self.prompt,''), (-1,-1,-1),  (200,200,200), (64, 12, 640, 120), False, False, 'none')
         self.text_manager0.disp_text_box(screen, self.fontlist[1], ('Exit:(Escape)', ''), (-1,-1,-1),  (80,80,80), (533, 456, 32, 32), False, False, 'none')
         
 
