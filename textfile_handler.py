@@ -104,6 +104,11 @@ class textfile_formatter():
             
         return rtn_val
     
+    def add_line_to_file(self, line, path):
+        with open(path, 'a') as file:
+            file.write('\n' + line)
+            file.close()
+    
     
     #takes list of strings, splits each string into another list of strings that will fit a box
     def str_to_str_list(self, input_list, limit, endcase_char):

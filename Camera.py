@@ -119,14 +119,15 @@ class Camera():
             player_rect.x -= world_tile0_coord[0]
             self.scrollx += world_tile0_coord[0] 
  
-        # #prevents over scroll at the right edge of a level
-        # elif (  player_rect.right < self.rect.x
-        #         and self.x_coord > world_limit[0] - (screenW + 32 )
-        #         and world_tile0_coord[0] < -(world_limit[0] - 641)
-        #         ):
+        #prevents over scroll at the right edge of a level
+        elif (  player_rect.centerx < self.rect.x
+                and self.x_coord > world_limit[0] - (screenW + 32 )
+                and world_tile0_coord[0] < -(world_limit[0] - 640)
+                
+                ):
             
-        #     player_rect.x += 1
-        #     self.scrollx -= 1
+            player_rect.x += 1
+            self.scrollx -= 1
         
         else:
             self.scrollx = 0

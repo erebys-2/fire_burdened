@@ -112,6 +112,7 @@ def main():
 	#tuple for level transitions
 	#level_dict: (color, gradient, y tile count, x tile count, lvl trans data, player enable)
 	#lvl trans data: (width, height, next_level, player_new_x, player_new_y)
+ 	# 			=> (tile rect, next level, new player location)
 	level_dict = {
 		0:[black, 'none', 15, 30, [], False], #lvl 0
 		1:[maroonish, 'none', 15, 200, [(2, 15*32, 2, 44*32, 288), (2, 15*32, 2, 0, 384)], True], #lvl 1
