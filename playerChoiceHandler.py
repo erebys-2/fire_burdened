@@ -56,6 +56,7 @@ class player_choice_handler():
         screen.blit(pygame.transform.flip(self.bg_img, False, False), screen.get_rect())
         pygame.draw.rect(screen, (0,0,0), self.dialogue_box_rect)#draw box
         player_choices = self.player_choice_dict[key] #get relevant data
+        last_save_slot = -1
 
         if self.trigger_once:#instantiate buttons
             self.prompt = self.player_prompt_dict[key]#get prmpt
@@ -74,7 +75,7 @@ class player_choice_handler():
                 self.m_player.play_sound(self.m_player.sfx[1])
                 self.next_index = player_choices[i][1]
                 #self.trigger_once = True
-                if key == 'save_game':
+                if key == 'save_game': # write to save file
                     path = f'save_files/{i}'
                     str1 = f'level: {level}\nplayer_x: {player.rect.x}\nplayer_y: {player.rect.y + 8}'
                     
@@ -91,6 +92,7 @@ class player_choice_handler():
                     self.t1.overwrite_file(os.path.join(path, 'level_and_player_coords.txt'), str1)
                     self.t1.overwrite_file(os.path.join(path, 'plot_index_list.txt'), str2)
                     self.t1.overwrite_file(os.path.join(path, 'player_inventory.txt'), str3)
+                    last_save_slot = i
                     
                     
                 
@@ -105,7 +107,7 @@ class player_choice_handler():
         
 
         
-        return self.next_index
+        return (self.next_index, last_save_slot)
     
 #next step is to modify the NPC file so that when the index is -3, a signal is sent to the text manager
 #to call functions from this class

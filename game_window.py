@@ -12,6 +12,7 @@ from Camera import Camera
 from music_player import music_player 
 from button import Button 
 from textManager import text_manager, dialogue_box 
+from textfile_handler import textfile_formatter
 from ui_manager import ui_manager 
 from spriteGroup import sprite_group 
 from ItemFile import inventory_UI
@@ -127,6 +128,8 @@ def main():
 
 	#text manager instance
 	text_manager0 = text_manager()
+	t1 = textfile_formatter()
+	# last_save_slot = int(t1.read_text_from_file('save_files/last_save_slot.txt')[0])
 
 	text_speed = 80
 
@@ -348,7 +351,7 @@ def main():
 		
 		if not level_transitioning:
 			#dialogue trigger sent here
-			the_sprite_group.pause_game = pause_game
+			the_sprite_group.pause_game = pause_game or ui_manager0.saves_menu_enable
 			the_sprite_group.scroll_x = scroll_x
 			#if not level_transitioning: #surpress sprite logic while level transitioning
 				
@@ -386,8 +389,12 @@ def main():
 		elif the_sprite_group.textbox_output[6][0] and the_sprite_group.textbox_output[2]: #handling player choice
 		
 			dialogue_box0.draw_box_and_portrait(screen, the_sprite_group.textbox_output[4], the_sprite_group.textbox_output[5])
-			next_dialogue_index = p_choice_handler0.deploy_buttons(the_sprite_group.textbox_output[6][1], screen, player0, level, world.plot_index_list)
-	
+			p_choice_output = p_choice_handler0.deploy_buttons(the_sprite_group.textbox_output[6][1], screen, player0, level, world.plot_index_list)
+			next_dialogue_index = p_choice_output[0]
+			# if p_choice_output[1] != last_save_slot and p_choice_output[1] != -1:
+			# 	last_save_slot = p_choice_output[1]
+			# 	t1.overwrite_file('save_files/last_save_slot.txt', str(last_save_slot))
+   
 			if next_dialogue_index != -3:
 				for npc in the_sprite_group.textprompt_group: #look for npc in sprite group what has a player choice open
 					if npc.player_choice_flag:
@@ -452,7 +459,7 @@ def main():
 			pygame.draw.rect(screen, (0,0,0), (0,0,SCREEN_WIDTH,SCREEN_HEIGHT))
 	
 		#--------------------------------------------------------------MAIN MENU CODE---------------------------------------------------------------------
-		if level == 0: 
+		if level == 0 or ui_manager0.saves_menu_enable: 
 			draw_bg(screen, gradient_dict, level_dict[level][1], level_dict[level][0])
 			pause_game = False
 			exit_to_title = False
@@ -469,7 +476,10 @@ def main():
 	
 			if not run:
 				pygame.time.wait(100)   
-
+			else:#revive the player
+				player0.hits_tanked = 0
+				player0.stamina_used = 0
+				player0.Alive = True
 	
 		#-------------------------------------------------pausing game--------------------------------------------------------
 		if pause_game:
@@ -710,7 +720,10 @@ def main():
 					if event.key == ctrls_list[7]: #pygame.K_RALT
 						player0.sprint = True
 					#press button and check if item selected can be used
-					if (event.key == ctrls_list[9] or player_inv_UI.use_item_btn_output) and player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory):
+					if ((event.key == ctrls_list[9] or player_inv_UI.use_item_btn_output) 
+						and player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory)
+                        #and player0.inventory_handler.item_usage_hander0.sub_function_dict[][0] != 'nothing'
+                    	):
 						
 						#trigger an animation here
 						#let the last frame of the animation trigger apply the effects of the item

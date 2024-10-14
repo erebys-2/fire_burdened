@@ -253,11 +253,8 @@ class ui_manager():
             self.show_vol_menu(screen)
             
 #---------------------------------------------------------Save select sub menu-----------------------------------
-#need to load necessary data from a text file then behave like new game
-
     def show_saves_menu(self, screen):
         pygame.draw.rect(screen, (0,0,0), (0,0,self.S_W,self.S_H))
-        
         next_level = 0
         #sets plot index list to 0
         plot_index_list = []
@@ -448,21 +445,22 @@ class ui_manager():
         screen.blit(self.pause_img, (0,0))
         self.text_manager0.disp_text_box(screen, self.fontlist[1], ('','You Died'), (-1,-1,-1), (200,200,200), 
                                          (288, self.S_H//2 - 32,self.S_W,self.S_H), False, False, 'none')
-        
-        if self.trigger_once:
-            self.run_game = True
-            self.button_list *= 0
-
-            for i in range(2):
-                self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +32 +36*i, self.generic_img, 1))
-            self.trigger_once = False
-
+   
         if not self.saves_menu_enable:
+            if self.trigger_once:
+                self.run_game = True
+                self.button_list *= 0
+
+                for i in range(2):
+                    self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +32 +36*i, self.generic_img, 1))
+                self.trigger_once = False
+            
             if self.button_list[0].draw(screen):
-                self.m_player.play_sound(self.m_player.sfx[1])
-                self.saves_menu_enable = True
                 self.trigger_once = True
-            self.button_list[0].show_text(screen, self.fontlist[1], ('','Last Save')) 
+                self.saves_menu_enable = True
+                pygame.mixer.stop()
+                self.m_player.play_sound(self.m_player.sfx[1])
+            self.button_list[0].show_text(screen, self.fontlist[1], ('','Load File')) 
             
             if self.button_list[1].draw(screen):
                 exit_to_title = True
@@ -472,7 +470,6 @@ class ui_manager():
             self.button_list[1].show_text(screen, self.fontlist[1], ('','Title (ESC)'))  
         
         elif self.saves_menu_enable:
-            print("load files not implemented yet")
-            self.saves_menu_enable = False
+            self.show_saves_menu(screen)
         
         return exit_to_title

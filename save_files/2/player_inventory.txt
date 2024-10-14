@@ -1,10 +1,10 @@
+test, 2
 empty, 0
 empty, 0
 empty, 0
 empty, 0
 empty, 0
-a, 1
 empty, 0
 empty, 0
 empty, 0
-empty, 0
+Cursed Flesh, 2

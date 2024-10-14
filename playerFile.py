@@ -351,8 +351,8 @@ class player(pygame.sprite.Sprite):
                 if self.inventory_handler.pick_up_item(self.collision_rect, the_sprite_group.item_group, ['Cursed Flesh'], True): 
                     self.m_player.play_sound(self.m_player.sfx[8])
     
-    def do_npc_collisions(self, dx, textprompt_group):
-        for obj in [obj for obj in textprompt_group 
+    def do_npc_collisions(self, dx, the_sprite_group):
+        for obj in [obj for obj in the_sprite_group.textprompt_group 
                     if obj.rect.x > -32 and obj.rect.x < 640
                     ]:
             if self.collision_rect.colliderect(obj.rect) and self.action == 0 and dx == 0:
@@ -360,6 +360,9 @@ class player(pygame.sprite.Sprite):
                 if obj.name == 'save_pt':
                     if self.hits_tanked > 0:
                         self.hits_tanked -= 0.01
+                        particle = particle_(self.rect.centerx + random.randrange(-24,24), self.rect.centery + random.randrange(-24,24), -self.direction, 0.5*self.scale, 
+                                            'player_bullet_explosion', True, random.randrange(0,3), False)
+                        the_sprite_group.particle_group.add(particle)
                     elif self.hits_tanked <= 0:
                         self.hits_tanked = 0
                     
@@ -430,7 +433,7 @@ class player(pygame.sprite.Sprite):
         self.in_air = dxdy[2]
         #self.hitting_wall = False
         
-        self.do_npc_collisions(dx, the_sprite_group.textprompt_group)
+        self.do_npc_collisions(dx, the_sprite_group)
         
         
         #size adjust for displaced rects

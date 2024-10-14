@@ -341,7 +341,10 @@ class inventory_UI(): #handles displaying inventory and
     def press_use_item_btn(self, inventory):
         #print(self.slot)
         item_can_be_used = False
-        if inventory[self.slot][1] > 0 and not self.item_details0.is_key_item(inventory[self.slot][0]):#add some additional logic for key items
+        if (inventory[self.slot][1] > 0 
+            and not self.item_details0.is_key_item(inventory[self.slot][0]) 
+            and inventory[self.slot][0] in self.item_details0.sub_function_dict
+            ):#add some additional logic for key items
             #self.use_item_flag = True#sets internal flag to true
             self.item_to_use = inventory[self.slot][0]
             item_can_be_used = True
@@ -479,7 +482,7 @@ class inventory_UI(): #handles displaying inventory and
 class item_details():
     def __init__(self):
         self.t = textfile_formatter()
-        
+        self.sub_function_dict = self.t.str_list_to_dict(self.t.read_text_from_file(os.path.join(config_path, 'item_subfunctions.txt')), 'list')
         self.key_items = self.t.read_text_from_file(os.path.join(config_path, 'keyitems_list.txt')) #list of strings that are id's of key items
         self.item_desc_dict = self.t.str_list_to_dict(self.t.read_text_from_file(os.path.join(config_path, 'item_descriptions.txt')), 'none')
         
