@@ -1,6 +1,7 @@
 from button import Button #type: ignore
 from textManager import text_manager #type: ignore
 from music_player import music_player #type: ignore
+from textfile_handler import textfile_formatter
 import os
 import pygame
 import csv
@@ -10,7 +11,7 @@ class ui_manager():
     def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, fontlist, ini_vol, fs_size):
         m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav']
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
-        
+        self.t1 = textfile_formatter()
         self.text_manager0 = text_manager()
         
         self.generic_img = pygame.image.load('sprites/generic_btn.png').convert_alpha()
@@ -62,6 +63,23 @@ class ui_manager():
         self.lower_volume = False
         self.raise_volume = False
         
+        self.set_player_location = False
+        self.player_new_coords = (32, 128)
+        
+        self.set_player_inv = False
+        self.player_new_inv = [
+            ['a', 1],
+            ['b', 1],
+            ['c', 1],
+            ['d', 1],
+            ['e', 1],
+            ['f', 1],
+            ['g', 1],
+            ['h', 1],
+            ['i', 1],
+            ['a', 1]
+        ]
+        
         
     def read_csv_data(self, data_name):
         temp_list = []
@@ -84,7 +102,10 @@ class ui_manager():
 #-----------------------------------------------------------main menu----------------------------------------------------------
     def show_main_menu(self, screen):
         next_level = 0
-        plot_index_list = [-1, -1]
+        #sets plot index list to 0
+        plot_index_list = []
+        for npc in range(len(os.listdir('sprites/npcs'))):
+            plot_index_list.append(-1)
         
         if not self.options_menu_enable and not self.saves_menu_enable and next_level == 0:
             if self.trigger_once:
@@ -101,8 +122,7 @@ class ui_manager():
                 self.m_player.play_sound(self.m_player.sfx[1])
                 self.trigger_once = True
                 self.run_game = True
-                #sets plot index list to 0
-                plot_index_list = [-1,-1]
+                
                 next_level = 1
             self.button_list[0].show_text(screen, self.fontlist[1], ('','New Game'))
             
@@ -127,12 +147,12 @@ class ui_manager():
             self.show_options_menu(screen)
             
         elif not self.options_menu_enable and self.saves_menu_enable:
-            print("load files not implemented yet")
-            #will have to load the plot index list when a save is loaded
-            plot_index_list = self.read_csv_data('plot_data')
-            print(plot_index_list)
+            # print("load files not implemented yet")
+            # #will have to load the plot index list when a save is loaded
+            # plot_index_list = self.read_csv_data('plot_data')
+            # print(plot_index_list)
             
-            self.saves_menu_enable = False
+            self.show_saves_menu(screen)
             
         return (next_level, self.run_game, plot_index_list)
 
@@ -231,6 +251,64 @@ class ui_manager():
             
         else:
             self.show_vol_menu(screen)
+            
+#---------------------------------------------------------Save select sub menu-----------------------------------
+#need to load necessary data from a text file then behave like new game
+
+    def show_saves_menu(self, screen):
+        pygame.draw.rect(screen, (0,0,0), (0,0,self.S_W,self.S_H))
+        
+        next_level = 0
+        #sets plot index list to 0
+        plot_index_list = []
+        for npc in range(len(os.listdir('sprites/npcs'))):
+            plot_index_list.append(-1)
+        
+        if self.trigger_once: #deploy buttons
+            self.button_list *= 0
+            for i in range(5):
+                self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +40*i, self.generic_img, 1))
+            self.trigger_once = False
+            
+        for i in range(4):
+            if self.button_list[i].draw(screen): #Save file buttons
+                #fill inventory
+                path = f'save_files/{i}'
+                self.player_new_inv = self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(path, 'player_inventory.txt')))
+                self.set_player_inv = True
+                
+                #set plot index
+                plot_index_list_temp = self.t1.str_list_to_list(self.t1.read_text_from_file(os.path.join(path, 'plot_index_list.txt')))
+                if plot_index_list_temp[0] != 'empty': #this way I don't have to keep adding -1 if a player loads from a new save
+                    plot_index_list = plot_index_list_temp
+                
+                #get level and player location data
+                new_lvl_and_player_dat = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'level_and_player_coords.txt')), 'int')
+                self.player_new_coords = (new_lvl_and_player_dat['player_x'], new_lvl_and_player_dat['player_y'])
+                self.set_player_location = True
+                
+                #set the new level
+                self.run_game = True    
+                next_level = new_lvl_and_player_dat['level']
+                
+                #get out of the sub menu
+                self.saves_menu_enable = False
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.trigger_once = True
+                
+            self.button_list[i].show_text(screen, self.fontlist[1], ('',f'File {i}')) 
+        
+        #back button
+        if self.button_list[4].draw(screen):
+            self.saves_menu_enable = False
+            
+            self.m_player.play_sound(self.m_player.sfx[1])
+            
+            self.trigger_once = True
+        self.button_list[4].show_text(screen, self.fontlist[1], ('','Back'))  
+     
+        return (next_level, self.run_game, plot_index_list)
+
             
 #---------------------------------------------------------Controls sub menu---------------------------                
     def show_ctrl_menu(self, screen):

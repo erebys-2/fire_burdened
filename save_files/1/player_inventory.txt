@@ -1,0 +1,10 @@
+test, 8
+empty, 0
+empty, 0
+empty, 0
+empty, 0
+empty, 0
+empty, 0
+empty, 0
+empty, 0
+Cursed Flesh, 8

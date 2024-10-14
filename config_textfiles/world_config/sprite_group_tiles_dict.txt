@@ -10,3 +10,4 @@
 48: p_int, moving_plat_v, 18
 49: npc, Test, -1
 50: npc, Test2, -1
+51: npc, save_pt, -1

@@ -1,1 +1,2 @@
 test_greeting: Good.# 2; :(# 0
+save_game: File 1# 0; File 2# 0; File 3# 0; File 4# 0

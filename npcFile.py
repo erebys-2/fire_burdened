@@ -18,8 +18,7 @@ class npc(pygame.sprite.Sprite):
         self.dialogue_list = dialogue_list
         self.name = name
         self.flip = False
-        #self.pil_update_flag = False
-        
+
         self.npc_index_id = (os.listdir('sprites/npcs')).index(name)
 
         self.plot_index_list = plot_index_list
@@ -38,8 +37,8 @@ class npc(pygame.sprite.Sprite):
         self.action = 0
         self.update_time = pygame.time.get_ticks()
         
-        action_types = ('idle', 'wave', 'sit', 'shock')
-        for action in action_types:
+        #action_types = ('idle', 'wave', 'sit', 'shock')
+        for action in range(len(os.listdir(f'sprites/npcs/{self.name}'))):
             temp_list = []
             frames = len(os.listdir(f'sprites/npcs/{self.name}/{action}'))
 
@@ -74,9 +73,11 @@ class npc(pygame.sprite.Sprite):
         #plot index, dialogue index to jump to
         self.plot_index_jumps_dict = t1.str_list_to_dict(t1.read_text_from_file('npc_dialogue_files/npc_plot_index_config/' + self.name + '.txt'), 'int')
         #print(self.plot_index_jumps_dict)
-        
     
-        
+    def get_npc_index_id(self, name):
+        return (os.listdir('sprites/npcs')).index(name)
+    
+
     #after every textbox, this is called, need to specify name so that npcs can modify the plot index's of other npcs
     # def update_plot_index(self, name, new_plot_index):
     #     if new_plot_index != self.plot_index_list[self.npc_index_id]:
@@ -120,6 +121,7 @@ class npc(pygame.sprite.Sprite):
                 if next_dialogue:#convert continuous signal next_dialogue into an impulse
                     #print(self.is_initial_index)
                     if self.trigger_once != next_dialogue and not self.get_dialogue_flag:
+                        #print(self.plot_index_list)
                         #print(current_dialogue_list) the indexing is really weird
                         #print(dialogue[1])
                         if dialogue[1] == -3: #if the index is -3, then a player choice is in progress.
@@ -193,11 +195,11 @@ class npc(pygame.sprite.Sprite):
         if self.enabled and self.rect.x > -self.width and self.rect.x < 640 + self.width:
             screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
         
-    def animate(self, sp_group_list):
+    def animate(self, sprite_group):
         self.mask = pygame.mask.from_surface(self.image)
         
         framerates = (
-            100,
+            180,
             100,
             100,
             100
@@ -220,6 +222,24 @@ class npc(pygame.sprite.Sprite):
     #npc sub classes take plot index and current level to decide the dialogue index
     
 #each level, NPC's dialogue indexes are reset
+
+class save_pt(npc):
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_list, current_dialogue_list, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_list)
+        #get plot index
+        self.plot_index = 0
+        self.current_level = level
+        self.current_p_inv = player_inventory
+
+        
+    def get_dialogue_index(self, level, player_inventory, current_dialogue_index, plot_index_list, current_dialogue_list):
+        pass
+    
+    def display_interaction_prompt(self, dialogue_enable, player_rect, screen):
+        self.player_collision = self.rect.colliderect(player_rect)
+        if self.player_collision and self.name != 'invisible_prompt':
+            if not dialogue_enable:
+                screen.blit(self.interaction_prompt, (self.rect.x + 32, self.rect.y + 32, 32, 32))
     
 class Test(npc):
     def __init__(self, x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_list, current_dialogue_list, level, player_inventory):
@@ -227,11 +247,12 @@ class Test(npc):
         #get plot index
         self.plot_index = self.plot_index_list[self.npc_index_id]
 
+
         #self.current_dialogue_index = 0
         self.current_level = level
         self.current_p_inv = player_inventory
         
-        self.get_dialogue_index(level, player_inventory, self.current_dialogue_index, plot_index_list, current_dialogue_list)
+        #self.get_dialogue_index(level, player_inventory, self.current_dialogue_index, plot_index_list, current_dialogue_list)
 
     #npc specific method called at the start of each self.enable()
     
@@ -264,7 +285,7 @@ class Test(npc):
             #     self.update_plot_index(1)
             #     current_dialogue_index = 4
             elif level == 1 and current_dialogue_index == 3:# and self.plot_index_list[1] == -1:
-                plot_index_list[1] = 1
+                plot_index_list[self.get_npc_index_id('Test2')] = 1
                 #self.pil_update_flag = True
             
             else:

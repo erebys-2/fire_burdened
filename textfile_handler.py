@@ -55,13 +55,27 @@ class textfile_formatter():
             rtn_list.append((tuple(str_list), item[1], item[2]))
         
         return tuple(rtn_list)
+    
+    def str_list_to_list_list(self, str_list):
+        rtn_list = []
+        for str_ in str_list:
+            rtn_list.append(list(self.format_line_to_list(str_, ',')))
+            
+        return rtn_list
+    
+    def str_list_to_list(self, str_list):
+        rtn_list = []
+        for str_ in str_list:
+            rtn_list.append(self.auto_string_to_number(str_))
+        
+        return rtn_list
         
     
     #takes a formatted string and returns a list, ints and floats will be automatically processed
     #appropriate formatting: 
-    # 'this, is, the, future, of, many, parameters.'
-    # '1, 2, 4, 45345, 1234!, -90, .807, -.0008.'
-    #note the space after ',' and ending with '.'
+    # 'this, is, the, future, of, many, parameters'
+    # '1, 2, 4, 45345, 1234!, -90, .807, -.0008'
+    #note the space after ','
     def format_line_to_list(self, line, delimiter): 
         start_index = 0
         end_index = 0
@@ -151,3 +165,8 @@ class textfile_formatter():
         str_list.append('')
         
         return str_list
+    
+    def overwrite_file(self, path, data):
+        text_file = open(path, 'w')
+        text_file.write(data)
+        text_file.close()

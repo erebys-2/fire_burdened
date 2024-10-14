@@ -15,12 +15,13 @@ class player_choice_handler():
         self.next_index = -3
         self.prompt = ('','')
         
-        t1 = textfile_formatter()
+        self.t1 = textfile_formatter()
         path = 'npc_dialogue_files/player_choice_config/'
-        self.player_choice_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'choice_selection_dict.txt')), 'list_list')
+        self.player_choice_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'choice_selection_dict.txt')), 'list_list')
+        
         
         #2nd dictionary for prompts
-        self.player_prompt_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'prompt_dict.txt')), 'text_box')
+        self.player_prompt_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'prompt_dict.txt')), 'text_box')
 
         self.trigger_once = True
         self.button_list = []
@@ -51,12 +52,11 @@ class player_choice_handler():
         return pos_list
 
         
-    def deploy_buttons(self, key, screen):
+    def deploy_buttons(self, key, screen, player, level, plot_index_list):
         screen.blit(pygame.transform.flip(self.bg_img, False, False), screen.get_rect())
         pygame.draw.rect(screen, (0,0,0), self.dialogue_box_rect)#draw box
         player_choices = self.player_choice_dict[key] #get relevant data
-        
-        
+
         if self.trigger_once:#instantiate buttons
             self.prompt = self.player_prompt_dict[key]#get prmpt
             self.next_index = -3
@@ -74,6 +74,28 @@ class player_choice_handler():
                 self.m_player.play_sound(self.m_player.sfx[1])
                 self.next_index = player_choices[i][1]
                 #self.trigger_once = True
+                if key == 'save_game':
+                    path = f'save_files/{i}'
+                    str1 = f'level: {level}\nplayer_x: {player.rect.x}\nplayer_y: {player.rect.y + 8}'
+                    
+                    str2 = ''
+                    for plot_index in plot_index_list:
+                        str2 = str2 + (f'{plot_index}\n')
+                    str2 = str2[0:len(str2)-1]
+                        
+                    str3 = ''
+                    for slot in player.inventory_handler.inventory:
+                        str3 = str3 + f'{slot[0]}, {slot[1]}\n'
+                    str3 = str3[0:len(str3)-1]
+                    
+                    self.t1.overwrite_file(os.path.join(path, 'level_and_player_coords.txt'), str1)
+                    self.t1.overwrite_file(os.path.join(path, 'plot_index_list.txt'), str2)
+                    self.t1.overwrite_file(os.path.join(path, 'player_inventory.txt'), str3)
+                    
+                    
+                
+                #will need to set level, player new coords, inventory, plot index
+                # make sure bosses are dead/ one time puzzles are trapped/ key items stay collected
                 
             self.button_list[i].show_text(screen, self.fontlist[1], ('', player_choices[i][0]))
             

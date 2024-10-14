@@ -4,7 +4,7 @@ import os
 from enemy32File import enemy_32wide #type: ignore
 from BGspritesFile import tree, fountain, lamp
 from player_interactable import player_interactable_
-from npcFile import npc, Test, Test2
+from npcFile import npc, Test, Test2, save_pt
 
 from textfile_handler import textfile_formatter
 
@@ -80,7 +80,9 @@ class World():
         self.special_hitbox_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'special_hitbox_tiles_dict.txt')), 'none')
         
         self.plot_index_list = []
-        self.npc_current_dialogue_list = [0,0]
+        self.npc_current_dialogue_list = []
+        for npc in range(len(os.listdir('sprites/npcs'))):
+            self.npc_current_dialogue_list.append(0)
         
         self.lvl_slice_lists = []
             
@@ -148,8 +150,7 @@ class World():
         self.plot_index_list = plot_index_list
         
     #for saving
-    def get_plot_index_list(self, textprompt_group):
-        self.update_all_plot_index_lists(textprompt_group)
+    def get_plot_index_list(self):
         return self.plot_index_list
     
     def clear_data(self):
@@ -212,6 +213,12 @@ class World():
                 dialogue_list = self.get_specific_npc_dialogue('Test2')
                 Testnpc2 = Test2(x * 32, y * 32, 2, 1, 'Test2', ini_vol, True, dialogue_list, self.plot_index_list, self.npc_current_dialogue_list, level, player_inventory= [])
                 the_sprite_group.textprompt_group.add(Testnpc2)
+                
+            elif sprite_id == 'save_pt':
+                dialogue_list = self.get_specific_npc_dialogue('save_pt')
+                save_pt_obj = save_pt(x * 32, y * 32, 1, 1, 'save_pt', ini_vol, True, dialogue_list, self.plot_index_list, self.npc_current_dialogue_list, level, player_inventory= [])
+                the_sprite_group.textprompt_group.add(save_pt_obj)
+                
     
     #=======================================  SET HITBOXES FOR SPECIAL TILES =================================
     

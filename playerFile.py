@@ -357,6 +357,14 @@ class player(pygame.sprite.Sprite):
                     ]:
             if self.collision_rect.colliderect(obj.rect) and self.action == 0 and dx == 0:
                 self.dialogue_trigger_ready = True
+                if obj.name == 'save_pt':
+                    if self.hits_tanked > 0:
+                        self.hits_tanked -= 0.01
+                    elif self.hits_tanked <= 0:
+                        self.hits_tanked = 0
+                    
+                    if self.stamina_usage_cap != 0:
+                        self.stamina_usage_cap = 0
         #     #print(obj.name)
         # else:
         #     self.dialogue_trigger_ready = False

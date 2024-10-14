@@ -101,6 +101,7 @@ def main():
 	maroonish = [140, 107, 116]
 	reddish =  [170,143,167]
 	jade = [119, 121, 124]
+	grey = [110, 95, 111]
 
 	#dictionaty for gradients
 	gradient_dict = {
@@ -115,8 +116,8 @@ def main():
  	# 			=> (tile rect, next level, new player location)
 	level_dict = {
 		0:[black, 'none', 15, 30, [], False], #lvl 0
-		1:[maroonish, 'none', 15, 200, [(2, 15*32, 2, 44*32, 288), (2, 15*32, 2, 0, 384)], True], #lvl 1
-		2:[maroonish, 'none', 15, 45, [(2, 15*32, 1, 199*32, 384), (2, 15*32, 1, 0, 288)], True] #lvl 2
+		1:[grey, 'none', 15, 200, [(2, 15*32, 2, 44*32, 288), (2, 15*32, 2, 0, 384)], True], #lvl 1
+		2:[grey, 'none', 15, 45, [(2, 15*32, 1, 199*32, 384), (2, 15*32, 1, 0, 288)], True] #lvl 2
 	}
 
 	#lists for dynamic CSVs
@@ -157,6 +158,14 @@ def main():
 					
 		return temp_list
 
+	def fill_player_inv(inventory):
+		player0.inventory_handler.inventory = inventory
+		return False
+
+	def set_player_coords(coords):
+		player0.rect.x = coords[0]
+		player0.rect.y = coords[1]
+		return False
 
 	def check_double_tap(tap, double_tap_time, double_tap_initiated, double_tap_interval):
 		double_tapped = False
@@ -240,17 +249,13 @@ def main():
 
 	double_tap_time = pygame.time.get_ticks()
 	double_tap_initiated = False
-	
-
-	
-
 
 	while run:
 		clock.tick(FPS)
 		#screen.fill((0, 0, 0)) 
 		temp_move_R = False
 		temp_move_L = False
-		player_enable_master = (level_dict[level][5] and not dialogue_enable and not level_transitioning)
+		player_enable_master = (level_dict[level][5] and not dialogue_enable and not level_transitioning and not camera.set_ini_pos)
 	
 		if level == 0 or pause_game or not player0.Alive or inventory_opened or dialogue_enable:#delete mouse when out of the main menu
 			pygame.mouse.set_visible(1)
@@ -262,6 +267,8 @@ def main():
 			next_level = player0_lvl_transition_data[1][0]
 			player_new_x = player0_lvl_transition_data[1][1]
 			player_new_y = player0_lvl_transition_data[1][2]
+   
+		#need to set a player new_x and directly set player's rect y, need to set level as well
 
 		#----------------------------------------------------------------------level changing-------------------------------------------------
 		if level != next_level:
@@ -283,10 +290,13 @@ def main():
 			if move_R:
 				temp_move_R = move_R
 				move_R = False
-			player0.rect.x = player_new_x - 32 #set player location
-			
-			#player0.rect.y = player_new_y #disabling this makes it so that you can jump between levels
-			player0.vel_y = 0
+
+			if ui_manager0.set_player_location:
+				ui_manager0.set_player_location = set_player_coords(ui_manager0.player_new_coords)
+			else:
+				player0.rect.x = player_new_x - 32 #set player location
+				#player0.rect.y = player_new_y #disabling this makes it so that you can jump between levels
+				player0.vel_y = 0
 			
 			camera.rect.centerx = HALF_SCREEN_W
 			if world.x_scroll_en:
@@ -376,7 +386,7 @@ def main():
 		elif the_sprite_group.textbox_output[6][0] and the_sprite_group.textbox_output[2]: #handling player choice
 		
 			dialogue_box0.draw_box_and_portrait(screen, the_sprite_group.textbox_output[4], the_sprite_group.textbox_output[5])
-			next_dialogue_index = p_choice_handler0.deploy_buttons(the_sprite_group.textbox_output[6][1], screen)
+			next_dialogue_index = p_choice_handler0.deploy_buttons(the_sprite_group.textbox_output[6][1], screen, player0, level, world.plot_index_list)
 	
 			if next_dialogue_index != -3:
 				for npc in the_sprite_group.textprompt_group: #look for npc in sprite group what has a player choice open
@@ -448,9 +458,12 @@ def main():
 			exit_to_title = False
 
 			#plot index list's csv is read within ui_manager
-			output = ui_manager0.show_main_menu(screen)
+			if ui_manager0.saves_menu_enable:
+				output = ui_manager0.show_saves_menu(screen)
+			else:
+				output = ui_manager0.show_main_menu(screen)
 	
-			world.set_plot_index_list(plot_index_list = output[2])
+			world.set_plot_index_list(plot_index_list = output[2])#world plot index saved here
 			run = output[1]
 			next_level = output[0]
 	
@@ -483,6 +496,9 @@ def main():
 		if player0.finished_use_item_animation:
 			player_inv_UI.use_item_flag = True
 			player0.finished_use_item_animation = False
+   
+		if ui_manager0.set_player_inv:
+			ui_manager0.set_player_inv = fill_player_inv(ui_manager0.player_new_inv)
    
 
 		#---------------------------------updates from ui manager-----------------------------------------
@@ -727,7 +743,7 @@ def main():
 				if event.key == pygame.K_c:
 					camera.is_visible = not camera.is_visible
 
-				if (event.key == pygame.K_BACKSPACE or event.key == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable: 
+				if (event.key == pygame.K_BACKSPACE or event.key == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable and not ui_manager0.saves_menu_enable: 
 				#escape exits UI ONLY before the options sub menu is shown and any deeper into sub menus
 					if level != 0:
 						ui_manager0.trigger_once = True
