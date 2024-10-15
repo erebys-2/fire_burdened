@@ -342,6 +342,8 @@ def main():
 				player_inv_UI.use_item_flag = use_item_tuple[0] #use_item_flag (internal variable) is set to false
 				if use_item_tuple[1]: #item_was_used, once item_was_used returns true the item gets discarded
 					player_inv_UI.discard_item(player0.inventory_handler.inventory)#discard will discard the item in the current slot
+			else:
+				player0.scrollx = 0
 
 			scroll_x = player0.scrollx + camera.scrollx
 		else:
@@ -391,9 +393,6 @@ def main():
 			dialogue_box0.draw_box_and_portrait(screen, the_sprite_group.textbox_output[4], the_sprite_group.textbox_output[5])
 			p_choice_output = p_choice_handler0.deploy_buttons(the_sprite_group.textbox_output[6][1], screen, player0, level, world.plot_index_list)
 			next_dialogue_index = p_choice_output[0]
-			# if p_choice_output[1] != last_save_slot and p_choice_output[1] != -1:
-			# 	last_save_slot = p_choice_output[1]
-			# 	t1.overwrite_file('save_files/last_save_slot.txt', str(last_save_slot))
    
 			if next_dialogue_index != -3:
 				for npc in the_sprite_group.textprompt_group: #look for npc in sprite group what has a player choice open
@@ -476,10 +475,10 @@ def main():
 	
 			if not run:
 				pygame.time.wait(100)   
-			else:#revive the player
-				player0.hits_tanked = 0
-				player0.stamina_used = 0
-				player0.Alive = True
+			
+			elif run and ui_manager0.saves_menu_enable:
+				#reset player0
+				player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 	
 		#-------------------------------------------------pausing game--------------------------------------------------------
 		if pause_game:

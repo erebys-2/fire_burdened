@@ -33,6 +33,10 @@ class player_choice_handler():
         
         self.dialogue_box_rect = (0, 0, 640, 120)
         
+        self.save_indicator = False
+        self.last_save_slot = 0
+        self.save_time_pt = pygame.time.get_ticks()
+        
     def disable(self):
         self.next_index = -3
         self.button_list *= 0
@@ -56,7 +60,6 @@ class player_choice_handler():
         screen.blit(pygame.transform.flip(self.bg_img, False, False), screen.get_rect())
         pygame.draw.rect(screen, (0,0,0), self.dialogue_box_rect)#draw box
         player_choices = self.player_choice_dict[key] #get relevant data
-        last_save_slot = -1
 
         if self.trigger_once:#instantiate buttons
             self.prompt = self.player_prompt_dict[key]#get prmpt
@@ -92,10 +95,10 @@ class player_choice_handler():
                     self.t1.overwrite_file(os.path.join(path, 'level_and_player_coords.txt'), str1)
                     self.t1.overwrite_file(os.path.join(path, 'plot_index_list.txt'), str2)
                     self.t1.overwrite_file(os.path.join(path, 'player_inventory.txt'), str3)
-                    last_save_slot = i
+                    self.last_save_slot = i
+                    self.save_indicator = True
+                    self.save_time_pt = pygame.time.get_ticks()
                     
-                    
-                
                 #will need to set level, player new coords, inventory, plot index
                 # make sure bosses are dead/ one time puzzles are trapped/ key items stay collected
                 
@@ -104,10 +107,12 @@ class player_choice_handler():
         #draw text
         self.text_manager0.disp_text_box(screen, self.fontlist[1], self.prompt, (-1,-1,-1),  (200,200,200), (64, 12, 640, 120), False, False, 'none')
         self.text_manager0.disp_text_box(screen, self.fontlist[1], ('Exit:(Escape)', ''), (-1,-1,-1),  (80,80,80), (533, 456, 32, 32), False, False, 'none')
+        if self.save_indicator and self.save_time_pt + 2000 > pygame.time.get_ticks():
+            self.text_manager0.disp_text_box(screen, self.fontlist[1], (f'Saved in File {self.last_save_slot}', ''), (-1,-1,-1), (200,200,200), (64, 64, 32, 32), False, False, 'none')
+        else:
+            self.save_indicator = False
         
-
-        
-        return (self.next_index, last_save_slot)
+        return (self.next_index, self.last_save_slot)
     
 #next step is to modify the NPC file so that when the index is -3, a signal is sent to the text manager
 #to call functions from this class
