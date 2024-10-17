@@ -89,7 +89,7 @@ def main():
 	font_massive = pygame.font.SysFont('SimSun', 48)
 
 	#camera instance
-	camera_offset = 24
+	camera_offset = 32
 	camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, camera_offset)
 
 	#colors
@@ -326,8 +326,7 @@ def main():
 			camera.auto_correct(player0.rect, player0.direction, player0.x_coord, 
                        [tile for tile in world.coords if tile[1][0] > -32 and tile[1][0] < 640], 
                        world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
-		
-		world_tile0_coord = world.draw(screen, scroll_x, scroll_y)#this draws the world and scrolls it 
+		world_tile0_coord = world.draw(screen, scroll_x, scroll_y, player0.hitting_wall)#this draws the world and scrolls it 
 		
 		
 		if not pause_game:
@@ -532,7 +531,7 @@ def main():
 		#-----------------------------------------------------------------------------------------------------------------------------------------------------------
 		#handling player death and game over screen------------------------------------------------------------------------------------
 		
-		if player0.hits_tanked >= player0.hp:#killing the player------------------------------------------------
+		if player0.hits_tanked >= player0.hp or player0.rect.y > 480:#killing the player------------------------------------------------
 			player0.Alive = False
 
 			if inventory_opened:#exit inventory if opened

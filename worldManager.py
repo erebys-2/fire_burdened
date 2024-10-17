@@ -96,6 +96,9 @@ class World():
         self.enemy0_id = 0
         self.transition_index = 0
         
+        # self.wall_hitting_time = pygame.time.get_ticks()
+        # self.hitting_wall_status = False
+        
         #self.world_map_non_parallax = pygame.Surface((32,32), pygame.SRCALPHA).convert_alpha
         #self.world_map_non_parallax.fill(pygame.Color(0,0,0,0))
         
@@ -371,7 +374,7 @@ class World():
 
                         
                                        
-    def draw_bg_layers(self, screen, scroll_X, scroll_Y, data):
+    def draw_bg_layers(self, screen, scroll_X, scroll_Y, data, player_hitting_wall):
         #currently only handles x scrolling
         #scroll_amnt = scroll_X
         #logic for looping bg, maximum sprite size is 480x480
@@ -381,7 +384,10 @@ class World():
                     tile[1][0] -= (2 * tile[1].width)
                 elif tile[1][0] < -tile[1].width:
                     tile[1][0] += (2 * tile[1].width)
-                tile[1][0] -= scroll_X
+                    
+                if not player_hitting_wall:
+                    #print(player_hitting_wall)
+                    tile[1][0] -= scroll_X
                 if tile[1].x <= self.screen_w and tile[1].x > -tile[1].width:
                     screen.blit(tile[0], tile[1]) # (image, position)
                
@@ -403,7 +409,7 @@ class World():
         if tile[1][0] > -32 and tile[1][0] < 640 + 32:
             screen.blit(tile[0], tile[1]) # (image, position)
                     
-    def draw(self, screen, scroll_X, scroll_Y): #MOVE sliceS HERE
+    def draw(self, screen, scroll_X, scroll_Y, player_hitting_wall): #MOVE sliceS HERE
 
         
         if scroll_X > 0:
@@ -411,12 +417,12 @@ class World():
         else:
             correction = 0
         
-        self.draw_bg_layers(screen, (scroll_X + correction)//3, 0, self.bg6)
-        self.draw_bg_layers(screen, 4*(scroll_X + correction)//7, 0, self.bg5)
-        self.draw_bg_layers(screen, 7*(scroll_X + correction)//9, 0, self.bg4)
+        self.draw_bg_layers(screen, (scroll_X + correction)//3, 0, self.bg6, player_hitting_wall)
+        self.draw_bg_layers(screen, 4*(scroll_X + correction)//7, 0, self.bg5, player_hitting_wall)
+        self.draw_bg_layers(screen, 7*(scroll_X + correction)//9, 0, self.bg4, player_hitting_wall)
         self.draw_filter_layer(screen, self.bg3)
-        self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg2)#detailed 1:1 bg layer 2
-        self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg1)
+        self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg2, player_hitting_wall)#detailed 1:1 bg layer 2
+        self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg1, player_hitting_wall)
         
         #these scroll every tile in a layer
         
@@ -437,7 +443,7 @@ class World():
             tile[1][1] -= scroll_Y
             
             
-        self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg)
+        self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg, player_hitting_wall)
  
         
         return (self.coords[0][1][0], self.coords[0][1][1]) #x and y of first tile

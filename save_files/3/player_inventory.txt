@@ -1,4 +1,4 @@
-test, 2
+test, 26
 empty, 0
 empty, 0
 empty, 0
@@ -7,4 +7,4 @@ empty, 0
 empty, 0
 empty, 0
 empty, 0
-Cursed Flesh, 2
+Cursed Flesh, 26
