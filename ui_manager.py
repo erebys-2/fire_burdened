@@ -182,7 +182,7 @@ class ui_manager():
                 self.m_player.play_sound(self.m_player.sfx[1])
                 self.trigger_once = True
                 pygame.mixer.unpause()
-            self.button_list[0].show_text(screen, self.fontlist[1], ('','Resume (ENT)')) 
+            self.button_list[0].show_text(screen, self.fontlist[1], ('','Resume')) 
                 
             if self.button_list[1].draw(screen):
                 self.options_menu_enable = True
@@ -197,7 +197,7 @@ class ui_manager():
                 pygame.mixer.unpause()
                 pygame.mixer.stop()
                 self.m_player.play_sound(self.m_player.sfx[1])
-            self.button_list[2].show_text(screen, self.fontlist[1], ('','Title (ESC)'))  
+            self.button_list[2].show_text(screen, self.fontlist[1], ('','Main Menu'))  
             
         else:
             #trigger options menu
@@ -302,7 +302,7 @@ class ui_manager():
             self.m_player.play_sound(self.m_player.sfx[1])
             
             self.trigger_once = True
-        self.button_list[4].show_text(screen, self.fontlist[1], ('','Back'))  
+        self.button_list[4].show_text(screen, self.fontlist[1], ('','Main Menu'))  
      
         return (next_level, self.run_game, plot_index_list)
 
@@ -467,7 +467,7 @@ class ui_manager():
                 self.trigger_once = True  
                 pygame.mixer.stop()
                 self.m_player.play_sound(self.m_player.sfx[1])
-            self.button_list[1].show_text(screen, self.fontlist[1], ('','Title (ESC)'))  
+            self.button_list[1].show_text(screen, self.fontlist[1], ('','Main Menu'))  
         
         elif self.saves_menu_enable:
             self.show_saves_menu(screen)

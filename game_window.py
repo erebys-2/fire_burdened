@@ -89,7 +89,7 @@ def main():
 	font_massive = pygame.font.SysFont('SimSun', 48)
 
 	#camera instance
-	camera_offset = 32
+	camera_offset = 24
 	camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, camera_offset)
 
 	#colors
@@ -697,7 +697,7 @@ def main():
 
 					if event.key == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and event.key != ctrls_list[0] and not player0.using_item: #pygame.K_i, pygame.K_w
 						change_once = True
-						player0.atk1 = (event.key == ctrls_list[4])
+						player0.atk1 = True # (event.key == ctrls_list[4])
 
 					elif event.key == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
 						status_bars.warning = True

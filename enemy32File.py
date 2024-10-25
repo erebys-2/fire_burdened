@@ -279,7 +279,11 @@ class enemy_32wide(pygame.sprite.Sprite):
             
             if self.inundated == True:
                 self.update_action(2)
-                dx += -self.direction * self.recoil_slow
+                if self.frame_index < 1:
+                    dx = 0
+                    #dy = 0
+                else:
+                    dx += -self.direction * self.recoil_slow
                 #dy-= 2
                 
             else:
@@ -323,7 +327,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             and self.rect.colliderect(player_atk_rect)
             and self.inundated == False
             ):
-            pygame.time.wait(8)
+            #pygame.time.wait(8)
             #the average point in a collision between rects is literally just the average of the coords opposite respective corners of rects
             x_avg = (self.rect.x + player_atk_rect.right)/2
             y_avg = (self.rect.y + player_atk_rect.bottom)/2
@@ -341,7 +345,9 @@ class enemy_32wide(pygame.sprite.Sprite):
                 self.rando_frame += 1
             else:
                 self.rando_frame = 0
-                
+
+            dy += self.vel_y * 2
+
             dx = -self.direction * self.recoil
             self.do_screenshake = True
             self.inundated = True

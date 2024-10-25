@@ -432,8 +432,6 @@ class player(pygame.sprite.Sprite):
         dx = dxdy[0]
         dy = dxdy[1] 
         self.in_air = dxdy[2]
-        #self.hitting_wall = False
-        
         self.do_npc_collisions(dx, the_sprite_group)
         
         #timer based update for hitting wall
@@ -479,7 +477,7 @@ class player(pygame.sprite.Sprite):
                 #displaced hitbox x collisions
                 elif (self.action != 9
                     and self.disp_flag #and self.action == 67
-                    and tile[1].colliderect(self.collision_rect.x + disp_x + dx, self.collision_rect.y, self.width + disp_x, self.height - 17)
+                    and tile[1].colliderect(self.collision_rect.x + disp_x + dx, self.collision_rect.y, self.width, self.height - 17)
                     ):
                     dx = -16*self.direction
                     dy = 0
@@ -488,25 +486,20 @@ class player(pygame.sprite.Sprite):
                 
                 #wall collisions while NOT rolling
                 elif (self.action != 9 and #this line is important for consistency
-                      dx != 0 and
-                    tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y, self.width, self.height - 17) 
+                    tile[1].colliderect(self.collision_rect.x + 1 + dx, self.collision_rect.y, self.width - 2, self.height - 17) 
                     ):
-                    #dx = 0
                     self.hitting_wall = True
                     self.hitting_wall_timer = pygame.time.get_ticks()
-                    #print(self.hitting_wall)
-                    
+
                     if abs(self.direction + dx) < abs(dx):
                         dx = 1*self.direction
                     else:
                         dx = -1*self.direction
-                    # self.in_air = False
-                    # self.curr_state = False
-                    #self.landing = False
+
                         
                 #dy collision stuff, sinking through tiles etc
                 
-                if (self.vel_y != 0 and tile[1].colliderect(self.collision_rect.x + 1, self.collision_rect.y + dy, self.width - 2, self.height)
+                if (self.vel_y != 0 and tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height)
                     #and not self.disp_flag
                     ):
 
@@ -526,16 +519,16 @@ class player(pygame.sprite.Sprite):
                     else: #IMPORTANT---------------------default floor and ceiling collisions
                         #basically there's 2 collision checks that each make up half of the collision rect, upper and lower
                         
-                        if tile[1].colliderect(self.collision_rect.x + 1, self.collision_rect.y + self.height//2 + dy, self.width - 2, self.height//2):
+                        if tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + self.height//2 + dy, self.width - 4, self.height//2):
                             dy = tile[1].top - self.rect.bottom #-1
                             self.rolled_into_wall = False
                             self.in_air = False
                             
-                        elif tile[1].colliderect(self.collision_rect.x + 1, self.collision_rect.y + dy, self.width - 2, self.height//2):
+                        elif tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height//2):
                             dy = tile[1].bottom  - self.rect.top
                 elif  ( not self.in_air
                         and self.vel_y > 6 #velocity based coyote jump
-                        and not tile[1].colliderect(self.collision_rect.x, self.collision_rect.y + dy, self.width , self.height)
+                        and not tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height)
                         ):
                     self.curr_state = True
                     self.in_air = True
@@ -600,7 +593,7 @@ class player(pygame.sprite.Sprite):
         if self.action == 1 and self.frame_index%2 == 0:
             self.particles_by_frame(self.frame_index//2 + 2, the_sprite_group, 3)
         
-        if not self.disp_flag and self.action != 5: #self.action < 5:# and self.rolled_into_wall == False:
+        if not self.disp_flag and self.action != 5 and not self.hitting_wall: #self.action < 5:# and self.rolled_into_wall == False:
             if moveL:
                 dx = -self.speed
                 self.flip = True

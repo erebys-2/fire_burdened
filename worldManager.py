@@ -388,6 +388,8 @@ class World():
                 if not player_hitting_wall:
                     #print(player_hitting_wall)
                     tile[1][0] -= scroll_X
+
+                #tile[1][0] -= scroll_X
                 if tile[1].x <= self.screen_w and tile[1].x > -tile[1].width:
                     screen.blit(tile[0], tile[1]) # (image, position)
                
