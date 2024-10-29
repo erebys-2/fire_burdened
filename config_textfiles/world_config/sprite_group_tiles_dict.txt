@@ -1,13 +1,14 @@
-26: p_int, grass, -1
-28: enemy, dog, -1
-29: enemy, shooter, -1
-31: bg_sprite, lamp, 1
-36: bg_sprite, tree, 6
-39: bg_sprite, fountain, 9
-45: p_int, crusher_top, 15
-46: p_int, spinning_blades, 16
-47: p_int, moving_plat_h, 17
-48: p_int, moving_plat_v, 18
-49: npc, Test, -1
-50: npc, Test2, -1
-51: npc, save_pt, -1
+26: p_int, grass, none, -1
+28: enemy, dog, none, -1
+29: enemy, shooter, none, -1
+31: bg_sprite, lamp, none, 1
+36: bg_sprite, tree, none, 6
+39: bg_sprite, fountain, none, 9
+45: p_int, crusher_top, none, 15
+46: p_int, spinning_blades, none, 16
+47: p_int, moving_plat_h, none, 17
+48: p_int, moving_plat_v, none, 18
+49: npc, Test, character, -1
+50: npc, Test2, character, -1
+51: npc, save_pt, object, -1
+52: npc, opening_scene, cutscene, -1

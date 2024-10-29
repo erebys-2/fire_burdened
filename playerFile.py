@@ -119,6 +119,7 @@ class player(pygame.sprite.Sprite):
         self.image2 = self.frame_list[self.action][self.frame_index]
         self.image3 = self.frame_list[13][0]
         self.rect = self.image.get_rect()
+        self.rect.topleft = (self.x_coord + 32, self.y_coord)
         self.collision_rect = self.image.get_bounding_rect()
 
         self.mask = pygame.mask.from_surface(self.image)
@@ -168,6 +169,9 @@ class player(pygame.sprite.Sprite):
         self.inventory_handler = inventory_handler(10)
         
         self.camera_offset = camera_offset
+        
+        self.in_cutscene = False
+        self.current_npc_enabled = False
        
     #methods
     
@@ -198,7 +202,7 @@ class player(pygame.sprite.Sprite):
             
     def update_landing(self, the_sprite_group):
         
-        if self.in_air != self.curr_state and not self.disp_flag and self.action != 1:
+        if self.in_air != self.curr_state and not self.disp_flag and self.action != 1 and not self.in_cutscene:
             if not self.in_air:
                 particle = particle_(self.rect.centerx, self.rect.centery, -self.direction, self.scale, 'player_mvmt', True, 0, False)
                 the_sprite_group.particle_group.add(particle)
@@ -240,7 +244,7 @@ class player(pygame.sprite.Sprite):
             if self.action == 8:
                 y_loc = self.collision_rect.y
                 self.image3 = self.frame_list[13][0]
-                x_loc += self.direction *16
+                x_loc += self.direction *12
             elif self.action == 7:
                 x_loc += self.direction *2
                 y_loc = self.collision_rect.y - self.width//4
@@ -354,9 +358,9 @@ class player(pygame.sprite.Sprite):
     
     def do_npc_collisions(self, dx, the_sprite_group):
         for obj in [obj for obj in the_sprite_group.textprompt_group 
-                    if obj.rect.x > -32 and obj.rect.x < 640
+                    if obj.rect.x > -32 and obj.rect.x < 640 and obj.enabled
                     ]:
-            if self.collision_rect.colliderect(obj.rect) and self.action == 0 and dx == 0:
+            if obj.rect.colliderect(self.collision_rect.x + self.collision_rect.width//16, self.collision_rect.y, 0.875*self.collision_rect.width, self.collision_rect.height) and self.action == 0 and dx == 0:
                 self.dialogue_trigger_ready = True
                 if obj.name == 'save_pt':
                     if self.hits_tanked > 0:
@@ -369,6 +373,12 @@ class player(pygame.sprite.Sprite):
                     
                     if self.stamina_usage_cap != 0:
                         self.stamina_usage_cap = 0
+                
+                if obj.is_cutscene:
+                    self.current_npc_enabled = obj.enabled
+                    if obj.enabled:
+                        self.in_cutscene = True
+                    
         #     #print(obj.name)
         # else:
         #     self.dialogue_trigger_ready = False

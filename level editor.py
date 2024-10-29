@@ -181,8 +181,8 @@ def draw_bg(data, layer, ref_layer):
                     #blit(source, dest, area=None, special_flags=0) -> Rect
                     screen.blit(tile_list[t_set_index][tile_], (x * TILE_SIZE - scroll, (y * TILE_SIZE)+ 16))
                     
-                elif tile_ in sprite_group_tiles_dict and sprite_group_tiles_dict[tile_][2] != -1:
-                    img = tile_list[1][sprite_group_tiles_dict[tile_][2]]
+                elif tile_ in sprite_group_tiles_dict and sprite_group_tiles_dict[tile_][3] != -1:
+                    img = tile_list[1][sprite_group_tiles_dict[tile_][3]]
                     if tile_ != 46:
                         scale = 1
                     else:
@@ -210,8 +210,8 @@ def draw_world(static_bg_oversized_tiles_dict, sprite_group_tiles_dict, layer, r
     for y, row in enumerate(world_data):#world data and bg data should have the same amount of data
         for x, tile in enumerate(row):
             if tile >= 0:
-                if tile in sprite_group_tiles_dict and sprite_group_tiles_dict[tile][2] != -1:
-                    img = tile_list[1][sprite_group_tiles_dict[tile][2]]
+                if tile in sprite_group_tiles_dict and sprite_group_tiles_dict[tile][3] != -1:
+                    img = tile_list[1][sprite_group_tiles_dict[tile][3]]
                     if tile != 46:
                         scale = 1
                     else:

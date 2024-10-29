@@ -43,7 +43,7 @@ class sprite_group():
 		]
   
 		self.hostiles_group = (self.enemy0_group, self.enemy_bullet_group, self.enemy_bullet_group2, self.p_int_group2)
-		self.textbox_output = ('', False, False, '', 0, 0, (False, ''))
+		self.textbox_output = ('', False, False, '', 0, 0, (False, ''), False)
 	
 		self.scroll_x = 0
 		self.pause_game = False

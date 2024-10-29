@@ -1,10 +1,12 @@
 import pygame
 import os
 
-from enemy32File import enemy_32wide #type: ignore
+from enemy32File import enemy_32wide
 from BGspritesFile import tree, fountain, lamp
 from player_interactable import player_interactable_
-from npcFile import npc, Test, Test2, save_pt
+from characterNPCs import Test, Test2
+from objectNPCs import save_pt
+from cutsceneNPCs import opening_scene
 
 from textfile_handler import textfile_formatter
 
@@ -79,7 +81,10 @@ class World():
         self.static_bg_oversized_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'static_bg_oversized_tiles_dict.txt')), 'int')
         self.special_hitbox_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'special_hitbox_tiles_dict.txt')), 'none')
         
-        self.plot_index_list = []
+        # self.cutscene_data_dict = cutscene_data_dict #cutscene_id: [show_once, shown]
+        # print(self.cutscene_data_dict)
+        
+        self.plot_index_dict = {}
         self.npc_current_dialogue_list = []
         for npc in range(len(os.listdir('sprites/npcs'))):
             self.npc_current_dialogue_list.append(0)
@@ -149,12 +154,12 @@ class World():
     
     #called in main menu where either a new game or save file is loaded
 
-    def set_plot_index_list(self, plot_index_list):
-        self.plot_index_list = plot_index_list
+    def set_plot_index_dict(self, plot_index_dict):
+        self.plot_index_dict = plot_index_dict
         
     #for saving
-    def get_plot_index_list(self):
-        return self.plot_index_list
+    def get_plot_index_dict(self):
+        return self.plot_index_dict
     
     def clear_data(self):
         for lvl_data in self.detailed_lvl_data_list:
@@ -166,6 +171,7 @@ class World():
         
         sprite_info = self.sprite_group_tiles_dict[tile]
         sprite_category = sprite_info[0]
+        sprite_subcategory = sprite_info[2]
         sprite_id = sprite_info[1]
 
         #enemies and player interactables/obstacles
@@ -207,20 +213,27 @@ class World():
         
         #npcs
         elif sprite_category == 'npc':
-            if sprite_id == 'Test':
-                dialogue_list = self.get_specific_npc_dialogue('Test')
-                Testnpc = Test(x * 32, y * 32, 2, 1, 'Test', ini_vol, True, dialogue_list, self.plot_index_list, self.npc_current_dialogue_list, level, player_inventory= [])
-                the_sprite_group.textprompt_group.add(Testnpc)
-                
-            elif sprite_id == 'Test2':
-                dialogue_list = self.get_specific_npc_dialogue('Test2')
-                Testnpc2 = Test2(x * 32, y * 32, 2, 1, 'Test2', ini_vol, True, dialogue_list, self.plot_index_list, self.npc_current_dialogue_list, level, player_inventory= [])
-                the_sprite_group.textprompt_group.add(Testnpc2)
-                
-            elif sprite_id == 'save_pt':
-                dialogue_list = self.get_specific_npc_dialogue('save_pt')
-                save_pt_obj = save_pt(x * 32, y * 32, 1, 1, 'save_pt', ini_vol, True, dialogue_list, self.plot_index_list, self.npc_current_dialogue_list, level, player_inventory= [])
-                the_sprite_group.textprompt_group.add(save_pt_obj)
+            if sprite_subcategory == 'character':
+                if sprite_id == 'Test':
+                    dialogue_list = self.get_specific_npc_dialogue('Test')
+                    Testnpc = Test(x * 32, y * 32, 2, 1, 'Test', ini_vol, True, dialogue_list, self.plot_index_dict, self.npc_current_dialogue_list, level, player_inventory= [])
+                    the_sprite_group.textprompt_group.add(Testnpc)
+                elif sprite_id == 'Test2':
+                    dialogue_list = self.get_specific_npc_dialogue('Test2')
+                    Testnpc2 = Test2(x * 32, y * 32, 2, 1, 'Test2', ini_vol, True, dialogue_list, self.plot_index_dict, self.npc_current_dialogue_list, level, player_inventory= [])
+                    the_sprite_group.textprompt_group.add(Testnpc2)
+                    
+            elif sprite_subcategory == 'object':
+                if sprite_id == 'save_pt':
+                    dialogue_list = self.get_specific_npc_dialogue('save_pt')
+                    save_pt_obj = save_pt(x * 32, y * 32, 1, 1, 'save_pt', ini_vol, True, dialogue_list, self.plot_index_dict, self.npc_current_dialogue_list, level, player_inventory= [])
+                    the_sprite_group.textprompt_group.add(save_pt_obj)
+                    
+            elif sprite_subcategory == 'cutscene':
+                if sprite_id == 'opening_scene':
+                    dialogue_list = self.get_specific_npc_dialogue('opening_scene')
+                    opening_scene_ = opening_scene(x * 32, y * 32, 1, 1, 'opening_scene', ini_vol, self.plot_index_dict['opening_scene'] != -4, dialogue_list, self.plot_index_dict, self.npc_current_dialogue_list, level, player_inventory= [])
+                    the_sprite_group.textprompt_group.add(opening_scene_)
                 
     
     #=======================================  SET HITBOXES FOR SPECIAL TILES =================================

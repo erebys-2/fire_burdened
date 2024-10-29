@@ -56,7 +56,7 @@ class player_choice_handler():
         return pos_list
 
         
-    def deploy_buttons(self, key, screen, player, level, plot_index_list):
+    def deploy_buttons(self, key, screen, player, level, world):
         screen.blit(pygame.transform.flip(self.bg_img, False, False), screen.get_rect())
         pygame.draw.rect(screen, (0,0,0), self.dialogue_box_rect)#draw box
         player_choices = self.player_choice_dict[key] #get relevant data
@@ -83,8 +83,8 @@ class player_choice_handler():
                     str1 = f'level: {level}\nplayer_x: {player.rect.x}\nplayer_y: {player.rect.y + 8}'
                     
                     str2 = ''
-                    for plot_index in plot_index_list:
-                        str2 = str2 + (f'{plot_index}\n')
+                    for key_ in world.plot_index_dict:
+                        str2 = str2 + (f'{key_}: {world.plot_index_dict[key_]}\n')
                     str2 = str2[0:len(str2)-1]
                         
                     str3 = ''
@@ -93,8 +93,9 @@ class player_choice_handler():
                     str3 = str3[0:len(str3)-1]
                     
                     self.t1.overwrite_file(os.path.join(path, 'level_and_player_coords.txt'), str1)
-                    self.t1.overwrite_file(os.path.join(path, 'plot_index_list.txt'), str2)
+                    self.t1.overwrite_file(os.path.join(path, 'plot_index_dict.txt'), str2)
                     self.t1.overwrite_file(os.path.join(path, 'player_inventory.txt'), str3)
+                    
                     self.last_save_slot = i
                     self.save_indicator = True
                     self.save_time_pt = pygame.time.get_ticks()

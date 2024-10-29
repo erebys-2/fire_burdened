@@ -15,6 +15,7 @@ class ui_manager():
         self.text_manager0 = text_manager()
         
         self.generic_img = pygame.image.load('sprites/generic_btn.png').convert_alpha()
+        self.invisible_img = pygame.image.load('sprites/invisible_btn.png').convert_alpha()
         self.pause_img = pygame.image.load('sprites/pause_bg.png').convert_alpha()
         
         self.S_W = SCREEN_WIDTH
@@ -103,9 +104,9 @@ class ui_manager():
     def show_main_menu(self, screen):
         next_level = 0
         #sets plot index list to 0
-        plot_index_list = []
-        for npc in range(len(os.listdir('sprites/npcs'))):
-            plot_index_list.append(-1)
+        plot_index_dict = {} #populate plot index for each npc
+        for npc in os.listdir('sprites/npcs'):
+            plot_index_dict[npc] = -1
         
         if not self.options_menu_enable and not self.saves_menu_enable and next_level == 0:
             if self.trigger_once:
@@ -147,14 +148,10 @@ class ui_manager():
             self.show_options_menu(screen)
             
         elif not self.options_menu_enable and self.saves_menu_enable:
-            # print("load files not implemented yet")
-            # #will have to load the plot index list when a save is loaded
-            # plot_index_list = self.read_csv_data('plot_data')
-            # print(plot_index_list)
             
             self.show_saves_menu(screen)
             
-        return (next_level, self.run_game, plot_index_list)
+        return (next_level, self.run_game, plot_index_dict)
 
 #-----------------------------------------------------------pause menu---------------------------------------------------------
     def show_pause_menu(self, screen):
@@ -257,14 +254,15 @@ class ui_manager():
         pygame.draw.rect(screen, (0,0,0), (0,0,self.S_W,self.S_H))
         next_level = 0
         #sets plot index list to 0
-        plot_index_list = []
-        for npc in range(len(os.listdir('sprites/npcs'))):
-            plot_index_list.append(-1)
+        plot_index_dict = {} #populate plot index for each npc
+        for npc in os.listdir('sprites/npcs'):
+            plot_index_dict[npc] = -1
         
         if self.trigger_once: #deploy buttons
             self.button_list *= 0
             for i in range(5):
                 self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +40*i, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W - 88, self.S_H - 32, self.invisible_img, 1))
             self.trigger_once = False
             
         for i in range(4):
@@ -275,9 +273,9 @@ class ui_manager():
                 self.set_player_inv = True
                 
                 #set plot index
-                plot_index_list_temp = self.t1.str_list_to_list(self.t1.read_text_from_file(os.path.join(path, 'plot_index_list.txt')))
-                if plot_index_list_temp[0] != 'empty': #this way I don't have to keep adding -1 if a player loads from a new save
-                    plot_index_list = plot_index_list_temp
+                plot_index_dict_temp = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt')), 'int')
+                if self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt')) != 'empty': #this way I don't have to keep adding -1 if a player loads from a new save
+                    plot_index_dict = plot_index_dict_temp
                 
                 #get level and player location data
                 new_lvl_and_player_dat = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'level_and_player_coords.txt')), 'int')
@@ -298,13 +296,17 @@ class ui_manager():
         #back button
         if self.button_list[4].draw(screen):
             self.saves_menu_enable = False
-            
             self.m_player.play_sound(self.m_player.sfx[1])
-            
             self.trigger_once = True
         self.button_list[4].show_text(screen, self.fontlist[1], ('','Main Menu'))  
+        
+        #reset all button
+        if self.button_list[5].draw(screen):
+            self.m_player.play_sound(self.m_player.sfx[1])
+            self.reset_all_saves()
+        self.button_list[5].show_text(screen, self.fontlist[1], ('','Reset All'))  
      
-        return (next_level, self.run_game, plot_index_list)
+        return (next_level, self.run_game, plot_index_dict)
 
             
 #---------------------------------------------------------Controls sub menu---------------------------                
@@ -473,3 +475,19 @@ class ui_manager():
             self.show_saves_menu(screen)
         
         return exit_to_title
+    
+    def reset_all_saves(self):
+        for i in range(4):
+            path = f'save_files/{i}'
+            str1 = f'level: 1\nplayer_x: 32\nplayer_y: -64'
+            
+            str2 = 'empty'
+                
+            str3 = ''
+            for slot in self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(path, 'player_inventory.txt'))):
+                str3 = str3 + f'empty, 0\n'
+            str3 = str3[0:len(str3)-1]
+            
+            self.t1.overwrite_file(os.path.join(path, 'level_and_player_coords.txt'), str1)
+            self.t1.overwrite_file(os.path.join(path, 'plot_index_dict.txt'), str2)
+            self.t1.overwrite_file(os.path.join(path, 'player_inventory.txt'), str3)

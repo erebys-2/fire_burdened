@@ -1,0 +1,13 @@
+Ah, you're awake.# 1# 0
+I found you lying here last night, out cold. You probably wouldn't have made it out here if I didn't find you.# 2# 0
+I could tell by your arms you're a newbie. Your skin is still tender, uncharred by magic.# 3# 1
+Do you know why they sent you here?# 4# 1
+...# 5# 2
+No?# 6# 2
+Do you remember the mission briefing?# 7# 3
+...# 8# 4
+This is not looking good for you so far.# 9# 4
+How about this, I will appoint you a mission, an easy one. Think of it like a- a darwinian trial!# 10# 5
+Meet me at the eastern wall.# 11# 6
+I promise to tell you the real mission if you can make it there.# 12# 6
+  # 12# 6

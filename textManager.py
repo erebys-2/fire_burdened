@@ -168,10 +168,13 @@ class dialogue_box(text_manager):
         self.character_art_rect = (0, 0, 640, 480)
         self.counter = 0
         
+        self.dialogue_box_bg = pygame.image.load('sprites/dialogue_box.png').convert_alpha()
+        
     def draw_box_and_portrait(self, screen, image_index, name_index):
         img = self.img_master_list[name_index][image_index]
         screen.blit(pygame.transform.flip(img, False, False), self.character_art_rect)
-        pygame.draw.rect(screen, (0,0,0), self.dialogue_box_rect)#can make a custom dialogue window later
+        screen.blit(self.dialogue_box_bg, self.dialogue_box_rect)
+        #pygame.draw.rect(screen, (0,0,0), self.dialogue_box_rect)#can make a custom dialogue window later
         
     def draw_text_box(self, textbox_output, font, screen, text_speed):
         name = textbox_output[3]

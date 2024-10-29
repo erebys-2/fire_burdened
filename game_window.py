@@ -24,7 +24,6 @@ from profilehooks import profile
 #@profile
 
 def main():
-
 	monitor_size = [pygame.display.Info().current_w, pygame.display.Info().current_h]
 
 	#setting the screen-----------------------------------------------------------
@@ -77,7 +76,8 @@ def main():
 	scroll_x = 0
 	scroll_y = 0
 
-
+	# t1 = textfile_formatter()
+	# cutscene_data_dict = t1.str_list_to_dict(t1.read_text_from_file('save_files/initial/cutscene_data.txt'), 'true_list')
 	world = World(SCREEN_WIDTH, SCREEN_HEIGHT)
 
 	#instantiate status bars
@@ -122,13 +122,9 @@ def main():
 	}
 
 	#lists for dynamic CSVs
-	#plot_index_list = [-1,-1]
 	vol_lvl = [10,10]
 	ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054, 121, 117]
-
-	#text manager instance
-	text_manager0 = text_manager()
-	t1 = textfile_formatter()
+	
 	# last_save_slot = int(t1.read_text_from_file('save_files/last_save_slot.txt')[0])
 
 	text_speed = 80
@@ -218,7 +214,7 @@ def main():
 	speed = 4
 	ccsn_chance = 10
 	
-	player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_offset)#6368 #5856 #6240 #test coords for camera autocorrect
+	player0 = player(32, -64, speed, hp, 6, 0, 0, vol_lvl, camera_offset)#6368 #5856 #6240 #test coords for camera autocorrect
 	#good news is that the player's coordinates can go off screen and currently the camera's auto scroll will eventually correct it
 	normal_speed = player0.speed
 
@@ -258,7 +254,7 @@ def main():
 		#screen.fill((0, 0, 0)) 
 		temp_move_R = False
 		temp_move_L = False
-		player_enable_master = (level_dict[level][5] and not dialogue_enable and not level_transitioning and not camera.set_ini_pos)
+		player_enable_master = (level_dict[level][5] and not level_transitioning and not camera.set_ini_pos)
 	
 		if level == 0 or pause_game or not player0.Alive or inventory_opened or dialogue_enable:#delete mouse when out of the main menu
 			pygame.mouse.set_visible(1)
@@ -357,11 +353,12 @@ def main():
 			#if not level_transitioning: #surpress sprite logic while level transitioning
 				
 			the_sprite_group.update_bg_sprite_group(screen, player0.hitbox_rect, player0.atk_rect_scaled)
-			the_sprite_group.update_text_prompt_group(screen, player0.hitbox_rect, dialogue_enable, next_dialogue, world.plot_index_list, world.npc_current_dialogue_list)
+			the_sprite_group.update_text_prompt_group(screen, player0.hitbox_rect, dialogue_enable, next_dialogue, world.plot_index_dict, world.npc_current_dialogue_list)
+			next_dialogue = False
 			the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, player0.direction, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
 			the_sprite_group.update_item_group(screen, player0.hitbox_rect)
-
-			player0.draw(screen)
+			if not player0.in_cutscene:
+				player0.draw(screen)
 
 			the_sprite_group.update_groups_infront_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, world.solids)
 		
@@ -383,6 +380,7 @@ def main():
 			# expression, (int)
 			# self.character_index_dict[self.name], (int)
 			# (player choice tuple)
+			# enable
 			# )
 			
 			dialogue_box0.draw_text_box(the_sprite_group.textbox_output, font_larger, screen, text_speed)
@@ -390,7 +388,7 @@ def main():
 		elif the_sprite_group.textbox_output[6][0] and the_sprite_group.textbox_output[2]: #handling player choice
 		
 			dialogue_box0.draw_box_and_portrait(screen, the_sprite_group.textbox_output[4], the_sprite_group.textbox_output[5])
-			p_choice_output = p_choice_handler0.deploy_buttons(the_sprite_group.textbox_output[6][1], screen, player0, level, world.plot_index_list)
+			p_choice_output = p_choice_handler0.deploy_buttons(the_sprite_group.textbox_output[6][1], screen, player0, level, world)
 			next_dialogue_index = p_choice_output[0]
    
 			if next_dialogue_index != -3:
@@ -468,7 +466,7 @@ def main():
 			else:
 				output = ui_manager0.show_main_menu(screen)
 	
-			world.set_plot_index_list(plot_index_list = output[2])#world plot index saved here
+			world.set_plot_index_dict(plot_index_dict = output[2])#world plot index saved here
 			run = output[1]
 			next_level = output[0]
 	
@@ -477,7 +475,7 @@ def main():
 			
 			elif run and ui_manager0.saves_menu_enable:
 				#reset player0
-				player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+				player0 = player(32, -64, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 	
 		#-------------------------------------------------pausing game--------------------------------------------------------
 		if pause_game:
@@ -487,7 +485,7 @@ def main():
 			pause_game = ui_tuple0[0]
 			if ui_tuple0[1]:
 				next_level = 0
-				player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+				player0 = player(32, -64, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 				player_new_x = 32
 				player_new_y = 32
 		
@@ -540,7 +538,7 @@ def main():
 
 			if ui_manager0.show_death_menu(screen):
 				next_level = 0
-				player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+				player0 = player(32, -64, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 				player_new_x = 32
 				player_new_y = 32
 	
@@ -568,10 +566,14 @@ def main():
 			player0.action = 0
 			player0.rolled_into_wall = True
 			inventory_opened = False
-			#world.update_all_plot_index_lists(the_sprite_group.textprompt_group)
-
-		if player0.hurting or not player0.dialogue_trigger_ready:
+			
+		if player0.in_cutscene:#dialogue system will activate as soon as the player collides with a 'cutscene' npc
+			dialogue_enable = True
+		if player0.hurting or not player0.dialogue_trigger_ready or not player0.current_npc_enabled:
 			dialogue_enable = False
+			player0.in_cutscene = False
+			
+			
 		#note there is a problem with the dialogue system where if an npc is trying to modify another npc's plot index list and the dialogue is cut off mid typing,
 		#the current index will linger (one of the parameters for changing plot index list), even if the player talks to another npc, the next time the player
 		#talks to the npc that was cut off plot index will be reset to the value from when it first changed since npc's will continue their dialogue from when they
@@ -761,7 +763,7 @@ def main():
 
 						if (pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
 							next_level = 0
-							player0 = player(32, 128, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+							player0 = player(32, -64, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 							player_new_x = 32
 							player_new_y = 32
 							dialogue_box0.reset_internals()
@@ -773,7 +775,10 @@ def main():
 							pygame.mixer.pause()
 							m_player.play_sound(m_player.sfx[1])
 		
-						elif dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list or the_sprite_group.textbox_output[6][0]: #exits dialogue window if an NPC finishes speaking (is this way to avoid bugs)
+						elif (not player0.in_cutscene and #cannot esc out of cutscene
+            					(dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list or 
+                  				the_sprite_group.textbox_output[6][0])
+                 				): #exits dialogue window if an NPC finishes speaking (is this way to avoid bugs)
 							dialogue_enable = False
 							p_choice_handler0.disable()
 
@@ -792,7 +797,7 @@ def main():
 						pause_game = False
 						pygame.mixer.unpause()
 					
-					if dialogue_trigger_ready:
+					if dialogue_trigger_ready or player0.in_cutscene:
 						dialogue_enable = True
 					if dialogue_enable and not the_sprite_group.textbox_output[6][0]:
 						if dialogue_box0.str_list_rebuilt != dialogue_box0.current_str_list:
@@ -869,8 +874,8 @@ def main():
 				# 	player0.sprint = False
 				if event.key == pygame.K_c:
 					show_controls_en = False
-				if event.key == pygame.K_RETURN:
-					next_dialogue = False
+				# if event.key == pygame.K_RETURN:
+				# 	next_dialogue = False
 
 		pygame.display.update()
 		pygame.display.set_caption(f"Fire Burdened 0.7 @ {clock.get_fps():.1f} FPS")

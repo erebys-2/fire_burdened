@@ -24,6 +24,8 @@ class textfile_formatter():
                 if char == ':':
                     key = self.auto_string_to_number(line[0:line.index(char)])
                     if format_mode == 'list':
+                        value = tuple(self.format_line_to_list(line[line.index(char)+2: len(line)], ','))
+                    elif format_mode == 'true_list':
                         value = self.format_line_to_list(line[line.index(char)+2: len(line)], ',')
                     elif format_mode == 'list_list':#used exclusively for player choice stuff
                         value = []
@@ -89,13 +91,14 @@ class textfile_formatter():
                 str_list.append(self.auto_string_to_number(line[start_index: end_index]))
                 start_index = end_index + 2
 
-        return tuple(str_list)
+        return str_list
     
     #takes string, converts to float or int when possible
     def auto_string_to_number(self, str_):
         rtn_val = str_ #stay a string by default
         is_int = True
         is_float = False
+        dot_count = 0
         
         for i in range(0, len(str_)):
             char = str_[i]
@@ -110,6 +113,11 @@ class textfile_formatter():
             if char == '.': #switch to float conversion
                 is_int = False
                 is_float = True
+                dot_count += 1
+            if dot_count > 1:
+                is_int = False
+                is_float = False
+                break
             
         if is_int:
             rtn_val = int(str_)
