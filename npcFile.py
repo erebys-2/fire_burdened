@@ -81,11 +81,12 @@ class npc(pygame.sprite.Sprite):
         return (os.listdir('sprites/npcs')).index(name)
     
     def get_message(self, current_dialogue_index):
-        message = self.dialogue_list[current_dialogue_index][0]
-        next_dialogue_index = self.dialogue_list[current_dialogue_index][1]
-        npc_expression = self.dialogue_list[current_dialogue_index][2]
+        name = self.dialogue_list[current_dialogue_index][0]
+        message = self.dialogue_list[current_dialogue_index][1]
+        next_dialogue_index = self.dialogue_list[current_dialogue_index][2]
+        npc_expression = self.dialogue_list[current_dialogue_index][3]
         
-        return (message, next_dialogue_index, npc_expression) #string, int
+        return (name, message, next_dialogue_index, npc_expression) #string, int
     
     #generally, current_dialogue_index will advance itself by following the next index in the dialogue array
     #self.get_dialogue_index() will only be triggered by specific conditions: level, plot index, current dialogue index and will be called right before
@@ -95,28 +96,30 @@ class npc(pygame.sprite.Sprite):
             
             #dialogue_enable and next_dialogue are global booleans in the game window file
             message = ''
+            name = ''
             if self.player_collision and dialogue_enable:
                 dialogue = self.get_message(self.current_dialogue_index) #returns message and index of next dialogue
-                expression = dialogue[2]
+                expression = dialogue[3]
+                name = dialogue[0]
                 
                 if not self.player_choice_flag:
-                    message = dialogue[0] #reformat here
+                    message = dialogue[1] #reformat here
                 else:
                     message = ('','')
                 
-                if dialogue[1] == -3 and not self.player_choice_flag: #impulse signal
+                if dialogue[2] == -3 and not self.player_choice_flag: #impulse signal
                     self.player_choice_flag = True
                     self.player_choice_key = message[0]
                     next_dialogue = True
                     #print(message)
                 else:
-                    current_dialogue_list[self.npc_index_id] = dialogue[1]
+                    current_dialogue_list[self.npc_index_id] = dialogue[3]
                 
                 if next_dialogue:#convert continuous signal next_dialogue into an impulse
 
                     if self.trigger_once != next_dialogue and not self.get_dialogue_flag:
 
-                        if dialogue[1] == -3: #if the index is -3, then a player choice is in progress.
+                        if dialogue[2] == -3: #if the index is -3, then a player choice is in progress.
                             #do not change variables and set player_choice_flag to true
                             #self.current_dialogue_index = 0
                             message = ('','')
@@ -124,7 +127,7 @@ class npc(pygame.sprite.Sprite):
                         elif not self.is_initial_index: 
                             #updates to next dialogue index
                             self.last_dialogue_index = self.current_dialogue_index
-                            self.current_dialogue_index = dialogue[1]
+                            self.current_dialogue_index = dialogue[2]
                             
                             self.get_dialogue_flag = True
                             
@@ -142,13 +145,14 @@ class npc(pygame.sprite.Sprite):
                 expression = 0
         else:
             message = ''
+            name = ''
             dialogue_enable= False
             expression = 0
         
         return (message, 
                 self.player_collision, 
                 dialogue_enable, 
-                self.name, 
+                name, 
                 expression, 
                 self.npc_index_id, 
                 (self.player_choice_flag, self.player_choice_key),

@@ -120,10 +120,9 @@ class ui_manager():
             screen.blit(self.title_screen, self.ts_rect)
             
             if self.button_list[0].draw(screen):
-                self.m_player.play_sound(self.m_player.sfx[1])
+                #self.m_player.play_sound(self.m_player.sfx[1])
                 self.trigger_once = True
                 self.run_game = True
-                
                 next_level = 1
             self.button_list[0].show_text(screen, self.fontlist[1], ('','New Game'))
             

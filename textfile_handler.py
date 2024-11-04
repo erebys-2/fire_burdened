@@ -53,9 +53,9 @@ class textfile_formatter():
             temp_list.append(self.format_line_to_list(str_, '#'))
             
         for item in temp_list:
-            str_list = self.split_string(item[0], limit, endcase_char)
-            rtn_list.append((tuple(str_list), item[1], item[2]))
-        
+            str_list = self.split_string(item[1], limit, endcase_char)
+            rtn_list.append((item[0], tuple(str_list), item[2], item[3]))
+
         return tuple(rtn_list)
     
     def str_list_to_list_list(self, str_list):

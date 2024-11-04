@@ -127,7 +127,7 @@ def main():
 	
 	# last_save_slot = int(t1.read_text_from_file('save_files/last_save_slot.txt')[0])
 
-	text_speed = 80
+	text_speed = 60
 
 
 
@@ -188,7 +188,7 @@ def main():
 	vol_lvl = read_settings_data('vol_data') #read saved eq regime
 	#more instantiations
 
-	#dialoguwe box handler
+	#dialogue box handler
 	dialogue_box0 = dialogue_box(vol_lvl)
 
 	#music player instance-------------------------------------------------------------------------------------------
@@ -260,6 +260,7 @@ def main():
 			pygame.mouse.set_visible(1)
 		else:
 			pygame.mouse.set_visible(0)
+   
 	
 
 		if player0_lvl_transition_data[0]:#test for player collision w/ level transition rects
@@ -566,6 +567,9 @@ def main():
 			player0.action = 0
 			player0.rolled_into_wall = True
 			inventory_opened = False
+		else:#important spaghetti code for making dialogue boxes work
+			dialogue_box0.reset_internals()
+			text_speed = 60
 			
 		if player0.in_cutscene:#dialogue system will activate as soon as the player collides with a 'cutscene' npc
 			dialogue_enable = True
@@ -806,8 +810,8 @@ def main():
 						else:
 							text_speed = 60
 							next_dialogue = True
-							dialogue_box0.type_out = True
-					
+							dialogue_box0.type_out = True				
+     
 					if level == 0:
 						m_player.play_sound(m_player.sfx[1])
 						ui_manager0.trigger_once = True

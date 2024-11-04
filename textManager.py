@@ -135,11 +135,6 @@ class text_manager():
             dy += 17
 
         return True
-    
-    
-    
-
-
 
 
 class dialogue_box(text_manager):
@@ -173,8 +168,8 @@ class dialogue_box(text_manager):
     def draw_box_and_portrait(self, screen, image_index, name_index):
         img = self.img_master_list[name_index][image_index]
         screen.blit(pygame.transform.flip(img, False, False), self.character_art_rect)
-        screen.blit(self.dialogue_box_bg, self.dialogue_box_rect)
         #pygame.draw.rect(screen, (0,0,0), self.dialogue_box_rect)#can make a custom dialogue window later
+        screen.blit(self.dialogue_box_bg, self.dialogue_box_rect)
         
     def draw_text_box(self, textbox_output, font, screen, text_speed):
         name = textbox_output[3]
@@ -189,6 +184,9 @@ class dialogue_box(text_manager):
         self.disp_text_box(screen, font, list(message), (-1,-1,-1),  (200,200,200), (128, 372, 640, 120), self.type_out, self.type_out_en, 'none')
         self.type_out_handler(self.type_out, text_speed)
         
+        if message == ' ':
+            self.reset_internals()
+        
         
     def type_out_handler(self, type_out, text_speed):
         
@@ -199,13 +197,18 @@ class dialogue_box(text_manager):
 
                 if text_speed > 0 and (self.counter == 0):
                     self.m_player.play_sound(self.m_player.sfx[0])
-                self.counter += 1
+                    self.counter += 1
+                elif text_speed == 0:
+                    self.type_out = False
+                    self.str_list_rebuilt = self.current_str_list
+                    self.counter = 0
             else:
                 self.type_out_en = False
                 
             # print(self.str_list_rebuilt)
             # print(self.current_str_list)
         else:
+            
             self.counter = 0
             self.type_out = False
         

@@ -7,11 +7,11 @@ class Test(npc):
         #get plot index
         self.plot_index = self.plot_index_dict[self.name]
 
-
         #self.current_dialogue_index = 0
         self.current_level = level
         self.current_p_inv = player_inventory
         self.is_npc = True
+        
         #self.get_dialogue_index(level, player_inventory, self.current_dialogue_index, plot_index_dict, current_dialogue_list)
 
     #npc specific method called at the start of each self.enable()
