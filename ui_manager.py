@@ -272,9 +272,9 @@ class ui_manager():
                 self.set_player_inv = True
                 
                 #set plot index
-                plot_index_dict_temp = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt')), 'int')
-                if self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt')) != 'empty': #this way I don't have to keep adding -1 if a player loads from a new save
-                    plot_index_dict = plot_index_dict_temp
+                if self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt'))[0] != 'empty': #this way I don't have to keep adding -1 if a player loads from a new save
+                    #print(self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt')))
+                    plot_index_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt')), 'int')
                 
                 #get level and player location data
                 new_lvl_and_player_dat = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'level_and_player_coords.txt')), 'int')

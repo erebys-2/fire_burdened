@@ -127,7 +127,7 @@ def main():
 	
 	# last_save_slot = int(t1.read_text_from_file('save_files/last_save_slot.txt')[0])
 
-	text_speed = 60
+	text_speed = 40
 
 
 
@@ -384,7 +384,7 @@ def main():
 			# enable
 			# )
 			
-			dialogue_box0.draw_text_box(the_sprite_group.textbox_output, font_larger, screen, text_speed)
+			dialogue_box0.draw_text_box(the_sprite_group.textbox_output, font_larger, screen, text_speed, player0.in_cutscene)
 
 		elif the_sprite_group.textbox_output[6][0] and the_sprite_group.textbox_output[2]: #handling player choice
 		
@@ -569,13 +569,14 @@ def main():
 			inventory_opened = False
 		else:#important spaghetti code for making dialogue boxes work
 			dialogue_box0.reset_internals()
-			text_speed = 60
+			text_speed = 40
 			
 		if player0.in_cutscene:#dialogue system will activate as soon as the player collides with a 'cutscene' npc
 			dialogue_enable = True
-		if player0.hurting or not player0.dialogue_trigger_ready or not player0.current_npc_enabled:
+			
+		if player0.hurting or not player0.dialogue_trigger_ready:
 			dialogue_enable = False
-			player0.in_cutscene = False
+			
 			
 			
 		#note there is a problem with the dialogue system where if an npc is trying to modify another npc's plot index list and the dialogue is cut off mid typing,
@@ -808,7 +809,7 @@ def main():
 							text_speed = 0
 							m_player.play_sound(m_player.sfx[1])
 						else:
-							text_speed = 60
+							text_speed = 40
 							next_dialogue = True
 							dialogue_box0.type_out = True				
      

@@ -148,6 +148,8 @@ class npc(pygame.sprite.Sprite):
             name = ''
             dialogue_enable= False
             expression = 0
+            if self.rect.width > 0:#kills rect
+                self.rect = pygame.rect.Rect(0,0,0,0)
         
         return (message, 
                 self.player_collision, 
@@ -167,7 +169,7 @@ class npc(pygame.sprite.Sprite):
         self.player_choice_flag = False
         self.player_choice_key = ''
         self.current_dialogue_index = new_index
-
+        
     
     def display_interaction_prompt(self, dialogue_enable, player_rect, screen):
         self.player_collision = self.rect.colliderect(player_rect)
@@ -181,7 +183,7 @@ class npc(pygame.sprite.Sprite):
     def disable(self):
         if self.enabled:
             self.enabled = False
-            self.rect = (0,0,0,0)
+            self.rect = pygame.Rect.rect(0,0,0,0)
         else:
             pass
     

@@ -358,7 +358,7 @@ class player(pygame.sprite.Sprite):
     
     def do_npc_collisions(self, dx, the_sprite_group):
         for obj in [obj for obj in the_sprite_group.textprompt_group 
-                    if obj.rect.x > -32 and obj.rect.x < 640 and obj.enabled
+                    if obj.rect.x > -32 and obj.rect.x < 640# and obj.enabled
                     ]:
             if obj.rect.colliderect(self.collision_rect.x + self.collision_rect.width//16, self.collision_rect.y, 0.875*self.collision_rect.width, self.collision_rect.height) and self.action == 0 and dx == 0:
                 self.dialogue_trigger_ready = True
@@ -373,11 +373,12 @@ class player(pygame.sprite.Sprite):
                     
                     if self.stamina_usage_cap != 0:
                         self.stamina_usage_cap = 0
-                
-                if obj.is_cutscene:
-                    self.current_npc_enabled = obj.enabled
-                    if obj.enabled:
-                        self.in_cutscene = True
+                # print(obj.name)
+                if obj.is_cutscene:#selects cutscenes out of collided npcs
+                    self.in_cutscene = True
+            else:#not colliding with an npc
+                if obj.is_cutscene:#selects cutscenes out of not collided npcs
+                    self.in_cutscene = False
                     
         #     #print(obj.name)
         # else:

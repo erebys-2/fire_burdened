@@ -1,3 +1,4 @@
+import pygame
 from npcFile import npc
 
 class opening_scene(npc):
@@ -5,14 +6,19 @@ class opening_scene(npc):
         super().__init__(x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_dict)
         #get plot index
         self.plot_index = self.plot_index_dict[self.name]
+        if enabled:
+            self.rect = self.resize_rect((0, -64, 640, 480))
+        else:
+            self.rect = self.resize_rect((0, 0, 0, 0))#have to make sure the rect is destroyed immediately in the constructor
 
         self.current_level = level
         self.current_p_inv = player_inventory
-        #resize rect
-        self.rect = self.resize_rect((0, -64, 640, 480))
+        
+        
         self.is_cutscene = True
         self.is_initial_index = False #IMPORTANT IF YOU DON'T WANT THE FIRST MESSAGE REPEATED
-    
+        
+
     def get_dialogue_index(self, level, player_inventory, current_dialogue_index, plot_index_dict, current_dialogue_list):
         plot_index = plot_index_dict[self.name]
             

@@ -234,7 +234,7 @@ class World():
                     dialogue_list = self.get_specific_npc_dialogue('opening_scene')
                     opening_scene_ = opening_scene(x * 32, y * 32, 1, 1, 'opening_scene', ini_vol, self.plot_index_dict['opening_scene'] != -4, dialogue_list, self.plot_index_dict, self.npc_current_dialogue_list, level, player_inventory= [])
                     the_sprite_group.textprompt_group.add(opening_scene_)
-                
+
     
     #=======================================  SET HITBOXES FOR SPECIAL TILES =================================
     
