@@ -248,6 +248,8 @@ def main():
 
 	double_tap_time = pygame.time.get_ticks()
 	double_tap_initiated = False
+ 
+	selected_slot = -1
 
 	while run:
 		clock.tick(FPS)
@@ -464,6 +466,10 @@ def main():
 			#plot index list's csv is read within ui_manager
 			if ui_manager0.saves_menu_enable:
 				output = ui_manager0.show_saves_menu(screen)
+				selected_slot = ui_manager0.selected_slot
+			elif ui_manager0.saves_menu2_enable:
+				output = ui_manager0.show_saves_menu2(screen)
+				selected_slot = ui_manager0.selected_slot
 			else:
 				output = ui_manager0.show_main_menu(screen)
 	
@@ -813,13 +819,11 @@ def main():
 							next_dialogue = True
 							dialogue_box0.type_out = True				
      
-					if level == 0:
+					if level == 0:#default case, auto saving will overwrite data in file 0
 						m_player.play_sound(m_player.sfx[1])
 						ui_manager0.trigger_once = True
 						next_level = 1
-					
-					# #else load next dialogue bubble
-						#print(type_out)
+						selected_slot = 0
 
 				# #temp bg adjustment
 				# amnt = 1

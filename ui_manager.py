@@ -2,6 +2,7 @@ from button import Button #type: ignore
 from textManager import text_manager #type: ignore
 from music_player import music_player #type: ignore
 from textfile_handler import textfile_formatter
+from saveHandler import save_file_handler
 import os
 import pygame
 import csv
@@ -13,6 +14,7 @@ class ui_manager():
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
         self.t1 = textfile_formatter()
         self.text_manager0 = text_manager()
+        self.save_handler = save_file_handler()
         
         self.generic_img = pygame.image.load('sprites/generic_btn.png').convert_alpha()
         self.invisible_img = pygame.image.load('sprites/invisible_btn.png').convert_alpha()
@@ -28,6 +30,7 @@ class ui_manager():
         self.ctrl_menu_enable = False
         self.vol_menu_enable = False
         self.saves_menu_enable = False
+        self.saves_menu2_enable = False
         
         self.trigger_once = True
         
@@ -81,6 +84,8 @@ class ui_manager():
             ['a', 1]
         ]
         
+        #filler value, selected slot will always be set by clicking a slot before loading a game
+        self.selected_slot = -1
         
     def read_csv_data(self, data_name):
         temp_list = []
@@ -103,12 +108,13 @@ class ui_manager():
 #-----------------------------------------------------------main menu----------------------------------------------------------
     def show_main_menu(self, screen):
         next_level = 0
+        
         #sets plot index list to 0
         plot_index_dict = {} #populate plot index for each npc
         for npc in os.listdir('sprites/npcs'):
             plot_index_dict[npc] = -1
         
-        if not self.options_menu_enable and not self.saves_menu_enable and next_level == 0:
+        if not self.options_menu_enable and not self.saves_menu_enable and not self.saves_menu2_enable and next_level == 0:
             if self.trigger_once:
                 self.run_game = True
                 self.button_list *= 0
@@ -120,10 +126,11 @@ class ui_manager():
             screen.blit(self.title_screen, self.ts_rect)
             
             if self.button_list[0].draw(screen):
-                #self.m_player.play_sound(self.m_player.sfx[1])
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.saves_menu2_enable = True
                 self.trigger_once = True
-                self.run_game = True
-                next_level = 1
+                # self.run_game = True
+                # next_level = 1
             self.button_list[0].show_text(screen, self.fontlist[1], ('','New Game'))
             
             if self.button_list[1].draw(screen):
@@ -143,12 +150,14 @@ class ui_manager():
                 self.m_player.play_sound(self.m_player.sfx[1])
             self.button_list[3].show_text(screen, self.fontlist[1], ('','Quit')) 
             
-        elif self.options_menu_enable and not self.saves_menu_enable:
+        elif self.options_menu_enable and not self.saves_menu_enable and not self.saves_menu2_enable:
             self.show_options_menu(screen)
             
-        elif not self.options_menu_enable and self.saves_menu_enable:
-            
+        elif not self.options_menu_enable and self.saves_menu_enable and not self.saves_menu2_enable:
             self.show_saves_menu(screen)
+            
+        elif not self.options_menu_enable and not self.saves_menu_enable and self.saves_menu2_enable:
+            self.show_saves_menu2(screen)
             
         return (next_level, self.run_game, plot_index_dict)
 
@@ -248,6 +257,54 @@ class ui_manager():
         else:
             self.show_vol_menu(screen)
             
+#---------------------------------------------------------Save select sub menu, new game--------------------------------
+    def show_saves_menu2(self, screen):
+        #doesn't actually load data, it makes the player choose a file that can be autosaved to before a new game is started
+        pygame.draw.rect(screen, (0,0,0), (0,0,self.S_W,self.S_H))
+        next_level = 0
+        #sets plot index list to 0
+        plot_index_dict = {} #populate plot index for each npc
+        for npc in os.listdir('sprites/npcs'):
+            plot_index_dict[npc] = -1
+        
+        if self.trigger_once: #deploy buttons
+            self.button_list *= 0
+            for i in range(5):
+                self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +40*i, self.generic_img, 1))
+        
+            self.trigger_once = False
+        
+        for i in range(4):
+            if self.button_list[i].draw(screen): #Save file buttons
+                #reset specific slot and set global variable
+                self.save_handler.reset_specific_save(i, self.t1)
+                self.selected_slot = i
+                
+                #set the new level
+                self.run_game = True    
+                next_level = 1
+                
+                #get out of the sub menu
+                self.saves_menu2_enable = False
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.trigger_once = True
+                
+            self.button_list[i].show_text(screen, self.fontlist[1], ('',f'File {i}')) 
+        
+        #back button
+        if self.button_list[4].draw(screen):
+            self.saves_menu2_enable = False
+            self.m_player.play_sound(self.m_player.sfx[1])
+            self.trigger_once = True
+        self.button_list[4].show_text(screen, self.fontlist[1], ('','Main Menu'))  
+        
+        self.text_manager0.disp_text_box(screen, self.fontlist[1], ('', '  Choose a file to load.', 'Prior data will be erased.'), (-1,-1,-1), (200,200,200), 
+                                         (self.S_W//2 - 100, self.S_H//2 - 128,self.S_W,self.S_H), False, False, 'none')
+        
+     
+        return (next_level, self.run_game, plot_index_dict)
+
+            
 #---------------------------------------------------------Save select sub menu-----------------------------------
     def show_saves_menu(self, screen):
         pygame.draw.rect(screen, (0,0,0), (0,0,self.S_W,self.S_H))
@@ -266,6 +323,9 @@ class ui_manager():
             
         for i in range(4):
             if self.button_list[i].draw(screen): #Save file buttons
+                #set selected slot
+                self.selected_slot = i
+                
                 #fill inventory
                 path = f'save_files/{i}'
                 self.player_new_inv = self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(path, 'player_inventory.txt')))
@@ -302,7 +362,7 @@ class ui_manager():
         #reset all button
         if self.button_list[5].draw(screen):
             self.m_player.play_sound(self.m_player.sfx[1])
-            self.reset_all_saves()
+            self.save_handler.reset_all_saves(self.t1)
         self.button_list[5].show_text(screen, self.fontlist[1], ('','Reset All'))  
      
         return (next_level, self.run_game, plot_index_dict)
@@ -475,18 +535,18 @@ class ui_manager():
         
         return exit_to_title
     
-    def reset_all_saves(self):
-        for i in range(4):
-            path = f'save_files/{i}'
-            str1 = f'level: 1\nplayer_x: 32\nplayer_y: -64'
+    # def reset_all_saves(self):
+    #     for i in range(4):
+    #         path = f'save_files/{i}'
+    #         str1 = f'level: 1\nplayer_x: 32\nplayer_y: -64'
             
-            str2 = 'empty'
+    #         str2 = 'empty'
                 
-            str3 = ''
-            for slot in self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(path, 'player_inventory.txt'))):
-                str3 = str3 + f'empty, 0\n'
-            str3 = str3[0:len(str3)-1]
+    #         str3 = ''
+    #         for slot in self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(path, 'player_inventory.txt'))):
+    #             str3 = str3 + f'empty, 0\n'
+    #         str3 = str3[0:len(str3)-1]
             
-            self.t1.overwrite_file(os.path.join(path, 'level_and_player_coords.txt'), str1)
-            self.t1.overwrite_file(os.path.join(path, 'plot_index_dict.txt'), str2)
-            self.t1.overwrite_file(os.path.join(path, 'player_inventory.txt'), str3)
+    #         self.t1.overwrite_file(os.path.join(path, 'level_and_player_coords.txt'), str1)
+    #         self.t1.overwrite_file(os.path.join(path, 'plot_index_dict.txt'), str2)
+    #         self.t1.overwrite_file(os.path.join(path, 'player_inventory.txt'), str3)

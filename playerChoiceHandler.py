@@ -4,6 +4,7 @@ from button import Button
 from music_player import music_player
 from textManager import text_manager
 from textfile_handler import textfile_formatter
+from saveHandler import save_file_handler
 
 #addon class for the subclass dialogue box under text manager
 #it will overlay buttons over a blank text box and return the next index
@@ -18,7 +19,6 @@ class player_choice_handler():
         self.t1 = textfile_formatter()
         path = 'npc_dialogue_files/player_choice_config/'
         self.player_choice_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'choice_selection_dict.txt')), 'list_list')
-        
         
         #2nd dictionary for prompts
         self.player_prompt_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'prompt_dict.txt')), 'text_box')
@@ -36,6 +36,8 @@ class player_choice_handler():
         self.save_indicator = False
         self.last_save_slot = 0
         self.save_time_pt = pygame.time.get_ticks()
+        
+        self.save_handler = save_file_handler()
         
     def disable(self):
         self.next_index = -3
@@ -79,22 +81,8 @@ class player_choice_handler():
                 self.next_index = player_choices[i][1]
                 #self.trigger_once = True
                 if key == 'save_game': # write to save file
-                    path = f'save_files/{i}'
-                    str1 = f'level: {level}\nplayer_x: {player.rect.x}\nplayer_y: {player.rect.y + 8}'
-                    
-                    str2 = ''
-                    for key_ in world.plot_index_dict:
-                        str2 = str2 + (f'{key_}: {world.plot_index_dict[key_]}\n')
-                    str2 = str2[0:len(str2)-1]
-                        
-                    str3 = ''
-                    for slot in player.inventory_handler.inventory:
-                        str3 = str3 + f'{slot[0]}, {slot[1]}\n'
-                    str3 = str3[0:len(str3)-1]
-                    
-                    self.t1.overwrite_file(os.path.join(path, 'level_and_player_coords.txt'), str1)
-                    self.t1.overwrite_file(os.path.join(path, 'plot_index_dict.txt'), str2)
-                    self.t1.overwrite_file(os.path.join(path, 'player_inventory.txt'), str3)
+                    #t1, slot, level, world, player
+                    self.save_handler.save(self.t1, i, level, world, player)
                     
                     self.last_save_slot = i
                     self.save_indicator = True
