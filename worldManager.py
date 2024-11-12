@@ -167,7 +167,7 @@ class World():
             
     #======================================= INSTANTIATING SPRITES FROM TILES ========================================
 
-    def instantiate_sprites_from_tiles(self, tile, x, y, the_sprite_group, ini_vol, level, player_inventory= []):
+    def instantiate_sprites_from_tiles(self, tile, x, y, the_sprite_group, ini_vol, level, player_inventory):
         
         sprite_info = self.sprite_group_tiles_dict[tile]
         sprite_category = sprite_info[0]

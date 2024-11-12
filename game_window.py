@@ -356,7 +356,8 @@ def main():
 			#if not level_transitioning: #surpress sprite logic while level transitioning
 				
 			the_sprite_group.update_bg_sprite_group(screen, player0.hitbox_rect, player0.atk_rect_scaled)
-			the_sprite_group.update_text_prompt_group(screen, player0.hitbox_rect, dialogue_enable, next_dialogue, world.plot_index_dict, world.npc_current_dialogue_list)
+			#player, world
+			the_sprite_group.update_text_prompt_group(screen, dialogue_enable, next_dialogue, player0, world.plot_index_dict, world.npc_current_dialogue_list, selected_slot)#player and world
 			next_dialogue = False
 			the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, player0.direction, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
 			the_sprite_group.update_item_group(screen, player0.hitbox_rect)

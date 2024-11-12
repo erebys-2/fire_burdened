@@ -1,5 +1,10 @@
 import pygame
 from npcFile import npc
+from saveHandler import save_file_handler
+from textfile_handler import textfile_formatter
+
+cutscene_autosave = save_file_handler()
+custscene_t1 = textfile_formatter()
 
 class opening_scene(npc):
     def __init__(self, x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_dict, current_dialogue_list, level, player_inventory):
@@ -14,13 +19,11 @@ class opening_scene(npc):
         self.current_level = level
         self.current_p_inv = player_inventory
         
-        
         self.is_cutscene = True
         self.is_initial_index = False #IMPORTANT IF YOU DON'T WANT THE FIRST MESSAGE REPEATED
         
 
-    def get_dialogue_index(self, level, player_inventory, current_dialogue_index, plot_index_dict, current_dialogue_list):
-        plot_index = plot_index_dict[self.name]
+    def get_dialogue_index(self, player, current_dialogue_index, plot_index_dict, current_dialogue_list, selected_slot):
             
         if self.player_collision and self.get_dialogue_flag:
             #example of how to code using this system
@@ -30,6 +33,7 @@ class opening_scene(npc):
             if self.current_dialogue_index == 12:# and self.last_dialogue_index == 2:
                 plot_index_dict[self.name] = -4
                 self.enabled = False
+                cutscene_autosave.save(custscene_t1, selected_slot, self.current_level, plot_index_dict, player)
             else:
                 self.current_dialogue_index = self.current_dialogue_index
             self.get_dialogue_flag = False

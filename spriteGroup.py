@@ -62,7 +62,7 @@ class sprite_group():
 	# def update_scroll_x(self, scroll_x):
 	# 	self.scroll_x = scroll_x
   
-	def update_text_prompt_group(self, screen, player_hitbox_rect, dialogue_enable, next_dialogue, plot_index_list, current_dialogue_list):
+	def update_text_prompt_group(self, screen, dialogue_enable, next_dialogue, player, plot_index_dict, current_dialogue_list, selected_slot):
 		update_all_ini_indexes = False
 		for obj in self.textprompt_group:
 			obj.draw(screen)
@@ -70,8 +70,8 @@ class sprite_group():
 				update_all_ini_indexes = True
 			if not self.pause_game and obj.enabled:
 				obj.animate(self.sp_group_list)
-				obj.get_dialogue_index(obj.current_level, obj.current_p_inv, obj.current_dialogue_index, plot_index_list, current_dialogue_list)#takes world's plot_index_list, modifies it directly
-				obj.display_interaction_prompt(dialogue_enable, player_hitbox_rect, screen)
+				obj.get_dialogue_index(player, obj.current_dialogue_index, plot_index_dict, current_dialogue_list, selected_slot)#takes world's plot_index_list, modifies it directly
+				obj.display_interaction_prompt(dialogue_enable, player.hitbox_rect, screen)
 				obj.scroll_along(self.scroll_x)
 				if obj.player_collision:
 					self.textbox_output = obj.enable(dialogue_enable, next_dialogue, current_dialogue_list)

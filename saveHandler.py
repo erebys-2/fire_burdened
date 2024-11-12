@@ -4,13 +4,13 @@ class save_file_handler():
     def __init__(self) -> None:
         pass
     
-    def save(self, t1, slot, level, world, player):
+    def save(self, t1, slot, level, plot_index_dict, player):
         path = f'save_files/{slot}'
         str1 = f'level: {level}\nplayer_x: {player.rect.x}\nplayer_y: {player.rect.y + 8}'
         
         str2 = ''
-        for key_ in world.plot_index_dict:
-            str2 = str2 + (f'{key_}: {world.plot_index_dict[key_]}\n')
+        for key_ in plot_index_dict:
+            str2 = str2 + (f'{key_}: {plot_index_dict[key_]}\n')
         str2 = str2[0:len(str2)-1]
             
         str3 = ''
