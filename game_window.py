@@ -357,7 +357,7 @@ def main():
 				
 			the_sprite_group.update_bg_sprite_group(screen, player0.hitbox_rect, player0.atk_rect_scaled)
 			#player, world
-			the_sprite_group.update_text_prompt_group(screen, dialogue_enable, next_dialogue, player0, world.plot_index_dict, world.npc_current_dialogue_list, selected_slot)#player and world
+			the_sprite_group.update_text_prompt_group(screen, dialogue_enable, next_dialogue, player0, world, selected_slot)#player and world
 			next_dialogue = False
 			the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, player0.direction, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
 			the_sprite_group.update_item_group(screen, player0.hitbox_rect)
@@ -466,17 +466,22 @@ def main():
 
 			#plot index list's csv is read within ui_manager
 			if ui_manager0.saves_menu_enable:
-				output = ui_manager0.show_saves_menu(screen)
-				selected_slot = ui_manager0.selected_slot
+				ui_output = ui_manager0.show_saves_menu(screen)
+				if ui_manager0.selected_slot != -1 and selected_slot != ui_manager0.selected_slot:
+        			#change slot and reset death counters across levels if a different slot is selected
+					world.death_counters_dict = {0: 0}
+					selected_slot = ui_manager0.selected_slot
 			elif ui_manager0.saves_menu2_enable:
-				output = ui_manager0.show_saves_menu2(screen)
-				selected_slot = ui_manager0.selected_slot
+				ui_output = ui_manager0.show_saves_menu2(screen)
+				if ui_manager0.selected_slot != -1 and selected_slot != ui_manager0.selected_slot:
+					world.death_counters_dict = {0: 0}
+					selected_slot = ui_manager0.selected_slot
 			else:
-				output = ui_manager0.show_main_menu(screen)
+				ui_output = ui_manager0.show_main_menu(screen)
 	
-			world.set_plot_index_dict(plot_index_dict = output[2])#world plot index saved here
-			run = output[1]
-			next_level = output[0]
+			world.set_plot_index_dict(plot_index_dict = ui_output[2])#world plot index saved here
+			run = ui_output[1]
+			next_level = ui_output[0]
 	
 			if not run:
 				pygame.time.wait(100)   
@@ -538,7 +543,12 @@ def main():
 		#handling player death and game over screen------------------------------------------------------------------------------------
 		
 		if player0.hits_tanked >= player0.hp or player0.rect.y > 480:#killing the player------------------------------------------------
-			player0.Alive = False
+			if player0.Alive:
+				player0.Alive = False
+				#death counters will probably belong to an instance of world amd reset upon new games
+				#increment level death counters
+				if level in world.death_counters_dict:
+					world.death_counters_dict[level] += 1
 
 			if inventory_opened:#exit inventory if opened
 				inventory_opened = False

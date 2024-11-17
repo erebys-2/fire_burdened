@@ -12,3 +12,4 @@
 50: npc, Test2, character, -1
 51: npc, save_pt, object, -1
 52: npc, opening_scene, cutscene, -1
+53: npc, Mars, character, -1

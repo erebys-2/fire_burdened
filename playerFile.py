@@ -363,7 +363,7 @@ class player(pygame.sprite.Sprite):
             if obj.rect.colliderect(self.collision_rect.x + self.collision_rect.width//16, self.collision_rect.y, 0.875*self.collision_rect.width, self.collision_rect.height) and self.action == 0 and dx == 0:
                 self.dialogue_trigger_ready = True
                 if obj.name == 'save_pt':
-                    if self.hits_tanked > 0:
+                    if self.hits_tanked > 0 and self.hits_tanked < self.hp:
                         self.hits_tanked -= 0.03
                         particle = particle_(self.rect.centerx + random.randrange(-24,24), self.rect.centery + random.randrange(-24,24), -self.direction, 0.5*self.scale, 
                                             'player_bullet_explosion', True, random.randrange(0,3), False)
@@ -931,7 +931,7 @@ class player(pygame.sprite.Sprite):
         self.hits_tanked += damage
         if self.hits_tanked >= self.hp:#killing the player------------------------------------------------
             self.hits_tanked = self.hp
-            self.Alive = False
+            #self.Alive = False
             self.hurting = False
             
     

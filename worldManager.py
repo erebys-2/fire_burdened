@@ -1,12 +1,7 @@
 import pygame
 import os
 
-from enemy32File import enemy_32wide
-from BGspritesFile import tree, fountain, lamp
-from player_interactable import player_interactable_
-from characterNPCs import Test, Test2
-from objectNPCs import save_pt
-from cutsceneNPCs import opening_scene
+from spriteInstantiator import sprite_instantiator
 
 from textfile_handler import textfile_formatter
 
@@ -107,11 +102,9 @@ class World():
         #self.world_map_non_parallax = pygame.Surface((32,32), pygame.SRCALPHA).convert_alpha
         #self.world_map_non_parallax.fill(pygame.Color(0,0,0,0))
         
-    def get_specific_npc_dialogue(self, name):
-        path = 'npc_dialogue_files/npc_dialogue_txt_files/'
-        rtn_list = self.t1.str_list_to_dialogue_list(self.t1.read_text_from_file(path + name + '.txt'), 60, self.t1.endcase_char)
+        self.sp_ini = sprite_instantiator(self.t1)
         
-        return rtn_list
+        self.death_counters_dict = {}
         
             
     # Rabbid76's game map method, modified, from https://stackoverflow.com/questions/66781952/
@@ -126,6 +119,12 @@ class World():
                 game_map.blit(tile[0], (x_pixel, y_pixel))
         return game_map          
                 
+    def get_death_count(self, level):
+        death_count = 0
+        if level in self.death_counters_dict:
+            death_count = self.death_counters_dict[level]
+            
+        return death_count
         
     def read_level_csv_data(self, level, rows, cols, csv_data_name):
         
@@ -164,78 +163,8 @@ class World():
     def clear_data(self):
         for lvl_data in self.detailed_lvl_data_list:
             lvl_data *= 0
-            
-    #======================================= INSTANTIATING SPRITES FROM TILES ========================================
-
-    def instantiate_sprites_from_tiles(self, tile, x, y, the_sprite_group, ini_vol, level, player_inventory):
-        
-        sprite_info = self.sprite_group_tiles_dict[tile]
-        sprite_category = sprite_info[0]
-        sprite_subcategory = sprite_info[2]
-        sprite_id = sprite_info[1]
-
-        #enemies and player interactables/obstacles
-        if sprite_category == 'enemy':
-            if sprite_id == 'dog':
-                enemy0 = enemy_32wide(x * 32, y * 32, 3, 2, 'dog', self.enemy0_id, ini_vol)
-                the_sprite_group.enemy0_group.add(enemy0)
-                self.enemy0_id += 1#for enemy-enemy collisions/ anti stacking
-            elif sprite_id == 'shooter':
-                enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'shooter', self.enemy0_id, ini_vol)
-                the_sprite_group.enemy0_group.add(enemy0)
-                self.enemy0_id += 1#for enemy-enemy collisions/ anti stacking
-                
-        elif sprite_category == 'p_int':
-            if sprite_id == 'crusher_top':
-                p_int = player_interactable_(x * 32, y * 32, 1, 1, 'crusher_top', ini_vol, True, False)
-                the_sprite_group.p_int_group.add(p_int)
-            elif sprite_id == 'spinning_blades':
-                p_int2 = player_interactable_(x * 32, y * 32, 2, 1, 'spinning_blades', ini_vol, True, False)
-                the_sprite_group.p_int_group2.add(p_int2)
-            elif sprite_id == 'moving_plat_h':
-                p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_h', ini_vol, True, False)
-                the_sprite_group.p_int_group.add(p_int)
-            elif sprite_id == 'moving_plat_v':
-                p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_v', ini_vol, True, False)
-                the_sprite_group.p_int_group.add(p_int)
-            
-        #bg type sprites
-        elif sprite_category == 'bg_sprite':
-            if sprite_id == 'lamp':
-                bg_sprite = lamp(x*32, y*32, 1, False, 'lamp')
-                the_sprite_group.bg_sprite_group.add(bg_sprite)
-            elif sprite_id == 'tree':
-                bg_sprite = tree(x*32, y*32, 1, False, 'tree')
-                the_sprite_group.bg_sprite_group.add(bg_sprite)
-            elif sprite_id == 'fountain':        
-                bg_sprite = fountain(x*32, y*32, 1, False, 'fountain')
-                the_sprite_group.bg_sprite_group.add(bg_sprite)
-        
-        #npcs
-        elif sprite_category == 'npc':
-            if sprite_subcategory == 'character':
-                if sprite_id == 'Test':
-                    dialogue_list = self.get_specific_npc_dialogue('Test')
-                    Testnpc = Test(x * 32, y * 32, 2, 1, 'Test', ini_vol, True, dialogue_list, self.plot_index_dict, self.npc_current_dialogue_list, level, player_inventory= [])
-                    the_sprite_group.textprompt_group.add(Testnpc)
-                elif sprite_id == 'Test2':
-                    dialogue_list = self.get_specific_npc_dialogue('Test2')
-                    Testnpc2 = Test2(x * 32, y * 32, 2, 1, 'Test2', ini_vol, True, dialogue_list, self.plot_index_dict, self.npc_current_dialogue_list, level, player_inventory= [])
-                    the_sprite_group.textprompt_group.add(Testnpc2)
-                    
-            elif sprite_subcategory == 'object':
-                if sprite_id == 'save_pt':
-                    dialogue_list = self.get_specific_npc_dialogue('save_pt')
-                    save_pt_obj = save_pt(x * 32, y * 32, 1, 1, 'save_pt', ini_vol, True, dialogue_list, self.plot_index_dict, self.npc_current_dialogue_list, level, player_inventory= [])
-                    the_sprite_group.textprompt_group.add(save_pt_obj)
-                    
-            elif sprite_subcategory == 'cutscene':
-                if sprite_id == 'opening_scene':
-                    dialogue_list = self.get_specific_npc_dialogue('opening_scene')
-                    opening_scene_ = opening_scene(x * 32, y * 32, 1, 1, 'opening_scene', ini_vol, self.plot_index_dict['opening_scene'] != -4, dialogue_list, self.plot_index_dict, self.npc_current_dialogue_list, level, player_inventory= [])
-                    the_sprite_group.textprompt_group.add(opening_scene_)
-
-    
+   
+   
     #=======================================  SET HITBOXES FOR SPECIAL TILES =================================
     
     def set_hitbox_for_special_tile(self, tile, x, y, level_data):
@@ -290,7 +219,7 @@ class World():
             for x, tile in enumerate(row):
                 if tile >= 0:
                     if tile in self.sprite_group_tiles_dict:
-                        self.instantiate_sprites_from_tiles(tile, x, y, the_sprite_group, ini_vol, level, player_inventory= [])
+                        self.sp_ini.instantiate_sprites_from_tiles(tile, x, y, the_sprite_group, ini_vol, level, [], self)
                         #pass
                     elif tile in self.special_hitbox_tiles_dict:
                         self.set_hitbox_for_special_tile(tile, x, y, level_data)
@@ -312,6 +241,9 @@ class World():
         
         
         #self.world_map_non_parallax = self.create_map(level_data[0:2], self.detailed_lvl_data_list[1:4]).convert_alpha()
+        if level not in self.death_counters_dict:
+            self.death_counters_dict[level] = 0
+        #print(self.death_counters_dict)
         
     def process_coords_hslice(self, data, screenW, screenH, rtrn_list):
         x_coord = 0
@@ -367,7 +299,7 @@ class World():
                 if tile >= 0:
                     
                     if tile in self.sprite_group_tiles_dict: #avoid key errors
-                        self.instantiate_sprites_from_tiles(tile, x, y, the_sprite_group, 0, 0, player_inventory= [])
+                        self.sp_ini.instantiate_sprites_from_tiles(tile, x, y, the_sprite_group, 0, 0, [], self)
 
                     else:
                         if tile in self.static_bg_oversized_tiles_dict:

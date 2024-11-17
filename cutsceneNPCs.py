@@ -23,7 +23,7 @@ class opening_scene(npc):
         self.is_initial_index = False #IMPORTANT IF YOU DON'T WANT THE FIRST MESSAGE REPEATED
         
 
-    def get_dialogue_index(self, player, current_dialogue_index, plot_index_dict, current_dialogue_list, selected_slot):
+    def get_dialogue_index(self, player, current_dialogue_index, world, selected_slot):
             
         if self.player_collision and self.get_dialogue_flag:
             #example of how to code using this system
@@ -31,9 +31,9 @@ class opening_scene(npc):
             #     self.update_plot_index(1)
             #     current_dialogue_index = 4
             if self.current_dialogue_index == 12:# and self.last_dialogue_index == 2:
-                plot_index_dict[self.name] = -4
+                world.plot_index_dict[self.name] = -4
                 self.enabled = False
-                cutscene_autosave.save(custscene_t1, selected_slot, self.current_level, plot_index_dict, player)
+                cutscene_autosave.save(custscene_t1, selected_slot, self.current_level, world.plot_index_dict, player)
             else:
                 self.current_dialogue_index = self.current_dialogue_index
             self.get_dialogue_flag = False

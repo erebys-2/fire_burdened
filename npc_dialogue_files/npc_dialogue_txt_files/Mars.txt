@@ -1,0 +1,4 @@
+Mars# Hi this is Mars!# 1# 0
+Mars# How are you today?# 2# 1
+Mars# I don't have any actual dialogue yet.# 2# 1
+Mars# You died 3 times or more, loser.# 3# 1

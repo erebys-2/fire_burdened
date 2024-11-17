@@ -8,7 +8,7 @@ class save_pt(npc):
         self.current_p_inv = player_inventory
         self.is_obj = True
         
-    def get_dialogue_index(self, player, current_dialogue_index, plot_index_dict, current_dialogue_list, selected_slot):
+    def get_dialogue_index(self, player, current_dialogue_index, world, selected_slot):
         pass
     
     def display_interaction_prompt(self, dialogue_enable, player_rect, screen):

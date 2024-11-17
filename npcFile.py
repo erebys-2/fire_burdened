@@ -57,8 +57,10 @@ class npc(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         
         self.rect = self.image.get_rect()
+        self.img_rect = self.image.get_rect()
         
         self.rect.topleft = (x,y)
+        self.img_rect.topleft = (x,y)
         self.width = self.image.get_width()
         self.height = self.image.get_height()
         
@@ -162,6 +164,7 @@ class npc(pygame.sprite.Sprite):
         
     def force_ini_position(self, scrollx):
         self.rect.x -= scrollx
+        self.img_rect.x -= scrollx
     
     
     def force_dialogue_index(self, new_index):
@@ -179,6 +182,7 @@ class npc(pygame.sprite.Sprite):
         
     def scroll_along(self, scrollx):
         self.rect.x += ( - scrollx)
+        self.img_rect.x += ( - scrollx)
 
     def disable(self):
         if self.enabled:
@@ -194,7 +198,7 @@ class npc(pygame.sprite.Sprite):
     
     def draw(self, screen):
         if self.enabled and self.rect.x > -self.width and self.rect.x < 640 + self.width:
-            screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+            screen.blit(pygame.transform.flip(self.image, self.flip, False), self.img_rect)
         
     def animate(self, sprite_group):
         self.mask = pygame.mask.from_surface(self.image)
