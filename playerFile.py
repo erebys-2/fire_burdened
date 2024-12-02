@@ -147,7 +147,7 @@ class player(pygame.sprite.Sprite):
             False, #die
             True, #atk1
             True, #atk1_2
-            True, #roll
+            False, #roll
             True, #atk1_3
             True, #shoot
             False, #
@@ -374,7 +374,7 @@ class player(pygame.sprite.Sprite):
                     if self.stamina_usage_cap != 0:
                         self.stamina_usage_cap = 0
                 # print(obj.name)
-                if obj.is_cutscene:#selects cutscenes out of collided npcs
+                if obj.is_cutscene and not self.in_cutscene:#selects cutscenes out of collided npcs
                     self.in_cutscene = True
             else:#not colliding with an npc
                 if obj.is_cutscene:#selects cutscenes out of not collided npcs
@@ -578,8 +578,9 @@ class player(pygame.sprite.Sprite):
 
         
         #debuggin bottom boundary
-        if self.rect.bottom + dy > 480:
+        if self.rect.bottom + dy > 480 + self.rect.height:
             dy = 0
+            self.hits_tanked = self.hp
             self.rect.top = 481
             self.in_air = False
  
@@ -637,14 +638,15 @@ class player(pygame.sprite.Sprite):
 
 		#rolling 
         if self.rolling and not self.hurting:
-            
+                
             if self.flip:
                 dx = -(self.speed + 3)
             else:
                 dx = (self.speed + 3)
             
-            if ((moveL and self.direction == 1) or (moveR and self.direction == -1) #BREAK ROLLING
-                or self.squat
+            if (#(moveL and self.direction == 1) or (moveR and self.direction == -1) #BREAK ROLLING
+               #or 
+                self.squat
                 or self.stamina_used + self.roll_stam_rate > self.stamina
                 or (self.atk1)# and ((self.action == 7 or self.action ==8) and self.frame_index < 2))
                 or self.roll_count >= self.roll_limit
@@ -702,7 +704,7 @@ class player(pygame.sprite.Sprite):
                             self.vel_y = 0
                         
                         if (moveL and self.direction == 1) or (moveR and self.direction == -1):
-                            dx = 0
+                            dx = -self.direction
                         else:
                             dx = self.direction
             
@@ -863,6 +865,10 @@ class player(pygame.sprite.Sprite):
         if self.brain_damage or self.angle != 0:
             self.rotate(5, 360)
             
+        if self.in_cutscene:
+            dy = 0
+            self.vel_y = 0
+            
         return lvl_transition_flag_and_data
 
     #method for status bars, can probably return a list---------------------------    
@@ -931,7 +937,6 @@ class player(pygame.sprite.Sprite):
         self.hits_tanked += damage
         if self.hits_tanked >= self.hp:#killing the player------------------------------------------------
             self.hits_tanked = self.hp
-            #self.Alive = False
             self.hurting = False
             
     

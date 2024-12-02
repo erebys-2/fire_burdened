@@ -78,6 +78,9 @@ class particle_(pygame.sprite.Sprite):
         elif self.particle_type == 'dog_death':
             self.rect.y -= 2*(1/(self.frame_index+1))
             
+        elif self.particle_type == 'fly_death':
+            self.rect.y -= 2*(1/(self.frame_index+1))
+            
         elif self.particle_type == 'player_down_strike':
             dx += -self.direction * 1
 
@@ -97,6 +100,7 @@ class particle_(pygame.sprite.Sprite):
             'enemy_bullet_explosion': 60,
             'shooter_death': 80,
             'dog_death': 100,
+            'fly_death': 100,
             'player_mvmt': 75,
             'player_impact': 60,
             'sparks': 40

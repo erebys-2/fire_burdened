@@ -119,10 +119,10 @@ class World():
                 game_map.blit(tile[0], (x_pixel, y_pixel))
         return game_map          
                 
-    def get_death_count(self, level):
+    def get_death_count(self, level):#death counts are a dictionary with levels as keys, it is reset everytime a mew slot is selected or the game is restarted
         death_count = 0
         if level in self.death_counters_dict:
-            death_count = self.death_counters_dict[level]
+            death_count = self.death_counters_dict[level]\
             
         return death_count
         
@@ -324,7 +324,7 @@ class World():
         #scroll_amnt = scroll_X
         #logic for looping bg, maximum sprite size is 480x480
         for tile in data:
-            if (data == self.bg4 or data == self.bg5 or data == self.bg6):
+            if (data in self.detailed_lvl_data_list[6:9]):
                 if tile[1][0] > tile[1].width:
                     tile[1][0] -= (2 * tile[1].width)
                 elif tile[1][0] < -tile[1].width:

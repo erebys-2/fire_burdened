@@ -73,6 +73,11 @@ class enemy_32wide(pygame.sprite.Sprite):
             self.hp = 10
             self.recoil = 49
             self.recoil_slow = 2
+        elif type == 'fly':
+            self.animation_types = ['idle', 'move', 'hurt', 'die']
+            self.hp = 6
+            self.recoil = 58
+            self.recoil_slow = 2
             
         for animation in self.animation_types:
             temp_list = []
@@ -86,14 +91,18 @@ class enemy_32wide(pygame.sprite.Sprite):
 
         self.image = self.frame_list[self.action][self.frame_index]
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect = self.image.get_rect()
-        self.rect.bottomleft = (x,y)
+        if self.enemy_type != 'fly':
+            self.rect = self.image.get_rect()
+        else:
+            self.rect = self.image.get_bounding_rect()
+        self.rect.topleft = (x,y)
         self.atk_rect = pygame.Rect(-32, -32, 0,0)
         self.atk_rect_scaled = pygame.Rect(-32, -32, 0,0)#self.atk_rect.scale_by(0.8)
-        self.width = self.image.get_width()
+        
+        self.width = self.rect.width
         self.half_width = self.width//2
         self.quarter_width = self.half_width//2
-        self.height = self.image.get_height()
+        self.height = self.rect.height
         self.half_height = self.height//2
         self.quarter_height = self.half_width//2
         
@@ -178,7 +187,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                     self.direction = 0
                     
                 
-                if self.action == 1: #when the dog is running it has an attack hitbox
+                if self.action == 1 and not self.inundated: #when the dog is running it has an attack hitbox
                     
                     if self.direction == -1:
                         self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.half_width + 16, self.height - 32)
@@ -246,7 +255,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                         elif player_rect.x < self.rect.x + self.width + (jump_range*self.width) and player_rect.x >= self.rect.x:
                             self.jump = True
                             
-                    if self.action == 5: #when the shooter is jumping it has an attack hitbox
+                    if self.action == 5 and not  self.inundated: #when the shooter is jumping it has an attack hitbox
                         self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + self.half_height, self.width, self.half_height)
                         self.atk_rect_scaled = self.atk_rect.scale_by(0.8)
                     else:
@@ -268,7 +277,40 @@ class enemy_32wide(pygame.sprite.Sprite):
                     self.in_air = True
                     
                 
-
+            elif self.enemy_type == 'fly':
+                #print(self.action)
+                if self.inundated == False: #cannot move towards player when inundated
+                    #move if the player gets too close
+                    chase_range = 2.4
+                
+                    if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x <= self.rect.x:
+                        dx = -self.speed
+                        moving = True
+                    elif player_rect.x < self.rect.x + self.width + chase_range*self.width and player_rect.x >= self.rect.x:
+                        dx = self.speed
+                        moving = True
+                        
+                    if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x < self.rect.x + self.width + chase_range*self.width:
+                        if player_rect.y > self.rect.y - 2*chase_range*self.height and player_rect.y <= self.rect.y:
+                            self.vel_y = -self.speed//3
+                            moving = True
+                        elif player_rect.y < self.rect.y + self.height + 2*chase_range*self.height and player_rect.y >= self.rect.y:
+                            self.vel_y = self.speed//3
+                            moving = True
+                            
+                        self.vel_y += random.randint(-3,3)
+                    else:
+                        self.vel_y = 0
+                        
+                if not self.inundated and self.action == 1:
+                    if self.direction == -1:
+                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y, self.half_width, self.height)
+                    elif self.direction == 1:
+                        self.atk_rect = pygame.Rect(self.rect.x + self.half_width, self.rect.y, self.half_width, self.height)
+                    self.atk_rect_scaled = self.atk_rect.scale_by(0.75)
+                else:
+                    self.atk1_kill_hitbox()
+                    
          
         else:
             moving = False
@@ -309,17 +351,15 @@ class enemy_32wide(pygame.sprite.Sprite):
  
         
         #gravity 
-        if self.Alive == True and self.check_if_in_simulation_range():  
-           
-            g = 0.4
-            self.vel_y += g
+        if self.enemy_type != 'fly':
+            if self.Alive == True and self.check_if_in_simulation_range():  
             
-            # if self.vel_y > 10:
-            #     self.vel_y
-                
-        else:
-            self.vel_y = 0
-        dy = self.vel_y
+                g = 0.4
+                self.vel_y += g
+
+            else:
+                self.vel_y = 0
+        dy += self.vel_y
         
         #player collisions------------------------------------------------------------------------------------------------------------------
         
@@ -345,8 +385,11 @@ class enemy_32wide(pygame.sprite.Sprite):
                 self.rando_frame += 1
             else:
                 self.rando_frame = 0
-
-            dy += self.vel_y * 2
+            
+            if self.enemy_type == 'fly':
+                dy += -self.recoil*0.5
+            else:
+                dy += self.vel_y * 2
 
             dx = -self.direction * self.recoil
             self.do_screenshake = True
@@ -398,7 +441,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         #world collisions
         
         
-        if self.check_if_in_simulation_range():
+        if self.check_if_in_simulation_range() and self.enemy_type != 'fly':
             for tile in [tile for tile in world_solids 
                          if tile[1].x > -160 and tile[1].x < 800 and 
                             tile[1].bottom < self.rect.bottom + 64 and tile[1].y > self.rect.y - 64 or
@@ -406,24 +449,23 @@ class enemy_32wide(pygame.sprite.Sprite):
                             ]:
                 if tile[2] != 2 and tile[2] != 17:
                     #x tile collisions
-                    
-                    
-                    
-                    if tile[1].colliderect(self.rect.x + dx, self.rect.y + self.quarter_height, self.width , 3*self.height//4 - 12):
+
+                    if tile[1].colliderect(self.rect.x + dx, self.rect.y + self.quarter_height, self.width, self.height*0.6):
                         dx = 0
                         if self.in_air == False:
                             if self.enemy_type == 'shooter':
                                 self.jump = True
                             if self.enemy_type == 'dog' and self.rect.bottom == tile[1].top + 16 and self.inundated == False:
-                                self.vel_y = -5
-
-                    #make sure to not get pushed into blocks        
-                    if tile[1].colliderect(self.rect.x , self.rect.y , self.half_width , self.height*0.8):     
+                                self.vel_y = -8.5
+                                self.in_air = True
+                    
+                    #make sure to not get pushed into blocks collision by half sprite width       
+                    if tile[1].colliderect(self.rect.x, self.rect.y , self.half_width , self.height*0.8):     
                         if self.rect.x <= tile[1].right:
                             dx += 8
                         self.on_ground = False
                         self.in_air = True
-                        self.jump = False 
+                        self.jump = False
                     elif tile[1].colliderect(self.rect.x + self.half_width, self.rect.y , self.half_width , self.height*0.8):     
                         if self.rect.right > tile[1].x:
                             dx += -8
@@ -435,11 +477,12 @@ class enemy_32wide(pygame.sprite.Sprite):
                     if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width , self.height):
                         if self.vel_y >= 0:
                             #self.vel_y = 0 
-                            if tile[1].colliderect(self.rect.x + self.quarter_width + 2, self.rect.y + (self.half_height), self.half_width - 4, self.half_height):
+                            #lower half collision
+                            if tile[1].colliderect(self.rect.x, self.rect.y + (self.half_height), self.width, self.half_height):
                                 if tile[1].bottom > self.rect.bottom:
-                                    dy = tile[1].top  - self.rect.bottom #-1
+                                    dy = tile[1].top - self.rect.bottom #-1
                                     #print('hi')
-                                self.on_ground = True
+                                    self.on_ground = True
                                 self.in_air = False
                                 self.vel_y = 0 
                                 
@@ -447,10 +490,12 @@ class enemy_32wide(pygame.sprite.Sprite):
                                     self.hit_ground = True
 
                         elif self.vel_y < 0:
+                            #upper half collision
                             if tile[1].colliderect(self.rect.x + self.quarter_width//2, self.rect.y, self.width - self.quarter_width, self.half_height):
                                 dy = 32
                                 self.on_ground = False
                                 self.in_air = True
+                                #print("hi")
                                 self.jump = False
                 elif tile[2] == 2:
                     if tile[1].colliderect(self.rect.x + self.quarter_width//2, self.rect.y, self.width - self.quarter_width, self.height - 8):
@@ -471,15 +516,15 @@ class enemy_32wide(pygame.sprite.Sprite):
                             self.on_ground = False
 
                         dy = tile[1].top - self.rect.bottom
-        else:
+        elif self.enemy_type != 'fly':
             dy = 0
             dx = 0
             self.in_air = False
             self.vel_y = 0
                     
-        if self.rect.bottom + dy > 480:
-            dy = 480 - self.rect.bottom
-            self.in_air = False
+        if self.rect.bottom + dy > 480 + self.rect.height:
+            self.Alive = False
+            self.kill()
         if self.enemy_type == 'shooter':
             if self.in_air == True and self.inundated == False:
                 dx *=0.70
@@ -610,6 +655,9 @@ class enemy_32wide(pygame.sprite.Sprite):
             sp_group_list[3].add(particle)
         elif self.enemy_type == 'dog':
             particle = particle_(self.rect.x - self.half_width, self.rect.y - self.half_height, self.direction, self.scale, 'dog_death', False, 0, False)
+            sp_group_list[3].add(particle)
+        elif self.enemy_type == 'fly':
+            particle = particle_(self.rect.x - self.half_width, self.rect.y - self.half_height, self.direction, self.scale, 'fly_death', False, 0, False)
             sp_group_list[3].add(particle)
 
     def draw(self, p_screen):

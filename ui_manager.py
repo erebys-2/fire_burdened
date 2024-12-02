@@ -381,13 +381,22 @@ class ui_manager():
                 self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
             #load buttons
             for i in range(10):
-                self.button_list.append(Button(self.S_W//2 -128, self.S_H//2 -186 + 32*i, self.generic_img, 1))
-                
-            self.button_list.append(Button(self.S_W//2 -144, self.S_H /2 +172, self.generic_img, 1))
-            self.button_list.append(Button(self.S_W//2 + 16, self.S_H /2 +172, self.generic_img, 1))
+                self.button_list.append(Button(self.S_W//2 -192, self.S_H//2 -186 + 32*i, self.generic_img, 1))
             
             for i in range(10): #done for formatting (these are dummy buttons)
-                self.button_list.append(Button(self.S_W//2 -0, self.S_H//2 -186 + 32*i, self.generic_img, 1))
+                self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -186 + 32*i, self.generic_img, 1))
+                
+            #save button
+            self.button_list.append(Button(self.S_W//2 - 64, self.S_H /2 +172, self.generic_img, 1))
+            
+            #save and load control scheme buttons
+            self.button_list.append(Button(self.S_W//2 + 64, self.S_H /2 -186, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 + 64, self.S_H /2 -186 + 32, self.generic_img, 1))
+            
+            self.button_list.append(Button(self.S_W//2 + 64, self.S_H /2 -186 + 96, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 + 64, self.S_H /2 -186 + 128, self.generic_img, 1))
+            
+            self.button_list.append(Button(self.S_W//2 + 64, self.S_H /2 -186 + 192, self.generic_img, 1))
             
             self.trigger_once = False
         
@@ -417,25 +426,53 @@ class ui_manager():
                 self.btn_selected = i
                 
             self.button_list[i].show_text(screen, self.fontlist[1], ctrls_btn_dict[i])
-            self.button_list[i+12].show_text(screen, self.fontlist[1], self.disp_str_list[i])
-                
-        #pressing default button
-        if self.button_list[10].draw(screen):
-            self.m_player.play_sound(self.m_player.sfx[1])
-            self.ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054, 121, 117]
-            for i in range(len(self.disp_str_list)):
-                self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
-        self.button_list[10].show_text(screen, self.fontlist[1], ('','Default'))  
+            self.button_list[i+10].show_text(screen, self.fontlist[1], self.disp_str_list[i])
         
         #pressing save button
-        if self.button_list[11].draw(screen):
+        if self.button_list[20].draw(screen):
             self.ctrl_menu_enable = False
             self.m_player.play_sound(self.m_player.sfx[1])
             self.trigger_once = True  
             self.ctrls_updated = True
             #print(self.ctrls_list)
             self.write_csv_data('ctrls_data', self.ctrls_list)
-        self.button_list[11].show_text(screen, self.fontlist[1], ('','Save'))  
+        self.button_list[20].show_text(screen, self.fontlist[1], ('','Save'))  
+        
+        #load scheme 1
+        if self.button_list[21].draw(screen):
+            self.m_player.play_sound(self.m_player.sfx[1])
+            self.ctrls_list = self.read_csv_data('ctrl_scheme_1')
+            for i in range(len(self.disp_str_list)):
+                self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
+        self.button_list[21].show_text(screen, self.fontlist[1], ('','Load Ctrls 1'))  
+        
+        #save scheme 1
+        if self.button_list[22].draw(screen):
+            self.m_player.play_sound(self.m_player.sfx[1])
+            self.write_csv_data('ctrl_scheme_1', self.ctrls_list)
+        self.button_list[22].show_text(screen, self.fontlist[1], ('','Save Ctrls 1'))  
+        
+        #load scheme 2
+        if self.button_list[23].draw(screen):
+            self.m_player.play_sound(self.m_player.sfx[1])
+            self.ctrls_list = self.read_csv_data('ctrl_scheme_2')
+            for i in range(len(self.disp_str_list)):
+                self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
+        self.button_list[23].show_text(screen, self.fontlist[1], ('','Load Ctrls 2'))  
+        
+        #save scheme 2
+        if self.button_list[24].draw(screen):
+            self.m_player.play_sound(self.m_player.sfx[1])
+            self.write_csv_data('ctrl_scheme_2', self.ctrls_list)
+        self.button_list[24].show_text(screen, self.fontlist[1], ('','Save Ctrls 2'))  
+        
+        #pressing default button
+        if self.button_list[25].draw(screen):
+            self.m_player.play_sound(self.m_player.sfx[1])
+            self.ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054, 121, 117]
+            for i in range(len(self.disp_str_list)):
+                self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
+        self.button_list[25].show_text(screen, self.fontlist[1], ('','Default'))  
         
         if not self.stop:
             for event in pygame.event.get():

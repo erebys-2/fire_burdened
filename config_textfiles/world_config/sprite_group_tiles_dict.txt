@@ -13,3 +13,4 @@
 51: npc, save_pt, object, -1
 52: npc, opening_scene, cutscene, -1
 53: npc, Mars, character, -1
+54: enemy, fly, none, -1

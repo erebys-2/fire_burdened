@@ -108,6 +108,20 @@ class Mars(npc):
         if plot_index != -1:
             self.current_dialogue_index = self.plot_index_jumps_dict[plot_index]
             self.is_initial_index = False
+        if self.current_level == 1 and world.get_death_count(self.current_level) > 0:
+            #self.current_dialogue_index = 3
+            #implement smth like this later
+            if world.get_death_count(self.current_level) == 1:
+                self.current_dialogue_index = 3
+            elif world.get_death_count(self.current_level) == 2:
+                self.current_dialogue_index = 4
+            elif world.get_death_count(self.current_level) == 3:
+                self.current_dialogue_index = 5
+            elif  world.get_death_count(self.current_level) > 3 and self.is_initial_index:
+                self.current_dialogue_index = 6
+            self.is_initial_index = False
+        if self.current_level == 1 and (world.plot_index_dict[self.name] != -1 or self.rect.x < -self.rect.width):
+            self.enabled = False
         
         if self.is_initial_index:
             if self.current_level == 1 and plot_index == -1:
@@ -116,9 +130,8 @@ class Mars(npc):
 
         if self.player_collision and self.get_dialogue_flag:
 
-            if self.current_level == 1 and world.get_death_count(self.current_level) > 2:#lags one message bc of is_initial_index not being False
-                self.current_dialogue_index = 3
-            
+            if 1 == 2:
+                pass
             else:
                 self.current_dialogue_index = self.current_dialogue_index
             self.get_dialogue_flag = False

@@ -687,6 +687,7 @@ def main():
 					
 					if event.key == ctrls_list[1]: #pygame.K_a
 						move_L = True
+						#move_R = False
 						# output = check_double_tap(True, double_tap_time, double_tap_initiated, 320)
 						# double_tap_initiated = output[2]
 						# double_tap_time = output[1]
@@ -694,6 +695,7 @@ def main():
 						# 	player0.sprint = True
 					if event.key == ctrls_list[3]: #pygame.K_d
 						move_R = True
+						#move_L = False
 						# output = check_double_tap(True, double_tap_time, double_tap_initiated, 320)
 						# double_tap_initiated = output[2]
 						# double_tap_time = output[1]
