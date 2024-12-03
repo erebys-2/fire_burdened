@@ -81,14 +81,14 @@ class Item(pygame.sprite.Sprite):
         if self.gravitation_rect.colliderect(player_rect):
             gravitating = True
             if self.rect.centerx < player_rect.centerx:
-                self.rect.x += 3
+                self.rect.x += 6
             elif self.rect.centerx > player_rect.centerx:
-                self.rect.x -= 3
+                self.rect.x -= 6
         
             if self.rect.centery < player_rect.centery:
-                self.rect.y += 3
+                self.rect.y += 6
             elif self.rect.centery > player_rect.centery:
-                self.rect.y -= 3    
+                self.rect.y -= 6    
         else:
             gravitating = False
             

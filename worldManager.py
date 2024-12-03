@@ -341,7 +341,7 @@ class World():
             else:
                 tile[1][0] -= scroll_X
                 tile[1][1] -= scroll_Y
-                if tile[1].x <= self.screen_w and tile[1].x > -self.screen_w//2:
+                if tile[1].x <= self.screen_w and tile[1].x > -self.screen_w//2 and data != self.fg:
                     screen.blit(tile[0], tile[1]) # (image, position)
                     
 
@@ -395,5 +395,10 @@ class World():
         
         return (self.coords[0][1][0], self.coords[0][1][1]) #x and y of first tile
             
-        
+    
+    def draw_foreground(self, screen):
+        for tile in self.fg:
+            if tile[1].x <= self.screen_w and tile[1].x > -self.screen_w//2:
+                screen.blit(tile[0], tile[1]) # (image, position)
+            
             

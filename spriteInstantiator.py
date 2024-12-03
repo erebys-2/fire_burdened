@@ -34,7 +34,7 @@ class sprite_instantiator():
                 the_sprite_group.enemy0_group.add(enemy0)
                 world.enemy0_id += 1
             elif sprite_id == 'fly':
-                enemy0 = enemy_32wide(x * 32, y * 32, 3, 2, 'fly', world.enemy0_id, ini_vol)
+                enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'fly', world.enemy0_id, ini_vol)
                 the_sprite_group.enemy0_group.add(enemy0)
                 world.enemy0_id += 1
                 

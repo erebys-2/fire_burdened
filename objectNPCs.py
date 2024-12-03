@@ -15,4 +15,5 @@ class save_pt(npc):
         self.player_collision = self.rect.colliderect(player_rect)
         if self.player_collision and self.name != 'invisible_prompt':
             if not dialogue_enable:
-                screen.blit(self.interaction_prompt, (self.rect.x + 32, self.rect.y + 32, 32, 32))
+                #screen.blit(self.interaction_prompt, (self.rect.x + 32, self.rect.y + 32, 32, 32))
+                screen.blit(self.interaction_prompt, (self.rect.left - 8, self.rect.y - 16))

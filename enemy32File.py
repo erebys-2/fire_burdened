@@ -7,6 +7,7 @@ from particle import particle_ #type: ignore
 from music_player import music_player #type: ignore
 from ItemFile import Item #type: ignore
 import random
+import math
  
 #GRAVITY = 0.75
 
@@ -16,6 +17,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.m_player = music_player(['bassdrop2.wav', 'hit.wav', 'roblox2.wav', 'shoot.wav', 'step2soft.wav'], ini_vol)
         self.ini_vol = ini_vol
+        
         #self.m_player.set_sound_vol(self.m_player.sfx[0], 7) #looks like you can adjust vol in the constructor
 
         self.id = enemy0_id
@@ -28,6 +30,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         self.speed = speed
         self.slower_speed = speed - 1
         self.direction = -1
+        self.vertical_direction = 0
         self.flip = False
         self.recoil = 42
         self.recoil_slow = 3
@@ -61,6 +64,8 @@ class enemy_32wide(pygame.sprite.Sprite):
         self.getting_shot_delay = pygame.time.get_ticks()
         
         self.do_screenshake = False
+        
+        self.increment = 0
 
         #fill animation frames
         if type == 'dog':
@@ -96,6 +101,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         else:
             self.rect = self.image.get_bounding_rect()
         self.rect.topleft = (x,y)
+        self.ini_y = self.rect.centery
         self.atk_rect = pygame.Rect(-32, -32, 0,0)
         self.atk_rect_scaled = pygame.Rect(-32, -32, 0,0)#self.atk_rect.scale_by(0.8)
         
@@ -165,6 +171,12 @@ class enemy_32wide(pygame.sprite.Sprite):
         dy = 0
         moving = False
         
+        if self.vel_y == 0:
+            self.vertical_direction = 0
+        elif self.vel_y < 0:
+            self.vertical_direction = 1
+        elif self.vel_y > 0:
+            self.vertical_direction = -1
         
         # if player is within left range, or right range
         if self.inundated == False and self.check_if_in_simulation_range():
@@ -292,13 +304,13 @@ class enemy_32wide(pygame.sprite.Sprite):
                         
                     if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x < self.rect.x + self.width + chase_range*self.width:
                         if player_rect.y > self.rect.y - 2*chase_range*self.height and player_rect.y <= self.rect.y:
-                            self.vel_y = -self.speed//3
+                            self.vel_y = -self.speed//2
                             moving = True
                         elif player_rect.y < self.rect.y + self.height + 2*chase_range*self.height and player_rect.y >= self.rect.y:
-                            self.vel_y = self.speed//3
+                            self.vel_y = self.speed//2
                             moving = True
                             
-                        self.vel_y += random.randint(-3,3)
+                        #self.vel_y += random.randint(-3,3)
                     else:
                         self.vel_y = 0
                         
@@ -310,6 +322,17 @@ class enemy_32wide(pygame.sprite.Sprite):
                     self.atk_rect_scaled = self.atk_rect.scale_by(0.75)
                 else:
                     self.atk1_kill_hitbox()
+                    
+                if self.action == 0:
+                    self.rect.centery = self.ini_y - 9*math.sin(self.increment)
+
+                    if self.increment > 2*math.pi:
+                        self.rect.centery = self.ini_y
+                        self.increment = 0
+                        
+                    self.increment += math.pi/24
+                else:
+                    self.ini_y = self.rect.centery
                     
          
         else:
@@ -387,7 +410,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                 self.rando_frame = 0
             
             if self.enemy_type == 'fly':
-                dy += -self.recoil*0.5
+                dy += self.vertical_direction * self.recoil//2
             else:
                 dy += self.vel_y * 2
 

@@ -151,7 +151,7 @@ class player_interactable_(pygame.sprite.Sprite):
                 self.do_tile_y_collisions(world_solids, self.vel_y)
                 
                 if self.trigger_once:
-                    if self.rect.x < 640 + 160 and self.rect.right >= 0 - 160:
+                    if self.rect.x < 640 + 128 and self.rect.right >= 0 - 128:
                         self.m_player.play_sound(self.m_player.sfx[0])
                         particle = particle_(self.rect.x - (24*self.scale), self.rect.centery - (48*self.scale), -self.direction, self.scale*1.5, 'sparks', True, random.randint(0,2), False)
                         sp_group_list[5].add(particle)

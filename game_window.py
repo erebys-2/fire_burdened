@@ -371,6 +371,8 @@ def main():
 			for group in the_sprite_group.sp_group_list:
 				for sprite_ in group:
 					sprite_.force_ini_position(scroll_x)
+     
+		world.draw_foreground(screen)
 
 		#--------------------------------------------------------------------handling drawing text boxes------------------------------------------------------------------
 		#textboxes have a maximum of 240 characters
@@ -418,7 +420,7 @@ def main():
 			p_int.do_screenshake = False
 			if not do_screenshake_master:
 				do_screenshake_master = True
-				screenshake_profile = (8, 8, 3)
+				screenshake_profile = (0, 8, 3)
 
 		for enemy in [enemy for enemy in the_sprite_group.enemy0_group if enemy.do_screenshake]: #the_sprite_group.enemy0_group:
 			enemy.do_screenshake = False
