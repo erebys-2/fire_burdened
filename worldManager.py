@@ -122,7 +122,7 @@ class World():
     def get_death_count(self, level):#death counts are a dictionary with levels as keys, it is reset everytime a mew slot is selected or the game is restarted
         death_count = 0
         if level in self.death_counters_dict:
-            death_count = self.death_counters_dict[level]\
+            death_count = self.death_counters_dict[level]
             
         return death_count
         

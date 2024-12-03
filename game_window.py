@@ -475,7 +475,7 @@ def main():
 					selected_slot = ui_manager0.selected_slot
 			elif ui_manager0.saves_menu2_enable:
 				ui_output = ui_manager0.show_saves_menu2(screen)
-				if ui_manager0.selected_slot != -1 and selected_slot != ui_manager0.selected_slot:
+				if ui_manager0.selected_slot != -1:# and selected_slot != ui_manager0.selected_slot:
 					world.death_counters_dict = {0: 0}
 					selected_slot = ui_manager0.selected_slot
 			else:
