@@ -202,7 +202,7 @@ class player(pygame.sprite.Sprite):
             
     def update_landing(self, the_sprite_group):
         
-        if self.in_air != self.curr_state and not self.disp_flag and self.action != 1 and not self.in_cutscene:
+        if self.in_air != self.curr_state and not self.disp_flag and self.action != 1 and not self.in_cutscene and self.Alive:
             if not self.in_air:
                 particle = particle_(self.rect.centerx, self.rect.centery, -self.direction, self.scale, 'player_mvmt', True, 0, False)
                 the_sprite_group.particle_group.add(particle)
@@ -406,6 +406,8 @@ class player(pygame.sprite.Sprite):
 
                 #x collisions
                 if (p_int.rect.colliderect(self.collision_rect.x + dx, self.collision_rect.y+2, self.width, self.height- 2)):
+                    # self.screenshake_profile = (0,0,0)
+                    # self.do_screenshake = False
                     if self.collision_rect.x > p_int.rect.x and self.collision_rect.right < p_int.rect.right:
                         dx = 0
                     else:
@@ -1123,10 +1125,10 @@ class player(pygame.sprite.Sprite):
             self.BP_animate()
             screen.blit(pygame.transform.flip(self.image2, self.flip, False), self.BP_rect)
         
-        # pygame.draw.rect(p_screen, (0,0,255), self.collision_rect)
-        # pygame.draw.rect(p_screen, (255,0,0), self.hitbox_rect)
-        # pygame.draw.rect(p_screen, (0,255,0), self.atk_rect_scaled)
-        # pygame.draw.rect(p_screen, (0,0,255), self.debuggin_rect)
+        # pygame.draw.rect(screen, (0,0,255), self.collision_rect)
+        # pygame.draw.rect(screen, (255,0,0), self.hitbox_rect)
+        # pygame.draw.rect(screen, (0,255,0), self.atk_rect_scaled)
+        # pygame.draw.rect(screen, (0,0,255), self.debuggin_rect)
         
         self.draw_with_flicker(self.image, self.rect, screen, self.i_frames_en)#drawing sprite
        
@@ -1145,7 +1147,7 @@ class player(pygame.sprite.Sprite):
                 self.crit = True
                 if self.check_if_in_ss_range():
                     self.do_screenshake = True
-                    self.screenshake_profile = (16, 6, 4)
+                    self.screenshake_profile = (16, 6, 3)
                 self.m_player.play_sound(self.m_player.sfx[4])
             elif self.action != 9 and (new_action == 7 or new_action == 8):
                 self.crit == False

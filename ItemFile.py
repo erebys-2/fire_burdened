@@ -39,7 +39,7 @@ class Item(pygame.sprite.Sprite):
         self.flicker = False
         
         self.gravitation_rect = pygame.rect.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
-        self.gravitation_rect.scale_by_ip(3)
+        self.gravitation_rect.scale_by_ip(6)
 
         
     def enable(self, player_rect, pause_game):
@@ -81,14 +81,14 @@ class Item(pygame.sprite.Sprite):
         if self.gravitation_rect.colliderect(player_rect):
             gravitating = True
             if self.rect.centerx < player_rect.centerx:
-                self.rect.x += 6
+                self.rect.x += 3
             elif self.rect.centerx > player_rect.centerx:
-                self.rect.x -= 6
+                self.rect.x -= 3
         
             if self.rect.centery < player_rect.centery:
-                self.rect.y += 6
+                self.rect.y += 3
             elif self.rect.centery > player_rect.centery:
-                self.rect.y -= 6    
+                self.rect.y -= 3    
         else:
             gravitating = False
             

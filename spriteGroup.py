@@ -112,7 +112,7 @@ class sprite_group():
 			enemy0.draw(screen)
 			if not self.pause_game:
 				enemy0.animate(self.sp_group_list)
-				enemy0.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, self.scroll_x, player_action, self.sp_group_list)
+				enemy0.move(player_hitbox_rect, player_atk_rect_scaled, player_direction, world_solids, self.scroll_x, player_action, self.sp_group_list)
 			if enemy0.Alive == False:
 				self.enemy0_group.remove(enemy0)
 

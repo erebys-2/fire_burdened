@@ -214,7 +214,7 @@ def main():
 	speed = 4
 	ccsn_chance = 10
 	
-	player0 = player(32, -64, speed, hp, 6, 0, 0, vol_lvl, camera_offset)#6368 #5856 #6240 #test coords for camera autocorrect
+	player0 = player(32, 0, speed, hp, 6, 0, 0, vol_lvl, camera_offset)#6368 #5856 #6240 #test coords for camera autocorrect
 	#good news is that the player's coordinates can go off screen and currently the camera's auto scroll will eventually correct it
 	normal_speed = player0.speed
 
@@ -346,9 +346,59 @@ def main():
 			scroll_x = player0.scrollx + camera.scrollx
 		else:
 			scroll_x = 0
+		
+			
+	
+		#---------------------------------------screen shake------------------------------------------------------------------------
+		if player0.do_screenshake:
+			screenshake_profile = player0.screenshake_profile #intensity x, intensity y, cycle count
+			player0.do_screenshake = False
+			if not do_screenshake_master:
+				do_screenshake_master = True
+
+		for p_int in [p_int for p_int in the_sprite_group.p_int_group if p_int.do_screenshake]: #the_sprite_group.p_int_group: 
+			p_int.do_screenshake = False
+			if not do_screenshake_master:
+				do_screenshake_master = True
+				screenshake_profile = (4, 8, 3)
+
+
+		for enemy in [enemy for enemy in the_sprite_group.enemy0_group if enemy.do_screenshake]: #the_sprite_group.enemy0_group:
+			enemy.do_screenshake = False
+			if not do_screenshake_master:
+				do_screenshake_master = True
+				if player0.sprint:
+					screenshake_profile = (10, 6, 2)
+				else:
+					screenshake_profile = (6, 4, 2)
+
+		if do_screenshake_master:
+			ss_output = camera.screen_shake(screenshake_profile, do_screenshake_master)
+			do_screenshake_master = ss_output[0]
+			player0.rect.x += ss_output[1][0]
+			scroll_x += ss_output[1][1]
+			player0.vel_y += ss_output[1][2]*1.02
+			scroll_y = -ss_output[1][3]
+		# elif not do_screenshake_master and world.screen_rect.y != 0:
+		# 	world.screen_rect.y = 0
+  
+		if not do_screenshake_master and world.coords[0][1][1] != 0:
+			if world.coords[0][1][1] < 0:
+				correction_y = -1
+			elif world.coords[0][1][1] > 0:
+				correction_y = 1
+			else:
+				correction_y = 0
+			
+			for data_list in world.detailed_lvl_data_list:
+				for tile in data_list:
+					tile[1][1] -= correction_y
+
+			player0.rect.x += player0.direction * 5
+	
 	
 
-		
+		#updating all sprites
 		if not level_transitioning:
 			#dialogue trigger sent here
 			the_sprite_group.pause_game = pause_game or ui_manager0.saves_menu_enable
@@ -407,54 +457,6 @@ def main():
 
 						
 			
-		
-	
-		#---------------------------------------screen shake------------------------------------------------------------------------
-		if player0.do_screenshake:
-			screenshake_profile = player0.screenshake_profile #intensity x, intensity y, cycle count
-			player0.do_screenshake = False
-			if not do_screenshake_master:
-				do_screenshake_master = True
-
-		for p_int in [p_int for p_int in the_sprite_group.p_int_group if p_int.do_screenshake]: #the_sprite_group.p_int_group: 
-			p_int.do_screenshake = False
-			if not do_screenshake_master:
-				do_screenshake_master = True
-				screenshake_profile = (0, 8, 3)
-
-		for enemy in [enemy for enemy in the_sprite_group.enemy0_group if enemy.do_screenshake]: #the_sprite_group.enemy0_group:
-			enemy.do_screenshake = False
-			if not do_screenshake_master:
-				do_screenshake_master = True
-				if player0.sprint:
-					screenshake_profile = (10, 6, 2)
-				else:
-					screenshake_profile = (6, 4, 2)
-
-		if do_screenshake_master:
-			ss_output = camera.screen_shake(screenshake_profile, do_screenshake_master)
-			do_screenshake_master = ss_output[0]
-			player0.rect.x += ss_output[1][0]
-			scroll_x += ss_output[1][1]
-			player0.vel_y += ss_output[1][2]*1.02
-			scroll_y = -ss_output[1][3]
-		# elif not do_screenshake_master and world.screen_rect.y != 0:
-		# 	world.screen_rect.y = 0
-		
-		if not do_screenshake_master and world.coords[0][1][1] != 0:
-			if world.coords[0][1][1] < 0:
-				correction_y = -1
-			elif world.coords[0][1][1] > 0:
-				correction_y = 1
-			else:
-				correction_y = 0
-			
-			for data_list in world.detailed_lvl_data_list:
-				for tile in data_list:
-					tile[1][1] -= correction_y
-
-			player0.rect.x += player0.direction * 5
-	
 	
 		#----------black screen while transitioning---------------------------------------------------------
 		if level_transitioning:
@@ -490,7 +492,7 @@ def main():
 			
 			elif run and ui_manager0.saves_menu_enable:
 				#reset player0
-				player0 = player(32, -64, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+				player0 = player(32, 0, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 	
 		#-------------------------------------------------pausing game--------------------------------------------------------
 		if pause_game:
@@ -500,7 +502,7 @@ def main():
 			pause_game = ui_tuple0[0]
 			if ui_tuple0[1]:
 				next_level = 0
-				player0 = player(32, -64, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+				player0 = player(32, 0, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 				player_new_x = 32
 				player_new_y = 32
 		
@@ -558,7 +560,7 @@ def main():
 
 			if ui_manager0.show_death_menu(screen):
 				next_level = 0
-				player0 = player(32, -64, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+				player0 = player(32, 0, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 				player_new_x = 32
 				player_new_y = 32
 	
@@ -789,7 +791,7 @@ def main():
 
 						if (pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
 							next_level = 0
-							player0 = player(32, -64, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+							player0 = player(32, 0, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 							player_new_x = 32
 							player_new_y = 32
 							dialogue_box0.reset_internals()

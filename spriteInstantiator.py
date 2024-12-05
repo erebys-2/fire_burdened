@@ -37,6 +37,10 @@ class sprite_instantiator():
                 enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'fly', world.enemy0_id, ini_vol)
                 the_sprite_group.enemy0_group.add(enemy0)
                 world.enemy0_id += 1
+            elif sprite_id == 'walker':
+                enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'walker', world.enemy0_id, ini_vol)
+                the_sprite_group.enemy0_group.add(enemy0)
+                world.enemy0_id += 1
                 
         elif sprite_category == 'p_int':
             if sprite_id == 'crusher_top':
@@ -50,6 +54,9 @@ class sprite_instantiator():
                 the_sprite_group.p_int_group.add(p_int)
             elif sprite_id == 'moving_plat_v':
                 p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_v', ini_vol, True, False)
+                the_sprite_group.p_int_group.add(p_int)
+            elif sprite_id == 'grass':
+                p_int = player_interactable_(x * 32, y * 32, 1, 1, 'grass', ini_vol, True, False)
                 the_sprite_group.p_int_group.add(p_int)
             
         #bg type sprites

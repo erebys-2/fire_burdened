@@ -75,10 +75,7 @@ class particle_(pygame.sprite.Sprite):
         if self.particle_type == 'shooter_death':
             self.rect.y -= 4*(1/(self.frame_index+1))
             
-        elif self.particle_type == 'dog_death':
-            self.rect.y -= 2*(1/(self.frame_index+1))
-            
-        elif self.particle_type == 'fly_death':
+        elif self.particle_type == 'dog_death' or  self.particle_type == 'fly_death' or  self.particle_type == 'walker_death':
             self.rect.y -= 2*(1/(self.frame_index+1))
             
         elif self.particle_type == 'player_down_strike':
@@ -103,7 +100,9 @@ class particle_(pygame.sprite.Sprite):
             'fly_death': 100,
             'player_mvmt': 75,
             'player_impact': 60,
-            'sparks': 40
+            'sparks': 40,
+            'grass_cut': 90,
+            'walker_death': 100
         }    
         
         frame_update = framerates[self.particle_type]

@@ -49,6 +49,7 @@ class Camera():
                 trigger = False
         else:
             mvmt_output = (0,0,0,0)
+            self.cycle = 0
             
         return (trigger, mvmt_output)
             

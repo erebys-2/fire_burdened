@@ -14,3 +14,4 @@
 52: npc, opening_scene, cutscene, -1
 53: npc, Mars, character, -1
 54: enemy, fly, none, -1
+55: enemy, walker, none, -1

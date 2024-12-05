@@ -38,7 +38,8 @@ class player_interactable_(pygame.sprite.Sprite):
             'spinning_blades':('spin', 'spin2'),
             'crusher_top':('crush', 'grimace'),
             'moving_plat_h':('move', 'move2'),
-            'moving_plat_v':('move', 'move2')
+            'moving_plat_v':('move', 'move2'),
+            'grass':('wave', 'cut_down')
         }
         
         for animation in animation_types[self.type]:
@@ -59,7 +60,7 @@ class player_interactable_(pygame.sprite.Sprite):
         self.width = self.image.get_width()
         self.height = self.image.get_height()
         
-        self.m_player = music_player(['mc_anvil.wav'], ini_vol)
+        self.m_player = music_player(['mc_anvil.wav', 'step2soft.wav'], ini_vol)
         self.ini_vol = ini_vol
         
         self.dropping = False
@@ -74,7 +75,8 @@ class player_interactable_(pygame.sprite.Sprite):
             'spinning_blades':(False, True),
             'crusher_top': (True, True),
             'moving_plat_h':(True, False),
-            'moving_plat_v': (True, False)
+            'moving_plat_v': (True, False),
+            'grass':(False, False)
         }
         
         # self.is_hostile = {
@@ -119,12 +121,30 @@ class player_interactable_(pygame.sprite.Sprite):
 
             elif tile[1].colliderect(self.rect.x + self.width//2 + dx, self.rect.y + 4, self.width//2, self.height - 8):
                 self.direction = -1
+                
+    def do_player_atk_collisions(self, player_atk_rect):
+        return player_atk_rect.colliderect(self.rect)
         
     def enable(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list):
         if self.enabled:
             if self.type == 'spinning_blades':
                 if self.check_if_onscreen():
                     self.animate()
+                    
+            elif self.type == 'grass':
+                if self.check_if_onscreen():
+                    if self.do_player_atk_collisions(player_atk_rect) and self.action == 0:
+                            #self.m_player.play_sound(self.m_player.sfx[1])
+                            self.frame_index = 0
+                            self.action = 1
+                            for i in range(random.randrange(4,8)):
+                                particle = particle_(self.rect.x + random.randint(-8,8), self.rect.y + random.randint(-16,8), -self.direction, self.scale, 'grass_cut', True, random.randint(0,2), False)
+                                sp_group_list[5].add(particle)
+
+                    self.animate()
+                else:
+                    self.action = 0
+                    
                     
             elif self.type == 'moving_plat_h':
                 self.do_tile_x_collisions(world_solids, self.vel_x)
@@ -170,6 +190,8 @@ class player_interactable_(pygame.sprite.Sprite):
                 elif not self.dropping and self.on_ground and not self.pause:
                     self.vel_y = -5
                     self.image = self.frame_list[0][0]
+                elif self.do_player_atk_collisions(player_atk_rect):
+                    self.vel_y = random.randint(-8,0)
                 else:
                     self.vel_y = 0
                     if self.pause:
@@ -197,7 +219,8 @@ class player_interactable_(pygame.sprite.Sprite):
             'spinning_blades': 30,
             'crusher_top': 70,
             'moving_plat_h': 100,
-            'moving_plat_v': 100
+            'moving_plat_v': 100,
+            'grass': 240
         }    
         
         self.mask = pygame.mask.from_surface(self.image)
