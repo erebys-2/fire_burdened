@@ -61,7 +61,7 @@ class player_interactable_(pygame.sprite.Sprite):
         self.width = self.image.get_width()
         self.height = self.image.get_height()
         
-        self.m_player = music_player(['mc_anvil.wav', 'step2soft.wav', 'breaking_tile1.wav'], ini_vol)
+        self.m_player = music_player(['mc_anvil.wav', 'step2soft.wav', 'pop3.wav'], ini_vol)
         self.ini_vol = ini_vol
         
         self.dropping = False

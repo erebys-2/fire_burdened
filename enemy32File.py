@@ -80,7 +80,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             self.recoil_slow = 2
         elif type == 'fly':
             self.animation_types = ['idle', 'move', 'hurt', 'die']
-            self.hp = 6
+            self.hp = 4
             self.recoil = 58
             self.recoil_slow = 3
         elif type == 'walker':
@@ -413,14 +413,14 @@ class enemy_32wide(pygame.sprite.Sprite):
             ):
             #pygame.time.wait(8)
             #the average point in a collision between rects is literally just the average of the coords opposite respective corners of rects
-            x_avg = (self.rect.x + player_atk_rect.right)/2
-            y_avg = (self.rect.y + player_atk_rect.bottom)/2
+            #x_avg = (3*self.rect.centerx + player_atk_rect.centerx)/4
+            y_avg = (self.rect.centery + player_atk_rect.centery)/2
             
-            particle = particle_(x_avg - 16*self.direction, y_avg, -self.direction, self.scale*1.05, 'player_impact', True, self.rando_frame, False)
+            particle = particle_(self.rect.centerx, y_avg, -self.direction, self.scale*1.05, 'player_impact', True, self.rando_frame, False)
             sp_group_list[5].add(particle)
             i = 0
             for i in range(3):
-                particle2 = particle_(x_avg+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.3*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
+                particle2 = particle_(self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.3*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
                 sp_group_list[5].add(particle2)
                 i+=1
             self.m_player.play_sound(self.m_player.sfx[1])
