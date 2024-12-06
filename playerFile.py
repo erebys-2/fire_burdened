@@ -259,12 +259,13 @@ class player(pygame.sprite.Sprite):
             
         elif (self.frame_index >= 1 and self.frame_index < 4) and (self.action==10):#adjust atk hitbox location for crit
             self.atk_show_sprite = False
-            self.atk_rect.width = self.collision_rect.height*0.75
+            self.atk_rect.width = self.collision_rect.height
             self.atk_rect.height = self.collision_rect.height - 8*self.frame_index
             if self.flip:
-                x_loc = self.collision_rect.x - (self.width + self.frame_index*2)
+                x_loc = self.collision_rect.x - (self.width - self.frame_index*2)
             else:
-                x_loc = self.collision_rect.x + (self.width//2 + self.frame_index*2)
+                x_loc = self.collision_rect.x - ( self.frame_index*2)
+
             y_loc = self.collision_rect.y + 4*self.frame_index
             
             self.atk_rect.x = x_loc
@@ -275,7 +276,7 @@ class player(pygame.sprite.Sprite):
         if self.action != 10:
             self.atk_rect_scaled  = self.atk_rect.scale_by(0.90)
         else:
-            self.atk_rect_scaled  = self.atk_rect.scale_by(1)
+            self.atk_rect_scaled  = self.atk_rect
             if (pygame.time.get_ticks() - self.particle_update > 200) and self.frame_index  < 3:
                 self.particle_update = pygame.time.get_ticks()
                 particle = particle_(self.rect.centerx, self.rect.centery, -self.direction, self.scale, 'player_crit', True, self.frame_index, False)

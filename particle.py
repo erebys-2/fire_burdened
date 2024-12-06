@@ -105,7 +105,10 @@ class particle_(pygame.sprite.Sprite):
             'walker_death': 100
         }    
         
-        frame_update = framerates[self.particle_type]
+        if self.particle_type in framerates:
+            frame_update = framerates[self.particle_type]
+        else:
+            frame_update = 100
             
         #still frame particles
         if self.frame_sync:

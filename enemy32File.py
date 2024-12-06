@@ -76,7 +76,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         elif type == 'shooter':   
             self.animation_types = ['idle', 'move', 'hurt', 'die', 'shoot', 'jump'] 
             self.hp = 10
-            self.recoil = 49
+            self.recoil = 50
             self.recoil_slow = 2
         elif type == 'fly':
             self.animation_types = ['idle', 'move', 'hurt', 'die']
@@ -87,7 +87,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             self.animation_types = ['idle', 'move', 'hurt']
             self.action = 1
             self.hp = 6
-            self.recoil = 58
+            self.recoil = 54
             self.recoil_slow = 2
 
         for animation in self.animation_types:
@@ -483,8 +483,9 @@ class enemy_32wide(pygame.sprite.Sprite):
 
 
         dxdy = self.do_p_int_group_collisions(sp_group_list[8], dx, dy)
-        dx = dxdy[0]
-        dy = dxdy[1]
+        if self.enemy_type != 'fly':
+            dx = dxdy[0]
+            dy = dxdy[1]
         #world collisions
         
         
@@ -729,7 +730,11 @@ class enemy_32wide(pygame.sprite.Sprite):
     def draw(self, p_screen):
         #self.animate()
         if self.check_if_onscreen():
-            p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+            if not self.inundated:
+                p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+            else:
+                if pygame.time.get_ticks()%5 != 0:
+                    p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
         #pygame.draw.rect(p_screen, (255,0,0), self.atk_rect_scaled)
     
     def update_action(self, new_action):

@@ -326,6 +326,19 @@ def main():
                        [tile for tile in world.coords if tile[1][0] > -32 and tile[1][0] < 640], 
                        world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
 		world_tile0_coord = world.draw(screen, scroll_x, scroll_y, player0.hitting_wall)#this draws the world and scrolls it 
+  
+		#vertical screenshake correction
+		if not do_screenshake_master and world_tile0_coord[1] != 0:
+			if world_tile0_coord[1] < 0:
+				correction_y = -1
+			elif world_tile0_coord[1] > 0:
+				correction_y = 1
+			else:
+				correction_y = 0
+			
+			for data_list in world.detailed_lvl_data_list:
+				for tile in data_list:
+					tile[1][1] -= correction_y
 		
 		
 		if not pause_game:
@@ -382,19 +395,19 @@ def main():
 		# elif not do_screenshake_master and world.screen_rect.y != 0:
 		# 	world.screen_rect.y = 0
   
-		if not do_screenshake_master and world.coords[0][1][1] != 0:
-			if world.coords[0][1][1] < 0:
-				correction_y = -1
-			elif world.coords[0][1][1] > 0:
-				correction_y = 1
-			else:
-				correction_y = 0
+		# if not do_screenshake_master and world.coords[0][1][1] != 0:
+		# 	if world.coords[0][1][1] < 0:
+		# 		correction_y = -1
+		# 	elif world.coords[0][1][1] > 0:
+		# 		correction_y = 1
+		# 	else:
+		# 		correction_y = 0
 			
-			for data_list in world.detailed_lvl_data_list:
-				for tile in data_list:
-					tile[1][1] -= correction_y
+		# 	for data_list in world.detailed_lvl_data_list:
+		# 		for tile in data_list:
+		# 			tile[1][1] -= correction_y
 
-			player0.rect.x += player0.direction * 5
+			#player0.rect.x += player0.direction * 5
 	
 	
 

@@ -58,6 +58,9 @@ class sprite_instantiator():
             elif sprite_id == 'grass':
                 p_int = player_interactable_(x * 32, y * 32, 1, 1, 'grass', ini_vol, True, False)
                 the_sprite_group.p_int_group.add(p_int)
+            elif sprite_id == 'breakable_brick1':
+                p_int = player_interactable_(x * 32, y * 32, 1, 1, 'breakable_brick1', ini_vol, True, False)
+                the_sprite_group.p_int_group.add(p_int)
             
         #bg type sprites
         elif sprite_category == 'bg_sprite':

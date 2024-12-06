@@ -277,8 +277,11 @@ def write_level_data(level, data_, data_str):
                 writer.writerow(row)
                 
 def editing_lvl_data(data):
+    
     if pygame.mouse.get_pressed()[0] == 1:
-        if data[y][x] != current_tile:
+        if current_tile in sprite_group_tiles_dict and data != world_data:
+            print("cannot place sprite group tile in non-game layer")
+        elif data[y][x] != current_tile:
             data[y][x] = current_tile
     if pygame.mouse.get_pressed()[2] == 1:
         data[y][x] = -1

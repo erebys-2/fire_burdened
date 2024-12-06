@@ -39,7 +39,8 @@ class player_interactable_(pygame.sprite.Sprite):
             'crusher_top':('crush', 'grimace'),
             'moving_plat_h':('move', 'move2'),
             'moving_plat_v':('move', 'move2'),
-            'grass':('wave', 'cut_down')
+            'grass':('wave', 'cut_down'),
+            'breakable_brick1':('default',)
         }
         
         for animation in animation_types[self.type]:
@@ -60,7 +61,7 @@ class player_interactable_(pygame.sprite.Sprite):
         self.width = self.image.get_width()
         self.height = self.image.get_height()
         
-        self.m_player = music_player(['mc_anvil.wav', 'step2soft.wav'], ini_vol)
+        self.m_player = music_player(['mc_anvil.wav', 'step2soft.wav', 'breaking_tile1.wav'], ini_vol)
         self.ini_vol = ini_vol
         
         self.dropping = False
@@ -76,7 +77,8 @@ class player_interactable_(pygame.sprite.Sprite):
             'crusher_top': (True, True),
             'moving_plat_h':(True, False),
             'moving_plat_v': (True, False),
-            'grass':(False, False)
+            'grass':(False, False),
+            'breakable_brick1':(True, False)
         }
         
         # self.is_hostile = {
@@ -86,6 +88,12 @@ class player_interactable_(pygame.sprite.Sprite):
         #     'moving_plat_v':False
         # }
         self.atk_rect = pygame.Rect(0,0,0,0)
+        
+        if type == 'breakable_brick1':
+            self.durability = 2
+        else:
+            self.durability = 1
+        self.durability_changed = False
     
     def check_if_onscreen(self):
         return (self.rect.x > -self.rect.width and self.rect.x < 640)
@@ -124,6 +132,13 @@ class player_interactable_(pygame.sprite.Sprite):
                 
     def do_player_atk_collisions(self, player_atk_rect):
         return player_atk_rect.colliderect(self.rect)
+    
+    def breakable_tile_frame_change(self):
+        if self.durability > 0:
+            index = len(self.frame_list[self.action]) - self.durability
+        else:
+            index = len(self.frame_list[self.action]) - 1
+        return index
         
     def enable(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list):
         if self.enabled:
@@ -134,16 +149,40 @@ class player_interactable_(pygame.sprite.Sprite):
             elif self.type == 'grass':
                 if self.check_if_onscreen():
                     if self.do_player_atk_collisions(player_atk_rect) and self.action == 0:
-                            #self.m_player.play_sound(self.m_player.sfx[1])
-                            self.frame_index = 0
-                            self.action = 1
-                            for i in range(random.randrange(4,8)):
-                                particle = particle_(self.rect.x + random.randint(-8,8), self.rect.y + random.randint(-16,8), -self.direction, self.scale, 'grass_cut', True, random.randint(0,2), False)
-                                sp_group_list[5].add(particle)
-
+                        #self.m_player.play_sound(self.m_player.sfx[1])
+                        self.frame_index = 0
+                        self.action = 1
+                        for i in range(random.randrange(4,8)):
+                            particle = particle_(self.rect.x + random.randint(-8,8), self.rect.y + random.randint(-16,8), -self.direction, self.scale, 'grass_cut', True, random.randint(0,2), False)
+                            sp_group_list[5].add(particle)
                     self.animate()
                 else:
                     self.action = 0
+                    
+            elif self.type == 'breakable_brick1':
+                #print(self.durability)
+                if self.durability > 0:
+                    if self.do_player_atk_collisions(player_atk_rect):
+                        if not self.durability_changed:
+                            self.durability -= 1
+                            self.durability_changed = True
+                            self.image = self.frame_list[self.action][self.breakable_tile_frame_change()]
+                            self.m_player.play_sound(self.m_player.sfx[2])
+                            
+                            #for i in range(2):
+                            particle2 = particle_(self.rect.centerx + random.randint(-12,12), self.rect.centery + random.randint(-12,12), -self.direction, 1.2*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
+                            sp_group_list[5].add(particle2)
+                            
+                        
+                        particle = particle_(self.rect.x + random.randint(-8,8), self.rect.y + random.randint(-8,8), -self.direction, self.scale, 'stone_breaking', True, random.randint(0,2), False)
+                        sp_group_list[5].add(particle)
+                        
+                        
+                    else:
+                        self.durability_changed = False
+                else:
+                    self.rect = pygame.Rect(0,0,0,0)
+                    self.kill()
                     
                     
             elif self.type == 'moving_plat_h':
