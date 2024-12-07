@@ -9,11 +9,12 @@ import random
 
 class player_interactable_(pygame.sprite.Sprite):
     #constructor
-    def __init__(self, x, y, scale, direction, type, ini_vol, enabled, moveable):
+    def __init__(self, x, y, scale, direction, type, ini_vol, enabled, moveable, is_moving_plat):
         pygame.sprite.Sprite.__init__(self)
         self.direction = direction
         self.enabled = enabled
         self.moveable = moveable
+        self.is_moving_plat = is_moving_plat
         self.angle = 0
         self.initial_y = y
         self.initial_x = x

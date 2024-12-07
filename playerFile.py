@@ -395,35 +395,48 @@ class player(pygame.sprite.Sprite):
                 #self.atk1_grinding(p_int.rect, the_sprite_group)
                 #y collisions
                 if (p_int.rect.colliderect(self.collision_rect.x+2, self.collision_rect.y + dy, self.width-4, self.height)):
-                    if self.collision_rect.bottom >= p_int.rect.top and self.collision_rect.bottom <= p_int.rect.y + 32:
+                    if self.collision_rect.bottom >= p_int.rect.top and self.collision_rect.bottom <= p_int.rect.y + 32:# and p_int.vel_y < 0:
                         in_air = False
                         self.vel_y = 0.5
                         dy = p_int.vel_y
                         dx += p_int.vel_x
-                        if self.collision_rect.bottom != p_int.rect.top:
-                            dy -= self.collision_rect.bottom- p_int.rect.top
-                    elif self.collision_rect.top <= p_int.rect.bottom and self.collision_rect.top >= p_int.rect.y + 32 and p_int.vel_y >= 0:
+                        if self.collision_rect.bottom != p_int.rect.top and (p_int.is_moving_plat or not hitting_wall):
+                            dy -= self.collision_rect.bottom - p_int.rect.top
+                    elif self.collision_rect.top <= p_int.rect.bottom and self.collision_rect.top >= p_int.rect.y + 32 and p_int.vel_y > 0:
                         dy = p_int.vel_y
                         self.vel_y = 0.5
+                    elif (self.collision_rect.top <= p_int.rect.bottom 
+                          and self.collision_rect.bottom > p_int.rect.bottom 
+                          and p_int.vel_y == 0
+                          and not p_int.is_moving_plat):
+                        #works for the most part but screenshake can still cause the player to phase through
+                        self.vel_y = 0
+                        dy = -dy
+                        dy += p_int.rect.bottom - self.collision_rect.top
                     else:
                         in_air = True
+                        
 
                 #x collisions
-                if (p_int.rect.colliderect(self.collision_rect.x + dx, self.collision_rect.y+2, self.width, self.height- 2)):
-                    # self.screenshake_profile = (0,0,0)
-                    # self.do_screenshake = False
+                if (not self.disp_flag  
+                    and p_int.rect.colliderect(self.collision_rect.x + dx, self.collision_rect.y+2, self.width, self.height- 2)):
                     
                     hitting_wall = True
                     hitting_wall_timer = pygame.time.get_ticks()
                     
-                    if self.collision_rect.x > p_int.rect.x and self.collision_rect.right < p_int.rect.right:
-                        dx = 0
+                    if p_int.vel_y == 0:
+                        if (dx > 0 and self.direction > 0) or (dx < 0 and self.direction < 0):
+                            dx = -self.direction + p_int.vel_x
+                        else:
+                            dx = self.direction + p_int.vel_x
                     else:
-                        dx = -self.direction + p_int.vel_x
+                        dx = 0
+                        
                 elif (self.action != 9
                     and self.disp_flag #and self.action == 67
                     and p_int.rect.colliderect(self.collision_rect.x + self.direction*self.width//2 + dx, self.collision_rect.y+2, self.width, self.height - 2)
                     ):
+                    #print()
                     dx = -16*self.direction
             
                     hitting_wall = True
@@ -432,7 +445,10 @@ class player(pygame.sprite.Sprite):
                 elif (self.action == 9
                       and p_int.rect.colliderect(self.collision_rect.x + dx, self.collision_rect.y + 16, self.width, self.height - 16)
                     ):
-                    dx = -dx + p_int.vel_x
+                    dx = -self.direction + p_int.vel_x
+                    
+                    hitting_wall = True
+                    hitting_wall_timer = pygame.time.get_ticks()
                 
                 if not (p_int.rect.colliderect(self.collision_rect.x, self.collision_rect.y + dy, self.width, self.height)):
                     self.in_air = True

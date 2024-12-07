@@ -44,22 +44,22 @@ class sprite_instantiator():
                 
         elif sprite_category == 'p_int':
             if sprite_id == 'crusher_top':
-                p_int = player_interactable_(x * 32, y * 32, 1, 1, 'crusher_top', ini_vol, True, False)
+                p_int = player_interactable_(x * 32, y * 32, 1, 1, 'crusher_top', ini_vol, True, False, True)
                 the_sprite_group.p_int_group.add(p_int)
             elif sprite_id == 'spinning_blades':
-                p_int2 = player_interactable_(x * 32, y * 32, 2, 1, 'spinning_blades', ini_vol, True, False)
+                p_int2 = player_interactable_(x * 32, y * 32, 2, 1, 'spinning_blades', ini_vol, True, False, False)
                 the_sprite_group.p_int_group2.add(p_int2)
             elif sprite_id == 'moving_plat_h':
-                p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_h', ini_vol, True, False)
+                p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_h', ini_vol, True, False, True)
                 the_sprite_group.p_int_group.add(p_int)
             elif sprite_id == 'moving_plat_v':
-                p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_v', ini_vol, True, False)
+                p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_v', ini_vol, True, False, True)
                 the_sprite_group.p_int_group.add(p_int)
             elif sprite_id == 'grass':
-                p_int = player_interactable_(x * 32, y * 32, 1, 1, 'grass', ini_vol, True, False)
+                p_int = player_interactable_(x * 32, y * 32, 1, 1, 'grass', ini_vol, True, False, False)
                 the_sprite_group.p_int_group.add(p_int)
             elif sprite_id == 'breakable_brick1':
-                p_int = player_interactable_(x * 32, y * 32, 1, 1, 'breakable_brick1', ini_vol, True, False)
+                p_int = player_interactable_(x * 32, y * 32, 1, 1, 'breakable_brick1', ini_vol, True, False, False)
                 the_sprite_group.p_int_group.add(p_int)
             
         #bg type sprites
