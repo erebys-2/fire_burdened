@@ -162,20 +162,20 @@ class player_interactable_(pygame.sprite.Sprite):
             elif self.type == 'breakable_brick1':
                 #print(self.durability)
                 if self.durability > 0:
-                    if self.do_player_atk_collisions(player_atk_rect):
+                    if self.check_if_onscreen() and self.do_player_atk_collisions(player_atk_rect):
                         if not self.durability_changed:
                             self.durability -= 1
                             self.durability_changed = True
                             self.image = self.frame_list[self.action][self.breakable_tile_frame_change()]
                             self.m_player.play_sound(self.m_player.sfx[2])
                             
-                            #for i in range(2):
+                            
                             particle2 = particle_(self.rect.centerx + random.randint(-12,12), self.rect.centery + random.randint(-12,12), -self.direction, 1.2*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
                             sp_group_list[5].add(particle2)
                             
-                        
-                        particle = particle_(self.rect.x + random.randint(-8,8), self.rect.y + random.randint(-8,8), -self.direction, self.scale, 'stone_breaking', True, random.randint(0,2), False)
-                        sp_group_list[5].add(particle)
+                            for i in range(2):
+                                particle = particle_(self.rect.x + random.randint(-8,8), self.rect.y + random.randint(-8,8), -self.direction, self.scale, 'stone_breaking', True, random.randint(0,2), False)
+                                sp_group_list[5].add(particle)
                         
                         
                     else:
@@ -219,7 +219,7 @@ class player_interactable_(pygame.sprite.Sprite):
                     self.trigger_once = False
                 
                 if ((self.dropping and not self.on_ground 
-                    and (player_rect.x > self.rect.x - 2*self.width and player_rect.x < self.rect.x + self.width + 2*self.width)
+                    and (player_rect.x > self.rect.x - 1.25*self.width and player_rect.x < self.rect.x + self.width + 1.25*self.width)
                     )
                     or self.already_falling
                     ):

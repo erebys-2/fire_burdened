@@ -409,6 +409,10 @@ class player(pygame.sprite.Sprite):
                 if (p_int.rect.colliderect(self.collision_rect.x + dx, self.collision_rect.y+2, self.width, self.height- 2)):
                     # self.screenshake_profile = (0,0,0)
                     # self.do_screenshake = False
+                    
+                    self.hitting_wall = True
+                    self.hitting_wall_timer = pygame.time.get_ticks()
+                    
                     if self.collision_rect.x > p_int.rect.x and self.collision_rect.right < p_int.rect.right:
                         dx = 0
                     else:
@@ -418,6 +422,10 @@ class player(pygame.sprite.Sprite):
                     and p_int.rect.colliderect(self.collision_rect.x + self.direction*self.width//2 + dx, self.collision_rect.y+2, self.width, self.height - 2)
                     ):
                     dx = -16*self.direction
+            
+                    self.hitting_wall = True
+                    self.hitting_wall_timer = pygame.time.get_ticks()
+                    
                 elif (self.action == 9
                       and p_int.rect.colliderect(self.collision_rect.x + dx, self.collision_rect.y + 16, self.width, self.height - 16)
                     ):
@@ -500,7 +508,7 @@ class player(pygame.sprite.Sprite):
                 
                 #wall collisions while NOT rolling
                 elif (self.action != 9 and #this line is important for consistency
-                    tile[1].colliderect(self.collision_rect.x + 1 + dx, self.collision_rect.y, self.width - 2, self.height - 17) 
+                    tile[1].colliderect(self.collision_rect.x + 1 + dx, self.collision_rect.y, self.width - 2, self.height - 16) 
                     ):
                     self.hitting_wall = True
                     self.hitting_wall_timer = pygame.time.get_ticks()
@@ -691,7 +699,7 @@ class player(pygame.sprite.Sprite):
                         else:
                             multiplier = 1
                             
-                        dx = self.direction * (multiplier * (self.speed + 1))
+                        dx = self.direction * (multiplier * (self.speed))
                         self.rect.x += self.direction * multiplier * 2
                         
                         if self.action == 7:

@@ -81,7 +81,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         elif type == 'fly':
             self.animation_types = ['idle', 'move', 'hurt', 'die']
             self.hp = 4
-            self.recoil = 58
+            self.recoil = 43
             self.recoil_slow = 3
         elif type == 'walker':
             self.animation_types = ['idle', 'move', 'hurt']
@@ -160,6 +160,11 @@ class enemy_32wide(pygame.sprite.Sprite):
                         dx = 0
                     else:
                         dx = -dx + p_int.vel_x
+                        
+                    if self.enemy_type == 'walker' and not self.inundated:
+                        self.direction = -self.direction
+                        self.flip = not self.flip
+                        dx = self.direction*8
  
                     
             #taking damage from crushing traps
@@ -189,7 +194,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             #enemy type specific behaviors--------------------------------------------------------------------------------------
             if self.enemy_type == 'dog':
                 chase_range = 1.5
-                if player_rect.y > self.rect.y - chase_range*self.height and  player_rect.y < self.rect.y + self.height + chase_range*self.height:
+                if player_rect.y > self.rect.y - 2*chase_range*self.height and  player_rect.y < self.rect.y + self.height + 2*chase_range*self.height:
                     if player_rect.x > self.rect.x - 5*32 and player_rect.x <= self.rect.x:
                         dx = -self.speed *self.speed_boost
                         self.direction = -1
@@ -310,10 +315,10 @@ class enemy_32wide(pygame.sprite.Sprite):
                         
                     if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x < self.rect.x + self.width + chase_range*self.width:
                         if player_rect.y > self.rect.y - 2*chase_range*self.height and player_rect.y <= self.rect.y:
-                            self.vel_y = -self.speed//2
+                            self.vel_y = -self.speed
                             moving = True
                         elif player_rect.y < self.rect.y + self.height + 2*chase_range*self.height and player_rect.y >= self.rect.y:
-                            self.vel_y = self.speed//2
+                            self.vel_y = self.speed
                             moving = True
                             
                         #self.vel_y += random.randint(-3,3)
@@ -510,7 +515,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                         if self.enemy_type == 'walker':
                             self.direction = -self.direction
                             self.flip = not self.flip
-                            dx += self.direction*8
+                            dx = self.direction*8
 
                     
                     #make sure to not get pushed into blocks collision by half sprite width       
