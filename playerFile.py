@@ -144,7 +144,7 @@ class player(pygame.sprite.Sprite):
             False, #land
             False, #squat
             False, #hurt
-            False, #die
+            True, #die
             True, #atk1
             True, #atk1_2
             False, #roll
@@ -387,6 +387,9 @@ class player(pygame.sprite.Sprite):
                 
     def do_platform_sprite_collisions(self, dx, dy, platform_sprite_group):
         in_air = self.in_air
+        hitting_wall = self.hitting_wall
+        hitting_wall_timer = self.hitting_wall_timer
+        
         for p_int in [p_int for p_int in platform_sprite_group if p_int.rect.x > -32 and p_int.rect.x < 640]:
             if p_int.collision_and_hostility[p_int.type][0]:
                 #self.atk1_grinding(p_int.rect, the_sprite_group)
@@ -410,21 +413,21 @@ class player(pygame.sprite.Sprite):
                     # self.screenshake_profile = (0,0,0)
                     # self.do_screenshake = False
                     
-                    self.hitting_wall = True
-                    self.hitting_wall_timer = pygame.time.get_ticks()
+                    hitting_wall = True
+                    hitting_wall_timer = pygame.time.get_ticks()
                     
                     if self.collision_rect.x > p_int.rect.x and self.collision_rect.right < p_int.rect.right:
                         dx = 0
                     else:
-                        dx = -dx + p_int.vel_x
+                        dx = -self.direction + p_int.vel_x
                 elif (self.action != 9
                     and self.disp_flag #and self.action == 67
                     and p_int.rect.colliderect(self.collision_rect.x + self.direction*self.width//2 + dx, self.collision_rect.y+2, self.width, self.height - 2)
                     ):
                     dx = -16*self.direction
             
-                    self.hitting_wall = True
-                    self.hitting_wall_timer = pygame.time.get_ticks()
+                    hitting_wall = True
+                    hitting_wall_timer = pygame.time.get_ticks()
                     
                 elif (self.action == 9
                       and p_int.rect.colliderect(self.collision_rect.x + dx, self.collision_rect.y + 16, self.width, self.height - 16)
@@ -444,7 +447,7 @@ class player(pygame.sprite.Sprite):
                     else:
                         self.hits_tanked += rate
                 
-        return (dx, dy, in_air)
+        return (dx, dy, in_air, hitting_wall, hitting_wall_timer)
             
     def do_tile_collisions(self, world_solids, the_sprite_group, dx, dy, ccsn_chance):
         lvl_transition_flag = False
@@ -454,6 +457,10 @@ class player(pygame.sprite.Sprite):
         dx = dxdy[0]
         dy = dxdy[1] 
         self.in_air = dxdy[2]
+        self.hitting_wall = dxdy[3]
+        self.hitting_wall_timer = dxdy[4]
+        
+        
         self.do_npc_collisions(dx, the_sprite_group)
         
         #timer based update for hitting wall

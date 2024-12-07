@@ -357,6 +357,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                         self.atk_rect = pygame.Rect(self.rect.x + self.half_width, self.rect.y + 16, self.half_width, self.half_height)
                     self.atk_rect_scaled = self.atk_rect
                 else:
+                    self.moving = False
                     self.atk1_kill_hitbox()
                     
 
