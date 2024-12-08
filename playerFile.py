@@ -149,7 +149,7 @@ class player(pygame.sprite.Sprite):
             True, #atk1_2
             False, #roll
             True, #atk1_3
-            True, #shoot
+            False, #shoot
             False, #
             False, #
             False, #turn_around
@@ -394,7 +394,8 @@ class player(pygame.sprite.Sprite):
             if p_int.collision_and_hostility[p_int.type][0]:
                 #self.atk1_grinding(p_int.rect, the_sprite_group)
                 #y collisions
-                if (p_int.rect.colliderect(self.collision_rect.x+2, self.collision_rect.y + dy, self.width-4, self.height)):
+                if (p_int.rect.colliderect(self.collision_rect.x+2, self.collision_rect.y + dy, self.width-4, self.height)
+                    ):
                     if self.collision_rect.bottom >= p_int.rect.top and self.collision_rect.bottom <= p_int.rect.y + 32:# and p_int.vel_y < 0:
                         in_air = False
                         self.vel_y = 0.5
@@ -429,6 +430,7 @@ class player(pygame.sprite.Sprite):
                             dx = -self.direction + p_int.vel_x
                         else:
                             dx = self.direction + p_int.vel_x
+                            
                     else:
                         dx = 0
                         
@@ -630,7 +632,7 @@ class player(pygame.sprite.Sprite):
         self.collision_rect.x = self.rect.x + self.width
         self.collision_rect.y = self.rect.y
         
-        if self.Alive == False or pause_game:
+        if pause_game:
             dx = 0
         dx = 0
         dy = 0
@@ -793,14 +795,20 @@ class player(pygame.sprite.Sprite):
         #shooting
         if self.action == 11:
             if self.frame_index == 3:
-                dx += -(5) * self.direction#recoil
+                if not self.hitting_wall:
+                    dx += -(5) * self.direction#recoil
+                else:
+                    dx = 0
                 
                 if not self.shoot_recoil:#playing sound
                     self.m_player.play_sound(self.m_player.sfx[5])
                     self.vel_y = 0
                 self.shoot_recoil = True
             else:
-                dx += -self.extra_recoil * self.direction
+                if not self.hitting_wall:
+                    dx += -self.extra_recoil * self.direction
+                else:
+                    dx = 0
                 self.extra_recoil = 0
                 
                 self.shoot_recoil = False
@@ -902,6 +910,14 @@ class player(pygame.sprite.Sprite):
         if self.in_cutscene:
             dy = 0
             self.vel_y = 0
+            
+        if not self.Alive:
+            self.crit = False
+            self.atk1 = False
+            self.atk1_kill_hitbox()
+            self.rolling = False
+            dx = 0
+            self.scroll_x = 0
             
         return lvl_transition_flag_and_data
 
