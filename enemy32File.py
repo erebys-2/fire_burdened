@@ -15,8 +15,7 @@ class enemy_32wide(pygame.sprite.Sprite):
     #constructors
     def __init__(self, x, y, speed, scale, type, enemy0_id, ini_vol):
         pygame.sprite.Sprite.__init__(self)
-        self.m_player = music_player(['bassdrop2.wav', 'hit.wav', 'roblox2.wav', 'shoot.wav', 'step2soft.wav'], ini_vol)
-        self.ini_vol = ini_vol
+
         
         #self.m_player.set_sound_vol(self.m_player.sfx[0], 7) #looks like you can adjust vol in the constructor
 
@@ -73,22 +72,30 @@ class enemy_32wide(pygame.sprite.Sprite):
             self.hp = 6
             self.recoil = 58
             self.recoil_slow = 2
+            sfx_list = ['bassdrop2.wav', 'hit.wav', 'dog_hurt.wav', 'woof.wav', 'step2soft.wav']
         elif type == 'shooter':   
             self.animation_types = ['idle', 'move', 'hurt', 'die', 'shoot', 'jump'] 
             self.hp = 10
             self.recoil = 50
             self.recoil_slow = 2
+            sfx_list = ['bassdrop2.wav', 'hit.wav', 'roblox2.wav', 'shoot.wav', 'step2soft.wav']
+            #, '', 'bite.wav', 'bee.wav'
         elif type == 'fly':
             self.animation_types = ['idle', 'move', 'hurt', 'die']
             self.hp = 4
             self.recoil = 43
             self.recoil_slow = 3
+            sfx_list = ['bassdrop2.wav', 'hit.wav', 'bee_hurt.wav', 'bee.wav', 'step2soft.wav']
         elif type == 'walker':
             self.animation_types = ['idle', 'move', 'hurt']
             self.action = 1
             self.hp = 6
             self.recoil = 54
             self.recoil_slow = 2
+            sfx_list = ['bassdrop2.wav', 'hit.wav', 'cough.wav', 'bite.wav', 'step2soft.wav']
+            
+        self.m_player = music_player(sfx_list, ini_vol)
+        self.ini_vol = ini_vol
 
         for animation in self.animation_types:
             temp_list = []
@@ -314,7 +321,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                         moving = True
                         
                     if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x < self.rect.x + self.width + chase_range*self.width:
-                        if player_rect.y > self.rect.y - 2*chase_range*self.height and player_rect.y <= self.rect.y:
+                        if player_rect.y - self.half_height > self.rect.y - 2*chase_range*self.height and player_rect.y - self.half_height <= self.rect.y:
                             self.vel_y = -self.speed
                             moving = True
                         elif player_rect.y < self.rect.y + self.height + 2*chase_range*self.height and player_rect.y >= self.rect.y:
@@ -497,7 +504,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         
         if self.check_if_in_simulation_range() and self.enemy_type != 'fly':
             for tile in [tile for tile in world_solids 
-                         if tile[1].x > -160 and tile[1].x < 800 and 
+                         if tile[1].x > -224 and tile[1].x < 864 and 
                             tile[1].bottom < self.rect.bottom + 64 and tile[1].y > self.rect.y - 64 or
                             (tile[1].bottom > self.rect.bottom and tile[1].y < self.rect.y)
                             ]:
@@ -678,6 +685,12 @@ class enemy_32wide(pygame.sprite.Sprite):
         if pygame.time.get_ticks() - self.update_time > frame_update:
             # if self.action == 5 and self.frame_index == 0:
             #     self.m_player.play_sound(self.m_player.sfx[4])
+            if self.check_if_onscreen():
+                if self.enemy_type == 'walker' and self.action == 0 and self.frame_index == 2:
+                    self.m_player.play_sound(self.m_player.sfx[3])
+                elif self.enemy_type == 'fly' and self.action == 1 and self.frame_index == 0:
+                    self.m_player.play_sound(self.m_player.sfx[3])
+            
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
 
@@ -767,6 +780,7 @@ class enemy_32wide(pygame.sprite.Sprite):
             elif new_action == 1:
                 if self.enemy_type == 'dog' and self.in_air == False:
                     self.speed_boost = 8
+                    self.m_player.play_sound(self.m_player.sfx[3])
             # elif new_action == 5:
             #     self.m_player.play_sound(self.m_player.sfx[4])
             

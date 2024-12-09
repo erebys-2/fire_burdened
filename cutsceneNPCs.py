@@ -7,8 +7,8 @@ cutscene_autosave = save_file_handler()
 custscene_t1 = textfile_formatter()
 
 class opening_scene(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_dict, current_dialogue_list, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_dict)
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world)
         #get plot index
         self.plot_index = self.plot_index_dict[self.name]
         if enabled:

@@ -102,7 +102,7 @@ class World():
         #self.world_map_non_parallax = pygame.Surface((32,32), pygame.SRCALPHA).convert_alpha
         #self.world_map_non_parallax.fill(pygame.Color(0,0,0,0))
         
-        self.sp_ini = sprite_instantiator(self.t1)
+        self.sp_ini = sprite_instantiator()
         
         self.death_counters_dict = {}
         
@@ -367,9 +367,13 @@ class World():
         self.draw_bg_layers(screen, (scroll_X + correction)//3, 0, self.bg6, player_hitting_wall)
         self.draw_bg_layers(screen, 4*(scroll_X + correction)//7, 0, self.bg5, player_hitting_wall)
         self.draw_bg_layers(screen, 7*(scroll_X + correction)//9, 0, self.bg4, player_hitting_wall)
-        self.draw_filter_layer(screen, self.bg3)
+        
         self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg2, player_hitting_wall)#detailed 1:1 bg layer 2
+        
+        self.draw_filter_layer(screen, self.bg3)
+        
         self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg1, player_hitting_wall)
+        
         
         #these scroll every tile in a layer
         

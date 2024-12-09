@@ -468,8 +468,6 @@ def main():
 						dialogue_box0.type_out = True
 
 
-						
-			
 	
 		#----------black screen while transitioning---------------------------------------------------------
 		if level_transitioning:

@@ -7,15 +7,9 @@ from objectNPCs import save_pt
 from cutsceneNPCs import opening_scene
 
 class sprite_instantiator():
-    def __init__(self, text_handler):
-        self.t1 = text_handler
-        
-    def get_specific_npc_dialogue(self, name):
-        path = 'npc_dialogue_files/npc_dialogue_txt_files/'
-        rtn_list = self.t1.str_list_to_dialogue_list(self.t1.read_text_from_file(path + name + '.txt'), 60, self.t1.endcase_char)
-        
-        return rtn_list
-    
+    def __init__(self):
+        pass
+
     def instantiate_sprites_from_tiles(self, tile, x, y, the_sprite_group, ini_vol, level, player_inventory, world):
         
         sprite_info = world.sprite_group_tiles_dict[tile]
@@ -78,27 +72,22 @@ class sprite_instantiator():
         elif sprite_category == 'npc':
             if sprite_subcategory == 'character':
                 if sprite_id == 'Test':
-                    dialogue_list = self.get_specific_npc_dialogue(sprite_id)
-                    Testnpc = Test(x * 32, y * 32, 2, 1, sprite_id, ini_vol, True, dialogue_list, world.plot_index_dict, world.npc_current_dialogue_list, level, player_inventory= [])
+                    Testnpc = Test(x * 32, y * 32, 2, 1, sprite_id, ini_vol, True, world, level, player_inventory= [])
                     the_sprite_group.textprompt_group.add(Testnpc)
                 elif sprite_id == 'Test2':
-                    dialogue_list = self.get_specific_npc_dialogue(sprite_id)
-                    Testnpc2 = Test2(x * 32, y * 32, 2, 1, sprite_id, ini_vol, True, dialogue_list, world.plot_index_dict, world.npc_current_dialogue_list, level, player_inventory= [])
+                    Testnpc2 = Test2(x * 32, y * 32, 2, 1, sprite_id, ini_vol, True, world, level, player_inventory= [])
                     the_sprite_group.textprompt_group.add(Testnpc2)
                 elif sprite_id == 'Mars':
-                    dialogue_list = self.get_specific_npc_dialogue(sprite_id)
-                    Mars_npc = Mars(x * 32 - 32, y * 32, 2, 1, sprite_id, ini_vol, True, dialogue_list, world.plot_index_dict, world.npc_current_dialogue_list, level, player_inventory= [])
+                    Mars_npc = Mars(x * 32 - 32, y * 32, 2, 1, sprite_id, ini_vol, True, world, level, player_inventory= [])
                     the_sprite_group.textprompt_group.add(Mars_npc)
                     
             elif sprite_subcategory == 'object':
                 if sprite_id == 'save_pt':
-                    dialogue_list = self.get_specific_npc_dialogue(sprite_id)
-                    save_pt_obj = save_pt(x * 32, y * 32, 1, 1, sprite_id, ini_vol, True, dialogue_list, world.plot_index_dict, world.npc_current_dialogue_list, level, player_inventory= [])
+                    save_pt_obj = save_pt(x * 32, y * 32, 1, 1, sprite_id, ini_vol, True, world, level, player_inventory= [])
                     the_sprite_group.textprompt_group.add(save_pt_obj)
                     
             elif sprite_subcategory == 'cutscene':
                 if sprite_id == 'opening_scene':
-                    dialogue_list = self.get_specific_npc_dialogue(sprite_id)
-                    opening_scene_ = opening_scene(x * 32, y * 32, 1, 1, sprite_id, ini_vol, world.plot_index_dict[sprite_id] != -4, dialogue_list, world.plot_index_dict, world.npc_current_dialogue_list, level, player_inventory= [])
+                    opening_scene_ = opening_scene(x * 32, y * 32, 1, 1, sprite_id, ini_vol, world.plot_index_dict[sprite_id] != -4, world, level, player_inventory= [])
                     the_sprite_group.textprompt_group.add(opening_scene_)
 

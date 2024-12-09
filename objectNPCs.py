@@ -1,8 +1,8 @@
 from npcFile import npc
 
 class save_pt(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_dict, current_dialogue_list, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_dict)
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world)
         self.plot_index = 0
         self.current_level = level
         self.current_p_inv = player_inventory

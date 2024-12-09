@@ -3,8 +3,8 @@ from npcFile import npc
 #file for character type NPCs
     
 class Test(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_dict, current_dialogue_list, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_dict)
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world)
         #get plot index
         self.plot_index = self.plot_index_dict[self.name]
 
@@ -50,8 +50,8 @@ class Test(npc):
             
 
 class Test2(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_dict, current_dialogue_list, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_dict)
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world)
         #get plot index 
         self.plot_index = self.plot_index_dict[self.name]
         self.current_level = level
@@ -93,14 +93,17 @@ class Test2(npc):
             
 
 class Mars(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_dict, current_dialogue_list, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_dict)
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world)
         #get plot index 
         self.plot_index = self.plot_index_dict[self.name]
         self.current_level = level
         self.current_p_inv = player_inventory
         
         self.rect = pygame.rect.Rect(self.rect.x + 32, self.rect.y, self.width//3, self.height)
+        if level == 1 and world.plot_index_dict[self.name] != -1 or world.get_death_count(1) not in [0,7]:
+            self.enabled = False
+        
         #self.img_rect 
         
     def get_dialogue_index(self, player, current_dialogue_index, world, selected_slot):
@@ -111,16 +114,12 @@ class Mars(npc):
         if self.current_level == 1 and world.get_death_count(self.current_level) > 0:
             #self.current_dialogue_index = 3
             #implement smth like this later
-            if world.get_death_count(self.current_level) == 1:
-                self.current_dialogue_index = 3
-            elif world.get_death_count(self.current_level) == 2:
-                self.current_dialogue_index = 4
-            elif world.get_death_count(self.current_level) == 3:
-                self.current_dialogue_index = 5
-            elif  world.get_death_count(self.current_level) > 3 and self.is_initial_index:
-                self.current_dialogue_index = 6
+            if world.get_death_count(self.current_level) == 7 and self.is_initial_index:
+                self.current_dialogue_index = 2
             self.is_initial_index = False
-        if self.current_level == 1 and (world.plot_index_dict[self.name] != -1 or self.rect.x < -self.rect.width):
+        if (self.current_level == 1 and 
+             self.rect.x < -self.rect.width 
+            ):
             self.enabled = False
         
         if self.is_initial_index:

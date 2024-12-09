@@ -1,7 +1,5 @@
-Mars# What am I still doing here?# 1# 0
-Mars# I guess you could say I'm checking up on you.# 2# 1
-Mars# You should start heading east.# 2# 1
-Mars# I heard that things can't hit you while you're rolling or attacking.# 4# 0
-Mars# It's not just about rolling though. It's about jumping, sprinting, and attacking too, all strung together.# 5# 1
-Mars# Every enemy has a pattern to it. With the way you fight it's usually a good idea to maintain space before coming down.# 5# 0
-Mars# [filler text]# 3# 1
+Mars# You should start heading east.# 1# 1
+Mars# I'll meet you there.# 1# 0
+Mars# [filler]# 3# 0
+Mars# You're still here huh.# 4# 0
+Mars# Talk about taking your time.# 3# 1

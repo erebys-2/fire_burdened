@@ -10,13 +10,14 @@ from textfile_handler import textfile_formatter
 
 class npc(pygame.sprite.Sprite):
     #constructor
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, dialogue_list, plot_index_dict):#plot index is passed from game_window, to world, then here
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world):#plot index is passed from game_window, to world, then here
         pygame.sprite.Sprite.__init__(self)
         self.direction = direction
         self.enabled = enabled
         self.scale = scale
-        self.dialogue_list = dialogue_list
+        
         self.name = name
+        
         self.is_cutscene = False
         self.is_npc = False
         self.is_obj = False
@@ -24,7 +25,7 @@ class npc(pygame.sprite.Sprite):
 
         self.npc_index_id = (os.listdir('sprites/npcs')).index(name)
 
-        self.plot_index_dict = plot_index_dict
+        self.plot_index_dict = world.plot_index_dict
         
         self.current_dialogue_index = 0
         self.last_dialogue_index = 0
@@ -74,13 +75,20 @@ class npc(pygame.sprite.Sprite):
         self.player_choice_flag = False #signal
         self.player_choice_key = '' #key
         
-        t1 = textfile_formatter()
+        self.t1 = textfile_formatter()
         #plot index, dialogue index to jump to
-        self.plot_index_jumps_dict = t1.str_list_to_dict(t1.read_text_from_file('npc_dialogue_files/npc_plot_index_config/' + self.name + '.txt'), 'int')
+        self.plot_index_jumps_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file('npc_dialogue_files/npc_plot_index_config/' + self.name + '.txt'), 'int')
         #print(self.plot_index_jumps_dict)
+        self.dialogue_list = self.get_specific_npc_dialogue(self.name)
     
     def get_npc_index_id(self, name):
         return (os.listdir('sprites/npcs')).index(name)
+    
+    def get_specific_npc_dialogue(self, name):
+        path = 'npc_dialogue_files/npc_dialogue_txt_files/'
+        rtn_list = self.t1.str_list_to_dialogue_list(self.t1.read_text_from_file(path + name + '.txt'), 60, self.t1.endcase_char)
+        
+        return rtn_list
     
     def get_message(self, current_dialogue_index):
         name = self.dialogue_list[current_dialogue_index][0]
