@@ -365,6 +365,7 @@ class enemy_32wide(pygame.sprite.Sprite):
                     self.atk_rect_scaled = self.atk_rect
                 else:
                     self.moving = False
+                    dx = -dx
                     self.atk1_kill_hitbox()
                     
 
@@ -521,9 +522,9 @@ class enemy_32wide(pygame.sprite.Sprite):
                                 self.in_air = True
                         
                         if self.enemy_type == 'walker':
-                            self.direction = -self.direction
                             self.flip = not self.flip
-                            dx = self.direction*8
+                            dx = -self.direction*8
+                            self.direction = -self.direction
 
                     
                     #make sure to not get pushed into blocks collision by half sprite width       
@@ -587,6 +588,7 @@ class enemy_32wide(pygame.sprite.Sprite):
         elif self.enemy_type != 'fly':
             dy = 0
             dx = 0
+            self.moving = False
             self.in_air = False
             self.vel_y = 0
                     

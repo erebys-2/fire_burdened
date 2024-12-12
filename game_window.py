@@ -1,4 +1,5 @@
 import pygame
+import pygame._sdl2 as pg_sdl2
 import os
 os.environ['SDL_VIDEO_CENTERED'] = '1' 
 pygame.init()
@@ -40,6 +41,11 @@ def main():
 
 	pygame.display.set_caption('Fire Burdened 0.7')
 	
+ 
+	#controller set up..?
+	# pg_sdl2.INIT_GAMECONTROLLER
+	# pg_sdl2.INIT_EVENTS
+
 
 	#framerate set up------------------------------------
 	clock = pygame.time.Clock()
@@ -250,6 +256,10 @@ def main():
 	double_tap_initiated = False
  
 	selected_slot = -1
+ 
+	joysticks = {}
+ 
+	
 
 	while run:
 		clock.tick(FPS)
@@ -693,11 +703,25 @@ def main():
 			#quit game
 			if(event.type == pygame.QUIT):
 				run = False
+
+			#from pygame joysticks example
+			if event.type == pygame.JOYDEVICEADDED: #only kind of works
+				# This event will be generated when the program starts for every
+				# joystick, filling up the list without needing to create them manually.
+				joy = pygame.joystick.Joystick(event.device_index)
+				joysticks[joy.get_instance_id()] = joy
+				print(f"Joystick {joy.get_instance_id()} connencted")
+				ui_manager0.controller_connected = True
+
+			if event.type == pygame.JOYDEVICEREMOVED:
+				del joysticks[event.instance_id]
+				print(f"Joystick {event.instance_id} disconnected")
+				ui_manager0.controller_connected = False
+
 			#key press
 			
 			if(event.type == pygame.KEYDOWN):
 				#print(pygame.key.name(event.key))
-	
 				if player0.Alive and level_dict[level][5] and not pause_game and not dialogue_enable:
 					
 					if event.key == ctrls_list[1]: #pygame.K_a
@@ -902,17 +926,226 @@ def main():
 					if player0.shot_charging == True:
 						player0.shoot = True
 						player0.shot_charging = False
-						#player0.squat = False
-						#player0.squat_done = False
+
 				if event.key == ctrls_list[7]: #pygame.K_RALT
 					player0.speed = normal_speed
 					player0.sprint = False
-				# if event.key == pygame.K_a or event.key == pygame.K_d:
-				# 	player0.sprint = False
-				if event.key == pygame.K_c:
-					show_controls_en = False
-				# if event.key == pygame.K_RETURN:
-				# 	next_dialogue = False
+     
+		#==============================================================================================================
+		#==============================================CONTROLLER EVENT INPUTS==========================================
+		#==================================================================================================================
+			if(event.type == pygame.JOYBUTTONDOWN):
+				#print(pygame.button.name(event.button))
+				if player0.Alive and level_dict[level][5] and not pause_game and not dialogue_enable:
+					
+					if event.button == ctrls_list[1]: #pygame.K_a
+						move_L = True
+						#move_R = False
+						# output = check_double_tap(True, double_tap_time, double_tap_initiated, 320)
+						# double_tap_initiated = output[2]
+						# double_tap_time = output[1]
+						# if output[0]:
+						# 	player0.sprint = True
+					if event.button == ctrls_list[3]: #pygame.K_d
+						move_R = True
+						#move_L = False
+						# output = check_double_tap(True, double_tap_time, double_tap_initiated, 320)
+						# double_tap_initiated = output[2]
+						# double_tap_time = output[1]
+						# if output[0]:
+						# 	player0.sprint = True
+					# if event.button == ctrls_list[0] and event.button == ctrls_list[4] and player0.stamina_used + 1 <= player0.stamina:
+					# 	player0.squat = True
+					# 	player0.squat_done = True
+					# 	player0.atk1_alternate = False
+					# 	change_once = False
+					# 	player0.atk1 = (event.button == ctrls_list[4])
+					if event.button == ctrls_list[0]: #pygame.K_w 
+						
+						player0.landing = False
+
+						if not player0.in_air: #player is on ground
+							player0.squat = True
+						elif player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:
+							hold_jump_update = pygame.time.get_ticks()
+							player0.squat = True 
+
+						if player0.rolling and player0.in_air == False:
+							player0.roll_count = player0.roll_limit
+							player0.squat = True
+
+					if event.button == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and event.button != ctrls_list[0] and not player0.using_item: #pygame.K_i, pygame.K_w
+						change_once = True
+						player0.atk1 = True # (event.button == ctrls_list[4])
+
+					elif event.button == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
+						status_bars.warning = True
+					
+					if event.button == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina and not player0.using_item: #pygame.K_o
+						player0.shot_charging = True
+					elif event.button == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost > player0.stamina: #pygame.K_o
+						status_bars.warning = True
+		
+
+					if event.button == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost <= player0.stamina: #pygame.K_s
+						player0.squat = False
+						player0.rolling = True
+
+					elif event.button == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost > player0.stamina: #pygame.K_s
+						status_bars.warning = True
+		
+					if event.button == ctrls_list[7]: #pygame.K_RALT
+						player0.sprint = True
+					#press button and check if item selected can be used
+					if ((event.button == ctrls_list[9] or player_inv_UI.use_item_btn_output) 
+						and player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory)
+                        #and player0.inventory_handler.item_usage_hander0.sub_function_dict[][0] != 'nothing'
+                    	):
+						
+						#trigger an animation here
+						#let the last frame of the animation trigger apply the effects of the item
+						#player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory)
+						if not player_inv_UI.use_item_btn_output: #using the use item key
+							player0.using_item = (event.button == ctrls_list[9])
+						elif event.button != ctrls_list[9]: #using the use item button
+							player0.using_item = player_inv_UI.use_item_btn_output
+							player_inv_UI.use_item_btn_output = False
+						player0.speed = 0 #set speed to 0, it will be reset to default speed at the end of the animation
+						#insert test inventory:
+						#player0.inventory_handler.load_saved_inventory([['a', 1], ['b', 1], ['c', 1], ['d', 1], ['e', 1], ['f', 1], ['g', 1], ['h', 1], ['i', 1], ['empty', 0]])
+					
+					#open inventory
+					if event.button == ctrls_list[8] and not dialogue_enable:
+						inventory_opened = not inventory_opened
+						if inventory_opened:
+							player_inv_UI.close_inventory()
+		
+		
+					#debugging flight button
+					#if you fly over the camera object the level breaks
+					if event.button == pygame.K_0:
+						player0.squat_done = True
+
+				#===============================================================UI Related Keys=============================================================
+
+				# if event.button == pygame.K_m:
+				# 	m_player.play_song('newsong18.wav')
+				if event.button == pygame.K_c:
+					camera.is_visible = not camera.is_visible
+
+				if (event.button == pygame.K_BACKSPACE or event.button == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable and not ui_manager0.saves_menu_enable: 
+				#escape exits UI ONLY before the options sub menu is shown and any deeper into sub menus
+					if level != 0:
+						ui_manager0.trigger_once = True
+
+						if (pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
+							next_level = 0
+							player0 = player(32, 0, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+							player_new_x = 32
+							player_new_y = 32
+							dialogue_box0.reset_internals()
+							pygame.mixer.stop()
+							m_player.play_sound(m_player.sfx[1])
+
+						elif not dialogue_enable and not inventory_opened: #pause game, will trigger if player is not in dialogue
+							pause_game = True
+							pygame.mixer.pause()
+							m_player.play_sound(m_player.sfx[1])
+		
+						elif (not player0.in_cutscene and #cannot esc out of cutscene
+            					(dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list or 
+                  				the_sprite_group.textbox_output[6][0])
+                 				): #exits dialogue window if an NPC finishes speaking (is this way to avoid bugs)
+							dialogue_enable = False
+							p_choice_handler0.disable()
+
+						if inventory_opened:#exit inventory if opened
+							inventory_opened = False
+							player_inv_UI.close_inventory()
+							
+					else:#if on the main menu, the game will exit on button press
+						run = False
+				
+		
+				if event.button == pygame.K_RETURN:
+					if pause_game and not ui_manager0.options_menu_enable:
+						ui_manager0.trigger_once = True
+						dialogue_trigger_ready = False
+						pause_game = False
+						pygame.mixer.unpause()
+					
+					if dialogue_trigger_ready or player0.in_cutscene:
+						dialogue_enable = True
+					if dialogue_enable and not the_sprite_group.textbox_output[6][0]:
+						if dialogue_box0.str_list_rebuilt != dialogue_box0.current_str_list:
+							text_speed = 0
+							m_player.play_sound(m_player.sfx[1])
+						else:
+							text_speed = 40
+							next_dialogue = True
+							dialogue_box0.type_out = True				
+     
+					if level == 0:#default case, auto saving will overwrite data in file 0
+						m_player.play_sound(m_player.sfx[1])
+						ui_manager0.trigger_once = True
+						next_level = 1
+						selected_slot = 0
+
+				# #temp bg adjustment
+				# amnt = 1
+				# if event.button == pygame.K_5:
+				# 	amnt = -1
+				# 	print(amnt)
+				# elif event.button == pygame.K_6:
+				# 	amnt = 1
+				# 	print(amnt)
+				# if event.button == pygame.K_1 or event.button == pygame.K_2 or event.button == pygame.K_3:
+				# 	pygame.button.set_repeat(5,60)
+				# 	if event.button == pygame.K_1 and BG_color[0] < 256 and BG_color[0] > 0:
+				# 		BG_color[0] += amnt
+				# 		#print(BG_color[0])
+				# 	if event.button == pygame.K_2 and BG_color[1] < 256 and BG_color[1] > 0:
+				# 		BG_color[1] += amnt
+				# 	if event.button == pygame.K_3 and BG_color[2] < 256 and BG_color[2] > 0:
+				# 		BG_color[2] += amnt
+				# else:
+				# 	pygame.button.set_repeat(0,0)
+				
+				# if event.button == pygame.K_4:
+				# 	print(BG_color)
+				
+
+
+			if(event.type == pygame.JOYBUTTONUP):
+				if event.button == ctrls_list[1]:#pygame.K_a
+					move_L = False
+					
+				if event.button == ctrls_list[3]:#pygame.K_d
+					move_R = False
+					
+				#delayed full jump bug:
+				#if the the animation for squatting before a jump is just slow enough, it might finish AFTER  the jump key is released
+				#so the code below to limit the jump height will not execute, resulting in a full height jump if the jump key is pressed sufficiently fast enough
+				#switched to continuous signal
+				if event.button == ctrls_list[0]:#variable height jumping
+					player0.jump_dampen = True
+
+				if event.button == ctrls_list[4]:#pygame.K_i
+					status_bars.warning = False
+				if event.button == ctrls_list[2]:#pygame.K_s
+					status_bars.warning = False
+				if event.button == ctrls_list[5]:#pygame.K_o
+					status_bars.warning = False
+					player0.frame_updateBP = 150
+					if player0.shot_charging == True:
+						player0.shoot = True
+						player0.shot_charging = False
+
+				if event.button == ctrls_list[7]: #pygame.K_RALT
+					player0.speed = normal_speed
+					player0.sprint = False
+
+
 
 		pygame.display.update()
 		pygame.display.set_caption(f"Fire Burdened 0.7 @ {clock.get_fps():.1f} FPS")

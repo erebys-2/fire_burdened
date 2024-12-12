@@ -87,6 +87,8 @@ class ui_manager():
         #filler value, selected slot will always be set by clicking a slot before loading a game
         self.selected_slot = -1
         
+        self.controller_connected = False
+        
     def read_csv_data(self, data_name):
         temp_list = []
         with open(f'dynamic_CSVs/{data_name}.csv', newline= '') as csvfile:
@@ -378,7 +380,10 @@ class ui_manager():
             self.ctrls_list = self.read_csv_data('ctrls_data')
             #set up disp_str_list
             for i in range(len(self.disp_str_list)):
-                self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
+                if not self.controller_connected:
+                    self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
+                else:
+                    self.disp_str_list[i][1] = str(self.ctrls_list[i])
             #load buttons
             for i in range(10):
                 self.button_list.append(Button(self.S_W//2 -192, self.S_H//2 -186 + 32*i, self.generic_img, 1))
@@ -482,6 +487,12 @@ class ui_manager():
                         self.ctrls_list[self.btn_selected] = event.key
                     elif event.key == pygame.K_ESCAPE:
                         self.stop = True
+                        
+                if(event.type == pygame.JOYBUTTONDOWN):
+                    
+                    self.disp_str_list[self.btn_selected][1] = str(event.button)
+                    self.ctrls_list[self.btn_selected] = event.button
+
                     
                 if(event.type == pygame.QUIT):
                     self.stop = True

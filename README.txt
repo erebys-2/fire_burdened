@@ -61,10 +61,13 @@ HOW TO PLAY:
 ------------------------------------------------------------------------------------------------
 
 *Note: The controls can be reconfigured and saved, but the paragraph below still explains
-the base mechanics. I recommend trying the default settings. The philosophy was to have one
-hand deal with purely movement, and the other hand deal with attacks and special moves.
+the base mechanics. 
 
-The controls are:
+I recommend trying the default settings. The philosophy was to have one
+hand deal with purely movement, and the other hand deal with attacks and special moves.
+When you have L/R/Roll/Jump all on one hand it makes the player very maneuverable.
+
+The default controls are:
 -WAD to move
 -I to melee
 -O to shoot
@@ -83,7 +86,6 @@ Rolling:
     Rolling can be canceled by:
         -Hitting a wall
         -Jumping
-        -Pressing the opposite direction key A or D
     You do not take damage while in roll animation.
 
 Melee:
@@ -120,7 +122,26 @@ Use Item:
     If you select an inventory slot it will still be selected when your inventory is closed. 
     You can quickly use the item in that slot using this key.
 
-**Note 2: Toggle screen will change your resolution while the game is running; it does not work on Mac.
+**Note 2: Toggle screen will change your resolution while the game is running; it does not work on Mac or Linux.
+
+
+=======================================================================================
+Controller Support:
+
+Generic Controller:
+You need to run the game with the controller already plugged in. 
+The controls sub menu will have changed from displaying key names to button numbers.
+
+Steam Controller:
+Steam Controller works so long as you have Steam open. 
+On Steam, change the desktop control scheme to set every button to a unique keyboard key, leave the right touch pad as the mouse. 
+In the game, the Steam Controller buttons will be recognized as key presses and controls can be assigned and saved.
+
+
+I recommend D pad for L/R, then melee/roll/jump/use item for the 4 buttons on the right.
+
+Combos work best when you can hold, roll and attack, jump and attack, or any action paired with movement at the same time. 
+This might be more difficult on controller.
 
 
 ========================================================================================
