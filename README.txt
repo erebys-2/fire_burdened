@@ -26,24 +26,30 @@ Now and then I go back and try to clean up older code as I learn better coding.
 
 
 ------------------------------------------------------------------------------------------------
-SET UP: (This is for Windows, GG Mac bros)
+SET UP: 
 ------------------------------------------------------------------------------------------------
 
+Windows:
     Download the following:
     1. Python, 
     2. Pygame CE, 
 
-        To install Pygame CE on Windows:
-        Win + R, type "cmd", enter, then paste: "pip install pygame-ce"
+	To install Pygame CE on Windows:
+	Win + R, type "cmd", enter, then paste: "pip install pygame-ce"
 
     3. (OPTIONAL) Visual Studio Code or some other IDE, 
 
-        Download the microsoft python extension, then go into settings and search "Execute in File Dir", set it as enable.
+	Download the microsoft python extension, then go into settings and search "Execute in File Dir", set it as enable.
 
-        The second part is important or else the next time you open VS code you will get file not found errors.
+	The second part is important or else the next time you open VS code you will get file not found errors.
 
 	If you want to try modding the code, I would highly reccommend Kevin Rose's python indent extension since vanilla VS code has issues
 	with indent oversensitivity for python.
+
+Mac:
+	1. terminal: "pip3 install pygame-ce"
+	2. cd to fire_burdened folder
+	3. terminal: "python3 game_window.py"
 
 This zip file has all the directories in right places.
 
