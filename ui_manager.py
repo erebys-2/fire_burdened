@@ -7,7 +7,7 @@ import os
 import pygame
 import csv
 
-class ui_manager():
+class ui_manager(): #Helper class for displaying and operating non-game UI (menus and sub menus)
     
     def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, fontlist, ini_vol, fs_size):
         m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav']

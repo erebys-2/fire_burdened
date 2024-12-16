@@ -15,7 +15,7 @@ item_sprites_path = 'sprites/items'
 #This file contains code to support an item existing in the level space and being able to interact with the player.
 #Behaviors in inventory space involve keeping track of item count and apply status effects.
 
-class Item(pygame.sprite.Sprite):
+class Item(pygame.sprite.Sprite): #helper class with logic for item behavior outside of player inventory
     def __init__(self, id, x, y, count):
         pygame.sprite.Sprite.__init__(self)
         self.id = id
@@ -116,9 +116,8 @@ class Item(pygame.sprite.Sprite):
 
 #============================================================================================================================================ 
             
-class inventory_handler(): #handles setting up inventory, picking up items, and storing items
-    #add on for player file
-    
+class inventory_handler(): #handles setting up inventory, picking up items, and storing items; is instantiated in player
+
     def __init__(self, slot_count):
         self.slot_count = slot_count
         
@@ -204,7 +203,7 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
 #
 #will need a case for using empty, where empty: nothing
 
-class item_usage_hander():
+class item_usage_hander():  #helper class with logic for item usage and applying status effects directly to player, instantiated within inventory_handler
     def __init__ (self):
         t = textfile_formatter()
         self.sub_function_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'item_subfunctions.txt')), 'list')
@@ -225,7 +224,7 @@ class item_usage_hander():
             
         return (use_item_flag, item_was_used)
         
-    #I'm gonna straight have the player pass itself into this function to avoid having a huge amount of parameters
+    #I'm gonna have the player pass itself into this function to avoid having a huge amount of parameters
     #The drawback is a loss of modularity since I'll have to reference the specific variables in 'player'
     
     #note this can only deal with instant effects, persistent status effects probably need a separate class or function
@@ -283,7 +282,7 @@ class item_usage_hander():
 #note: due to the implementation of a delay in the button file, the game will slow down whenever a button is pressed
 #this is so for general menu navigating the mechanical signal of a click doesn't carry on when the next set of buttons is loaded in        
                 
-class inventory_UI(): #handles displaying inventory and 
+class inventory_UI(): #handles displaying inventory, item description and counts, and slot selection
     def __init__(self, rows, cols, fontlist, SCREEN_WIDTH, SCREEN_HEIGHT, ini_vol):
         m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav', 'woop.wav']
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
@@ -479,7 +478,7 @@ class inventory_UI(): #handles displaying inventory and
         self.button_list *= 0
         self.trigger_once = True
 
-class item_details():
+class item_details():#helper class for getting and formatting item descriptions and attributes
     def __init__(self):
         self.t = textfile_formatter()
         self.sub_function_dict = self.t.str_list_to_dict(self.t.read_text_from_file(os.path.join(config_path, 'item_subfunctions.txt')), 'list')

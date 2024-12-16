@@ -1,6 +1,7 @@
 import pygame
 from npcFile import npc
-#file for character type NPCs
+
+#helper file containing character type NPCs for instantiation
     
 class Test(npc):
     def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, level, player_inventory):

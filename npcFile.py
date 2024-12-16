@@ -8,6 +8,8 @@ import random
 from textManager import text_manager
 from textfile_handler import textfile_formatter
 
+#NPC class used for sprites with access to text and player choice ui
+
 class npc(pygame.sprite.Sprite):
     #constructor
     def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world):#plot index is passed from game_window, to world, then here

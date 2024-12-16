@@ -7,7 +7,11 @@ from textfile_handler import textfile_formatter
 
 import csv
 
-
+#Class responsible for handling level related functions 
+#including: loading level, instantiating sprites, drawing level, scrolling level.
+#
+#Stores persistent data across levels such as plot index or death counters per level.
+#Is only instantiated once on game start up.
 
 class World():
     def __init__(self, screen_w, screen_h):

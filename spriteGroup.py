@@ -1,6 +1,6 @@
 import pygame
 
-class sprite_group():
+class sprite_group(): #Class that instantiates and contains sprite groups and updates them by calling sprite internal methods
 	def __init__(self):
 		self.enemy0_group = pygame.sprite.Group()
 		self.enemy_bullet_group = pygame.sprite.Group()

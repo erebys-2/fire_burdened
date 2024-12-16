@@ -5,9 +5,8 @@ from particle import particle_ #type: ignore
 from music_player import music_player #type: ignore
 import random
  
-#traps and puzzles and items
 
-class player_interactable_(pygame.sprite.Sprite):
+class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that can interact with the player/have hitboxes
     #constructor
     def __init__(self, x, y, scale, direction, type, ini_vol, enabled, moveable, is_moving_plat):
         pygame.sprite.Sprite.__init__(self)
@@ -132,7 +131,11 @@ class player_interactable_(pygame.sprite.Sprite):
                 self.direction = -1
                 
     def do_player_atk_collisions(self, player_atk_rect):
-        return player_atk_rect.colliderect(self.rect)
+        colliding = False
+        if player_atk_rect.width != 0:
+            colliding = player_atk_rect.colliderect(self.rect)
+        return colliding
+            
     
     def breakable_tile_frame_change(self):
         if self.durability > 0:
@@ -149,7 +152,7 @@ class player_interactable_(pygame.sprite.Sprite):
                     
             elif self.type == 'grass':
                 if self.check_if_onscreen():
-                    if self.do_player_atk_collisions(player_atk_rect) and self.action == 0:
+                    if self.action == 0 and self.do_player_atk_collisions(player_atk_rect):
                         #self.m_player.play_sound(self.m_player.sfx[1])
                         self.frame_index = 0
                         self.action = 1

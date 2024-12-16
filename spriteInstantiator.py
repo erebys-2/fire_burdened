@@ -6,6 +6,11 @@ from characterNPCs import Test, Test2, Mars
 from objectNPCs import save_pt
 from cutsceneNPCs import opening_scene
 
+#Helper class for world, for instantiating special tiles in game layer as sprites.
+#During level loading, when world.process_data is called, this reads data from 
+# fire_burdened\config_textfiles\world_config\sprite_group_tiles_dict.txt,
+#then adds sprites into sprite groups in the_sprite_group 
+
 class sprite_instantiator():
     def __init__(self):
         pass

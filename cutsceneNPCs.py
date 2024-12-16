@@ -3,6 +3,9 @@ from npcFile import npc
 from saveHandler import save_file_handler
 from textfile_handler import textfile_formatter
 
+#helper file containing cutscene type NPCs for instantiation
+#has access to save game infrastructure
+
 cutscene_autosave = save_file_handler()
 custscene_t1 = textfile_formatter()
 

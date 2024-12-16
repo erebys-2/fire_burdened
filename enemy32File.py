@@ -8,10 +8,9 @@ from music_player import music_player #type: ignore
 from ItemFile import Item #type: ignore
 import random
 import math
- 
-#GRAVITY = 0.75
 
-class enemy_32wide(pygame.sprite.Sprite):
+
+class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemies
     #constructors
     def __init__(self, x, y, speed, scale, type, enemy0_id, ini_vol):
         pygame.sprite.Sprite.__init__(self)

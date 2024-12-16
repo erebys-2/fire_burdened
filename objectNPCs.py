@@ -1,5 +1,7 @@
 from npcFile import npc
 
+#helper file containing object type NPCs for instantiation
+
 class save_pt(npc):
     def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, level, player_inventory):
         super().__init__(x, y, scale, direction, name, ini_vol, enabled, world)
