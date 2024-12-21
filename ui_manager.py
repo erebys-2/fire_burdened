@@ -118,7 +118,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         
         if not self.options_menu_enable and not self.saves_menu_enable and not self.saves_menu2_enable and next_level == 0:
             if self.trigger_once:
-                self.run_game = True
+                #self.run_game = True
                 self.button_list *= 0
 
                 for i in range(4):
@@ -269,11 +269,12 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         for npc in os.listdir('sprites/npcs'):
             plot_index_dict[npc] = -1
         
+        
         if self.trigger_once: #deploy buttons
             self.button_list *= 0
             for i in range(5):
                 self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +40*i, self.generic_img, 1))
-        
+            
             self.trigger_once = False
         
         for i in range(4):
@@ -316,11 +317,13 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         for npc in os.listdir('sprites/npcs'):
             plot_index_dict[npc] = -1
         
+        
         if self.trigger_once: #deploy buttons
             self.button_list *= 0
             for i in range(5):
                 self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +40*i, self.generic_img, 1))
             self.button_list.append(Button(self.S_W - 88, self.S_H - 32, self.invisible_img, 1))
+            
             self.trigger_once = False
             
         for i in range(4):

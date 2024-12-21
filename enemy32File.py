@@ -212,6 +212,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                         moving = True
                         
 
+
                 if player_rect.centerx > self.rect.x and player_rect.centerx < self.rect.right:
                     self.direction = 0
                     

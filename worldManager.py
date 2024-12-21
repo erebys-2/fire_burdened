@@ -80,9 +80,6 @@ class World():
         self.static_bg_oversized_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'static_bg_oversized_tiles_dict.txt')), 'int')
         self.special_hitbox_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'special_hitbox_tiles_dict.txt')), 'none')
         
-        # self.cutscene_data_dict = cutscene_data_dict #cutscene_id: [show_once, shown]
-        # print(self.cutscene_data_dict)
-        
         self.plot_index_dict = {}
         self.npc_current_dialogue_list = []
         for npc in range(len(os.listdir('sprites/npcs'))):
@@ -103,8 +100,13 @@ class World():
         # self.wall_hitting_time = pygame.time.get_ticks()
         # self.hitting_wall_status = False
         
-        #self.world_map_non_parallax = pygame.Surface((32,32), pygame.SRCALPHA).convert_alpha
-        #self.world_map_non_parallax.fill(pygame.Color(0,0,0,0))
+        self.world_map_non_parallax = pygame.Surface((32,32), pygame.SRCALPHA)
+        self.world_map_non_parallax.fill(pygame.Color(0,0,0,0))
+        self.world_map_non_parallax.convert_alpha()
+        
+        self.world_map_non_parallax_bg = pygame.Surface((32,32), pygame.SRCALPHA)
+        self.world_map_non_parallax_bg.fill(pygame.Color(0,0,0,0))
+        self.world_map_non_parallax_bg.convert_alpha()
         
         self.sp_ini = sprite_instantiator()
         
@@ -121,7 +123,7 @@ class World():
                 x_pixel = tile[1][0]
                 y_pixel = tile[1][1]
                 game_map.blit(tile[0], (x_pixel, y_pixel))
-        return game_map          
+        return game_map
                 
     def get_death_count(self, level):#death counts are a dictionary with levels as keys, it is reset everytime a mew slot is selected or the game is restarted
         death_count = 0
@@ -244,7 +246,10 @@ class World():
         self.process_bg(raw_lvl_data_list[1], self.detailed_lvl_data_list[1], the_sprite_group, 1)
         
         
-        #self.world_map_non_parallax = self.create_map(level_data[0:2], self.detailed_lvl_data_list[1:4]).convert_alpha()
+        self.world_map_non_parallax = self.create_map(level_data[0:2], self.detailed_lvl_data_list[2:4]).convert_alpha()
+        self.world_map_non_parallax_bg = self.create_map(level_data[0:2], self.detailed_lvl_data_list[4:5]).convert_alpha()
+        
+        
         if level not in self.death_counters_dict:
             self.death_counters_dict[level] = 0
         #print(self.death_counters_dict)
@@ -328,7 +333,7 @@ class World():
         #scroll_amnt = scroll_X
         #logic for looping bg, maximum sprite size is 480x480
         for tile in data:
-            if (data in self.detailed_lvl_data_list[6:9]):
+            if (data in self.detailed_lvl_data_list[6:9]):#parallax layers
                 if tile[1][0] > tile[1].width:
                     tile[1][0] -= (2 * tile[1].width)
                 elif tile[1][0] < -tile[1].width:
@@ -342,12 +347,13 @@ class World():
                 if tile[1].x <= self.screen_w and tile[1].x > -tile[1].width:
                     screen.blit(tile[0], tile[1]) # (image, position)
                
-            else:
+            else:#non parallax layers
                 tile[1][0] -= scroll_X
                 tile[1][1] -= scroll_Y
                 if tile[1].x <= self.screen_w and tile[1].x > -self.screen_w//2 and data != self.fg:
                     screen.blit(tile[0], tile[1]) # (image, position)
                     
+               
 
                 
     def draw_filter_layer(self, screen, data):#filter layer doesn't scroll, for efficiency it should be 640x480
@@ -372,11 +378,11 @@ class World():
         self.draw_bg_layers(screen, 4*(scroll_X + correction)//7, 0, self.bg5, player_hitting_wall)
         self.draw_bg_layers(screen, 7*(scroll_X + correction)//9, 0, self.bg4, player_hitting_wall)
         
-        self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg2, player_hitting_wall)#detailed 1:1 bg layer 2
+        #drawing game world and 1:1 bg by tile
+        # self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg2, player_hitting_wall)#detailed 1:1 bg layer 2
+        # self.draw_filter_layer(screen, self.bg3)
+        # self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg1, player_hitting_wall)
         
-        self.draw_filter_layer(screen, self.bg3)
-        
-        self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg1, player_hitting_wall)
         
         
         #these scroll every tile in a layer
@@ -388,8 +394,9 @@ class World():
             
             tile[1][0] -= scroll_X
             tile[1][1] -= scroll_Y
-            if tile[1][0] > -32 and tile[1][0] < 640 + 32:
-                screen.blit(tile[0], tile[1]) # (image, position)
+            
+            # if tile[1][0] > -32 and tile[1][0] < 640 + 32:
+            #     screen.blit(tile[0], tile[1]) # (image, position)
                 
       
         
@@ -398,8 +405,12 @@ class World():
             tile[1][1] -= scroll_Y
             
             
-        self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg, player_hitting_wall)
- 
+        self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg, player_hitting_wall)#calling this just scrolls the fg layer
+        
+        #drawing tile maps instead of by tile
+        screen.blit(self.world_map_non_parallax_bg, (self.coords[0][1][0], self.coords[0][1][1]))
+        self.draw_filter_layer(screen, self.bg3)
+        screen.blit(self.world_map_non_parallax, (self.coords[0][1][0], self.coords[0][1][1]))
         
         return (self.coords[0][1][0], self.coords[0][1][1]) #x and y of first tile
             

@@ -511,7 +511,7 @@ def main():
 			if not run:
 				pygame.time.wait(100)   
 			
-			elif run and ui_manager0.saves_menu_enable:
+			elif run and ui_manager0.saves_menu_enable and player0.hits_tanked == hp and not player0.Alive:
 				#reset player0
 				player0 = player(32, 0, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 	
