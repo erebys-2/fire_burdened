@@ -18,6 +18,7 @@ from ui_manager import ui_manager
 from spriteGroup import sprite_group 
 from ItemFile import inventory_UI
 from playerChoiceHandler import player_choice_handler
+from particle import particle_, group_particle
 import gc
 import random
 from profilehooks import profile
@@ -97,6 +98,9 @@ def main():
 	#camera instance
 	camera_offset = 24
 	camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, camera_offset)
+ 
+	#instantiate sprite groups=========
+	the_sprite_group = sprite_group()
 
 	#colors
 	blue_0 = [100, 82, 88]
@@ -125,6 +129,10 @@ def main():
 		0:[black, 'none', 15, 30, [], False], #lvl 0
 		1:[grey, 'none', 15, 200, [(2, 15*32, 2, 44*32, 288), (2, 15*32, 2, 0, 384)], True], #lvl 1
 		2:[grey, 'none', 15, 45, [(2, 15*32, 1, 199*32, 384), (2, 15*32, 1, 0, 288)], True] #lvl 2
+	}
+ 
+	level_ambiance_dict = {#scale, p_type, frame, density, sprite_group
+		1:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg), (0, 'none'))#have to put a second dummy tuple in
 	}
 
 	#lists for dynamic CSVs
@@ -201,6 +209,8 @@ def main():
 	m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav']
 	m_player = music_player(m_player_sfx_list_main, vol_lvl)
 
+	#particle group handler
+	group_particle_handler = group_particle()
 
 	#player choice handler
 	p_choice_handler0 = player_choice_handler([font, font_larger, font_massive], m_player_sfx_list_main, vol_lvl)
@@ -212,8 +222,7 @@ def main():
 	#player inventory manager
 	player_inv_UI = inventory_UI(3, 3, [font, font_larger, font_massive], SCREEN_WIDTH, SCREEN_HEIGHT, vol_lvl)
 
-	#instantiate sprite groups=========
-	the_sprite_group = sprite_group()
+
 
 	#instantiate player at the start of load
 	hp = 6
@@ -429,14 +438,20 @@ def main():
 			#if not level_transitioning: #surpress sprite logic while level transitioning
 				
 			the_sprite_group.update_bg_sprite_group(screen, player0.hitbox_rect, player0.atk_rect_scaled)
+   
+			screen.blit(world.world_map_non_parallax_bg, (world.coords[0][1][0], world.coords[0][1][1]))
+			world.draw_filter_layer(screen, world.bg3)
+			screen.blit(world.world_map_non_parallax, (world.coords[0][1][0], world.coords[0][1][1]))
 			#player, world
 			the_sprite_group.update_text_prompt_group(screen, dialogue_enable, next_dialogue, player0, world, selected_slot)#player and world
 			next_dialogue = False
 			the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, player0.direction, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
+
 			the_sprite_group.update_item_group(screen, player0.hitbox_rect)
 			if not player0.in_cutscene:
 				player0.draw(screen)
-
+    
+			world.draw_foreground(screen)
 			the_sprite_group.update_groups_infront_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, world.solids)
 		
 			status_bars.draw(screen, player0.get_status_bars(), font)
@@ -444,8 +459,18 @@ def main():
 			for group in the_sprite_group.sp_group_list:
 				for sprite_ in group:
 					sprite_.force_ini_position(scroll_x)
-     
-		world.draw_foreground(screen)
+		
+		#creating group particles
+		if not pause_game and level in level_ambiance_dict:#scale, p_type, frame, density, sprite_group
+			for particle_group_data in level_ambiance_dict[level]:
+				if particle_group_data[0] != 0:
+					group_particle_handler.create_particles((0-32,0), (SCREEN_WIDTH+32,SCREEN_HEIGHT), 1, particle_group_data)
+		
+		
+
+  
+		#adding ambience particles
+		
 
 		#--------------------------------------------------------------------handling drawing text boxes------------------------------------------------------------------
 		#textboxes have a maximum of 240 characters

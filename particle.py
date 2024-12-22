@@ -1,5 +1,6 @@
 import pygame
 import os
+import random
 #from music_player import music_player #type: ignore
 '''
 x, y: location, floats
@@ -68,7 +69,7 @@ class particle_(pygame.sprite.Sprite):
         dy = 0
         #if self.bound == False:
 
-        if self.rect.x > 896 or self.rect.x < -96 or self.rect.y > 480 or self.rect.y < 0:
+        if self.rect.x > 896 or self.rect.x < -96 or self.rect.y > 480 or self.rect.y < -32:
             self.Active = False
             self.kill()
             
@@ -80,6 +81,13 @@ class particle_(pygame.sprite.Sprite):
             
         elif self.particle_type == 'player_down_strike':
             dx += -self.direction * 1
+            
+        elif self.particle_type == 'rain':
+            self.rect.y += 4
+        
+        elif self.particle_type == 'dust0':
+            self.rect.y -= 0.01
+            self.rect.x += random.randint(-1, 1)/2
 
         self.rect.x += (dx - scrollx)
         
@@ -140,3 +148,21 @@ class particle_(pygame.sprite.Sprite):
     def draw(self, p_screen):
         
         p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+        
+        
+        
+        
+class group_particle():
+    def __init__(self):
+        pass
+    
+    def create_particles(self, loc, area, direction, data_):
+
+        if data_[3] > 0:
+            for i in range(data_[3]):
+                particle = particle_(random.randrange(loc[0], area[0]), random.randrange(loc[1], area[1]), direction, data_[0], data_[1], False, data_[2], False)
+                data_[4].add(particle)
+        elif data_[3] < 0:
+            if pygame.time.get_ticks()%(-data_[3]) == 0:
+                particle = particle_(random.randrange(loc[0], area[0]), random.randrange(loc[1], area[1]), direction, data_[0], data_[1], False, data_[2], False)
+                data_[4].add(particle)

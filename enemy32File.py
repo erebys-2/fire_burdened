@@ -132,7 +132,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         return (self.rect.x > -self.rect.width and self.rect.x < 640)
     
     def check_if_in_simulation_range(self):
-        return (self.rect.x > - 160 and self.rect.right < 640 + 160)
+        return (self.rect.x > - 80 and self.rect.right < 640 + 80)
     
     def atk1_kill_hitbox(self):
         self.atk_rect.x = 0
