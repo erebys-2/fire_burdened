@@ -16,3 +16,4 @@
 54: enemy, fly, none, -1
 55: enemy, walker, none, -1
 56: p_int, breakable_brick1, none, -1
+59: p_int, flame_pillar, none, -1

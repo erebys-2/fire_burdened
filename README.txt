@@ -7,7 +7,7 @@ for noncommercial purposes only."
 
 *This applies to the code.
 DO NOT reuse the assets- anything non-code in this repository- without explicit permission.
-Contact @kc2854 on Discord for permission.
+Contact erebys-2@proton.me for permission.
 ==============================================================================================================================
 
 Description:
@@ -18,49 +18,24 @@ I have set up infrastructure to build a metroidvania, namely the ability to tran
 various sizes non-linearly and having multiple transitions per level, however it is unlikely that this game will be 
 fully realized into one since my vision for it doesn't require such a large world.
 
-Currently there are 2 conjoined debugging levels that loop back to one another.
-
 Disclaimer:
 This is my first major coding project outside of school assignments so there will be some bad code.
 Now and then I go back and try to clean up older code as I learn better coding.
 
 
 ------------------------------------------------------------------------------------------------
-SET UP: 
+SET UP AND RUNNING GAME: *You should have python and pip already installed.
 ------------------------------------------------------------------------------------------------
 
 Windows:
-    Download the following:
-    1. Python, 
-    2. Pygame CE, 
-
-	To install Pygame CE on Windows:
-	Win + R, type "cmd", enter, then paste: "pip install pygame-ce"
-
-    3. (OPTIONAL) Visual Studio Code or some other IDE, 
-
-	Download the microsoft python extension, then go into settings and search "Execute in File Dir", set it as enable.
-
-	The second part is important or else the next time you open VS code you will get file not found errors.
-
-	If you want to try modding the code, I would highly reccommend Kevin Rose's python indent extension since vanilla VS code has issues
-	with indent oversensitivity for python.
+    	1. terminal: "pip install pygame-ce"
+	2. cd to fire_burdened folder
+	3. terminal: "python game_window.py"
 
 Mac:
 	1. terminal: "pip3 install pygame-ce"
 	2. cd to fire_burdened folder
 	3. terminal: "python3 game_window.py"
-
-This zip file has all the directories in right places.
-
-
-------------------------------------------------------------------------------------------------
-RUNNING GAME:
-------------------------------------------------------------------------------------------------
-
-Open game_window.py in your IDE and run it. 
-Or 
-Open command prompt and cd to the fire_burdened folder; type "python game_window.py".
 
 ------------------------------------------------------------------------------------------------
 HOW TO PLAY:

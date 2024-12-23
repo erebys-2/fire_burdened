@@ -127,12 +127,13 @@ def main():
  	# 			=> (tile rect, next level, new player location)
 	level_dict = {
 		0:[black, 'none', 15, 30, [], False], #lvl 0
-		1:[grey, 'none', 15, 200, [(2, 15*32, 2, 44*32, 288), (2, 15*32, 2, 0, 384)], True], #lvl 1
-		2:[grey, 'none', 15, 45, [(2, 15*32, 1, 199*32, 384), (2, 15*32, 1, 0, 288)], True] #lvl 2
+		1:[grey, 'none', 15, 200, [(2, 15*32, 2, 44*32, 160), (2, 15*32, 2, 0, 384)], True], #lvl 1
+		2:[grey, 'none', 15, 45, [(2, 15*32, 1, 0, 160)], True] #lvl 2
 	}
  
 	level_ambiance_dict = {#scale, p_type, frame, density, sprite_group
-		1:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg), (0, 'none'))#have to put a second dummy tuple in
+		1:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg), (0, 'none')),#have to put a second dummy tuple in
+		2:((0.3, 'player_bullet_explosion', 0, 1, the_sprite_group.particle_group_bg), (0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg))
 	}
 
 	#lists for dynamic CSVs

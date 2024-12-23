@@ -328,7 +328,7 @@ class player(pygame.sprite.Sprite):
                             self.take_damage(damage)
                         if enemy[1] == the_sprite_group.p_int_group2:
                             #print(pygame.time.get_ticks())
-                            damage += self.hp//2
+                            damage += 0.75*self.hp
                             self.hurting = True
                             self.take_damage(damage)
                     #print(damage)

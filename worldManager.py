@@ -131,6 +131,10 @@ class World():
             death_count = self.death_counters_dict[level]
             
         return death_count
+    
+    def set_death_count(self, level, count):
+        if level in self.death_counters_dict:
+            self.death_counters_dict[level] = count
         
     def read_level_csv_data(self, level, rows, cols, csv_data_name):
         
@@ -408,9 +412,9 @@ class World():
         self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg, player_hitting_wall)#calling this just scrolls the fg layer
         
         #drawing tile maps instead of by tile
-        screen.blit(self.world_map_non_parallax_bg, (self.coords[0][1][0], self.coords[0][1][1]))
-        self.draw_filter_layer(screen, self.bg3)
-        screen.blit(self.world_map_non_parallax, (self.coords[0][1][0], self.coords[0][1][1]))
+        # screen.blit(self.world_map_non_parallax_bg, (self.coords[0][1][0], self.coords[0][1][1]))
+        # self.draw_filter_layer(screen, self.bg3)
+        # screen.blit(self.world_map_non_parallax, (self.coords[0][1][0], self.coords[0][1][1]))
         
         return (self.coords[0][1][0], self.coords[0][1][1]) #x and y of first tile
             

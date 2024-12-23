@@ -40,7 +40,8 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
             'moving_plat_h':('move', 'move2'),
             'moving_plat_v':('move', 'move2'),
             'grass':('wave', 'cut_down'),
-            'breakable_brick1':('default',)
+            'breakable_brick1':('default',),
+            'flame_pillar':('default',)
         }
         
         for animation in animation_types[self.type]:
@@ -78,7 +79,8 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
             'moving_plat_h':(True, False),
             'moving_plat_v': (True, False),
             'grass':(False, False),
-            'breakable_brick1':(True, False)
+            'breakable_brick1':(True, False),
+            'flame_pillar':(False, True)
         }
         
         # self.is_hostile = {
@@ -148,6 +150,22 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         if self.enabled:
             if self.type == 'spinning_blades':
                 if self.check_if_onscreen():
+                    self.animate()
+                    
+            if self.type == 'flame_pillar':
+                self.atk_rect = pygame.Rect(self.rect.x + 16, self.rect.y, self.width - 32, self.height)
+                if self.check_if_onscreen():
+                    if player_rect.colliderect(self.atk_rect):
+                        for i in range(random.randrange(2,4)):
+                            particle = particle_(player_rect.centerx + random.randint(-self.width//2,self.width//2), 
+                                                 player_rect.centery + random.randint(-self.width//2,self.width//2), 
+                                                 -self.direction, random.randint(1,2), 'player_bullet_explosion', True, random.randint(0,2), False)
+                            sp_group_list[5].add(particle)
+                    for i in range(random.randrange(1,2)):
+                            particle = particle_(self.rect.centerx + random.randint(-self.width//2,self.width//2), 
+                                                 self.rect.centery + random.randint(-self.width//2,self.width//2), 
+                                                 -self.direction, random.randint(1,2), 'player_bullet_explosion', True, random.randint(0,2), False)
+                            sp_group_list[5].add(particle)
                     self.animate()
                     
             elif self.type == 'grass':
@@ -263,7 +281,8 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
             'crusher_top': 70,
             'moving_plat_h': 100,
             'moving_plat_v': 100,
-            'grass': 240
+            'grass': 240,
+            'flame_pillar': 120
         }    
         
         self.mask = pygame.mask.from_surface(self.image)
