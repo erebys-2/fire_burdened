@@ -27,7 +27,7 @@ class particle_(pygame.sprite.Sprite):
         #self.action = 0
         self.bound = bound
         self.direction = direction
-        self.sprite_centered = ('player_bullet_explosion', 'enemy_bullet_explosion', 'player_impact', 'player_mvmt', 'player_crit' )
+        self.sprite_centered = ('player_bullet_explosion', 'enemy_bullet_explosion', 'player_impact', 'player_mvmt', 'player_crit', 'bloom' )
         
         self.frame_sync = frame_sync
         self.forced_frame = frame

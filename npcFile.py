@@ -78,6 +78,8 @@ class npc(pygame.sprite.Sprite):
         self.player_choice_flag = False #signal
         self.player_choice_key = '' #key
         
+        self.collisions_disabled = False
+        
         self.t1 = textfile_formatter()
         #plot index, dialogue index to jump to
         self.plot_index_jumps_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file('npc_dialogue_files/npc_plot_index_config/' + self.name + '.txt'), 'int')
@@ -187,7 +189,10 @@ class npc(pygame.sprite.Sprite):
         
     
     def display_interaction_prompt(self, dialogue_enable, player_rect, screen):
-        self.player_collision = self.rect.colliderect(player_rect)
+        if not self.collisions_disabled:
+            self.player_collision = self.rect.colliderect(player_rect)
+        else:
+            self.player_collision = False
         if self.player_collision and self.name != 'invisible_prompt':
             if not dialogue_enable:
                 screen.blit(self.interaction_prompt, (self.rect.x, self.rect.y - 24, 32, 32))
@@ -211,6 +216,7 @@ class npc(pygame.sprite.Sprite):
     def draw(self, screen):
         if self.enabled and self.rect.x > -self.width and self.rect.x < 640 + self.width:
             screen.blit(pygame.transform.flip(self.image, self.flip, False), self.img_rect)
+            #pygame.draw.rect(screen, (255,0,0), self.rect)
         
     def animate(self, sprite_group):
         self.mask = pygame.mask.from_surface(self.image)

@@ -361,7 +361,11 @@ class player(pygame.sprite.Sprite):
         for obj in [obj for obj in the_sprite_group.textprompt_group 
                     if obj.rect.x > -32 and obj.rect.x < 640# and obj.enabled
                     ]:
-            if obj.rect.colliderect(self.collision_rect.x + self.collision_rect.width//16, self.collision_rect.y, 0.875*self.collision_rect.width, self.collision_rect.height) and self.action == 0 and dx == 0:
+            obj_collision = obj.rect.colliderect(self.collision_rect.x + self.collision_rect.width//16, 
+                                                 self.collision_rect.y, 
+                                                 0.875*self.collision_rect.width, 
+                                                 self.collision_rect.height)
+            if not obj.is_cutscene and obj_collision and self.action == 0 and dx == 0:
                 self.dialogue_trigger_ready = True
                 if obj.name == 'save_pt':
                     if self.hits_tanked > 0 and self.hits_tanked < self.hp:
@@ -375,6 +379,8 @@ class player(pygame.sprite.Sprite):
                     if self.stamina_usage_cap != 0:
                         self.stamina_usage_cap = 0
                 # print(obj.name)
+            elif obj.is_cutscene and obj_collision:
+                self.dialogue_trigger_ready = True
                 if obj.is_cutscene and not self.in_cutscene:#selects cutscenes out of collided npcs
                     self.in_cutscene = True
             else:#not colliding with an npc
@@ -881,6 +887,10 @@ class player(pygame.sprite.Sprite):
         dx = dxdy[0]
         dy = dxdy[1]
         
+        if self.in_cutscene:
+            dx = 0
+            dy = 0
+            self.vel_y = 0
 
         #update pos------------------------------------------------------------------------------------------------------------------------
 
@@ -907,9 +917,7 @@ class player(pygame.sprite.Sprite):
         if self.brain_damage or self.angle != 0:
             self.rotate(5, 360)
             
-        if self.in_cutscene:
-            dy = 0
-            self.vel_y = 0
+        
             
         if not self.Alive:
             self.crit = False

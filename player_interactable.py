@@ -44,13 +44,18 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
             'flame_pillar':('default',)
         }
         
+        if type == 'flame_pillar':
+            scale2 = 3
+        else:
+            scale2 = 1
+        
         for animation in animation_types[self.type]:
             temp_list = []
             frames = len(os.listdir(f'sprites/player_interactable/{self.type}/{animation}'))
         
             for i in range(frames):
                 img = pygame.image.load(f'sprites/player_interactable/{self.type}/{animation}/{i}.png').convert_alpha()
-                img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
+                img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale * scale2)))
                 temp_list.append(img)
             self.frame_list.append(temp_list)
 
@@ -161,11 +166,22 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                                                  player_rect.centery + random.randint(-self.width//2,self.width//2), 
                                                  -self.direction, random.randint(1,2), 'player_bullet_explosion', True, random.randint(0,2), False)
                             sp_group_list[5].add(particle)
-                    for i in range(random.randrange(1,2)):
-                            particle = particle_(self.rect.centerx + random.randint(-self.width//2,self.width//2), 
-                                                 self.rect.centery + random.randint(-self.width//2,self.width//2), 
-                                                 -self.direction, random.randint(1,2), 'player_bullet_explosion', True, random.randint(0,2), False)
-                            sp_group_list[5].add(particle)
+                  
+                    particle = particle_(self.rect.centerx, 
+                                            self.rect.centery + random.randint(-self.width//2,self.width//2), 
+                                            -self.direction, 1, 'bloom', True, random.randint(0,2), False)
+                    sp_group_list[5].add(particle)
+
+                    if pygame.time.get_ticks()%10 == 0:
+                        particle2 = particle_(self.rect.centerx + random.randint(-self.width//2,self.width//2), 
+                                                self.rect.centery + random.randint(-self.width//2,self.width//2), 
+                                                -self.direction, 2, 'player_bullet_explosion', True, random.randint(0,2), False)
+                        sp_group_list[5].add(particle2)
+
+                    self.rect.y -= 30
+                    if self.rect.bottom < -self.rect.height//4:
+                        self.rect.bottom = 480 + self.rect.height//4
+
                     self.animate()
                     
             elif self.type == 'grass':

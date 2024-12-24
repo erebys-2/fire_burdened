@@ -459,6 +459,7 @@ def main():
 		
 			status_bars.draw(screen, player0.get_status_bars(), font)
 		else:
+			#print(selected_slot)
 			for group in the_sprite_group.sp_group_list:
 				for sprite_ in group:
 					sprite_.force_ini_position(scroll_x)

@@ -61,8 +61,17 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
   
 	# def update_scroll_x(self, scroll_x):
 	# 	self.scroll_x = scroll_x
+ 
+	def text_prompt_prioritize_hitboxes(self): #disable normal NPC hitboxes when a cutscene hitbox is overlapping
+		for obj in [obj for obj in self.textprompt_group if not obj.is_cutscene]:
+			for obj1 in [obj1 for obj1 in self.textprompt_group if obj1.is_cutscene]:
+				if obj.rect.colliderect(obj1.rect):
+					obj.collisions_disabled = True
+				else:
+					obj.collisions_disabled = False
   
 	def update_text_prompt_group(self, screen, dialogue_enable, next_dialogue, player, world, selected_slot):
+		self.text_prompt_prioritize_hitboxes()
 		update_all_ini_indexes = False
 		for obj in self.textprompt_group:
 			obj.draw(screen)

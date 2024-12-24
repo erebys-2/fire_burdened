@@ -7,6 +7,8 @@ class Button():
 		width = image.get_width()
 		height = image.get_height()
 		self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
+		self.image2 = pygame.transform.hsl(image, 0, -0.5, -0.2)
+		self.image3 = pygame.transform.hsl(image, 0, -0.5, 0.1)
 		self.rect = self.image.get_rect()
 		self.rect.topleft = (x, y)
 
@@ -21,6 +23,8 @@ class Button():
 		self.text_manager0 = text_manager()
   
 		self.highligh_rect = self.rect.scale_by(1.2)
+  
+		self.count_down = 0
 		
 	def show_text(self, screen, font, text):
 		# self.text_manager0.disp_text_box(screen, font, text, (-1,-1,-1), (0,0,0), 
@@ -39,8 +43,16 @@ class Button():
 
 	def draw(self, surface):
 		#print(self.clicked)
+		if self.count_down == 1:
+			self.count_down = 0
 		self.action = False
-
+  
+		
+		if self.count_down == 0:
+			img = self.image
+		else:
+			img = self.image2
+  
 		#get mouse position
 		pos = pygame.mouse.get_pos()
 
@@ -48,20 +60,29 @@ class Button():
 		if self.rect.collidepoint(pos):
 			self.highlight = True
 			if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-				
 				self.action = True
 				self.clicked = True
 				pygame.time.wait(100) #add delay so that the next button in a menu isn't also clicked
-				
+			if self.count_down == 0:
+				img = self.image3
 		else:
 			self.highlight = False
+
 
 		if pygame.mouse.get_pressed()[0] == 0:
 			self.clicked = False
 			
 
 		#draw button
-		surface.blit(self.image, (self.rect.x, self.rect.y))
-		return self.action
+		
+		surface.blit(img, (self.rect.x, self.rect.y))
+		
+		if self.action:
+			self.count_down = 10
+   
+		if self.count_down > 0:
+			self.count_down -= 1
+  
+		return self.count_down == 1
 
 	
