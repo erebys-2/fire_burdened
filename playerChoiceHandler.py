@@ -27,6 +27,7 @@ class player_choice_handler():
         self.button_list = []
         self.btn_img = pygame.image.load('sprites/dialogue_btn.png').convert_alpha()
         self.bg_img = pygame.image.load('sprites/pause_bg.png').convert_alpha()
+        self.prompt_box_bg = pygame.image.load('sprites/dialogue_box.png').convert_alpha()
         
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
         self.text_manager0 = text_manager()
@@ -60,7 +61,8 @@ class player_choice_handler():
         
     def deploy_buttons(self, key, screen, player, level, world):
         screen.blit(pygame.transform.flip(self.bg_img, False, False), screen.get_rect())
-        pygame.draw.rect(screen, (0,0,0), self.dialogue_box_rect)#draw box
+        #pygame.draw.rect(screen, (0,0,0), self.dialogue_box_rect)#draw box
+        screen.blit(self.prompt_box_bg, self.dialogue_box_rect)
         player_choices = self.player_choice_dict[key] #get relevant data
 
         if self.trigger_once:#instantiate buttons

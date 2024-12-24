@@ -32,7 +32,7 @@ class Item(pygame.sprite.Sprite): #helper class with logic for item behavior out
         self.increment = 3*random.random()
         
         self.is_key_item = False
-        self.life_span = 5000
+        self.life_span = 10000
         self.initial_time = pygame.time.get_ticks()
         
         self.flip = False
@@ -89,6 +89,7 @@ class Item(pygame.sprite.Sprite): #helper class with logic for item behavior out
                 self.rect.y += 3
             elif self.rect.centery > player_rect.centery:
                 self.rect.y -= 3    
+            self.ini_y = self.rect.y
         else:
             gravitating = False
             

@@ -96,6 +96,6 @@ class sprite_instantiator():
                     
             elif sprite_subcategory == 'cutscene':
                 if sprite_id == 'opening_scene':
-                    opening_scene_ = opening_scene(x * 32, y * 32, 1, 1, sprite_id, ini_vol, world.plot_index_dict[sprite_id] != -4, world, level, player_inventory= [])
+                    opening_scene_ = opening_scene(x * 32, y * 32, 1, 1, sprite_id, ini_vol, True, world, level, player_inventory= [])
                     the_sprite_group.textprompt_group.add(opening_scene_)
 

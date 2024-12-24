@@ -102,14 +102,18 @@ class Mars(npc):
         self.current_p_inv = player_inventory
         
         self.rect = pygame.rect.Rect(self.rect.x + 32, self.rect.y, self.width//3, self.height)
-        if level == 1 and world.plot_index_dict[self.name] != -1 or (world.get_death_count(1) not in [0,7] and world.get_death_count(2) != 1):
-            self.enabled = False
+        if level == 1 and (world.plot_index_dict[self.name] != -1 or (world.get_death_count(1) not in [0,7] and world.get_death_count(2) != 1)):
+            enabled = False
+            
+        self.enabled = enabled
         
         #self.img_rect 
         
     def get_dialogue_index(self, player, current_dialogue_index, world, selected_slot):
         plot_index = world.plot_index_dict[self.name]
-        if plot_index != -1:
+        # print(self.name)
+        # print(plot_index)
+        if plot_index != -1 and self.is_initial_index:
             self.current_dialogue_index = self.plot_index_jumps_dict[plot_index]
             self.is_initial_index = False
         if self.current_level == 1 and world.get_death_count(1) > 0:
@@ -122,6 +126,12 @@ class Mars(npc):
                 self.current_dialogue_index = 5
                 world.set_death_count(2, 0)
             self.is_initial_index = False
+        # if self.current_level == 3:
+        #     #self.rect = pygame.rect.Rect(self.rect.x, 0, self.width, 15*32)
+        #     # self.is_cutscene = True
+        #     # self.is_initial_index = False
+        #     pass
+            
         if (self.current_level == 1 and 
              self.rect.x < -self.rect.width 
             ):

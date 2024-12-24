@@ -28,7 +28,7 @@ SET UP AND RUNNING GAME: *You should have python and pip already installed.
 ------------------------------------------------------------------------------------------------
 
 Windows:
-    	1. terminal: "pip install pygame-ce"
+    1. terminal: "pip install pygame-ce"
 	2. cd to fire_burdened folder
 	3. terminal: "python game_window.py"
 

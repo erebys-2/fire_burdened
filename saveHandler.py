@@ -6,7 +6,7 @@ class save_file_handler():
     
     def save(self, t1, slot, level, plot_index_dict, player):
         path = f'save_files/{slot}'
-        str1 = f'level: {level}\nplayer_x: {player.rect.x}\nplayer_y: {player.rect.y + 8}'
+        str1 = f'level: {level}\nplayer_x: {player.x_coord}\nplayer_y: {player.rect.y - 8}'
         
         str2 = ''
         for key_ in plot_index_dict:

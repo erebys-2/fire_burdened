@@ -5,4 +5,12 @@ Mars# You're still here huh.# 4# 0
 Mars# Talk about taking your time.# 3# 1
 Mars# [filler]# 6# 1
 Mars# You saw the barrier huh?# 7# 1
-Mars# Unfortunately it's one-way. The only way from here is east.# 7# 1
+Mars# Unfortunately it's one-way. The only way from here is east.# 1# 1
+Mars# mars_before_wall# -3# 1
+Mars# Yeah, we're looking for the remains of this place's god to bring back home.# 10# 0
+Mars# Where is the god? Well, we gotta look for it. Rumors say it lays deep within the heart of the city.# 11# 1
+Mars# Unfortunately there's more and more 'locals' the deeper you go.# 8# 4
+Mars# This is the holy city of Remgrist. Once upon a time it was a Utopia blessed by the local god.# 8# 0
+Mars# We're from lands under the Flame Bearers' rule. You could say they're like a guild or nation we're all born into.# 14# 1
+Mars# Nevertheless, they trusted us with a mission of great importance.# 8# 0
+Mars# The developer needs to code in a shop function here.# 8# 3

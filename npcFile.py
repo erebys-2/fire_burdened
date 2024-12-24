@@ -20,6 +20,7 @@ class npc(pygame.sprite.Sprite):
         
         self.name = name
         
+        self.cutscene_rect = pygame.rect.Rect(0,0,0,0)
         self.is_cutscene = False
         self.is_npc = False
         self.is_obj = False
@@ -82,6 +83,7 @@ class npc(pygame.sprite.Sprite):
         self.plot_index_jumps_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file('npc_dialogue_files/npc_plot_index_config/' + self.name + '.txt'), 'int')
         #print(self.plot_index_jumps_dict)
         self.dialogue_list = self.get_specific_npc_dialogue(self.name)
+        
     
     def get_npc_index_id(self, name):
         return (os.listdir('sprites/npcs')).index(name)
