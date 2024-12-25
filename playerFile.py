@@ -1222,7 +1222,8 @@ class player(pygame.sprite.Sprite):
     def update_action(self, new_action):
         #check if action has changed
         if new_action != self.action:
-            self.update_action_history(self.action)
+            if self.action != 5:
+                self.update_action_history(self.action)
             if (self.action == 7 or self.action == 8) and (self.rolling or self.action == 9):
                 self.crit = False
                 self.combo = False

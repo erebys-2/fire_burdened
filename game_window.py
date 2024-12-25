@@ -233,7 +233,7 @@ def main():
 	speed = 4
 	ccsn_chance = 10
 	
-	player0 = player(32, 0, speed, hp, 6, 0, 0, vol_lvl, camera_offset)#6368 #5856 #6240 #test coords for camera autocorrect
+	player0 = player(32, 160, speed, hp, 6, 0, 0, vol_lvl, camera_offset)#6368 #5856 #6240 #test coords for camera autocorrect
 	#good news is that the player's coordinates can go off screen and currently the camera's auto scroll will eventually correct it
 	normal_speed = player0.speed
 
@@ -291,7 +291,7 @@ def main():
 		if player0_lvl_transition_data[0]:#test for player collision w/ level transition rects
 			next_level = player0_lvl_transition_data[1][0]
 			player_new_x = player0_lvl_transition_data[1][1]
-			player_new_y = player0_lvl_transition_data[1][2]
+			#player_new_y = player0_lvl_transition_data[1][2]
    
 		#need to set a player new_x and directly set player's rect y, need to set level as well
 
@@ -551,7 +551,7 @@ def main():
 			
 			elif run and ui_manager0.saves_menu_enable and player0.hits_tanked == hp and not player0.Alive and not ui_manager0.set_player_location:
 				#reset player0
-				player0 = player(32, 0, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+				player0 = player(32, 160, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 	
 		#-------------------------------------------------pausing game--------------------------------------------------------
 		if pause_game:
@@ -561,7 +561,7 @@ def main():
 			pause_game = ui_tuple0[0]
 			if ui_tuple0[1]:
 				next_level = 0
-				player0 = player(32, 0, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+				player0 = player(32, 160, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 				player_new_x = 32
 				player_new_y = 32
 		
@@ -619,7 +619,7 @@ def main():
 
 			if ui_manager0.show_death_menu(screen):
 				next_level = 0
-				player0 = player(32, 0, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+				player0 = player(32, 160, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 				player_new_x = 32
 				player_new_y = 32
 	
@@ -866,9 +866,9 @@ def main():
 
 						if (pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
 							next_level = 0
-							player0 = player(32, 0, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+							player0 = player(32, 160, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 							player_new_x = 32
-							player_new_y = 32
+							#player_new_y = 32
 							dialogue_box0.reset_internals()
 							pygame.mixer.stop()
 							m_player.play_sound(m_player.sfx[1])
@@ -1080,7 +1080,7 @@ def main():
 
 						if (pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
 							next_level = 0
-							player0 = player(32, 0, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+							player0 = player(32, 160, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 							player_new_x = 32
 							player_new_y = 32
 							dialogue_box0.reset_internals()

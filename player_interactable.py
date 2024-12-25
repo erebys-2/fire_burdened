@@ -267,8 +267,8 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                 elif not self.dropping and self.on_ground and not self.pause:
                     self.vel_y = -5
                     self.image = self.frame_list[0][0]
-                elif self.do_player_atk_collisions(player_atk_rect):
-                    self.vel_y = random.randint(-8,0)
+                # elif self.do_player_atk_collisions(player_atk_rect):
+                #     self.vel_y = random.randint(-8,0)
                 else:
                     self.vel_y = 0
                     if self.pause:

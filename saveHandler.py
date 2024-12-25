@@ -24,7 +24,7 @@ class save_file_handler():
         
     def reset_specific_save(self, slot, t1):
         path = f'save_files/{slot}'
-        str1 = f'level: 1\nplayer_x: 32\nplayer_y: -64'
+        str1 = f'level: 1\nplayer_x: 32\nplayer_y: 128'#player initial y pos set here
         
         str2 = 'empty'
             

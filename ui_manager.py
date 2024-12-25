@@ -371,8 +371,10 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         if self.button_list[5].draw(screen):
             self.m_player.play_sound(self.m_player.sfx[1])
             self.save_handler.reset_all_saves(self.t1)
+            self.selected_slot = -1
         self.button_list[5].show_text(screen, self.fontlist[1], ('','Reset All'))  
         
+        #select current slot
         if self.selected_slot != -1 and len(self.button_list) == 7:
             if self.button_list[6].draw(screen):
                 #fill inventory
