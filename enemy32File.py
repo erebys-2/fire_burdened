@@ -457,6 +457,8 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             
             if player_action ==  10 or player_action == 9:
                 self.dmg_multiplier = 6
+            elif player_action == 16:
+                self.dmg_multiplier = 6
             elif player_action == 7 or player_action == 8:
                 self.dmg_multiplier = 2
                 

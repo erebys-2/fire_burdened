@@ -53,6 +53,7 @@ class player(pygame.sprite.Sprite):
         self.hits_tanked = hits_tanked
         self.i_frames_en = False
         self.crit = False
+        self.combo = False
  
         self.i_frames_time = 0
         self.do_screenshake = False
@@ -104,7 +105,8 @@ class player(pygame.sprite.Sprite):
         #fill animation frames
         animation_types = ('idle', 'run', 'jump', 'land', 'squat', 'hurt', 
                            'die', 'atk1', 'atk1_2', 'roll', 'atk1_3', 'shoot',
-                           'charging', 'atk1_2_particle', 'turn_around', 'use_item')
+                           'charging', 'atk1_2_particle', 'turn_around', 'use_item',
+                           'atk1_4')
         for animation in animation_types:
             temp_list = []
             frames = len(os.listdir(f'sprites/player/{animation}'))
@@ -153,13 +155,15 @@ class player(pygame.sprite.Sprite):
             False, #
             False, #
             False, #turn_around
-            False  #use_item
+            False,  #use_item
+            True #atk1_4
         )
         
         t = textfile_formatter()
         config_path = 'config_textfiles/player_config'
         stamina_ini_cost_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'player_stamina_base_costs_config.txt')), 'float')
-        self.action_history = []
+        self.action_history = [-1,-1,-1,-1]
+        
         self.atk1_stamina_cost = stamina_ini_cost_dict['atk1']
         self.atk1_default_stam = self.atk1_stamina_cost
         self.roll_stamina_cost = stamina_ini_cost_dict['roll']
@@ -180,11 +184,12 @@ class player(pygame.sprite.Sprite):
             self.action_history.append(action)
             if len(self.action_history) > 4:#pop first element if the list goes over 3
                 self.action_history.pop(0)
+            #print(self.action_history)
                 
     def check_atk1_history(self):
         count = 0
         for action in self.action_history:
-            if action == 7 or action == 8:
+            if action in (7,8,16):
                 count += 1
         return count
         
@@ -256,6 +261,20 @@ class player(pygame.sprite.Sprite):
             self.atk_rect.x = x_loc
             self.atk_rect.y = y_loc
             self.atk_show_sprite = True#variable for displaying atk sprite in draw)
+        elif self.action == 16 and self.frame_index == 1:
+            self.atk_rect.width = self.collision_rect.height * 1.25
+            self.atk_rect.height = self.collision_rect.height * 1.25
+            if self.direction == -1:
+                x_loc = self.collision_rect.left - 9/4*self.collision_rect.width
+            else:
+                x_loc = self.collision_rect.right - self.collision_rect.width/4
+            x_loc += self.direction *4
+            y_loc = self.collision_rect.y - self.collision_rect.width//2
+            self.image3 = self.frame_list[13][4]
+            
+            self.atk_rect.x = x_loc
+            self.atk_rect.y = y_loc
+            self.atk_show_sprite = True
             
         elif (self.frame_index >= 1 and self.frame_index < 4) and (self.action==10):#adjust atk hitbox location for crit
             self.atk_show_sprite = False
@@ -310,7 +329,7 @@ class player(pygame.sprite.Sprite):
     def do_entity_collisions(self, the_sprite_group):
         #----------------------------------------------entity collisions
         damage = 0
-        if ((self.action < 7 or self.action > 10) and not self.i_frames_en and not self.hurting and self.Alive):
+        if ((self.action not in (7,8,9,10,16)) and not self.i_frames_en and not self.hurting and self.Alive):
             #sprite based collisions
             #expensive
             for enemy in enumerate(the_sprite_group.hostiles_group):
@@ -724,6 +743,9 @@ class player(pygame.sprite.Sprite):
                             self.vel_y += 5
                         else:
                             self.vel_y = 20
+                    elif self.combo:
+                        dx = self.direction * self.speed
+                        self.rect.x += self.direction
                     elif self.atk1_stamina_cost == 1:
                         if moveL or moveR:
                             multiplier = 2
@@ -756,10 +778,12 @@ class player(pygame.sprite.Sprite):
                 self.atk1_kill_hitbox()
                 self.atk1 = False
                 self.crit = False
+                self.combo = False
         else:
             self.atk1_kill_hitbox()
             self.atk1 = False
             self.crit = False
+            self.combo = False
 
         #==========================================================================================================================================
         
@@ -921,6 +945,7 @@ class player(pygame.sprite.Sprite):
             
         if not self.Alive:
             self.crit = False
+            self.combo = False
             self.atk1 = False
             self.atk1_kill_hitbox()
             self.rolling = False
@@ -1042,7 +1067,8 @@ class player(pygame.sprite.Sprite):
             145, #idk
             145, #idk
             145, #idk
-            120 #use item
+            120, #use item
+            130 #combo
         )
         #everything speeds up when pressing alt/sprint except shooting at the cost of slower stamina regen
         adjustment = 0
@@ -1096,8 +1122,9 @@ class player(pygame.sprite.Sprite):
                 self.finished_use_item_animation = True
  
             
-            # if self.action == 14:
-            #     self.change_direction = False
+            if self.action == 16:
+                self.atk1 = False
+                self.combo = False
     
             if self.action == 5:
                 self.hurting = False
@@ -1198,6 +1225,7 @@ class player(pygame.sprite.Sprite):
             self.update_action_history(self.action)
             if (self.action == 7 or self.action == 8) and (self.rolling or self.action == 9):
                 self.crit = False
+                self.combo = False
                 self.atk1 = False
             elif self.action == 9 and (new_action == 7 or new_action == 8) and self.atk1:
                 self.crit = True
@@ -1224,6 +1252,8 @@ class player(pygame.sprite.Sprite):
                 self.ini_stamina += self.atk1_stamina_cost
                 if self.check_atk1_history() == 4: #stamina cost for melee will exponentially increase if the action history is just all atk1
                     self.atk1_stamina_cost = 3*self.atk1_default_stam
+                    if self.atk1:
+                        self.combo = True
                 else:
                     self.atk1_stamina_cost = self.atk1_default_stam
                 

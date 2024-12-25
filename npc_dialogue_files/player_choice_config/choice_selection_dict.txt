@@ -1,3 +1,3 @@
 test_greeting: Good.# 2; :(# 0
 save_game: File 0# 0; File 1# 0; File 2# 0; File 3# 0
-mars_before_wall: God# 9; Remgrist# 12; Flame Bearers# 13; Cursed Flesh# 15
+mars_before_wall: God# 9; Remgrist# 12; Flame Bearers# 14; Cursed Flesh# 16

@@ -324,6 +324,9 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +40*i, self.generic_img, 1))
             self.button_list.append(Button(self.S_W - 88, self.S_H - 32, self.invisible_img, 1))
             
+            if self.selected_slot != -1:
+                self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 - 88, self.generic_img, 1))
+            
             self.trigger_once = False
             
         for i in range(4):
@@ -369,6 +372,34 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             self.m_player.play_sound(self.m_player.sfx[1])
             self.save_handler.reset_all_saves(self.t1)
         self.button_list[5].show_text(screen, self.fontlist[1], ('','Reset All'))  
+        
+        if self.selected_slot != -1 and len(self.button_list) == 7:
+            if self.button_list[6].draw(screen):
+                #fill inventory
+                path = f'save_files/{self.selected_slot}'
+                self.player_new_inv = self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(path, 'player_inventory.txt')))
+                self.set_player_inv = True
+                
+                #set plot index
+                if self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt'))[0] != 'empty': #this way I don't have to keep adding -1 if a player loads from a new save
+                    #print(self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt')))
+                    plot_index_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt')), 'int')
+                
+                #get level and player location data
+                new_lvl_and_player_dat = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'level_and_player_coords.txt')), 'int')
+                self.player_new_coords = (new_lvl_and_player_dat['player_x'], new_lvl_and_player_dat['player_y'])
+                self.set_player_location = True
+                
+                #set the new level
+                self.run_game = True    
+                next_level = new_lvl_and_player_dat['level']
+                
+                #get out of the sub menu
+                self.saves_menu_enable = False
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.trigger_once = True
+            self.button_list[6].show_text(screen, self.fontlist[1], ('','Current File'))
+            
      
         return (next_level, self.run_game, plot_index_dict)
 
@@ -570,6 +601,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             if self.button_list[0].draw(screen):
                 self.trigger_once = True
                 self.saves_menu_enable = True
+                exit_to_title = True
                 pygame.mixer.stop()
                 self.m_player.play_sound(self.m_player.sfx[1])
             self.button_list[0].show_text(screen, self.fontlist[1], ('','Load File')) 

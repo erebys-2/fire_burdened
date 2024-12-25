@@ -74,6 +74,7 @@ def main():
 	BG_color = [0,0,0]
 	gradient_type = 'none'
 	level_transitioning = False
+	lvl_transition_counter = 0
 
 	tile_size = 32
 	tile_set = 'standard'
@@ -303,6 +304,7 @@ def main():
 			dialogue_box0.reset_internals()
 			world.clear_data()
 			level_transitioning = True
+			lvl_transition_counter = 3#how many cycles to show a black screen
 			level = next_level
 
 			# load level data
@@ -433,7 +435,7 @@ def main():
 	
 	
 
-		#updating all sprites
+		#updating and drawing all sprites
 		if not level_transitioning:
 			#dialogue trigger sent here
 			the_sprite_group.pause_game = pause_game or ui_manager0.saves_menu_enable
@@ -458,11 +460,17 @@ def main():
 			the_sprite_group.update_groups_infront_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, world.solids)
 		
 			status_bars.draw(screen, player0.get_status_bars(), font)
+			status_bars.draw2(screen, player0.action_history, (7,8,16))
+
 		else:
 			#print(selected_slot)
 			for group in the_sprite_group.sp_group_list:
 				for sprite_ in group:
 					sprite_.force_ini_position(scroll_x)
+     
+		if lvl_transition_counter > 0:
+			pygame.draw.rect(screen, (0,0,0), pygame.rect.Rect(0,0,SCREEN_WIDTH,SCREEN_HEIGHT))
+			lvl_transition_counter -= 1
 		
 		#creating group particles
 		if not pause_game and level in level_ambiance_dict:#scale, p_type, frame, density, sprite_group
@@ -521,6 +529,7 @@ def main():
 			#plot index list's csv is read within ui_manager
 			if ui_manager0.saves_menu_enable:
 				ui_output = ui_manager0.show_saves_menu(screen)
+
 				if ui_manager0.selected_slot != -1 and selected_slot != ui_manager0.selected_slot:
         			#change slot and reset death counters across levels if a different slot is selected
 					world.death_counters_dict = {0: 0}
@@ -540,7 +549,7 @@ def main():
 			if not run:
 				pygame.time.wait(100)   
 			
-			elif run and ui_manager0.saves_menu_enable and player0.hits_tanked == hp and not player0.Alive:
+			elif run and ui_manager0.saves_menu_enable and player0.hits_tanked == hp and not player0.Alive and not ui_manager0.set_player_location:
 				#reset player0
 				player0 = player(32, 0, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
 	
@@ -685,6 +694,8 @@ def main():
 
 					if player0.crit:
 						player0.update_action(10)
+					elif player0.combo:
+						player0.update_action(16)
 					else:
 						if player0.atk1_alternate:# and player0.in_air == False:
 							player0.update_action(7)	

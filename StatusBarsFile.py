@@ -23,6 +23,14 @@ class StatusBars():
         self.image2 = pygame.image.load('sprites/UI/statusbars/1.png')
         self.image2 = pygame.transform.scale(self.image2, (int(self.image2.get_width() * scale), int(self.image2.get_height() * scale)))
         
+        self.img3 = pygame.image.load('sprites/UI/melee_count/0.png')
+        self.img4 = pygame.image.load('sprites/UI/melee_count/1.png')
+        self.img5 = pygame.image.load('sprites/UI/melee_count/2.png')
+        self.rect_list = []
+        self.rect_list_states = [0,0,0,0]
+        for i in range(4):
+            self.rect_list.append(pygame.rect.Rect(40 + i*32, placement_y - 18, 16, 16))
+        
         self.rect = self.image.get_rect()
         self.rect.topleft = (0,placement_y)
         self.warning = False
@@ -32,6 +40,21 @@ class StatusBars():
     def draw_text(self, text, font, text_col, x, y, screen):
         img = font.render(text, True, text_col)
         screen.blit(img, (x, y))
+        
+    def draw2(self, screen, stat_list, key_values):
+        
+        for i in range(len(stat_list)):
+            if stat_list[i] in key_values:
+                self.rect_list_states[i] = 1
+                screen.blit(self.img4, self.rect_list[i])
+            else:
+                self.rect_list_states[i] = 0
+                screen.blit(self.img3, self.rect_list[i])
+        
+        if all(self.rect_list_states):
+            for rect_ in self.rect_list:
+                if pygame.time.get_ticks()%4 == 0:
+                    screen.blit(self.img5, rect_)
         
     def draw(self, screen, stat_data, font):
         hp_color = (105,31,46)
