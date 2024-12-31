@@ -124,12 +124,15 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         self.half_height = self.height//2
         self.quarter_height = self.half_width//2
         
+        self.is_on_screen = False
+        
         
 
     #methods----------------------------------------------------------------------------------------
     
     def check_if_onscreen(self):
-        return (self.rect.x > -self.rect.width and self.rect.x < 640)
+        self.is_on_screen = (self.rect.x > -self.rect.width and self.rect.x < 640)
+        return self.is_on_screen
     
     def check_if_in_simulation_range(self):
         return (self.rect.x > - 80 and self.rect.right < 640 + 80)
@@ -432,11 +435,11 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             
             particle = particle_(self.rect.centerx, y_avg, -self.direction, self.scale*1.05, 'player_impact', True, self.rando_frame, False)
             sp_group_list[5].add(particle)
-            i = 0
+
             for i in range(3):
                 particle2 = particle_(self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.3*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
                 sp_group_list[5].add(particle2)
-                i+=1
+
             self.m_player.play_sound(self.m_player.sfx[1])
             
             if self.rando_frame < 2:

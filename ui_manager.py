@@ -86,7 +86,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         
         #filler value, selected slot will always be set by clicking a slot before loading a game
         self.selected_slot = -1
-        
+        self.reset_death_counters = False
         self.controller_connected = False
         
     def read_csv_data(self, data_name):
@@ -371,6 +371,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         if self.button_list[5].draw(screen):
             self.m_player.play_sound(self.m_player.sfx[1])
             self.save_handler.reset_all_saves(self.t1)
+            self.reset_death_counters = True
             self.selected_slot = -1
         self.button_list[5].show_text(screen, self.fontlist[1], ('','Reset All'))  
         
@@ -400,7 +401,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 self.saves_menu_enable = False
                 self.m_player.play_sound(self.m_player.sfx[1])
                 self.trigger_once = True
-            self.button_list[6].show_text(screen, self.fontlist[1], ('','Current File'))
+            self.button_list[6].show_text(screen, self.fontlist[1], ('',f'Last File: {self.selected_slot}'))
             
      
         return (next_level, self.run_game, plot_index_dict)

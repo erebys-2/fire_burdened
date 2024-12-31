@@ -39,7 +39,7 @@ class Item(pygame.sprite.Sprite): #helper class with logic for item behavior out
         self.flicker = False
         
         self.gravitation_rect = pygame.rect.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
-        self.gravitation_rect.scale_by_ip(6)
+        self.gravitation_rect.scale_by_ip(8)
 
         
     def enable(self, player_rect, pause_game):

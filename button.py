@@ -62,7 +62,7 @@ class Button():
 			if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
 				self.action = True
 				self.clicked = True
-				pygame.time.wait(100) #add delay so that the next button in a menu isn't also clicked
+				
 			if self.count_down == 0:
 				img = self.image3
 		else:

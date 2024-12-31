@@ -236,6 +236,7 @@ def main():
 	player0 = player(32, 160, speed, hp, 6, 0, 0, vol_lvl, camera_offset)#6368 #5856 #6240 #test coords for camera autocorrect
 	#good news is that the player's coordinates can go off screen and currently the camera's auto scroll will eventually correct it
 	normal_speed = player0.speed
+	debugger_sprint = False
 
 	#load initial level-------------------------------------------------------------------------------------------------
 	the_sprite_group.purge_sprite_groups()#does as the name suggests at the start of each load of the game
@@ -387,27 +388,7 @@ def main():
 			
 	
 		#---------------------------------------screen shake------------------------------------------------------------------------
-		if player0.do_screenshake:
-			screenshake_profile = player0.screenshake_profile #intensity x, intensity y, cycle count
-			player0.do_screenshake = False
-			if not do_screenshake_master:
-				do_screenshake_master = True
-
-		for p_int in [p_int for p_int in the_sprite_group.p_int_group if p_int.do_screenshake]: #the_sprite_group.p_int_group: 
-			p_int.do_screenshake = False
-			if not do_screenshake_master:
-				do_screenshake_master = True
-				screenshake_profile = (4, 8, 3)
-
-
-		for enemy in [enemy for enemy in the_sprite_group.enemy0_group if enemy.do_screenshake]: #the_sprite_group.enemy0_group:
-			enemy.do_screenshake = False
-			if not do_screenshake_master:
-				do_screenshake_master = True
-				if player0.sprint:
-					screenshake_profile = (10, 6, 2)
-				else:
-					screenshake_profile = (6, 4, 2)
+		
 
 		if do_screenshake_master:
 			ss_output = camera.screen_shake(screenshake_profile, do_screenshake_master)
@@ -416,23 +397,29 @@ def main():
 			scroll_x += ss_output[1][1]
 			player0.vel_y += ss_output[1][2]*1.02
 			scroll_y = -ss_output[1][3]
-		# elif not do_screenshake_master and world.screen_rect.y != 0:
-		# 	world.screen_rect.y = 0
-  
-		# if not do_screenshake_master and world.coords[0][1][1] != 0:
-		# 	if world.coords[0][1][1] < 0:
-		# 		correction_y = -1
-		# 	elif world.coords[0][1][1] > 0:
-		# 		correction_y = 1
-		# 	else:
-		# 		correction_y = 0
-			
-		# 	for data_list in world.detailed_lvl_data_list:
-		# 		for tile in data_list:
-		# 			tile[1][1] -= correction_y
 
-			#player0.rect.x += player0.direction * 5
-	
+		if not do_screenshake_master and player0.do_screenshake:
+			screenshake_profile = player0.screenshake_profile #intensity x, intensity y, cycle count
+			player0.do_screenshake = False
+			#if not do_screenshake_master:
+			do_screenshake_master = True
+		if not do_screenshake_master:
+			for p_int in [p_int for p_int in the_sprite_group.p_int_group if p_int.do_screenshake]: #the_sprite_group.p_int_group: 
+				p_int.do_screenshake = False
+				#if not do_screenshake_master:
+				do_screenshake_master = True
+				screenshake_profile = (4, 8, 3)
+
+		if not do_screenshake_master:
+			for enemy in [enemy for enemy in the_sprite_group.enemy0_group if enemy.do_screenshake]: #the_sprite_group.enemy0_group:
+				enemy.do_screenshake = False
+				#if not do_screenshake_master:
+				do_screenshake_master = True
+				if player0.sprint:
+					screenshake_profile = (10, 6, 2)
+				else:
+					screenshake_profile = (6, 4, 2)
+
 	
 
 		#updating and drawing all sprites
@@ -534,10 +521,13 @@ def main():
         			#change slot and reset death counters across levels if a different slot is selected
 					world.death_counters_dict = {0: 0}
 					selected_slot = ui_manager0.selected_slot
-			elif ui_manager0.saves_menu2_enable:
-				ui_output = ui_manager0.show_saves_menu2(screen)
-				if ui_manager0.selected_slot != -1:# and selected_slot != ui_manager0.selected_slot:
+				if ui_manager0.reset_death_counters: #reset death counters if reset buttons is pressed
+					ui_manager0.reset_death_counters = False
 					world.death_counters_dict = {0: 0}
+			elif ui_manager0.saves_menu2_enable:
+				ui_output = ui_manager0.show_saves_menu2(screen) #select slot for new game
+				if ui_manager0.selected_slot != -1:# and selected_slot != ui_manager0.selected_slot:
+					world.death_counters_dict = {0: 0}#slot changes from -1 if a slot is chosen, this will always execute
 					selected_slot = ui_manager0.selected_slot
 			else:
 				ui_output = ui_manager0.show_main_menu(screen)
@@ -606,6 +596,7 @@ def main():
 		#handling player death and game over screen------------------------------------------------------------------------------------
 		
 		if player0.hits_tanked >= player0.hp or player0.rect.y > 480:#killing the player------------------------------------------------
+			player0.action_history = [-1,-1,-1,-1]
 			if player0.Alive:
 				player0.Alive = False
 				#death counters will probably belong to an instance of world amd reset upon new games
@@ -644,6 +635,7 @@ def main():
 		if dialogue_enable:
 			player0.atk1 = False
 			player0.atk1_kill_hitbox()
+			player0.frame_index = 0
 			player0.action = 0
 			player0.rolled_into_wall = True
 			inventory_opened = False
@@ -676,6 +668,13 @@ def main():
 			elif player0.sprint and not player0.using_item:
 				player0.speed = normal_speed + 1
     
+			if debugger_sprint:
+				player0.speed = normal_speed * 3
+				player0.hits_tanked = 0
+			else:
+				player0.speed = normal_speed
+			
+    
 			if (player0.hurting):
 				player0.update_action(5) #hurting
 			else:
@@ -694,7 +693,7 @@ def main():
 
 					if player0.crit:
 						player0.update_action(10)
-					elif player0.combo:
+					elif player0.heavy:
 						player0.update_action(16)
 					else:
 						if player0.atk1_alternate:# and player0.in_air == False:
@@ -858,6 +857,8 @@ def main():
 				# 	m_player.play_song('newsong18.wav')
 				if event.key == pygame.K_c:
 					camera.is_visible = not camera.is_visible
+				if event.key == pygame.K_MINUS:
+					debugger_sprint = True
 
 				if (event.key == pygame.K_BACKSPACE or event.key == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable and not ui_manager0.saves_menu_enable: 
 				#escape exits UI ONLY before the options sub menu is shown and any deeper into sub menus
@@ -970,6 +971,10 @@ def main():
 				if event.key == ctrls_list[7]: #pygame.K_RALT
 					player0.speed = normal_speed
 					player0.sprint = False
+
+				if event.key == pygame.K_MINUS:
+					debugger_sprint = False
+
      
 		#==============================================================================================================
 		#==============================================CONTROLLER EVENT INPUTS==========================================
@@ -1072,7 +1077,7 @@ def main():
 				# 	m_player.play_song('newsong18.wav')
 				if event.button == pygame.K_c:
 					camera.is_visible = not camera.is_visible
-
+			
 				if (event.button == pygame.K_BACKSPACE or event.button == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable and not ui_manager0.saves_menu_enable: 
 				#escape exits UI ONLY before the options sub menu is shown and any deeper into sub menus
 					if level != 0:

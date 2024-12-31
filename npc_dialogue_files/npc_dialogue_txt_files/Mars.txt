@@ -2,7 +2,7 @@ Mars# You should start heading east.# 1# 1
 Mars# I'll meet you there.# 1# 0
 Mars# [filler]# 3# 0
 Mars# You're still here huh.# 4# 0
-Mars# Talk about taking your time.# 3# 1
+Mars# Talk about taking your time.# 4# 1
 Mars# [filler]# 6# 1
 Mars# You saw the barrier huh?# 7# 1
 Mars# Unfortunately it's one-way. The only way from here is east.# 1# 1

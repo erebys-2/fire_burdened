@@ -53,7 +53,7 @@ class player(pygame.sprite.Sprite):
         self.hits_tanked = hits_tanked
         self.i_frames_en = False
         self.crit = False
-        self.combo = False
+        self.heavy = False
  
         self.i_frames_time = 0
         self.do_screenshake = False
@@ -223,7 +223,12 @@ class player(pygame.sprite.Sprite):
                 x = self.rect.centerx
             else:
                 x = self.rect.right
-            particle = particle_(x, self.rect.centery, -self.direction, self.scale, 'player_mvmt', True, particle_index, False)
+            scale = self.scale
+            y = self.rect.centery
+            if self.sprint:
+                scale = self.scale * 1.5
+                y -= 16
+            particle = particle_(x, y, -self.direction, scale, 'player_mvmt', True, particle_index, False)
             the_sprite_group.particle_group.add(particle)
             self.m_player.play_sound(self.m_player.sfx[sound])
         self.last_frame = self.frame_index
@@ -329,7 +334,7 @@ class player(pygame.sprite.Sprite):
     def do_entity_collisions(self, the_sprite_group):
         #----------------------------------------------entity collisions
         damage = 0
-        if ((self.action not in (7,8,9,10,16)) and not self.i_frames_en and not self.hurting and self.Alive):
+        if ((self.action not in (5,7,8,9,10,16)) and not self.i_frames_en and self.Alive):
             #sprite based collisions
             #expensive
             for enemy in enumerate(the_sprite_group.hostiles_group):
@@ -355,15 +360,9 @@ class player(pygame.sprite.Sprite):
 
             #rect based collisions
             for enemy in [enemy for enemy in the_sprite_group.enemy0_group 
-                          if enemy.atk_rect_scaled.width != 0 and
-                             enemy.rect.x > -32 and enemy.rect.x < 640 #and
-                            #  enemy.rect.x > self.rect.x - 64 and enemy.rect.right < self.rect.right + 64 and 
-                            #  enemy.rect.y > self.rect.y - 64 and enemy.rect.bottom < self.rect.bottom + 64 or
-                            # (enemy.rect.bottom > self.rect.bottom and enemy.rect.y < self.rect.y) or
-                            # (enemy.rect.right > self.rect.bottom and enemy.rect.x < self.rect.x)
-                            
-                          ]:
-                if ( self.hitbox_rect.colliderect(enemy.atk_rect_scaled)):
+                          if enemy.is_on_screen and enemy.atk_rect_scaled.width != 0
+                         ]:
+                if (self.hitbox_rect.colliderect(enemy.atk_rect_scaled)):
                     damage += 1.5
                     self.hurting = True
                     self.take_damage(damage) 
@@ -730,7 +729,6 @@ class player(pygame.sprite.Sprite):
                 and not (self.rolling and self.frame_index > 2) 
                 and not (self.squat and self.frame_index > 2)
                 ): #not (self.rolling) and 
-                
                 if (self.frame_index == 0):#fast initial impulse
                     # if pygame.time.get_ticks() < self.update_time + 20:
                     #     self.m_player.play_sound(self.m_player.sfx[1])
@@ -743,7 +741,7 @@ class player(pygame.sprite.Sprite):
                             self.vel_y += 5
                         else:
                             self.vel_y = 20
-                    elif self.combo:
+                    elif self.heavy:
                         dx = self.direction * self.speed
                         self.rect.x += self.direction
                     elif self.atk1_stamina_cost == 1:
@@ -764,13 +762,22 @@ class player(pygame.sprite.Sprite):
                     if self.crit and self.check_if_in_ss_range():
                         dx = self.direction * 2
                     else:
-                        if self.action == 7 and self.frame_index <= 2 and self.vel_y > 0:
+                        if self.action == 7 and self.frame_index <= 2 and self.vel_y > 0: #add hang time for upstrike
                             self.vel_y = 0
                         
                         if (moveL and self.direction == 1) or (moveR and self.direction == -1):
                             dx = -self.direction
                         else:
                             dx = self.direction
+                
+                #add trailing particles
+                if (moveR or moveL) and not self.heavy and self.frame_index == 0:
+                    # particle = particle_(self.rect.centerx + dx, self.rect.centery , -self.direction, 0.1, 'player_atk1_trail', False, random.randrange(0,3), False)
+                    # the_sprite_group.particle_group.add(particle)
+                    particle = particle_(self.rect.centerx, self.rect.centery , -self.direction, 0.4, 'player_bullet_explosion', False, random.randrange(0,3), False)
+                    the_sprite_group.particle_group.add(particle)
+                    # particle = particle_(self.rect.centerx - dx, self.rect.centery , -self.direction, 0.1, 'player_atk1_trail', False, random.randrange(0,3), False)
+                    # the_sprite_group.particle_group.add(particle)
             
                 #drawing atk sprite and setting hitboxes            
                 self.atk1_set_hitbox(the_sprite_group)
@@ -778,20 +785,20 @@ class player(pygame.sprite.Sprite):
                 self.atk1_kill_hitbox()
                 self.atk1 = False
                 self.crit = False
-                self.combo = False
+                self.heavy = False
         else:
             self.atk1_kill_hitbox()
             self.atk1 = False
             self.crit = False
-            self.combo = False
+            self.heavy = False
 
         #==========================================================================================================================================
         
         #jump
-        if (self.jump == True and self.in_air == False) or self.squat_done == True:
+        if (self.jump and not self.in_air) or self.squat_done:
             # if self.squat_done == False:
             #     self.squat = True
-            if self.squat_done == True and not(self.atk1):
+            if self.squat_done and not(self.atk1):
                 
                 self.squat_done = False
                 self.vel_y = -9.5
@@ -882,8 +889,8 @@ class player(pygame.sprite.Sprite):
                     if self.x_coord != x_coord or self.y_coord != y_coord:
                         self.x_coord = x_coord
                         self.y_coord = y_coord
-                        # curr_coord = (self.x_coord, self.y_coord)
-                        # print(curr_coord)
+                        curr_coord = (self.x_coord, self.y_coord)
+                        #print(curr_coord)
 
         #---------------------------------------------------------world boundaries------------------------------------------------------------------
         if self.collision_rect.x < 0:
@@ -945,7 +952,7 @@ class player(pygame.sprite.Sprite):
             
         if not self.Alive:
             self.crit = False
-            self.combo = False
+            self.heavy = False
             self.atk1 = False
             self.atk1_kill_hitbox()
             self.rolling = False
@@ -1068,7 +1075,7 @@ class player(pygame.sprite.Sprite):
             145, #idk
             145, #idk
             120, #use item
-            130 #combo
+            130 #heavy
         )
         #everything speeds up when pressing alt/sprint except shooting at the cost of slower stamina regen
         adjustment = 0
@@ -1124,7 +1131,7 @@ class player(pygame.sprite.Sprite):
             
             if self.action == 16:
                 self.atk1 = False
-                self.combo = False
+                self.heavy = False
     
             if self.action == 5:
                 self.hurting = False
@@ -1226,7 +1233,7 @@ class player(pygame.sprite.Sprite):
                 self.update_action_history(self.action)
             if (self.action == 7 or self.action == 8) and (self.rolling or self.action == 9):
                 self.crit = False
-                self.combo = False
+                self.heavy = False
                 self.atk1 = False
             elif self.action == 9 and (new_action == 7 or new_action == 8) and self.atk1:
                 self.crit = True
@@ -1254,7 +1261,7 @@ class player(pygame.sprite.Sprite):
                 if self.check_atk1_history() == 4: #stamina cost for melee will exponentially increase if the action history is just all atk1
                     self.atk1_stamina_cost = 3*self.atk1_default_stam
                     if self.atk1:
-                        self.combo = True
+                        self.heavy = True
                 else:
                     self.atk1_stamina_cost = self.atk1_default_stam
                 
