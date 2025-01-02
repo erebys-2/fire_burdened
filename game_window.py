@@ -62,7 +62,7 @@ def main():
 	pause_game = False
 	inventory_opened = False
 
-	text_delay = pygame.time.get_ticks()
+	area_name_time = pygame.time.get_ticks()
 
 	player0_lvl_transition_data = (False, [])#flag, data
 
@@ -128,9 +128,9 @@ def main():
  	# 			=> (tile rect, next level, new player location)
 	level_dict = {
 		0:[black, 'none', 15, 30, [], False], #lvl 0
-		1:[grey, 'none', 15, 200, [(2, 15*32, 2, 44*32, 160), (2, 15*32, 3, 0, 384)], True], #lvl 1
-		2:[grey, 'none', 15, 45, [(2, 15*32, 1, 0, 160)], True], #lvl 2
-		3:[grey, 'none', 15, 40, [(2, 15*32, 1, 199*32, 160)], True]
+		1:[grey, 'none', 15, 200, [(2, 15*32, 2, 44*32, -999), (2, 15*32, 3, 0, -999)], True], #lvl 1
+		2:[grey, 'none', 15, 45, [(2, 15*32, 1, 0, -999)], True], #lvl 2
+		3:[grey, 'none', 15, 40, [(2, 15*32, 1, 199*32, -999)], True]
 	}
  
 	level_ambiance_dict = {#scale, p_type, frame, density, sprite_group
@@ -138,6 +138,13 @@ def main():
 		2:((0.3, 'player_bullet_explosion', 0, 1, the_sprite_group.particle_group_bg), (0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg)),
 		3:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),)
 	}
+ 
+	area_name_dict = {
+		1:'Outer City Ruins',
+		3:'test name'
+	}
+ 
+	
 
 	#lists for dynamic CSVs
 	vol_lvl = [10,10]
@@ -250,6 +257,7 @@ def main():
 	run = True
 	player_new_x = 32
 	player_new_y = 32
+	transition_orientation = 'vertical'
 	ld_title_screen_en = True
 
 	world_tile0_coord = (0,0)
@@ -281,18 +289,18 @@ def main():
 		temp_move_R = False
 		temp_move_L = False
 		player_enable_master = (level_dict[level][5] and not level_transitioning and not camera.set_ini_pos)
-	
+
+		#deleting curser
 		if level == 0 or pause_game or not player0.Alive or inventory_opened or dialogue_enable:#delete mouse when out of the main menu
 			pygame.mouse.set_visible(1)
 		else:
 			pygame.mouse.set_visible(0)
-   
-	
 
 		if player0_lvl_transition_data[0]:#test for player collision w/ level transition rects
 			next_level = player0_lvl_transition_data[1][0]
 			player_new_x = player0_lvl_transition_data[1][1]
-			#player_new_y = player0_lvl_transition_data[1][2]
+			player_new_y = player0_lvl_transition_data[1][2]
+			transition_orientation = player0_lvl_transition_data[2]
    
 		#need to set a player new_x and directly set player's rect y, need to set level as well
 
@@ -322,7 +330,8 @@ def main():
 				ui_manager0.set_player_location = set_player_coords(ui_manager0.player_new_coords)
 			else:
 				player0.rect.x = player_new_x - 32 #set player location
-				#player0.rect.y = player_new_y #disabling this makes it so that you can jump between levels
+				if transition_orientation == 'horizontal':
+					player0.rect.y = player_new_y
 				player0.vel_y = 0
 			
 			camera.rect.centerx = HALF_SCREEN_W
@@ -333,6 +342,8 @@ def main():
 				move_R = temp_move_R
 			if temp_move_L:
 				move_L = temp_move_L
+
+			#area_name_time = pygame.time.get_ticks()
 	
 		# elif level_transitioning and pygame.time.get_ticks() - 180 > level_trans_timing:
 		# 	level_trans_timing = pygame.time.get_ticks()
@@ -440,7 +451,6 @@ def main():
 			the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, player0.direction, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
 
 			the_sprite_group.update_item_group(screen, player0.hitbox_rect)
-			#if not player0.in_cutscene:
 			player0.draw(screen)
     
 			world.draw_foreground(screen)
@@ -448,6 +458,14 @@ def main():
 		
 			status_bars.draw(screen, player0.get_status_bars(), font)
 			status_bars.draw2(screen, player0.action_history, (7,8,16))
+   
+			#draw world text here
+			if level in area_name_dict:
+				if area_name_time + 2500 > pygame.time.get_ticks():
+					if area_name_time + 2000 > pygame.time.get_ticks():
+						screen.blit(font_larger.render(area_name_dict[level], True, (white)), (16, 16))
+					elif pygame.time.get_ticks()%2 == 0:
+						screen.blit(font_larger.render(area_name_dict[level], True, (white)), (16, 16))
 
 		else:
 			#print(selected_slot)
@@ -457,6 +475,7 @@ def main():
      
 		if lvl_transition_counter > 0:
 			pygame.draw.rect(screen, (0,0,0), pygame.rect.Rect(0,0,SCREEN_WIDTH,SCREEN_HEIGHT))
+			area_name_time = pygame.time.get_ticks()
 			lvl_transition_counter -= 1
 		
 		#creating group particles
@@ -645,6 +664,7 @@ def main():
 			
 		if player0.in_cutscene:#dialogue system will activate as soon as the player collides with a 'cutscene' npc
 			dialogue_enable = True
+			area_name_time = pygame.time.get_ticks()
 			
 		if player0.hurting or not player0.dialogue_trigger_ready:
 			dialogue_enable = False
@@ -659,7 +679,6 @@ def main():
 		#dialogue boxes can no longer be exited if an npc is mid dialogue
 		#however they can still be interupted by the player getting damaged
 
-	
 		if player0.Alive:
 			dialogue_trigger_ready = player0.dialogue_trigger_ready
    
@@ -671,7 +690,7 @@ def main():
 			if debugger_sprint:
 				player0.speed = normal_speed * 3
 				player0.hits_tanked = 0
-			else:
+			elif not debugger_sprint and not player0.sprint:
 				player0.speed = normal_speed
 			
     

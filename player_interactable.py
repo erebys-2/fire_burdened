@@ -142,6 +142,13 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         if player_atk_rect.width != 0:
             colliding = player_atk_rect.colliderect(self.rect)
         return colliding
+    
+    def do_bullet_collisions(self, bullet_group_list):
+        colliding = False
+        for bullet_group in bullet_group_list:
+            for bullet in bullet_group:
+                colliding = self.rect.colliderect(bullet.edge_rect)
+        return colliding
             
     
     def breakable_tile_frame_change(self):
@@ -186,21 +193,29 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                     
             elif self.type == 'grass':
                 if self.check_if_onscreen():
-                    if self.action == 0 and self.do_player_atk_collisions(player_atk_rect):
+                    if (self.action == 0 and 
+                        (self.do_player_atk_collisions(player_atk_rect) or 
+                         self.do_bullet_collisions((sp_group_list[1], sp_group_list[2])))
+                        ):
                         #self.m_player.play_sound(self.m_player.sfx[1])
                         self.frame_index = 0
                         self.action = 1
+                        self.rect.height = 0
                         for i in range(random.randrange(4,8)):
                             particle = particle_(self.rect.x + random.randint(-8,8), self.rect.y + random.randint(-16,8), -self.direction, self.scale, 'grass_cut', True, random.randint(0,2), False)
                             sp_group_list[5].add(particle)
                     self.animate()
                 else:
                     self.action = 0
+                    self.rect.height = 32
                     
             elif self.type == 'breakable_brick1':
                 #print(self.durability)
                 if self.durability > 0:
-                    if self.check_if_onscreen() and self.do_player_atk_collisions(player_atk_rect):
+                    if (self.check_if_onscreen() and 
+                        (self.do_player_atk_collisions(player_atk_rect) or 
+                         self.do_bullet_collisions((sp_group_list[1], sp_group_list[2])))
+                        ):
                         if not self.durability_changed:
                             self.durability -= 1
                             self.durability_changed = True

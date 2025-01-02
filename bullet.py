@@ -52,11 +52,12 @@ class bullet_(pygame.sprite.Sprite):
         self.width = self.image.get_width()
         self.height = self.image.get_height()
         
+        self.edge_rect = pygame.rect.Rect(self.rect.right, self.rect.y, 2, self.rect.height)
+        
         
     def move(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list, player_direction):
         dx = 0
         dy = 0
-        
         
         if self.Active == True and self.action != 1:
             dx = self.direction * self.speed
@@ -138,6 +139,11 @@ class bullet_(pygame.sprite.Sprite):
         
         self.rect.x += (dx - scrollx)
         
+        if self.direction > 0:
+            self.edge_rect.x = self.rect.right + (dx - scrollx) + 1
+        else:
+            self.edge_rect.x = self.rect.x - 2 + (dx - scrollx)
+        
     def force_ini_position(self, scrollx):
         self.rect.x -= scrollx
         
@@ -196,9 +202,10 @@ class bullet_(pygame.sprite.Sprite):
         
     
     
-    def draw(self, p_screen):
+    def draw(self, screen):
         #self.animate()
-        p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+        screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+        #pygame.draw.rect(screen, (225,0,0), self.edge_rect)
         
     def update_action(self, new_action):
     #check if action has changed

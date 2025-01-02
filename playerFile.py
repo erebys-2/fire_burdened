@@ -43,6 +43,8 @@ class player(pygame.sprite.Sprite):
         self.atk1_alternate = False
         self.atk1 = False
         self.atk_show_sprite = False
+        self.draw_trail = False
+        self.trail_coords = []
         
         self.disp_flag = False
         self.curr_disp_flag = False
@@ -494,6 +496,7 @@ class player(pygame.sprite.Sprite):
     def do_tile_collisions(self, world_solids, the_sprite_group, dx, dy, ccsn_chance):
         lvl_transition_flag = False
         lvl_transition_data = []
+        lvl_trans_orientation = 'vertical'
         dxdy = self.do_platform_sprite_collisions(dx, dy, the_sprite_group.p_int_group)
         
         dx = dxdy[0]
@@ -632,6 +635,10 @@ class player(pygame.sprite.Sprite):
                         dy = 0
                         lvl_transition_flag = True
                         lvl_transition_data = tile[3]
+                        if tile[1].width < tile[1].height:
+                            lvl_trans_orientation = 'vertical'
+                        else:
+                            lvl_trans_orientation = 'horizontal'
                     else:
                         dx = -self.direction*8
                         
@@ -644,14 +651,13 @@ class player(pygame.sprite.Sprite):
             self.rect.top = 481
             self.in_air = False
  
-        return (dx, dy, (lvl_transition_flag, lvl_transition_data))
+        return (dx, dy, (lvl_transition_flag, lvl_transition_data, lvl_trans_orientation))
     
     
     
     
     def move(self, pause_game, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, half_screen, screenH, the_sprite_group, ccsn_chance):
         #reset mvmt variables
-        
         self.dialogue_trigger_ready = False
         self.collision_rect.x = self.rect.x + self.width
         self.collision_rect.y = self.rect.y
@@ -691,10 +697,10 @@ class player(pygame.sprite.Sprite):
             dx = 0
 
         #check for change direction
-        if self.direction != self.last_direction:
-            self.update_action_history(-1)
-            self.atk1_stamina_cost = 1
-            self.last_direction = self.direction
+        # if self.direction != self.last_direction:
+        #     self.update_action_history(-1)
+        #     self.atk1_stamina_cost = 1
+        #     self.last_direction = self.direction
 
 		#rolling 
         if self.rolling and not self.hurting:
@@ -771,14 +777,11 @@ class player(pygame.sprite.Sprite):
                             dx = self.direction
                 
                 #add trailing particles
-                if (moveR or moveL) and not self.heavy and self.frame_index == 0:
-                    # particle = particle_(self.rect.centerx + dx, self.rect.centery , -self.direction, 0.1, 'player_atk1_trail', False, random.randrange(0,3), False)
-                    # the_sprite_group.particle_group.add(particle)
-                    particle = particle_(self.rect.centerx, self.rect.centery , -self.direction, 0.4, 'player_bullet_explosion', False, random.randrange(0,3), False)
-                    the_sprite_group.particle_group.add(particle)
-                    # particle = particle_(self.rect.centerx - dx, self.rect.centery , -self.direction, 0.1, 'player_atk1_trail', False, random.randrange(0,3), False)
-                    # the_sprite_group.particle_group.add(particle)
-            
+                if (moveR or moveL) and not self.heavy and not self.crit and self.frame_index < 1:
+                    self.draw_trail = True
+                else:
+                    self.draw_trail = False
+
                 #drawing atk sprite and setting hitboxes            
                 self.atk1_set_hitbox(the_sprite_group)
             else:
@@ -786,11 +789,13 @@ class player(pygame.sprite.Sprite):
                 self.atk1 = False
                 self.crit = False
                 self.heavy = False
+                self.draw_trail = False
         else:
             self.atk1_kill_hitbox()
             self.atk1 = False
             self.crit = False
             self.heavy = False
+            self.draw_trail = False
 
         #==========================================================================================================================================
         
@@ -812,7 +817,7 @@ class player(pygame.sprite.Sprite):
                 
         if self.jump_dampen:
             if self.squat or (self.squat_done and self.in_air):
-                self.vel_y *= 0.4
+                self.vel_y *= 0.6
                 
             elif self.vel_y <= -1: #minimum jump velocity
                 self.vel_y *= 0.4
@@ -878,7 +883,6 @@ class player(pygame.sprite.Sprite):
             self.vel_y *= 0.8
         dy = self.vel_y
         
-        
         #--------------------------------------------------------------coordinate test
         #USED FOR CAMERA SCROLLING
         if dx != 0:
@@ -925,6 +929,11 @@ class player(pygame.sprite.Sprite):
 
         #update pos------------------------------------------------------------------------------------------------------------------------
 
+        if self.draw_trail:
+            self.trail_coords.append([[self.rect.centerx - 2*self.direction, self.rect.centery], [self.rect.centerx + dx + 2*self.direction, self.rect.centery + dy]])
+        else:
+            self.trail_coords = []
+        
         self.rect.y += dy
         self.hitbox_rect.centery = self.rect.centery #don't delete, keeping hitbox rect on the player is used by the camera and enemies alike
         
@@ -937,6 +946,11 @@ class player(pygame.sprite.Sprite):
                     self.rect.x += dx
                 elif self.x_coord >= half_screen + self.camera_offset and self.x_coord < world_limit[0] - (half_screen - 16 + self.camera_offset): 
                     self.scrollx = dx
+                    
+                if self.trail_coords != []:
+                    for vect_pair in self.trail_coords:
+                        vect_pair[0][0] -= self.scrollx
+                        vect_pair[1][0] -= self.scrollx
             else:
                 self.rect.x += dx
         else:
@@ -948,8 +962,6 @@ class player(pygame.sprite.Sprite):
         if self.brain_damage or self.angle != 0:
             self.rotate(5, 360)
             
-        
-            
         if not self.Alive:
             self.crit = False
             self.heavy = False
@@ -957,7 +969,7 @@ class player(pygame.sprite.Sprite):
             self.atk1_kill_hitbox()
             self.rolling = False
             dx = 0
-            self.scroll_x = 0
+            self.scrollx = 0
             
         return lvl_transition_flag_and_data
 
@@ -989,7 +1001,7 @@ class player(pygame.sprite.Sprite):
             rate = 80
  
             if self.speed > self.default_speed and not self.rolling:
-                stamina_increment_unit = -0.14
+                stamina_increment_unit = -0.18
             elif self.rolling and self.stamina_used + self.roll_stam_rate <= self.stamina:
                 stamina_increment_unit = self.roll_stam_rate
             else:
@@ -1202,6 +1214,12 @@ class player(pygame.sprite.Sprite):
                 
                 self.rolling = False
                 
+    def draw_trail_line(self, screen):
+        if self.draw_trail and self.trail_coords != []:
+            for vect_pair in self.trail_coords:
+                width = self.trail_coords.index(vect_pair) + 2
+                pygame.draw.line(screen, (255,0,86), vect_pair[0], vect_pair[1], width)
+                
     def draw_with_flicker(self, image, rect, screen, flicker):
         if flicker:
             if pygame.time.get_ticks()%2 == 0:
@@ -1211,6 +1229,7 @@ class player(pygame.sprite.Sprite):
         
     
     def draw(self, screen):
+        self.draw_trail_line(screen)
         if self.shot_charging and self.action < 5:
             self.BP_animate()
             screen.blit(pygame.transform.flip(self.image2, self.flip, False), self.BP_rect)
