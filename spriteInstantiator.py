@@ -3,7 +3,7 @@ from enemy32File import enemy_32wide
 from BGspritesFile import tree, fountain, lamp
 from player_interactable import player_interactable_
 from characterNPCs import Test, Test2, Mars
-from objectNPCs import save_pt
+from objectNPCs import save_pt, read_only_obj
 from cutsceneNPCs import opening_scene
 
 #Helper class for world, for instantiating special tiles in game layer as sprites.
@@ -57,6 +57,9 @@ class sprite_instantiator():
             elif sprite_id == 'grass':
                 p_int = player_interactable_(x * 32, y * 32, 1, 1, 'grass', ini_vol, True, False, False)
                 the_sprite_group.p_int_group.add(p_int)
+            elif sprite_id == 'tall_plant':
+                p_int = player_interactable_(x * 32, y * 32, 1, 1, 'tall_plant', ini_vol, True, False, False)
+                the_sprite_group.p_int_group.add(p_int)
             elif sprite_id == 'breakable_brick1':
                 p_int = player_interactable_(x * 32, y * 32, 1, 1, 'breakable_brick1', ini_vol, True, False, False)
                 the_sprite_group.p_int_group.add(p_int)
@@ -93,6 +96,9 @@ class sprite_instantiator():
                 if sprite_id == 'save_pt':
                     save_pt_obj = save_pt(x * 32, y * 32, 1, 1, sprite_id, ini_vol, True, world, level, player_inventory= [])
                     the_sprite_group.textprompt_group.add(save_pt_obj)
+                elif sprite_id == 'read_only_obj':
+                    read_only_obj_ = read_only_obj(x * 32, y * 32, 1, 1, sprite_id, ini_vol, True, world, level, player_inventory= [])
+                    the_sprite_group.textprompt_group.add(read_only_obj_)
                     
             elif sprite_subcategory == 'cutscene':
                 if sprite_id == 'opening_scene':

@@ -25,6 +25,7 @@ class Button():
 		self.highligh_rect = self.rect.scale_by(1.2)
   
 		self.count_down = 0
+		self.img_highlight_en = True
 		
 	def show_text(self, screen, font, text):
 		# self.text_manager0.disp_text_box(screen, font, text, (-1,-1,-1), (0,0,0), 
@@ -58,12 +59,12 @@ class Button():
 
 		#check mouseover and clicked conditions
 		if self.rect.collidepoint(pos):
-			self.highlight = True
+			self.highlight = self.img_highlight_en
 			if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
 				self.action = True
 				self.clicked = True
 				
-			if self.count_down == 0:
+			if self.img_highlight_en and self.count_down == 0:
 				img = self.image3
 		else:
 			self.highlight = False

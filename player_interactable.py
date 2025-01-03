@@ -40,6 +40,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
             'moving_plat_h':('move', 'move2'),
             'moving_plat_v':('move', 'move2'),
             'grass':('wave', 'cut_down'),
+            'tall_plant':('wave', 'cut_down'),
             'breakable_brick1':('default',),
             'flame_pillar':('default',)
         }
@@ -84,6 +85,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
             'moving_plat_h':(True, False),
             'moving_plat_v': (True, False),
             'grass':(False, False),
+            'tall_plant':(False, False),
             'breakable_brick1':(True, False),
             'flame_pillar':(False, True)
         }
@@ -191,7 +193,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
 
                     self.animate()
                     
-            elif self.type == 'grass':
+            elif self.type in ('grass', 'tall_plant'):
                 if self.check_if_onscreen():
                     if (self.action == 0 and 
                         (self.do_player_atk_collisions(player_atk_rect) or 
@@ -310,14 +312,16 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         framerates = {
             'spinning_blades': 30,
             'crusher_top': 70,
-            'moving_plat_h': 100,
-            'moving_plat_v': 100,
-            'grass': 240,
+            'grass': 270,
+            'tall_plant':270,
             'flame_pillar': 120
         }    
         
         self.mask = pygame.mask.from_surface(self.image)
-        frame_update = framerates[self.type]
+        if self.type in framerates:
+            frame_update = framerates[self.type]
+        else:
+            frame_update = 100
         #setting the image
         self.image = self.frame_list[self.action][self.frame_index]
 

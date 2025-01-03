@@ -28,7 +28,7 @@ SET UP AND RUNNING GAME: *You should have python and pip already installed.
 ------------------------------------------------------------------------------------------------
 
 Windows:
-    1. terminal: "pip install pygame-ce"
+    	1. terminal: "pip install pygame-ce"
 	2. cd to fire_burdened folder
 	3. terminal: "python game_window.py"
 
@@ -57,6 +57,7 @@ The default controls are:
 -Enter and Escape for textboxes, pausing game, and some UI
 -Y to open inventory
 -U to use the current item in your selected inventory slot
+-ALT + Y to toggle selected inventory slot
 
 Jumping:
     Jumping is variable height. Hold the key for longer and you'll jump higher and farther.
@@ -74,6 +75,9 @@ Melee:
     Pressing I while falling will do a downstrike; pressing I while rising will do an upstrike.
     Pressing I while rolling will do a crit.
     Pressing I while holding down the same direction key A or D will increase horizontal distance traveled.
+    Spamming Melee for more than 4x in a row will enable heavy attack mode 
+	-exit by doing some other action jumping/rolling/using item or waiting an animation cycle
+	-attacks will deal more damage and area will be larger, attack speed is lowered
     Melee animation can be canceled 1 frame early by:
         -Jumping (hold jump after pressing I until you jump)
         -Pressing the opposite direction key A or D (hold either keys after pressing I)
@@ -98,6 +102,7 @@ Taking Damage:
 
 Inventory:
     The game is not paused while your inventory is open, so keep it open at your own peril!
+    Currently selected slot can be toggled using Y (open inventory key) while holding down R ALT (sprint key).
 
 Use Item:
     If you select an inventory slot it will still be selected when your inventory is closed. 

@@ -19,3 +19,46 @@ class save_pt(npc):
             if not dialogue_enable:
                 #screen.blit(self.interaction_prompt, (self.rect.x + 32, self.rect.y + 32, 32, 32))
                 screen.blit(self.interaction_prompt, (self.rect.left - 8, self.rect.y - 16))
+                
+
+class read_only_obj(npc):
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world)
+        #get plot index 
+        self.plot_index = self.plot_index_dict[self.name]
+        self.current_level = level
+        self.current_p_inv = player_inventory
+        if level == 1:
+            self.current_dialogue_index = 0
+
+    #idea for turning these into textfiles:
+    #use a dictionary with list as a key, 
+    #value will be another list as well, [current_index, plot_index_w_en, plot_index_value, target_character_index]
+    #might not be possible... might have to implement some kind of iteraction for writing to plot index
+    def get_dialogue_index(self, player, current_dialogue_index, world, selected_slot):
+        plot_index = world.plot_index_dict[self.name]
+        if plot_index != -1:
+            self.current_dialogue_index = self.plot_index_jumps_dict[plot_index]
+            self.is_initial_index = False
+        
+        if self.is_initial_index:
+            if self.current_level == 1 and plot_index == -1:
+                self.current_dialogue_index = 0
+            
+        if self.player_collision and self.get_dialogue_flag:
+            if current_dialogue_index == 0 and self.current_level == 1 and plot_index == -1:
+                self.current_dialogue_index = 0
+  
+                
+            # #example of how to code using this system
+            # # elif level == 1 and plot_index == -1 and current_dialogue_index == 3:
+            # #     self.update_plot_index(1)
+            # #     current_dialogue_index = 4
+            # elif self.current_dialogue_index == 3:# and self.last_dialogue_index == 2:
+            #     world.plot_index_dict[self.name] = -1
+
+            else:
+                self.current_dialogue_index = self.current_dialogue_index
+            self.get_dialogue_flag = False
+        else:
+            self.get_dialogue_flag = False

@@ -63,6 +63,7 @@ def main():
 	inventory_opened = False
 
 	area_name_time = pygame.time.get_ticks()
+	last_area_name = ''
 
 	player0_lvl_transition_data = (False, [])#flag, data
 
@@ -78,14 +79,11 @@ def main():
 
 	tile_size = 32
 	tile_set = 'standard'
-	tile_types = len(os.listdir(f'sprites/tileset/{tile_set}'))
 
 	damage = 0
 	scroll_x = 0
 	scroll_y = 0
 
-	# t1 = textfile_formatter()
-	# cutscene_data_dict = t1.str_list_to_dict(t1.read_text_from_file('save_files/initial/cutscene_data.txt'), 'true_list')
 	world = World(SCREEN_WIDTH, SCREEN_HEIGHT)
 
 	#instantiate status bars
@@ -127,10 +125,10 @@ def main():
 	#lvl trans data: (width, height, next_level, player_new_x, player_new_y)
  	# 			=> (tile rect, next level, new player location)
 	level_dict = {
-		0:[black, 'none', 15, 30, [], False], #lvl 0
-		1:[grey, 'none', 15, 200, [(2, 15*32, 2, 44*32, -999), (2, 15*32, 3, 0, -999)], True], #lvl 1
-		2:[grey, 'none', 15, 45, [(2, 15*32, 1, 0, -999)], True], #lvl 2
-		3:[grey, 'none', 15, 40, [(2, 15*32, 1, 199*32, -999)], True]
+		0:[black, 'none', 15, 30, [], False, ''], #lvl 0
+		1:[grey, 'none', 15, 200, [(2, 15*32, 2, 44*32, -999), (2, 15*32, 3, 0, -999)], True, 'Outer City Ruins'], #lvl 1
+		2:[grey, 'none', 15, 45, [(2, 15*32, 1, 0, -999)], True, "Barrier's Edge"], #lvl 2
+		3:[grey, 'none', 15, 40, [(2, 15*32, 1, 199*32, -999)], True, 'Outer City Ruins']
 	}
  
 	level_ambiance_dict = {#scale, p_type, frame, density, sprite_group
@@ -138,20 +136,18 @@ def main():
 		2:((0.3, 'player_bullet_explosion', 0, 1, the_sprite_group.particle_group_bg), (0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg)),
 		3:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),)
 	}
- 
-	area_name_dict = {
-		1:'Outer City Ruins',
-		3:'test name'
-	}
- 
 	
+	#populate area name dict
+	area_name_dict = {}
+	for entry in level_dict:
+		area_name_dict[entry] = level_dict[entry][6]
+	area_name_img = pygame.image.load('sprites/pause_bg2.png').convert_alpha()
+	area_name_img = pygame.transform.scale(area_name_img, (SCREEN_WIDTH, SCREEN_HEIGHT//15))
 
 	#lists for dynamic CSVs
 	vol_lvl = [10,10]
 	ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054, 121, 117]
 	
-	# last_save_slot = int(t1.read_text_from_file('save_files/last_save_slot.txt')[0])
-
 	text_speed = 40
 
 
@@ -232,7 +228,8 @@ def main():
 
 	#player inventory manager
 	player_inv_UI = inventory_UI(3, 3, [font, font_larger, font_massive], SCREEN_WIDTH, SCREEN_HEIGHT, vol_lvl)
-
+	inv_toggle = False
+	inv_toggle_en = False
 
 
 	#instantiate player at the start of load
@@ -458,14 +455,21 @@ def main():
 		
 			status_bars.draw(screen, player0.get_status_bars(), font)
 			status_bars.draw2(screen, player0.action_history, (7,8,16))
+			player_inv_UI.show_selected_item(player0.inventory_handler.inventory, screen)
    
-			#draw world text here
-			if level in area_name_dict:
-				if area_name_time + 2500 > pygame.time.get_ticks():
-					if area_name_time + 2000 > pygame.time.get_ticks():
-						screen.blit(font_larger.render(area_name_dict[level], True, (white)), (16, 16))
-					elif pygame.time.get_ticks()%2 == 0:
-						screen.blit(font_larger.render(area_name_dict[level], True, (white)), (16, 16))
+			#draw area name here
+			if area_name_time + 2500 > pygame.time.get_ticks():
+				coord = (SCREEN_WIDTH//2 - 8*len(area_name_dict[level])//2, SCREEN_HEIGHT//2 - 8)
+				coord2 = (0, SCREEN_HEIGHT//2 - 16)
+				if area_name_time + 2000 > pygame.time.get_ticks():
+					screen.blit(area_name_img, coord2)
+					screen.blit(font_larger.render(area_name_dict[level], True, (white)), (coord))
+				elif area_name_time + 2000 < pygame.time.get_ticks() and pygame.time.get_ticks()%2 == 0:
+					screen.blit(area_name_img, coord2)
+					screen.blit(font_larger.render(area_name_dict[level], True, (white)), (coord))
+					last_area_name = area_name_dict[level]
+
+
 
 		else:
 			#print(selected_slot)
@@ -475,20 +479,18 @@ def main():
      
 		if lvl_transition_counter > 0:
 			pygame.draw.rect(screen, (0,0,0), pygame.rect.Rect(0,0,SCREEN_WIDTH,SCREEN_HEIGHT))
-			area_name_time = pygame.time.get_ticks()
+			if lvl_transition_counter == 1 and last_area_name != area_name_dict[level]:
+				area_name_time = pygame.time.get_ticks() #start area name timer
+				if not player0.in_cutscene:
+					last_area_name = area_name_dict[level]
 			lvl_transition_counter -= 1
 		
+		#ambiance particles
 		#creating group particles
 		if not pause_game and level in level_ambiance_dict:#scale, p_type, frame, density, sprite_group
 			for particle_group_data in level_ambiance_dict[level]:
 				if particle_group_data[0] != 0:
 					group_particle_handler.create_particles((0-32,0), (SCREEN_WIDTH+32,SCREEN_HEIGHT), 1, particle_group_data)
-		
-		
-
-  
-		#adding ambience particles
-		
 
 		#--------------------------------------------------------------------handling drawing text boxes------------------------------------------------------------------
 		#textboxes have a maximum of 240 characters
@@ -591,6 +593,9 @@ def main():
 		if ui_manager0.set_player_inv:
 			ui_manager0.set_player_inv = fill_player_inv(ui_manager0.player_new_inv)
    
+		if inv_toggle_en:
+			player_inv_UI.toggle_inv_slot(300)
+   
 
 		#---------------------------------updates from ui manager-----------------------------------------
 		if ui_manager0.ctrls_updated:
@@ -663,8 +668,9 @@ def main():
 			text_speed = 40
 			
 		if player0.in_cutscene:#dialogue system will activate as soon as the player collides with a 'cutscene' npc
-			dialogue_enable = True
-			area_name_time = pygame.time.get_ticks()
+			dialogue_enable = True #start signal for dialogue handler
+			if last_area_name != area_name_dict[level]:
+				area_name_time = pygame.time.get_ticks() #extend area name time on screen
 			
 		if player0.hurting or not player0.dialogue_trigger_ready:
 			dialogue_enable = False
@@ -840,6 +846,7 @@ def main():
 		
 					if event.key == ctrls_list[7]: #pygame.K_RALT
 						player0.sprint = True
+						inv_toggle = True
 					#press button and check if item selected can be used
 					if ((event.key == ctrls_list[9] or player_inv_UI.use_item_btn_output) 
 						and player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory)
@@ -860,10 +867,13 @@ def main():
 					
 					#open inventory
 					if event.key == ctrls_list[8] and not dialogue_enable:
-						inventory_opened = not inventory_opened
-						if inventory_opened:
-							player_inv_UI.close_inventory()
-		
+						if not inv_toggle:
+							inventory_opened = not inventory_opened
+							if inventory_opened:
+								player_inv_UI.close_inventory()
+						else:
+							inv_toggle_en = True
+							player_inv_UI.toggle_inv_slot_once()
 		
 					#debugging flight button
 					#if you fly over the camera object the level breaks
@@ -990,9 +1000,14 @@ def main():
 				if event.key == ctrls_list[7]: #pygame.K_RALT
 					player0.speed = normal_speed
 					player0.sprint = False
+					inv_toggle = False
+					inv_toggle_en = False
 
 				if event.key == pygame.K_MINUS:
 					debugger_sprint = False
+
+				if event.key == ctrls_list[8]:
+					inv_toggle_en = False
 
      
 		#==============================================================================================================

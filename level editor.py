@@ -228,7 +228,7 @@ def draw_world(static_bg_oversized_tiles_dict, sprite_group_tiles_dict, layer, r
                     img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
                     screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)))
                     
-                elif tile == 15 or tile == 16 or tile == 18 or tile == 2:
+                elif tile in (15,16,18,2,60):
                     screen.blit(tile_list[t_set_index][tile], (x * TILE_SIZE - scroll, (y * TILE_SIZE)+ 16))
  
                 else: 

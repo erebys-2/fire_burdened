@@ -58,7 +58,7 @@ class StatusBars():
         
     def draw(self, screen, stat_data, font):
         hp_color = (105,31,46)
-        stam_color = (30,70,18)
+        stam_color = (0,80,28)
         charge_color = (255,0,86)
         WHITE = (240,240,240)
         RED = (255,0,0)

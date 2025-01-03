@@ -176,10 +176,15 @@ class dialogue_box(text_manager):
         message = textbox_output[0]
         image_index = textbox_output[4]
         name_index = textbox_output[5]
+        
+        if name != ' ':
+            disp_name = name + ':'
+        else:
+            disp_name = name
    
         self.draw_box_and_portrait(screen, image_index, name_index)
         
-        self.disp_text_box(screen, font, (name + ':', ' '), (-1,-1,-1),  (200,200,200), (16, 372, 112, 120), False, False, 'none')
+        self.disp_text_box(screen, font, (disp_name, ' '), (-1,-1,-1),  (200,200,200), (16, 372, 112, 120), False, False, 'none')
         if in_cutscene:
             self.disp_text_box(screen, font, ('Next:(Enter)', ''), (-1,-1,-1),  (120,120,120), (532, 456, 32, 32), False, False, 'none')
         else:

@@ -291,6 +291,7 @@ class inventory_UI(): #handles displaying inventory, item description and counts
         self.rows = rows
         self.cols = cols
         self.size = 0
+        self.total_slots = rows*cols + 1
         self.trigger_once = True
         self.inventory_grid = []
         
@@ -304,6 +305,7 @@ class inventory_UI(): #handles displaying inventory, item description and counts
         self.temp_inventory = []
         
         self.slot = 0
+        self.inv_toggle_timer = pygame.time.get_ticks()
         
         self.generic_img = pygame.image.load('sprites/generic_btn.png').convert_alpha()
         self.inventory_btn = pygame.image.load('sprites/inventory_btn.png').convert_alpha()
@@ -337,6 +339,27 @@ class inventory_UI(): #handles displaying inventory, item description and counts
             temp_inventory[i] = ['empty', 0]
             
         return temp_inventory
+    
+    def show_selected_item(self, inventory, screen):
+        blit_coord = (11, 453)
+        count_coord = (17, 461)
+        if inventory[self.slot][0] != 'empty':
+            screen.blit(self.item_img_dict[inventory[self.slot][0]], blit_coord)
+            item_count = str(inventory[self.slot][1])
+            if int(item_count) < 10:
+                item_count = ' ' + item_count
+            screen.blit(self.fontlist[1].render(item_count, True, (255,255,255)), count_coord)
+            
+    def toggle_inv_slot(self, rate):
+        if self.inv_toggle_timer + rate < pygame.time.get_ticks():
+            self.toggle_inv_slot_once()
+            
+    def toggle_inv_slot_once(self):
+        if self.slot < self.total_slots - 1:
+            self.slot += 1
+        else:
+            self.slot = 0
+        self.inv_toggle_timer = pygame.time.get_ticks()
         
     def press_use_item_btn(self, inventory):
         #print(self.slot)
@@ -392,6 +415,9 @@ class inventory_UI(): #handles displaying inventory, item description and counts
             self.button_list.append(Button(self.isolated_slot_pos[0], self.isolated_slot_pos[1], self.inventory_btn, 1))
             self.button_list2.append(Button(self.isolated_slot_pos[0] + 8, self.isolated_slot_pos[1] + 8, self.item_img_dict[inventory[len(inventory) - 1][0]], 1))
             self.size += 1
+            
+            for btn in self.button_list2: #disable hover button highlighting for items
+                btn.img_highlight_en = False
                             
             self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +64 +16, self.generic_img, 1))
             self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +64 +56, self.generic_img, 1))

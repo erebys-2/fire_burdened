@@ -17,3 +17,5 @@
 55: enemy, walker, none, -1
 56: p_int, breakable_brick1, none, -1
 59: p_int, flame_pillar, none, -1
+61: p_int, tall_plant, none, -1
+62: npc, read_only_obj, object, -1

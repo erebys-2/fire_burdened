@@ -526,7 +526,7 @@ class player(pygame.sprite.Sprite):
                         (tile[1].bottom > self.collision_rect.bottom and tile[1].y < self.collision_rect.y)
                      ]:
             #x collisions
-            if (tile[2] != 17 and tile[2] != 10 and tile[2] != 2):
+            if (tile[2] not in (17, 10, 2, 60)):
                 self.atk1_grinding(tile[1], the_sprite_group)
                     
                 #dx collisions, tile walls
@@ -610,7 +610,7 @@ class player(pygame.sprite.Sprite):
                     
                             
             #special tiles
-            elif(tile[2] == 2):#spikes/ other trap tiles
+            elif(tile[2] in (2, 60)):#spikes/ other trap tiles
                 if tile[1].colliderect(self.collision_rect.x + self.width//4 + dx, self.collision_rect.y + dy, self.width//2, self.height - 8):
                     self.hits_tanked = 6
             
@@ -777,7 +777,7 @@ class player(pygame.sprite.Sprite):
                             dx = self.direction
                 
                 #add trailing particles
-                if (moveR or moveL) and not self.heavy and not self.crit and self.frame_index < 1:
+                if not self.heavy and not self.crit and self.frame_index < 1:
                     self.draw_trail = True
                 else:
                     self.draw_trail = False
