@@ -40,6 +40,13 @@ class Item(pygame.sprite.Sprite): #helper class with logic for item behavior out
         
         self.gravitation_rect = pygame.rect.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
         self.gravitation_rect.scale_by_ip(8)
+        
+        weight_dict = {
+            'Rock': 5
+        }
+        self.weight = 9
+        if self.id in weight_dict:
+            self.weight = weight_dict[self.id]
 
         
     def enable(self, player_rect, pause_game):
@@ -55,7 +62,7 @@ class Item(pygame.sprite.Sprite): #helper class with logic for item behavior out
             pass
             
         elif not pause_game and not self.gravitate(player_rect):#bob up and down
-            self.rect.centery = self.ini_y - 9*math.sin(self.increment)
+            self.rect.centery = self.ini_y - self.weight*math.sin(self.increment)
 
             if self.increment > 2*math.pi:
                 self.rect.centery = self.ini_y
@@ -131,10 +138,29 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
         self.item_usage_hander0 = item_usage_hander()
         #print(self.inventory)
             
-    #will probably need a csv reader for this one somewhere along the process
     #used for loading inventory from save file        
     def load_saved_inventory(self, inventory):
         self.inventory = inventory
+        
+    def check_for_item(self, item_name):
+        item_found = False
+        for slot in self.inventory:
+            if slot[0] == item_name:
+                item_found = True
+                break
+        
+        return item_found
+    
+    def discard_item_by_name(self, item_name):
+        for slot in self.inventory:
+            if slot[0] == item_name:
+                slot_index = self.inventory.index(slot)
+                if self.inventory[slot_index][1] > 0:
+                    self.inventory[slot_index][1] -= 1
+                    
+                if self.inventory[slot_index][1] == 0:
+                    self.inventory[slot_index][0] = 'empty'
+                break
     
     def find_available_slot(self, item_id):
         slot_index = 0
@@ -208,7 +234,7 @@ class item_usage_hander():  #helper class with logic for item usage and applying
     def __init__ (self):
         t = textfile_formatter()
         self.sub_function_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'item_subfunctions.txt')), 'list')
-        self.instant_heal_items_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'instant_heal_items_config.txt')), 'int')
+        self.instant_heal_items_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'instant_heal_items_config.txt')), 'float')
         self.st_reduction_factor_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'st_reduction_factor_config.txt')), 'float')
         
         #make a separate dict for particles and sfx for each item used
@@ -303,11 +329,17 @@ class inventory_UI(): #handles displaying inventory, item description and counts
         self.S_H = SCREEN_HEIGHT
         
         self.temp_inventory = []
+        self.slot_pos_list = []
+        for row in range(rows):
+            for col in range(cols):
+                self.slot_pos_list.append((row,col))
+        #print(self.slot_pos_list)
         
         self.slot = 0
         self.inv_toggle_timer = pygame.time.get_ticks()
         
         self.generic_img = pygame.image.load('sprites/generic_btn.png').convert_alpha()
+        self.invisible_img = pygame.image.load('sprites/invisible_btn.png').convert_alpha()
         self.inventory_btn = pygame.image.load('sprites/inventory_btn.png').convert_alpha()
         self.inv_bg = pygame.image.load('sprites/pause_bg.png').convert_alpha()
         self.aria_frame_list = []
@@ -333,12 +365,67 @@ class inventory_UI(): #handles displaying inventory, item description and counts
         self.item_to_use = 'empty'
         self.use_item_btn_output = False
         
+        self.help_btn_str = '[Open Tips]'
+        self.help_open = False
+        
     def clear_inventory(self, inventory):
         temp_inventory = inventory 
         for i in range(self.size):
             temp_inventory[i] = ['empty', 0]
             
         return temp_inventory
+    
+    def move_item(self, inv_directions, move_enable, inventory):
+        if self.slot != self.total_slots - 1:
+            moveR = inv_directions[0]
+            moveL = inv_directions[1]
+            moveUp = inv_directions[2]
+            moveDown = inv_directions[3]
+            discard = inv_directions[4]
+            
+            slot_data_temp = inventory[self.slot]
+            
+            current_pos = self.slot_pos_list[self.slot]#get initial slot position
+            row = current_pos[0]
+            col = current_pos[1]
+            if moveR:#set new position
+                if col < self.cols - 1:
+                    col += 1
+                else:
+                    col = 0
+            elif moveL:
+                if col > 0:
+                    col -= 1
+                else:
+                    col = self.cols - 1
+            elif moveDown:
+                if row < self.rows - 1:
+                    row += 1
+                else:
+                    row = 0
+            elif moveUp:
+                if row > 0:
+                    row -= 1
+                else:
+                    row = self.rows - 1
+            elif discard and not move_enable:
+                self.discard_item(inventory)
+            
+            new_slot = self.slot_pos_list.index((row,col))
+            
+            if move_enable: #move items to new positions
+                inventory[self.slot] = inventory[new_slot]
+                inventory[new_slot] = slot_data_temp
+                
+                if discard:
+                    self.discard_slot(inventory)
+            
+            self.slot = new_slot
+        elif True in inv_directions:
+            self.slot = 0
+            
+        return inventory
+        
     
     def show_selected_item(self, inventory, screen):
         blit_coord = (11, 453)
@@ -381,9 +468,12 @@ class inventory_UI(): #handles displaying inventory, item description and counts
             
         if inventory[self.slot][1] == 0:
             inventory[self.slot][0] = 'empty'
+            
+    def discard_slot(self, inventory):
+        inventory[self.slot] = ['empty', 0]
         
     #will be called constantly   
-    def open_inventory(self, inventory, screen, inv_key):
+    def open_inventory(self, inventory, screen, ctrl_list):
         
         if self.trigger_once:#will be set to true again by either escape or inventory key
             self.temp_inventory = []
@@ -421,6 +511,8 @@ class inventory_UI(): #handles displaying inventory, item description and counts
                             
             self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +64 +16, self.generic_img, 1))
             self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +64 +56, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +64 +96, self.generic_img, 1))
+            self.button_list.append(Button(2, 2, self.invisible_img, 1))
             
             self.trigger_once = False
             
@@ -453,45 +545,99 @@ class inventory_UI(): #handles displaying inventory, item description and counts
             self.text_manager0.disp_text_box(screen, self.fontlist[1], item_details,
                                              (-1,-1,-1), (200,200,200), (self.S_W//2 + 4, self.S_H//2 - 124, 220, 188), False, False, 'none')
             
-            self.text_manager0.disp_text_box(screen, self.fontlist[1], ('Exit:(' + pygame.key.name(inv_key) + ') or (esc)', ''), 
-                                             (-1,-1,-1), (100,100,100), ((480 - 8*len(pygame.key.name(inv_key))), 456, 32, 32), False, False, 'none')
+            self.text_manager0.disp_text_box(screen, self.fontlist[1], ('Exit:[' + pygame.key.name(ctrl_list[8]) + '] or [Esc]', ''), 
+                                             (-1,-1,-1), (100,100,100), ((480 - 8*len(pygame.key.name(ctrl_list[8]))), 456, 32, 32), False, False, 'none')
             
             #buttons and drawing buttons--------------------------------------------------------------------------------------
             
             #highlighting selected inventory slot
             self.button_list[self.slot].draw_border(screen)
             
-            #selecting the current slot
-            for slot in self.button_list[0:self.size]:
-                if slot.draw(screen):
+            if not self.help_open:
+                #selecting the current slot
+                for slot in self.button_list[0:self.size]:
+                    if slot.draw(screen):
+                        self.m_player.play_sound(self.m_player.sfx[1])
+                        self.slot = self.button_list.index(slot)
+                        #print(self.slot)
+                        
+                #draw items in slots
+                for btn in self.button_list2:
+                    btn.draw(screen)
+                    if inventory[self.button_list2.index(btn)][0] != 'empty':
+                        item_count = str(inventory[self.button_list2.index(btn)][1])
+                        if int(item_count) < 10:
+                            item_count = ' ' + item_count
+                        btn.show_text(screen, self.fontlist[1], ('', item_count))
+                
+                #use button
+                self.use_item_btn_output = False
+                if self.button_list[len(self.button_list)-4].draw(screen):
                     self.m_player.play_sound(self.m_player.sfx[1])
-                    self.slot = self.button_list.index(slot)
-                    #print(self.slot)
-                    
-            #draw items in slots
-            for btn in self.button_list2:
-                btn.draw(screen)
-                if inventory[self.button_list2.index(btn)][0] != 'empty':
-                    item_count = str(inventory[self.button_list2.index(btn)][1])
-                    if int(item_count) < 10:
-                        item_count = ' ' + item_count
-                    btn.show_text(screen, self.fontlist[1], ('', item_count))
-            
-            #use button
-            self.use_item_btn_output = False
-            if self.button_list[len(self.button_list)-2].draw(screen):
-                self.m_player.play_sound(self.m_player.sfx[1])
-                #self.press_use_item_btn(inventory)
-                self.use_item_btn_output = True
+                    #self.press_use_item_btn(inventory)
+                    self.use_item_btn_output = True
 
-            self.button_list[len(self.button_list)-2].show_text(screen, self.fontlist[1], ('','Use Item'))
+                self.button_list[len(self.button_list)-4].show_text(screen, self.fontlist[1], ('','Use Item'))
+                
+                #discard button
+                if self.button_list[len(self.button_list)-3].draw(screen):
+                    self.m_player.play_sound(self.m_player.sfx[1])
+                    self.discard_item(inventory)
+
+                self.button_list[len(self.button_list)-3].show_text(screen, self.fontlist[1], ('','Discard'))
+                
+                #discard slot button
+                if self.button_list[len(self.button_list)-2].draw(screen):
+                    self.m_player.play_sound(self.m_player.sfx[1])
+                    self.discard_slot(inventory)
+
+                self.button_list[len(self.button_list)-2].show_text(screen, self.fontlist[1], ('','Discard Slot'))
             
-            #discard button
+            #blit help screen here
+            else:
+                pygame.draw.rect(screen, (0,0,0), (0, 0, self.S_W, self.S_H))
+                ctrl_listk = []
+                for key in ctrl_list:
+                    ctrl_listk.append(pygame.key.name(key))
+                inventory_tips = (
+                    '',
+                    '',
+                    '',
+                    'Toggle selected inventory slot:',
+                    f'   -Press or hold [{ctrl_listk[8]}] while holding [{ctrl_listk[7]}].',
+                    '',
+                    '   OR while inventory is open:',
+                    '      -Click any inventory slot.',
+                    f'      -Use directional keys [{ctrl_listk[0]}, {ctrl_listk[1]}, {ctrl_listk[2]}, {ctrl_listk[3]}].',
+                    '',
+                    'Moving Items:',
+                    f'   -Use directional keys [{ctrl_listk[0]}, {ctrl_listk[1]}, {ctrl_listk[2]}, {ctrl_listk[3]}] while holding [{ctrl_listk[7]}].',
+                    '',
+                    'Using Items:',
+                    '   -Click Use Item button.',
+                    f'   -Press [{ctrl_listk[9]}].',
+                    '',
+                    'Discarding Items:',
+                    '   -Click Discard or Discard Slot button.',
+                    f'   -Press [{ctrl_listk[4]}] to discard 1 item.', 
+                    f'   -Press [{ctrl_listk[4]}] while holding [{ctrl_listk[7]}] to discard a whole slot.'
+                )
+                
+                self.text_manager0.disp_text_box(screen, self.fontlist[1], inventory_tips,
+                                             (-1,-1,-1), (200,200,200), (32, 32, 630, 480), False, False, 'none')
+                
+            
+            
+            #help button
             if self.button_list[len(self.button_list)-1].draw(screen):
                 self.m_player.play_sound(self.m_player.sfx[1])
-                self.discard_item(inventory)
+                self.help_open = not self.help_open
+                if self.help_open:
+                    self.help_btn_str = '[Close Tips]'
+                else:
+                    self.help_btn_str = '[Open Tips]'
 
-            self.button_list[len(self.button_list)-1].show_text(screen, self.fontlist[1], ('','Discard'))
+            self.button_list[len(self.button_list)-1].show_text(screen, self.fontlist[1], ('',self.help_btn_str))
         
         #test for if the items in inventory changed
         for i in range(len(inventory)):
@@ -500,6 +646,8 @@ class inventory_UI(): #handles displaying inventory, item description and counts
         
         
     def close_inventory(self):
+        self.help_open = False
+        self.help_btn_str = '[Open Tips]'
         self.use_item_btn_output = False
         self.temp_inventory *= 0
         self.button_list *= 0

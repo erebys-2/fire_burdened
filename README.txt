@@ -103,6 +103,10 @@ Taking Damage:
 Inventory:
     The game is not paused while your inventory is open, so keep it open at your own peril!
     Currently selected slot can be toggled using Y (open inventory key) while holding down R ALT (sprint key).
+    While inventory is opened:
+	Currently selected slot can be toggled by WASD.
+	Items can be moved into different slots using WASD while holding R ALT.
+	Items can be individually discarded by pressing I, or discarded by slot py pressing I and holding R ALT.
 
 Use Item:
     If you select an inventory slot it will still be selected when your inventory is closed. 

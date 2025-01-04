@@ -71,7 +71,6 @@ class textfile_formatter():
             rtn_list.append(self.auto_string_to_number(str_))
         
         return rtn_list
-        
     
     #takes a formatted string and returns a list, ints and floats will be automatically processed
     #appropriate formatting: 

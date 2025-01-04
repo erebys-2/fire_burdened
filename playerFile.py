@@ -1179,6 +1179,7 @@ class player(pygame.sprite.Sprite):
                 self.frame_index = 5   
                 
             if self.action == 11:
+                self.inventory_handler.discard_item_by_name('Rock')
                 self.shoot = False
                 self.ini_cost_spent = False
                 #spawn bullet---------------------------------------------------------------------------------------------

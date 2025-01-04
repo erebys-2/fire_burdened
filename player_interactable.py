@@ -4,7 +4,7 @@ from bullet import bullet_ #type: ignore
 from particle import particle_ #type: ignore
 from music_player import music_player #type: ignore
 import random
- 
+from ItemFile import Item
 
 class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that can interact with the player/have hitboxes
     #constructor
@@ -206,6 +206,8 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                         for i in range(random.randrange(4,8)):
                             particle = particle_(self.rect.x + random.randint(-8,8), self.rect.y + random.randint(-16,8), -self.direction, self.scale, 'grass_cut', True, random.randint(0,2), False)
                             sp_group_list[5].add(particle)
+                        if random.randint(0,15) == 0:
+                            sp_group_list[12].add(Item('Mild Herb', self.rect.centerx + 2*random.randint(-5,5), self.rect.centery + 2*random.randint(-5,5), 1))
                     self.animate()
                 else:
                     self.action = 0
@@ -236,6 +238,9 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                     else:
                         self.durability_changed = False
                 else:
+                    #if random.randint(0,1) == 0:
+                    #for i in range(3):
+                    sp_group_list[12].add(Item('Rock', self.rect.centerx + 2*random.randint(-5,5), self.rect.centery + 2*random.randint(-5,5), 1))
                     self.rect = pygame.Rect(0,0,0,0)
                     self.kill()
                     

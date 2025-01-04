@@ -89,6 +89,9 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.reset_death_counters = False
         self.controller_connected = False
         
+        self.help_open = False
+        self.help_btn_str = '[Open Tips]'
+        
     def read_csv_data(self, data_name):
         temp_list = []
         with open(f'dynamic_CSVs/{data_name}.csv', newline= '') as csvfile:
@@ -322,7 +325,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             self.button_list *= 0
             for i in range(5):
                 self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +40*i, self.generic_img, 1))
-            self.button_list.append(Button(self.S_W - 88, self.S_H - 32, self.invisible_img, 1))
+            self.button_list.append(Button(self.S_W - 112, self.S_H - 32, self.invisible_img, 1))
             
             if self.selected_slot != -1:
                 self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 - 88, self.generic_img, 1))
@@ -373,7 +376,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             self.save_handler.reset_all_saves(self.t1)
             self.reset_death_counters = True
             self.selected_slot = -1
-        self.button_list[5].show_text(screen, self.fontlist[1], ('','Reset All'))  
+        self.button_list[5].show_text(screen, self.fontlist[1], ('','[Reset All]'))  
         
         #select current slot
         if self.selected_slot != -1 and len(self.button_list) == 7:
@@ -440,6 +443,9 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             
             self.button_list.append(Button(self.S_W//2 + 64, self.S_H /2 -186 + 192, self.generic_img, 1))
             
+            #tips button
+            self.button_list.append(Button(0, 448, self.invisible_img, 1))
+            
             self.trigger_once = False
         
         
@@ -461,60 +467,106 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             9:('','Use Item')
         }
         
-        
-        for i in range(10):
-            if self.button_list[i].draw(screen):
+        if  not self.help_open:
+            for i in range(10):
+                if self.button_list[i].draw(screen):
+                    self.m_player.play_sound(self.m_player.sfx[1])
+                    self.btn_selected = i
+                    
+                self.button_list[i].show_text(screen, self.fontlist[1], ctrls_btn_dict[i])
+                self.button_list[i+10].show_text(screen, self.fontlist[1], self.disp_str_list[i])
+            
+            #pressing save button
+            if self.button_list[20].draw(screen):
+                self.ctrl_menu_enable = False
                 self.m_player.play_sound(self.m_player.sfx[1])
-                self.btn_selected = i
-                
-            self.button_list[i].show_text(screen, self.fontlist[1], ctrls_btn_dict[i])
-            self.button_list[i+10].show_text(screen, self.fontlist[1], self.disp_str_list[i])
+                self.trigger_once = True  
+                self.ctrls_updated = True
+                #print(self.ctrls_list)
+                self.write_csv_data('ctrls_data', self.ctrls_list)
+            self.button_list[20].show_text(screen, self.fontlist[1], ('','Save'))  
+            
+            #load scheme 1
+            if self.button_list[21].draw(screen):
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.ctrls_list = self.read_csv_data('ctrl_scheme_1')
+                for i in range(len(self.disp_str_list)):
+                    self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
+            self.button_list[21].show_text(screen, self.fontlist[1], ('','Load Ctrls 1'))  
+            
+            #save scheme 1
+            if self.button_list[22].draw(screen):
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.write_csv_data('ctrl_scheme_1', self.ctrls_list)
+            self.button_list[22].show_text(screen, self.fontlist[1], ('','Save Ctrls 1'))  
+            
+            #load scheme 2
+            if self.button_list[23].draw(screen):
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.ctrls_list = self.read_csv_data('ctrl_scheme_2')
+                for i in range(len(self.disp_str_list)):
+                    self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
+            self.button_list[23].show_text(screen, self.fontlist[1], ('','Load Ctrls 2'))  
+            
+            #save scheme 2
+            if self.button_list[24].draw(screen):
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.write_csv_data('ctrl_scheme_2', self.ctrls_list)
+            self.button_list[24].show_text(screen, self.fontlist[1], ('','Save Ctrls 2'))  
+            
+            #pressing default button
+            if self.button_list[25].draw(screen):
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054, 121, 117]
+                for i in range(len(self.disp_str_list)):
+                    self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
+            self.button_list[25].show_text(screen, self.fontlist[1], ('','Default'))  
+            
+        else:
+            pygame.draw.rect(screen, (0,0,0), (0, 0, self.S_W, self.S_H))
+            ctrl_listk = []
+            for key in self.ctrls_list:
+                ctrl_listk.append(pygame.key.name(key))
+            ctrl_tips = (
+                'Melee Attacking:',
+                f'   -Pressing [{ctrl_listk[4]}] while mid air will amplify your vertical velocity.',
+                f'   -Pressing [{ctrl_listk[4]}] while rolling will trigger a large dash attack, which will do more damage.',
+                '   -You are invulnerable during melee animation.',
+                '   -Your melee doubles as a small forward dash.',
+                f'       -Pressing either [{ctrl_listk[1]}] or [{ctrl_listk[3]}] will increase dash distance.',
+                '   -Spamming melee for more than 4 times in a row will cause you to enter heavy attack mode.',
+                f'       -Exit heavy attack mode by doing some other action: [{ctrl_listk[0]}, {ctrl_listk[2]}, {ctrl_listk[9]}, {ctrl_listk[5]}, etc].',
+                '       -Or wait a full animation cycle to exit.',
+                f'   -Melee animation can be canceled by rolling [{ctrl_listk[2]}] or moving in the opposite direction.',
+                '',
+                'Rolling:',
+                '   -You are invulnerable during roll animation.',
+                f'   -Rolling can be canceled by jumping [{ctrl_listk[0]}] or rolling [{ctrl_listk[2]}].',
+                '',
+                'Shooting:',
+                '   -You need items that can serve as ammunition to shoot.',
+                f'   -Hold [{ctrl_listk[5]}] to charge a shot.',
+                '',
+                'Sprinting:',
+                f'   -Holding down [{ctrl_listk[7]}] will enable sprint; lifting the key will disable it.',
+                '   -Stamina regeneration is lowered while sprint is enabled.',
+                '   -All animations will slightly speed up while sprint is enabled.'
+            )
+            
+            self.text_manager0.disp_text_box(screen, self.fontlist[0], ctrl_tips,
+                                        (-1,-1,-1), (200,200,200), (32, 32, 630, 480), False, False, 'none')
+            
         
-        #pressing save button
-        if self.button_list[20].draw(screen):
-            self.ctrl_menu_enable = False
+        #pressing tips button
+        if self.button_list[26].draw(screen):
             self.m_player.play_sound(self.m_player.sfx[1])
-            self.trigger_once = True  
-            self.ctrls_updated = True
-            #print(self.ctrls_list)
-            self.write_csv_data('ctrls_data', self.ctrls_list)
-        self.button_list[20].show_text(screen, self.fontlist[1], ('','Save'))  
-        
-        #load scheme 1
-        if self.button_list[21].draw(screen):
-            self.m_player.play_sound(self.m_player.sfx[1])
-            self.ctrls_list = self.read_csv_data('ctrl_scheme_1')
-            for i in range(len(self.disp_str_list)):
-                self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
-        self.button_list[21].show_text(screen, self.fontlist[1], ('','Load Ctrls 1'))  
-        
-        #save scheme 1
-        if self.button_list[22].draw(screen):
-            self.m_player.play_sound(self.m_player.sfx[1])
-            self.write_csv_data('ctrl_scheme_1', self.ctrls_list)
-        self.button_list[22].show_text(screen, self.fontlist[1], ('','Save Ctrls 1'))  
-        
-        #load scheme 2
-        if self.button_list[23].draw(screen):
-            self.m_player.play_sound(self.m_player.sfx[1])
-            self.ctrls_list = self.read_csv_data('ctrl_scheme_2')
-            for i in range(len(self.disp_str_list)):
-                self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
-        self.button_list[23].show_text(screen, self.fontlist[1], ('','Load Ctrls 2'))  
-        
-        #save scheme 2
-        if self.button_list[24].draw(screen):
-            self.m_player.play_sound(self.m_player.sfx[1])
-            self.write_csv_data('ctrl_scheme_2', self.ctrls_list)
-        self.button_list[24].show_text(screen, self.fontlist[1], ('','Save Ctrls 2'))  
-        
-        #pressing default button
-        if self.button_list[25].draw(screen):
-            self.m_player.play_sound(self.m_player.sfx[1])
-            self.ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054, 121, 117]
-            for i in range(len(self.disp_str_list)):
-                self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
-        self.button_list[25].show_text(screen, self.fontlist[1], ('','Default'))  
+            self.help_open = not self.help_open
+            if self.help_open:
+                self.help_btn_str = '[Close Tips]'
+            else:
+                self.help_btn_str = '[Open Tips]'
+            
+        self.button_list[26].show_text(screen, self.fontlist[1], ('',self.help_btn_str))  
         
         if not self.stop:
             for event in pygame.event.get():

@@ -40,7 +40,7 @@ def main():
 	icon = pygame.image.load('icon.png')
 	pygame.display.set_icon(icon)
 
-	pygame.display.set_caption('Fire Burdened 0.7')
+	#pygame.display.set_caption('Fire Burdened 0.7')
 	
  
 	#controller set up..?
@@ -56,6 +56,7 @@ def main():
 	#local variables
 	move_L = False
 	move_R = False
+	inv_directions = [False,False,False,False,False]
 
 	change_once = True
 
@@ -579,13 +580,17 @@ def main():
 		#-----------------------------------------inventory and items
 		#opening inventory
 		if inventory_opened:
-			player_inv_UI.open_inventory(player0.inventory_handler.inventory, screen, ctrls_list[8])
+			player_inv_UI.open_inventory(player0.inventory_handler.inventory, screen, ctrls_list)
 			if player_inv_UI.use_item_btn_output and player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory) and player0.action != 15:
 				player0.using_item = player_inv_UI.use_item_btn_output #start use item animation
 				player0.speed = 0
 				player_inv_UI.use_item_btn_output = False
-				
-  
+			elif True in inv_directions:
+				player0.inventory_handler.inventory = player_inv_UI.move_item(inv_directions, inv_toggle, player0.inventory_handler.inventory)
+				inv_directions = [False,False,False,False,False]
+		else:
+			inv_directions = [False,False,False,False,False]
+   
 		if player0.finished_use_item_animation:
 			player_inv_UI.use_item_flag = True
 			player0.finished_use_item_animation = False
@@ -787,62 +792,67 @@ def main():
 			if(event.type == pygame.KEYDOWN):
 				#print(pygame.key.name(event.key))
 				if player0.Alive and level_dict[level][5] and not pause_game and not dialogue_enable:
-					
-					if event.key == ctrls_list[1]: #pygame.K_a
-						move_L = True
-						#move_R = False
-						# output = check_double_tap(True, double_tap_time, double_tap_initiated, 320)
-						# double_tap_initiated = output[2]
-						# double_tap_time = output[1]
-						# if output[0]:
-						# 	player0.sprint = True
-					if event.key == ctrls_list[3]: #pygame.K_d
-						move_R = True
-						#move_L = False
-						# output = check_double_tap(True, double_tap_time, double_tap_initiated, 320)
-						# double_tap_initiated = output[2]
-						# double_tap_time = output[1]
-						# if output[0]:
-						# 	player0.sprint = True
-					# if event.key == ctrls_list[0] and event.key == ctrls_list[4] and player0.stamina_used + 1 <= player0.stamina:
-					# 	player0.squat = True
-					# 	player0.squat_done = True
-					# 	player0.atk1_alternate = False
-					# 	change_once = False
-					# 	player0.atk1 = (event.key == ctrls_list[4])
-					if event.key == ctrls_list[0]: #pygame.K_w 
+					if inventory_opened:
+						inv_directions[0] = (event.key == ctrls_list[3]) #Right
+						inv_directions[1] = (event.key == ctrls_list[1]) #Left
+						inv_directions[2] = (event.key == ctrls_list[0]) #Up
+						inv_directions[3] = (event.key == ctrls_list[2]) #Down
+						inv_directions[4] = (event.key == ctrls_list[4]) #discard
+					else:
+						if event.key == ctrls_list[1]: #pygame.K_a
+							move_L = True
+							#move_R = False
+							# output = check_double_tap(True, double_tap_time, double_tap_initiated, 320)
+							# double_tap_initiated = output[2]
+							# double_tap_time = output[1]
+							# if output[0]:
+							# 	player0.sprint = True
+						if event.key == ctrls_list[3]: #pygame.K_d
+							move_R = True
+							#move_L = False
+							# output = check_double_tap(True, double_tap_time, double_tap_initiated, 320)
+							# double_tap_initiated = output[2]
+							# double_tap_time = output[1]
+							# if output[0]:
+							# 	player0.sprint = True
+						# if event.key == ctrls_list[0] and event.key == ctrls_list[4] and player0.stamina_used + 1 <= player0.stamina:
+						# 	player0.squat = True
+						# 	player0.squat_done = True
+						# 	player0.atk1_alternate = False
+						# 	change_once = False
+						# 	player0.atk1 = (event.key == ctrls_list[4])
+						if event.key == ctrls_list[0]: #pygame.K_w 
+							player0.landing = False
+
+							if not player0.in_air: #player is on ground
+								player0.squat = True
+							elif player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:
+								hold_jump_update = pygame.time.get_ticks()
+								player0.squat = True 
+
+							if player0.rolling and player0.in_air == False:
+								player0.roll_count = player0.roll_limit
+								player0.squat = True
+
+						if event.key == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and event.key != ctrls_list[0] and not player0.using_item: #pygame.K_i, pygame.K_w
+							change_once = True
+							player0.atk1 = True # (event.key == ctrls_list[4])
+
+						elif event.key == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
+							status_bars.warning = True
 						
-						player0.landing = False
+						if event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina and not player0.using_item and player0.inventory_handler.check_for_item('Rock'): #pygame.K_o
+							player0.shot_charging = True
+						elif event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost > player0.stamina: #pygame.K_o
+							status_bars.warning = True
+			
 
-						if not player0.in_air: #player is on ground
-							player0.squat = True
-						elif player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:
-							hold_jump_update = pygame.time.get_ticks()
-							player0.squat = True 
+						if event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost <= player0.stamina: #pygame.K_s
+							player0.squat = False
+							player0.rolling = True
 
-						if player0.rolling and player0.in_air == False:
-							player0.roll_count = player0.roll_limit
-							player0.squat = True
-
-					if event.key == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and event.key != ctrls_list[0] and not player0.using_item: #pygame.K_i, pygame.K_w
-						change_once = True
-						player0.atk1 = True # (event.key == ctrls_list[4])
-
-					elif event.key == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
-						status_bars.warning = True
-					
-					if event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina and not player0.using_item: #pygame.K_o
-						player0.shot_charging = True
-					elif event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost > player0.stamina: #pygame.K_o
-						status_bars.warning = True
-		
-
-					if event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost <= player0.stamina: #pygame.K_s
-						player0.squat = False
-						player0.rolling = True
-
-					elif event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost > player0.stamina: #pygame.K_s
-						status_bars.warning = True
+						elif event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost > player0.stamina: #pygame.K_s
+							status_bars.warning = True
 		
 					if event.key == ctrls_list[7]: #pygame.K_RALT
 						player0.sprint = True
@@ -970,7 +980,7 @@ def main():
 				# if event.key == pygame.K_4:
 				# 	print(BG_color)
 				
-
+			#=============================================== key lift =================
 
 			if(event.type == pygame.KEYUP):
 				if event.key == ctrls_list[1]:#pygame.K_a
@@ -1016,65 +1026,73 @@ def main():
 			if(event.type == pygame.JOYBUTTONDOWN):
 				#print(pygame.button.name(event.button))
 				if player0.Alive and level_dict[level][5] and not pause_game and not dialogue_enable:
-					
-					if event.button == ctrls_list[1]: #pygame.K_a
-						move_L = True
-						#move_R = False
-						# output = check_double_tap(True, double_tap_time, double_tap_initiated, 320)
-						# double_tap_initiated = output[2]
-						# double_tap_time = output[1]
-						# if output[0]:
-						# 	player0.sprint = True
-					if event.button == ctrls_list[3]: #pygame.K_d
-						move_R = True
-						#move_L = False
-						# output = check_double_tap(True, double_tap_time, double_tap_initiated, 320)
-						# double_tap_initiated = output[2]
-						# double_tap_time = output[1]
-						# if output[0]:
-						# 	player0.sprint = True
-					# if event.button == ctrls_list[0] and event.button == ctrls_list[4] and player0.stamina_used + 1 <= player0.stamina:
-					# 	player0.squat = True
-					# 	player0.squat_done = True
-					# 	player0.atk1_alternate = False
-					# 	change_once = False
-					# 	player0.atk1 = (event.button == ctrls_list[4])
-					if event.button == ctrls_list[0]: #pygame.K_w 
+					if inventory_opened:
+						inv_directions[0] = (event.key == ctrls_list[3]) #Right
+						inv_directions[1] = (event.key == ctrls_list[1]) #Left
+						inv_directions[2] = (event.key == ctrls_list[0]) #Up
+						inv_directions[3] = (event.key == ctrls_list[2]) #Down
+						inv_directions[4] = (event.key == ctrls_list[4]) #discard
+					else:
 						
-						player0.landing = False
+						if event.button == ctrls_list[1]: #pygame.K_a
+							move_L = True
+							#move_R = False
+							# output = check_double_tap(True, double_tap_time, double_tap_initiated, 320)
+							# double_tap_initiated = output[2]
+							# double_tap_time = output[1]
+							# if output[0]:
+							# 	player0.sprint = True
+						if event.button == ctrls_list[3]: #pygame.K_d
+							move_R = True
+							#move_L = False
+							# output = check_double_tap(True, double_tap_time, double_tap_initiated, 320)
+							# double_tap_initiated = output[2]
+							# double_tap_time = output[1]
+							# if output[0]:
+							# 	player0.sprint = True
+						# if event.button == ctrls_list[0] and event.button == ctrls_list[4] and player0.stamina_used + 1 <= player0.stamina:
+						# 	player0.squat = True
+						# 	player0.squat_done = True
+						# 	player0.atk1_alternate = False
+						# 	change_once = False
+						# 	player0.atk1 = (event.button == ctrls_list[4])
+						if event.button == ctrls_list[0]: #pygame.K_w 
+							
+							player0.landing = False
 
-						if not player0.in_air: #player is on ground
-							player0.squat = True
-						elif player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:
-							hold_jump_update = pygame.time.get_ticks()
-							player0.squat = True 
+							if not player0.in_air: #player is on ground
+								player0.squat = True
+							elif player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:
+								hold_jump_update = pygame.time.get_ticks()
+								player0.squat = True 
 
-						if player0.rolling and player0.in_air == False:
-							player0.roll_count = player0.roll_limit
-							player0.squat = True
+							if player0.rolling and player0.in_air == False:
+								player0.roll_count = player0.roll_limit
+								player0.squat = True
 
-					if event.button == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and event.button != ctrls_list[0] and not player0.using_item: #pygame.K_i, pygame.K_w
-						change_once = True
-						player0.atk1 = True # (event.button == ctrls_list[4])
+						if event.button == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and event.button != ctrls_list[0] and not player0.using_item: #pygame.K_i, pygame.K_w
+							change_once = True
+							player0.atk1 = True # (event.button == ctrls_list[4])
 
-					elif event.button == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
-						status_bars.warning = True
-					
-					if event.button == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina and not player0.using_item: #pygame.K_o
-						player0.shot_charging = True
-					elif event.button == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost > player0.stamina: #pygame.K_o
-						status_bars.warning = True
-		
+						elif event.button == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
+							status_bars.warning = True
+						
+						if event.button == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina and not player0.using_item and player0.inventory_handler.check_for_item('Rock'): #pygame.K_o
+							player0.shot_charging = True
+						elif event.button == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost > player0.stamina: #pygame.K_o
+							status_bars.warning = True
+			
 
-					if event.button == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost <= player0.stamina: #pygame.K_s
-						player0.squat = False
-						player0.rolling = True
+						if event.button == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost <= player0.stamina: #pygame.K_s
+							player0.squat = False
+							player0.rolling = True
 
-					elif event.button == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost > player0.stamina: #pygame.K_s
-						status_bars.warning = True
-		
+						elif event.button == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost > player0.stamina: #pygame.K_s
+							status_bars.warning = True
+			
 					if event.button == ctrls_list[7]: #pygame.K_RALT
 						player0.sprint = True
+						inv_toggle = True
 					#press button and check if item selected can be used
 					if ((event.button == ctrls_list[9] or player_inv_UI.use_item_btn_output) 
 						and player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory)
@@ -1095,9 +1113,13 @@ def main():
 					
 					#open inventory
 					if event.button == ctrls_list[8] and not dialogue_enable:
-						inventory_opened = not inventory_opened
-						if inventory_opened:
-							player_inv_UI.close_inventory()
+						if not inv_toggle:
+							inventory_opened = not inventory_opened
+							if inventory_opened:
+								player_inv_UI.close_inventory()
+						else:
+							inv_toggle_en = True
+							player_inv_UI.toggle_inv_slot_once()
 		
 		
 					#debugging flight button
@@ -1227,7 +1249,7 @@ def main():
 
 
 		pygame.display.update()
-		pygame.display.set_caption(f"Fire Burdened 0.7 @ {clock.get_fps():.1f} FPS")
+		pygame.display.set_caption(f"Fire Burdened 0.71 @ {clock.get_fps():.1f} FPS")
 
 	pygame.quit()
 

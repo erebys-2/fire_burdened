@@ -2,3 +2,5 @@ empty: Slot is empty.
 test: This is a test item used for debugging.
 test2: The quick brown fox jumped over the lazy dog. The over quick fox brown lazy jumped the dog.
 Cursed Flesh: It smells funny but might be edible. Instantly restores health at the cost of max stamina.
+Rock: A smooth rock sits in your hand. It can be infused with magic and shot as a projectile.
+Mild Herb: This herb is said to have mild healing properties. It smells and tastes like grass.
