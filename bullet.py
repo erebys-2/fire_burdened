@@ -1,6 +1,5 @@
 import pygame
 import os
-from particle import particle_
 from music_player import music_player
 class bullet_(pygame.sprite.Sprite):
     def __init__(self, x, y, speed, direction, scale, type, ini_vol):
@@ -157,12 +156,10 @@ class bullet_(pygame.sprite.Sprite):
         else:
             x_loc = self.rect.right
         if self.bullet_type == 'player_basic':    
-            particle = particle_(x_loc, self.rect.y + self.height//2, -self.direction, self.scale, 'player_bullet_explosion', True, frame, False)
-            sp_group_list[5].add(particle)
+            sp_group_list[5].sprite.add_particle('player_bullet_explosion', x_loc, self.rect.y + self.height//2, -self.direction, self.scale, True, frame)
             self.m_player.play_sound(self.m_player.sfx[0])
         elif self.bullet_type == '8x8_red':
-            particle = particle_(x_loc, self.rect.y + self.height//2, -self.direction, self.scale, 'enemy_bullet_explosion', True, frame, False)
-            sp_group_list[5].add(particle)
+            sp_group_list[5].sprite.add_particle('enemy_bullet_explosion', x_loc, self.rect.y + self.height//2, -self.direction, self.scale, True, frame)
             self.m_player.play_sound(self.m_player.sfx[0])
         #self.kill()
         

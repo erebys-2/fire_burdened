@@ -14,92 +14,28 @@ The particle object does not move, only scrolls w/ the screen or w/ its obj
 
 Particles are created by other objects, like the player
 '''
-
-class particle_(pygame.sprite.Sprite):
-    def __init__(self, x, y, direction, scale, type, frame_sync, frame, bound):
+class particle_2(pygame.sprite.Sprite):
+    def __init__(self, particle_img_dict):
+        #load every frame for every particle into lists of a dict
         pygame.sprite.Sprite.__init__(self)
-        #self.m_player = music_player(['pop2.wav', 'hit.wav'])
-        #music_player_list = [] #fill this list later down the constructor and when it
-        #tests for particle types, and then instantiate a music player one line down
-        #play the sound at the very end of the constructor
         self.Active = True
-        self.particle_type = type
-        #self.action = 0
-        self.bound = bound
-        self.direction = direction
-        self.sprite_centered = ('player_bullet_explosion', 'enemy_bullet_explosion', 'player_impact', 'player_mvmt', 'player_crit', 'bloom',
-                                'player_atk1_trail'
-                                )
+        self.is_permanent = True
         
-        self.frame_sync = frame_sync
-        self.forced_frame = frame
-        if direction < 0:
-            self.flip = False
+        if particle_img_dict == None:
+            particle_path = 'sprites/particle'
+            self.particle_img_dict = {}
+            for subdir in os.listdir(particle_path):
+                temp_list = []
+                for img in os.listdir(f'{particle_path}/{subdir}'):
+                    loaded_img = pygame.image.load(f'{particle_path}/{subdir}/{img}').convert_alpha()
+                    temp_list.append(loaded_img)
+                self.particle_img_dict[subdir] = temp_list
         else:
-            self.flip = True
-        
-        self.frame_list = []
-        self.frame_index = self.forced_frame
-        self.update_time = pygame.time.get_ticks()
-        
-        frames = len(os.listdir(f'sprites/particle/{self.particle_type}'))
-
-        for i in range(frames):
-            img = pygame.image.load(f'sprites/particle/{self.particle_type}/{i}.png').convert_alpha()
-            img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-            self.frame_list.append(img)
-
-        self.image = self.frame_list[self.frame_index]
-        self.rect = self.image.get_rect()
-        
-        
-        if any(self.particle_type == particle for particle in self.sprite_centered):
-            self.rect.center = (x,y)
-        else:
-            self.rect.topleft = (x,y)
-        self.width = self.image.get_width()
-        self.height = self.image.get_height()
-        
-    # def bounded_mvmt(self, x, y):
-        
-    #     self.rect.x = x
-    #     self.rect.y = y
-    #     print("working")
-    
-    def move(self, scrollx):
-        dx = 0
-        dy = 0
-        #if self.bound == False:
-
-        if self.rect.x > 896 or self.rect.x < -96 or self.rect.y > 480 or self.rect.y < -32:
-            self.Active = False
-            self.kill()
+            self.particle_img_dict = particle_img_dict
             
-        if self.particle_type == 'shooter_death':
-            self.rect.y -= 4*(1/(self.frame_index+1))
-            
-        elif self.particle_type == 'dog_death' or  self.particle_type == 'fly_death' or  self.particle_type == 'walker_death':
-            self.rect.y -= 2*(1/(self.frame_index+1))
-            
-        elif self.particle_type == 'player_down_strike':
-            dx += -self.direction * 1
-            
-        elif self.particle_type == 'rain':
-            self.rect.y += 4
+        self.particle_list = []
         
-        elif self.particle_type == 'dust0':# or self.particle_type == 'player_atk1_trail':
-            self.rect.y -= 0.01
-            self.rect.x += random.randint(-1, 1)/2
-
-        self.rect.x += (dx - scrollx)
-        
-    def force_ini_position(self, scrollx):
-        self.rect.x -= scrollx
-        
-    def animate(self):
-        #adjust animation speed for different particle types here
-        
-        framerates = {
+        self.framerates = {
             'player_crit': 80, 
             'player_down_strike': 80, 
             'player_up_strike': 80, 
@@ -115,57 +51,137 @@ class particle_(pygame.sprite.Sprite):
             #'walker_death': 100,
             'player_atk1_trail':150
         }    
+            
+        #print(self.particle_img_dict)
         
-        if self.particle_type in framerates:
-            frame_update = framerates[self.particle_type]
+    def test(self):
+        print("hi")
+        
+    def add_particle(self, name, x, y, direction, scale, frame_sync, frame):
+        
+        base_name = name
+        if scale != 1:
+            #modify name if scale != 1
+            name = name + str(scale)
+            
+            #add new resized frames if not already in particle_img_dict
+            if name not in self.particle_img_dict:
+                temp_list = []
+                for img in self.particle_img_dict[base_name]:
+                    temp_list.append(pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale))))
+                self.particle_img_dict[name] = temp_list
+                
+        
+        #shift x,y if centered
+        if base_name in ('player_bullet_explosion', 'enemy_bullet_explosion', 'player_impact', 'player_mvmt', 'player_crit', 'bloom',
+                    'player_atk1_trail'
+                    ):#centered particles
+            x -= (self.particle_img_dict[base_name][0].get_width()//2)*scale
+            y -= (self.particle_img_dict[base_name][0].get_height()//2)*scale
+            
+        #set update_time
+        update_time = pygame.time.get_ticks()
+        
+        #set frame_update
+        if name in self.framerates:
+            frame_update = self.framerates[name]
         else:
             frame_update = 100
             
-        #still frame particles
-        if self.frame_sync:
-            self.frame_index = self.forced_frame
-            self.image = self.frame_list[self.frame_index]
-            if pygame.time.get_ticks() - self.update_time > frame_update:
-                self.update_time = pygame.time.get_ticks()
-                self.Active = False
-                self.kill()
-                
-        #animated particles
+        #set flip
+        if direction < 0:
+            flip = True
         else:
-            #setting the image
-            self.image = self.frame_list[self.frame_index]
+            flip = False
+            
+        #set img
+        frame_img = self.particle_img_dict[name][frame]
+        
+        self.particle_list.append([name,        #0
+                                   x,           #1
+                                   y,           #2
+                                   direction,   #3 
+                                   flip,        #4
+                                   scale,       #5
+                                   frame_sync,  #6 
+                                   frame,       #7
+                                   frame_img,   #8
+                                   update_time, #9
+                                   frame_update,#10
+                                   base_name    #11
+                                   ])
+    def empty_list(self):
+        for particle0 in self.particle_list:
+            particle0 *= 0
+        
+        self.particle_list *= 0
+        
+    def move(self, scrollx):
+        for particle0 in self.particle_list:
+            # if self.rect.x > 896 or self.rect.x < -96 or self.rect.y > 480 or self.rect.y < -32:
+            #     self.Active = False
+            #     self.kill()
+                
+            if particle0[11] == 'shooter_death':
+                particle0[2] -= 4*(1/(particle0[6]+1))
+                
+            elif particle0[11] in ('dog_death', 'fly_death', 'walker_death'):
+                particle0[2] -= (1/(particle0[6]+1))
+                
+            elif particle0[11] == 'player_down_strike':
+                particle0[1] += -particle0[3] * 1
+                
+            elif particle0[11] == 'rain':
+                particle0[2] += 4
+            
+            elif particle0[11] == 'dust0':# or self.particle_type == 'player_atk1_trail':
+                particle0[2] -= 1
+                particle0[1] += random.randint(-1, 1)/2
 
-            if pygame.time.get_ticks() - self.update_time > frame_update:
-                self.update_time = pygame.time.get_ticks()
-                self.frame_index += 1 
+            particle0[1] -= scrollx
+            
+    def force_ini_position(self, scrollx):
+        for particle0 in self.particle_list:
+            particle0[1] -= scrollx
+            
+           
+    def animate(self): 
+     #still frame particles, IMPORTANT: given frame index cannot exceed the particle frame count
+        for particle0 in self.particle_list:
+            if particle0[6]: #frame_synch enable
+                if pygame.time.get_ticks() - particle0[9] > particle0[10]:
+                    particle0[9] = pygame.time.get_ticks()
+                    self.particle_list.pop(self.particle_list.index(particle0))
+                    
+            #animated particles
+            else:
+                #setting the image
+                particle0[8] = self.particle_img_dict[particle0[0]][particle0[7]]
 
-            #END OF ANIMATION FRAMES    
-            if self.frame_index >= len(self.frame_list):
-                # if self.particle_type == 'dog_death' or self.particle_type == 'shooter_death':
-                #     self.m_player.play_sound(self.m_player.sfx[0])
-                self.frame_index = 0
+                if pygame.time.get_ticks() - particle0[9] > particle0[10]:
+                    particle0[9] = pygame.time.get_ticks()
+                    particle0[7] += 1
 
-                self.Active = False
-                self.kill()
-    
-    def draw(self, p_screen):
+                #END OF ANIMATION FRAMES    
+                if particle0[7] >= len(self.particle_img_dict[particle0[0]]):
+                    self.particle_list.pop(self.particle_list.index(particle0))
         
-        p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+    def draw(self, screen):
+        for particle0 in self.particle_list:
+            rect = pygame.rect.Rect(particle0[1], particle0[2], 1, 1)
+            screen.blit(pygame.transform.flip(particle0[8], particle0[4], False), rect)
         
-        
-        
-        
-class group_particle():
+          
+class group_particle2():
     def __init__(self):
         pass
     
-    def create_particles(self, loc, area, direction, data_):
+    def create_particles(self, loc, area, direction, data_): #data_ = scale, p_type, frame, density, sprite_group
 
         if data_[3] > 0:
             for i in range(data_[3]):
-                particle = particle_(random.randrange(loc[0], area[0]), random.randrange(loc[1], area[1]), direction, data_[0], data_[1], False, data_[2], False)
-                data_[4].add(particle)
+                data_[4].sprite.add_particle(data_[1], random.randrange(loc[0], area[0]), random.randrange(loc[1], area[1]), direction, data_[0], False, data_[2])
+                    
         elif data_[3] < 0:
             if pygame.time.get_ticks()%(-data_[3]) == 0:
-                particle = particle_(random.randrange(loc[0], area[0]), random.randrange(loc[1], area[1]), direction, data_[0], data_[1], False, data_[2], False)
-                data_[4].add(particle)
+                data_[4].sprite.add_particle(data_[1], random.randrange(loc[0], area[0]), random.randrange(loc[1], area[1]), direction, data_[0], False, data_[2])

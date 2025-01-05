@@ -1,7 +1,6 @@
 import pygame
 import os
 from bullet import bullet_ #type: ignore
-from particle import particle_ #type: ignore
 from music_player import music_player #type: ignore
 from ItemFile import inventory_handler
 from textfile_handler import textfile_formatter
@@ -109,6 +108,7 @@ class player(pygame.sprite.Sprite):
                            'die', 'atk1', 'atk1_2', 'roll', 'atk1_3', 'shoot',
                            'charging', 'atk1_2_particle', 'turn_around', 'use_item',
                            'atk1_4')
+        #print(os.listdir(f'sprites/player'))
         for animation in animation_types:
             temp_list = []
             frames = len(os.listdir(f'sprites/player/{animation}'))
@@ -211,12 +211,10 @@ class player(pygame.sprite.Sprite):
         
         if self.in_air != self.curr_state and not self.disp_flag and self.action != 1 and not self.in_cutscene and self.Alive:
             if not self.in_air:
-                particle = particle_(self.rect.centerx, self.rect.centery, -self.direction, self.scale, 'player_mvmt', True, 0, False)
-                the_sprite_group.particle_group.add(particle)
+                the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, -self.direction, self.scale, True, 0)
                 self.m_player.play_sound(self.m_player.sfx[2])
             else:
-                particle = particle_(self.rect.centerx, self.rect.centery, -self.direction, self.scale, 'player_mvmt', True, 1, False)
-                the_sprite_group.particle_group.add(particle)
+                the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, -self.direction, self.scale, True, 1)
             self.curr_state = self.in_air
             
     def particles_by_frame(self, particle_index, the_sprite_group, sound):
@@ -230,8 +228,7 @@ class player(pygame.sprite.Sprite):
             if self.sprint:
                 scale = self.scale * 1.5
                 y -= 16
-            particle = particle_(x, y, -self.direction, scale, 'player_mvmt', True, particle_index, False)
-            the_sprite_group.particle_group.add(particle)
+            the_sprite_group.particle_group.sprite.add_particle('player_mvmt', x - self.direction*self.width//2, y, -self.direction, scale, True, particle_index)
             self.m_player.play_sound(self.m_player.sfx[sound])
         self.last_frame = self.frame_index
         
@@ -305,14 +302,14 @@ class player(pygame.sprite.Sprite):
             self.atk_rect_scaled  = self.atk_rect
             if (pygame.time.get_ticks() - self.particle_update > 200) and self.frame_index  < 3:
                 self.particle_update = pygame.time.get_ticks()
-                particle = particle_(self.rect.centerx, self.rect.centery, -self.direction, self.scale, 'player_crit', True, self.frame_index, False)
-                the_sprite_group.particle_group.add(particle)
-                i = 0
+                the_sprite_group.particle_group.sprite.add_particle('player_crit', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, self.frame_index)
                 for i in range(5):
-                    particle2 = particle_(self.rect.centerx + random.randrange(-48,48), self.rect.centery + random.randrange(-48,48), -self.direction, 0.3*self.scale, 
-                                          'player_bullet_explosion', True, random.randrange(0,3), False)
-                    the_sprite_group.particle_group.add(particle2)
-                    i+= 1
+                    the_sprite_group.particle_group.sprite.add_particle('player_bullet_explosion', 
+                                                                        self.rect.centerx + random.randrange(-48,48), 
+                                                                        self.rect.centery + random.randrange(-48,48), 
+                                                                        -self.direction, 0.3*self.scale, 
+                                                                        True, random.randrange(0,3))
+
 
                 
     def atk1_grinding(self, rect, the_sprite_group):
@@ -326,8 +323,7 @@ class player(pygame.sprite.Sprite):
         if rect.colliderect(self.atk_rect_scaled) and self.frame_index == 1 and pygame.time.get_ticks() - self.update_time < 10:
             x_loc = (rect.centerx + self.atk_rect.centerx)//2 + disp
             y_loc = (rect.centery + self.atk_rect.centery)//2
-            particle = particle_(x_loc, y_loc, -self.direction, 0.9*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
-            the_sprite_group.particle_group_fg.add(particle)
+            the_sprite_group.particle_group.sprite.add_particle('player_bullet_explosion', x_loc, y_loc, -self.direction, 0.9*self.scale, False, random.randrange(0,3))
     
     def check_if_in_ss_range(self):
         return self.collision_rect.x >= 64 and self.collision_rect.right <= 576
@@ -390,9 +386,12 @@ class player(pygame.sprite.Sprite):
                 if obj.name == 'save_pt':
                     if self.hits_tanked > 0 and self.hits_tanked < self.hp:
                         self.hits_tanked -= 0.03
-                        particle = particle_(self.rect.centerx + random.randrange(-24,24), self.rect.centery + random.randrange(-24,24), -self.direction, 0.5*self.scale, 
-                                            'player_bullet_explosion', True, random.randrange(0,3), False)
-                        the_sprite_group.particle_group.add(particle)
+                        
+                        the_sprite_group.particle_group.sprite.add_particle('player_bullet_explosion', 
+                                                                            self.rect.centerx + random.randrange(-24,24), 
+                                                                            self.rect.centery + random.randrange(-24,24), 
+                                                                            -self.direction, 0.5*self.scale, 
+                                                                            True, random.randrange(0,3))
                     elif self.hits_tanked <= 0:
                         self.hits_tanked = 0
                     
@@ -1132,9 +1131,11 @@ class player(pygame.sprite.Sprite):
             
             if self.action == 15:
                 for i in range(5):
-                    particle = particle_(self.rect.centerx + random.randrange(-48,48), self.rect.centery + random.randrange(-24,24), -self.direction, 0.3*self.scale, 
-                                          'player_bullet_explosion', True, random.randrange(0,3), False)
-                    the_sprite_group.particle_group_fg.add(particle)
+                    the_sprite_group.particle_group.sprite.add_particle('player_bullet_explosion', 
+                                                                        self.rect.centerx + random.randrange(-48,48), 
+                                                                        self.rect.centery + random.randrange(-24,24), 
+                                                                        -self.direction, 0.3*self.scale, 
+                                                                        True, random.randrange(0,3))
                 self.m_player.play_sound(self.m_player.sfx[9])
                 self.using_item = False
                 self.speed = self.default_speed

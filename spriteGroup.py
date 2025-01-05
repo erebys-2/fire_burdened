@@ -5,9 +5,9 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 		self.enemy0_group = pygame.sprite.Group()
 		self.enemy_bullet_group = pygame.sprite.Group()
 		self.player_bullet_group = pygame.sprite.Group()
-		self.particle_group = pygame.sprite.Group()
-		self.particle_group_bg = pygame.sprite.Group()
-		self.particle_group_fg = pygame.sprite.Group()
+		self.particle_group = pygame.sprite.GroupSingle()
+		self.particle_group_bg = pygame.sprite.GroupSingle()
+		self.particle_group_fg = pygame.sprite.GroupSingle()
 		self.button_group = pygame.sprite.Group()
 		self.enemy_bullet_group2 = pygame.sprite.Group()
 		self.p_int_group = pygame.sprite.Group()
@@ -55,7 +55,10 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 
 	def purge_sprite_groups(self):
 		for group in self.sp_group_list:
-			group.empty()
+			if group not in (self.particle_group, self.particle_group_bg, self.particle_group_fg):
+				group.empty()
+			elif group in (self.particle_group, self.particle_group_bg, self.particle_group_fg):
+				group.sprite.empty_list()
    
 		self.textbox_output = ('', False, False, '', 0, 0, (False, ''))
   
@@ -101,13 +104,13 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 			item.enable(player_hitbox_rect, self.pause_game)#player has to send pick up confirmation
 	
 	def update_bg_sprite_group(self, screen, player_hitbox_rect, player_atk_rect_scaled):
-		for particle in self.particle_group_bg:
-			particle.draw(screen)
-			if not self.pause_game:
-				particle.animate()
-				particle.move(self.scroll_x)
-			if particle.Active == False:
-				self.particle_group_bg.remove(particle)
+		particle = self.particle_group_bg.sprite
+		particle.draw(screen)
+		if not self.pause_game:
+			particle.animate()
+			particle.move(self.scroll_x)
+		if particle.Active == False:
+			self.particle_group_bg.remove(particle)
 
 		for bg_sprite in self.bg_sprite_group:
 			bg_sprite.draw(screen)
@@ -149,13 +152,13 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 			if player_bullet.Active == False:
 				self.player_bullet_group.remove(player_bullet)
 
-		for particle in self.particle_group:
-			particle.draw(screen)
-			if not self.pause_game:
-				particle.animate()
-				particle.move(self.scroll_x)
-			if particle.Active == False:
-				self.particle_group.remove(particle)
+		particle = self.particle_group.sprite
+		particle.draw(screen)
+		if not self.pause_game:
+			particle.animate()
+			particle.move(self.scroll_x)
+		if particle.Active == False:
+			self.particle_group.remove(particle)
     
 
 	def update_groups_infront_player(self, screen, player_hitbox_rect, player_atk_rect_scaled, player_action, world_solids):
@@ -170,11 +173,11 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 			if not self.pause_game:
 				p_int2.enable(player_hitbox_rect, player_atk_rect_scaled, world_solids, self.scroll_x, player_action, self.sp_group_list)
 	
-		for particle in self.particle_group_fg:
-			particle.draw(screen)
-			if not self.pause_game:
-				particle.animate()
-				particle.move(self.scroll_x)
-			if particle.Active == False:
-				self.particle_group_fg.remove(particle)
+		particle = self.particle_group_fg.sprite
+		particle.draw(screen)
+		if not self.pause_game:
+			particle.animate()
+			particle.move(self.scroll_x)
+		if particle.Active == False:
+			self.particle_group_fg.remove(particle)
 

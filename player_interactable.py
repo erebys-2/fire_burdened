@@ -1,7 +1,6 @@
 import pygame
 import os
 from bullet import bullet_ #type: ignore
-from particle import particle_ #type: ignore
 from music_player import music_player #type: ignore
 import random
 from ItemFile import Item
@@ -171,21 +170,20 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                 if self.check_if_onscreen():
                     if player_rect.colliderect(self.atk_rect):
                         for i in range(random.randrange(2,4)):
-                            particle = particle_(player_rect.centerx + random.randint(-self.width//2,self.width//2), 
-                                                 player_rect.centery + random.randint(-self.width//2,self.width//2), 
-                                                 -self.direction, random.randint(1,2), 'player_bullet_explosion', True, random.randint(0,2), False)
-                            sp_group_list[5].add(particle)
-                  
-                    particle = particle_(self.rect.centerx, 
+                            sp_group_list[5].sprite.add_particle('player_bullet_explosion', 
+                                                                player_rect.centerx + random.randint(-self.width//2,self.width//2), 
+                                                                player_rect.centery + random.randint(-self.width//2,self.width//2), 
+                                                                -self.direction, random.randint(1,2), True, random.randint(0,2))
+                                        
+                    sp_group_list[5].sprite.add_particle('bloom', self.rect.centerx, 
                                             self.rect.centery + random.randint(-self.width//2,self.width//2), 
-                                            -self.direction, 1, 'bloom', True, random.randint(0,2), False)
-                    sp_group_list[5].add(particle)
+                                            -self.direction, 1, True, random.randint(0,2))
 
                     if pygame.time.get_ticks()%10 == 0:
-                        particle2 = particle_(self.rect.centerx + random.randint(-self.width//2,self.width//2), 
-                                                self.rect.centery + random.randint(-self.width//2,self.width//2), 
-                                                -self.direction, 2, 'player_bullet_explosion', True, random.randint(0,2), False)
-                        sp_group_list[5].add(particle2)
+                        sp_group_list[5].sprite.add_particle('player_bullet_explosion', 
+                                                             self.rect.centerx + random.randint(-self.width//2,self.width//2), 
+                                                            self.rect.centery + random.randint(-self.width//2,self.width//2), 
+                                                            -self.direction, 2, True, random.randint(0,2))
 
                     self.rect.y -= 30
                     if self.rect.bottom < -self.rect.height//4:
@@ -204,8 +202,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                         self.action = 1
                         self.rect.height = 0
                         for i in range(random.randrange(4,8)):
-                            particle = particle_(self.rect.x + random.randint(-8,8), self.rect.y + random.randint(-16,8), -self.direction, self.scale, 'grass_cut', True, random.randint(0,2), False)
-                            sp_group_list[5].add(particle)
+                            sp_group_list[5].sprite.add_particle('grass_cut', self.rect.x + random.randint(-8,8), self.rect.y + random.randint(-16,8), -self.direction, self.scale, True, random.randint(0,2))
                         if random.randint(0,15) == 0:
                             sp_group_list[12].add(Item('Mild Herb', self.rect.centerx + 2*random.randint(-5,5), self.rect.centery + 2*random.randint(-5,5), 1))
                     self.animate()
@@ -227,12 +224,10 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                             self.m_player.play_sound(self.m_player.sfx[2])
                             
                             
-                            particle2 = particle_(self.rect.centerx + random.randint(-12,12), self.rect.centery + random.randint(-12,12), -self.direction, 1.2*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
-                            sp_group_list[5].add(particle2)
+                            sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx + random.randint(-12,12), self.rect.centery + random.randint(-12,12), -self.direction, 1.2*self.scale, False, random.randrange(0,3))
                             
-                            for i in range(2):
-                                particle = particle_(self.rect.x + random.randint(-8,8), self.rect.y + random.randint(-8,8), -self.direction, self.scale, 'stone_breaking', True, random.randint(0,2), False)
-                                sp_group_list[5].add(particle)
+                            for i in range(3):
+                                sp_group_list[5].sprite.add_particle('stone_breaking', self.rect.x + random.randint(-16,16), self.rect.y + random.randint(-16,16), -self.direction, self.scale, True, random.randint(0,2))
                         
                         
                     else:
@@ -272,8 +267,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                 if self.trigger_once:
                     if self.rect.x < 640 + 128 and self.rect.right >= 0 - 128:
                         self.m_player.play_sound(self.m_player.sfx[0])
-                        particle = particle_(self.rect.x - (24*self.scale), self.rect.centery - (48*self.scale), -self.direction, self.scale*1.5, 'sparks', True, random.randint(0,2), False)
-                        sp_group_list[5].add(particle)
+                        sp_group_list[5].sprite.add_particle('sparks', self.rect.x - (24*self.scale), self.rect.centery - (48*self.scale), -self.direction, self.scale*1.5, True, random.randint(0,2))
                         #WE NEED SCREENSHAKE AAAAAA
                         self.do_screenshake = True
                     self.trigger_once = False

@@ -242,12 +242,13 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             
             if self.button_list[2].draw(screen):
                 self.m_player.play_sound(self.m_player.sfx[1])
-                if self.disp_flags == pygame.DOUBLEBUF|pygame.SHOWN: #windowed mode
-                    self.disp_flags = pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN #full screen mode
-                    screen = pygame.display.set_mode(self.std_size, self.disp_flags)
-                elif self.disp_flags == pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN:
-                    self.disp_flags = pygame.DOUBLEBUF|pygame.SHOWN
-                    screen = pygame.display.set_mode(self.std_size, self.disp_flags)
+                # if self.disp_flags == pygame.DOUBLEBUF|pygame.SHOWN: #windowed mode
+                #     self.disp_flags = pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN #full screen mode
+                #     screen = pygame.display.set_mode(self.std_size, self.disp_flags)
+                # elif self.disp_flags == pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN:
+                #     self.disp_flags = pygame.DOUBLEBUF|pygame.SHOWN
+                #     screen = pygame.display.set_mode(self.std_size, self.disp_flags)
+                pygame.display.toggle_fullscreen()
             self.button_list[2].show_text(screen, self.fontlist[1], ('','Screen Toggle')) 
                 
             if self.button_list[3].draw(screen):

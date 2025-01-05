@@ -2,7 +2,6 @@ import pygame
 import os
 import csv
 # from bullet import bullet_ #type: ignore
-from particle import particle_ #type: ignore
 from music_player import music_player #type: ignore
 import random
 from textManager import text_manager

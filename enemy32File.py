@@ -3,7 +3,6 @@ import os
 #from game_window import sprite_group
 from bullet import bullet_ #type: ignore
 #print('directory: ' + os.getcwd())
-from particle import particle_ #type: ignore
 from music_player import music_player #type: ignore
 from ItemFile import Item #type: ignore
 import random
@@ -234,8 +233,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 
                 if self.speed_boost != 1:
                     self.speed_boost = 1
-                    particle = particle_(self.rect.centerx, self.rect.centery, -self.direction, self.scale, 'player_mvmt', True, 1, False)
-                    sp_group_list[3].add(particle)
+                    sp_group_list[3].sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, -self.direction, self.scale, True, 1)
                     self.in_air = True
                     self.vel_y = -8
                     
@@ -304,8 +302,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     #     #self.m_player.play_sound(self.m_player.sfx[3])
                     #     sp_group_list[7].add(enemy_bullet)
                     #     self.hit_ground = False
-                    particle = particle_(self.rect.centerx, self.rect.centery, -self.direction, self.scale, 'player_mvmt', True, 1, False)
-                    sp_group_list[3].add(particle)
+                    sp_group_list[3].sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, -self.direction, self.scale, True, 1)
                     self.vel_y = -8.5
                     self.in_air = True
                     
@@ -430,15 +427,14 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             ):
             #pygame.time.wait(8)
             #the average point in a collision between rects is literally just the average of the coords opposite respective corners of rects
-            #x_avg = (3*self.rect.centerx + player_atk_rect.centerx)/4
+            x_avg = (self.rect.centerx + player_atk_rect.centerx)/2
+            dx = player_direction * self.recoil
             y_avg = (self.rect.centery + player_atk_rect.centery)/2
             
-            particle = particle_(self.rect.centerx, y_avg, -self.direction, self.scale*1.05, 'player_impact', True, self.rando_frame, False)
-            sp_group_list[5].add(particle)
+            sp_group_list[5].sprite.add_particle('player_impact', x_avg + dx/4, y_avg, -self.direction, self.scale*1.05, True, self.rando_frame)
 
             for i in range(3):
-                particle2 = particle_(self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.3*self.scale, 'player_bullet_explosion', False, random.randrange(0,3), False)
-                sp_group_list[5].add(particle2)
+                sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.3*self.scale, False, random.randrange(0,3))
 
             self.m_player.play_sound(self.m_player.sfx[1])
             
@@ -452,7 +448,6 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             else:
                 dy += self.vel_y * 2
 
-            dx = player_direction * self.recoil
             self.direction = player_direction
             
             self.do_screenshake = True
@@ -740,18 +735,9 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     self.jump_counter = 0
     
     def explode(self, sp_group_list):
-        if self.enemy_type == 'shooter':   
-            particle = particle_(self.rect.x - self.half_width, self.rect.y - self.half_height, self.direction, self.scale, 'shooter_death', False, 0, False)
-            sp_group_list[3].add(particle)
-        elif self.enemy_type == 'dog':
-            particle = particle_(self.rect.x - self.half_width, self.rect.y - self.half_height, self.direction, self.scale, 'dog_death', False, 0, False)
-            sp_group_list[3].add(particle)
-        elif self.enemy_type == 'fly':
-            particle = particle_(self.rect.x - self.half_width, self.rect.y - self.half_height, self.direction, self.scale, 'fly_death', False, 0, False)
-            sp_group_list[3].add(particle)
-        elif self.enemy_type == 'walker':
-            particle = particle_(self.rect.x - self.half_width, self.rect.y - self.half_height, self.direction, self.scale, 'walker_death', False, 0, False)
-            sp_group_list[3].add(particle)
+        particle_name = self.enemy_type + '_death'
+        sp_group_list[3].sprite.add_particle(particle_name, self.rect.x - self.half_width, self.rect.y - self.half_height, self.direction, self.scale, False, 0)
+        
 
     def draw(self, p_screen):
         #self.animate()

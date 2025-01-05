@@ -18,7 +18,7 @@ from ui_manager import ui_manager
 from spriteGroup import sprite_group 
 from ItemFile import inventory_UI
 from playerChoiceHandler import player_choice_handler
-from particle import particle_, group_particle
+from particle import particle_2, group_particle2
 import gc
 import random
 from profilehooks import profile
@@ -35,12 +35,12 @@ def main():
 	standard_size = (SCREEN_WIDTH, SCREEN_HEIGHT)
 	flags = pygame.DOUBLEBUF|pygame.SHOWN #windowed mode
 	#flags = pygame.DOUBLEBUF|pygame.FULLSCREEN #full screen mode
-	screen = pygame.display.set_mode(standard_size, flags)
+	screen = pygame.display.set_mode(standard_size, flags, vsync=0)
 
 	icon = pygame.image.load('icon.png')
 	pygame.display.set_icon(icon)
 
-	#pygame.display.set_caption('Fire Burdened 0.7')
+	pygame.display.set_caption(' ')
 	
  
 	#controller set up..?
@@ -164,7 +164,7 @@ def main():
 			for i in range(SCREEN_HEIGHT//32):
 				pygame.draw.rect(screen, [bg_color[0]+ i*rgb[0], bg_color[1]+i*rgb[1], bg_color[2] + i*rgb[2]], ((0,i*32), (SCREEN_WIDTH,(i+1)*32)))
 		else:
-			screen.fill(bg_color)
+			screen.fill((bg_color))
 	
 	
 
@@ -218,7 +218,7 @@ def main():
 	m_player = music_player(m_player_sfx_list_main, vol_lvl)
 
 	#particle group handler
-	group_particle_handler = group_particle()
+	group_particle_handler = group_particle2()
 
 	#player choice handler
 	p_choice_handler0 = player_choice_handler([font, font_larger, font_massive], m_player_sfx_list_main, vol_lvl)
@@ -244,6 +244,28 @@ def main():
 	debugger_sprint = False
 
 	#load initial level-------------------------------------------------------------------------------------------------
+	
+	
+	#load img dict for particles
+	particle_path = 'sprites/particle'
+	particle_img_dict = {}
+	for subdir in os.listdir(particle_path):
+		temp_list = []
+		for img in os.listdir(f'{particle_path}/{subdir}'):
+			loaded_img = pygame.image.load(f'{particle_path}/{subdir}/{img}').convert_alpha()
+			temp_list.append(loaded_img)
+		particle_img_dict[subdir] = temp_list
+	
+	#add particle_2 objects into particle sprite groups
+	particle_2_ = particle_2(particle_img_dict)
+	the_sprite_group.particle_group.add(particle_2_)
+ 
+	particle_2_fg = particle_2(particle_img_dict)
+	the_sprite_group.particle_group_fg.add(particle_2_fg)
+ 
+	particle_2_bg = particle_2(particle_img_dict)
+	the_sprite_group.particle_group_bg.add(particle_2_bg)
+	
 	the_sprite_group.purge_sprite_groups()#does as the name suggests at the start of each load of the game
 
 	# load level data
@@ -278,8 +300,6 @@ def main():
 	selected_slot = -1
  
 	joysticks = {}
- 
-	
 
 	while run:
 		clock.tick(FPS)
@@ -826,7 +846,7 @@ def main():
 
 							if not player0.in_air: #player is on ground
 								player0.squat = True
-							elif player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:
+							elif player0.in_air and pygame.time.get_ticks() - 20 > hold_jump_update:
 								hold_jump_update = pygame.time.get_ticks()
 								player0.squat = True 
 
@@ -1248,7 +1268,7 @@ def main():
 
 
 
-		pygame.display.update()
+		pygame.display.update(pygame.rect.Rect(0, world_tile0_coord[1], SCREEN_WIDTH, SCREEN_HEIGHT-2*world_tile0_coord[1]))
 		pygame.display.set_caption(f"Fire Burdened 0.71 @ {clock.get_fps():.1f} FPS")
 
 	pygame.quit()
