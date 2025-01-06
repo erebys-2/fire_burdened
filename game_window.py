@@ -4,6 +4,7 @@ import os
 os.environ['SDL_VIDEO_CENTERED'] = '1' 
 pygame.init()
 
+
 #print('directory: ' + os.getcwd())
 import csv
 from playerFile import player 
@@ -96,7 +97,7 @@ def main():
 	font_massive = pygame.font.SysFont('SimSun', 48)
 
 	#camera instance
-	camera_offset = 24
+	camera_offset = int(0.75 * tile_size)
 	camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, camera_offset)
  
 	#instantiate sprite groups=========
@@ -245,7 +246,6 @@ def main():
 
 	#load initial level-------------------------------------------------------------------------------------------------
 	
-	
 	#load img dict for particles
 	particle_path = 'sprites/particle'
 	particle_img_dict = {}
@@ -369,15 +369,16 @@ def main():
 		elif not camera.set_ini_pos:
 			level_transitioning = False
 		
-		
+
 		#---------------------------------------------------------drawing level and sprites------------------------------------------------------------------
 		#---------------------------------------------------------handling movement and collisions and AI----------------------------------------------------
 		draw_bg(screen, gradient_dict, level_dict[level][1], level_dict[level][0])#this just draws the color
 		if camera.is_visible:
 			camera.draw(screen)#for camera debugging
 		if world.x_scroll_en and not pause_game:
+			
 			camera.auto_correct(player0.rect, player0.direction, player0.x_coord, 
-                       [tile for tile in world.coords if tile[1][0] > -32 and tile[1][0] < 640], 
+                       [tile for tile in world.coords if tile[1][0] > - tile_size and tile[1][0] < SCREEN_WIDTH], 
                        world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
 		world_tile0_coord = world.draw(screen, scroll_x, scroll_y, player0.hitting_wall)#this draws the world and scrolls it 
   
@@ -459,9 +460,7 @@ def main():
 			#if not level_transitioning: #surpress sprite logic while level transitioning
 				
 			the_sprite_group.update_bg_sprite_group(screen, player0.hitbox_rect, player0.atk_rect_scaled)
-   
-			screen.blit(world.world_map_non_parallax_bg, (world.coords[0][1][0], world.coords[0][1][1]))
-			world.draw_filter_layer(screen, world.bg3)
+
 			screen.blit(world.world_map_non_parallax, (world.coords[0][1][0], world.coords[0][1][1]))
 			#player, world
 			the_sprite_group.update_text_prompt_group(screen, dialogue_enable, next_dialogue, player0, world, selected_slot)#player and world
@@ -471,7 +470,7 @@ def main():
 			the_sprite_group.update_item_group(screen, player0.hitbox_rect)
 			player0.draw(screen)
     
-			world.draw_foreground(screen)
+			screen.blit(world.world_map_non_parallax_fg, (world.coords[0][1][0], world.coords[0][1][1]))
 			the_sprite_group.update_groups_infront_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, world.solids)
 		
 			status_bars.draw(screen, player0.get_status_bars(), font)
@@ -846,10 +845,14 @@ def main():
 
 							if not player0.in_air: #player is on ground
 								player0.squat = True
-							elif player0.in_air and pygame.time.get_ticks() - 20 > hold_jump_update:
+							elif player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:# and not player0.double_jump_en:
 								hold_jump_update = pygame.time.get_ticks()
 								player0.squat = True 
-
+        
+							# if player0.in_air and player0.double_jump_en: #and some other signal
+							# 	player0.double_jump = True
+							# 	print("double jump here " + str(pygame.time.get_ticks()))
+       
 							if player0.rolling and player0.in_air == False:
 								player0.roll_count = player0.roll_limit
 								player0.squat = True
@@ -1266,9 +1269,15 @@ def main():
 					player0.speed = normal_speed
 					player0.sprint = False
 
-
-
-		pygame.display.update(pygame.rect.Rect(0, world_tile0_coord[1], SCREEN_WIDTH, SCREEN_HEIGHT-2*world_tile0_coord[1]))
+		#code to prevent drawing empty space beyond the level
+		screen_l_edge = 0
+		screen_r_edge = 0
+		if world_tile0_coord[0] > 0:
+			screen_l_edge = world_tile0_coord[0]
+		elif world_tile0_coord[0] < -world.world_limit[0] + (SCREEN_WIDTH - tile_size):
+			screen_r_edge = SCREEN_WIDTH - (world_tile0_coord[0] + world.world_limit[0])
+  
+		pygame.display.update(pygame.rect.Rect(screen_l_edge, world_tile0_coord[1], SCREEN_WIDTH - screen_r_edge, SCREEN_HEIGHT-2*world_tile0_coord[1]))
 		pygame.display.set_caption(f"Fire Burdened 0.71 @ {clock.get_fps():.1f} FPS")
 
 	pygame.quit()

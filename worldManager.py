@@ -17,9 +17,11 @@ class World():
     def __init__(self, screen_w, screen_h):
         self.coords = []
         self.fg = []
+        self.fg_1 = []
         self.solids = []
         self.bg1 = []
         self.bg2 = []
+        self.bg2_1 = []
         self.bg3 = []
         self.bg4 = []
         self.bg5 = []
@@ -28,9 +30,11 @@ class World():
         self.level_data_str_tuple = ( #names of the corresponding csv files
             'coord_data',
             'fg_data',
+            'fg_1_data',
             'data',
             'bg1_data',
             'bg2_data',
+            'bg2_1_data',
             'bg3_data',
             'bg4_data',
             'bg5_data',
@@ -40,9 +44,11 @@ class World():
         self.detailed_lvl_data_list = [
             self.coords,
             self.fg,
+            self.fg_1,
             self.solids,
             self.bg1,
             self.bg2,
+            self.bg2_1,
             self.bg3,
             self.bg4,
             self.bg5,
@@ -79,6 +85,7 @@ class World():
         self.sprite_group_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'sprite_group_tiles_dict.txt')), 'list')
         self.static_bg_oversized_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'static_bg_oversized_tiles_dict.txt')), 'int')
         self.special_hitbox_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'special_hitbox_tiles_dict.txt')), 'none')
+        self.slightly_oversized_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'slightly_oversized_tiles_dict.txt')), 'float')
         
         self.plot_index_dict = {}
         self.npc_current_dialogue_list = []
@@ -104,9 +111,9 @@ class World():
         self.world_map_non_parallax.fill(pygame.Color(0,0,0,0))
         self.world_map_non_parallax.convert_alpha()
         
-        self.world_map_non_parallax_bg = pygame.Surface((32,32), pygame.SRCALPHA)
-        self.world_map_non_parallax_bg.fill(pygame.Color(0,0,0,0))
-        self.world_map_non_parallax_bg.convert_alpha()
+        self.world_map_non_parallax_fg = pygame.Surface((32,32), pygame.SRCALPHA)
+        self.world_map_non_parallax_fg.fill(pygame.Color(0,0,0,0))
+        self.world_map_non_parallax_fg.convert_alpha()
         
         self.sp_ini = sprite_instantiator()
         
@@ -225,7 +232,7 @@ class World():
         self.transition_index = 0
         
         #processing interactable layer
-        for y, row in enumerate(raw_lvl_data_list[2]):
+        for y, row in enumerate(raw_lvl_data_list[3]):
             for x, tile in enumerate(row):
                 if tile >= 0:
                     if tile in self.sprite_group_tiles_dict:
@@ -244,19 +251,28 @@ class World():
                         
                         self.solids.append(tile_data)
         #load bg
-        for i in range(len(self.detailed_lvl_data_list) -3):
-            self.process_bg(raw_lvl_data_list[i+3], self.detailed_lvl_data_list[i+3], the_sprite_group, i+3)
-        #load fg
+        for i in range(4,len(self.detailed_lvl_data_list)):
+            self.process_bg(raw_lvl_data_list[i], self.detailed_lvl_data_list[i], the_sprite_group, i)
+            
+        #process filter layer
+        if self.bg3 != []:
+            self.bg3 = self.post_process_filter_layer(self.bg3, level_data[1]*32)
+                
+        #load fg and fg_1
         self.process_bg(raw_lvl_data_list[1], self.detailed_lvl_data_list[1], the_sprite_group, 1)
+        self.process_bg(raw_lvl_data_list[2], self.detailed_lvl_data_list[2], the_sprite_group, 1)
         
+        #create maps
+        layer_list = [self.fg_1, self.solids, self.bg1, self.bg3, self.bg2_1, self.bg2]
+        self.world_map_non_parallax = self.create_map(level_data[0:2], layer_list).convert_alpha()
         
-        self.world_map_non_parallax = self.create_map(level_data[0:2], self.detailed_lvl_data_list[2:4]).convert_alpha()
-        self.world_map_non_parallax_bg = self.create_map(level_data[0:2], self.detailed_lvl_data_list[4:5]).convert_alpha()
-        
-        
+        layer_list2 = [self.fg]
+        self.world_map_non_parallax_fg = self.create_map(level_data[0:2], layer_list2).convert_alpha() 
+
+        #add another death counter
         if level not in self.death_counters_dict:
             self.death_counters_dict[level] = 0
-        #print(self.death_counters_dict)
+
         
     def process_coords_hslice(self, data, screenW, screenH, rtrn_list):
         x_coord = 0
@@ -305,12 +321,28 @@ class World():
             
         self.y_scroll_en = False
         
+    def post_process_filter_layer(self, filter_layer, level_size_pixels): #for filter layer that contains one very large tile that gets repeated across the level
+        filter_width = filter_layer[0][1].width
+        filter_height = filter_layer[0][1].height
+        temp_list = []
+        img = filter_layer[0][0]
+        tile = filter_layer[0][2]
+        
+        x = 0
+        while (x-1)*filter_width < level_size_pixels:
+            img_rect = pygame.rect.Rect(x*filter_width, 0, filter_width, filter_height)
+            tile_data = (img, img_rect, tile)
+            temp_list.append(tile_data)
+            x+= 1
+        
+        return temp_list
         
     def process_bg(self, data, rtrn_list, the_sprite_group, index_):   
         for y, row in enumerate(data):
             for x, tile in enumerate(row):
                 if tile >= 0:
-                    
+                    scale = 1
+                    disp = 0
                     if tile in self.sprite_group_tiles_dict: #avoid key errors
                         self.sp_ini.instantiate_sprites_from_tiles(tile, x, y, the_sprite_group, 0, 0, [], self)
 
@@ -319,10 +351,18 @@ class World():
                             img = self.tileList[1][self.static_bg_oversized_tiles_dict[tile]]
                         else:
                             img = self.tileList[0][tile]
+                            
+                        if tile in self.slightly_oversized_tiles_dict:
+                            scale = self.slightly_oversized_tiles_dict[tile]
+                            img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale )))
+                    
+                    if scale != 1:
+                        disp = int((scale - 1)*32/2)
                     
                     img_rect = img.get_rect()
-                    img_rect.x = x * 32
-                    img_rect.y = y * 32
+                    img_rect.x = x * 32 - disp
+                    img_rect.y = y * 32 - disp
+
                     tile_data = (img, img_rect, tile)
                     
 
@@ -330,14 +370,14 @@ class World():
                     if tile != 36 and tile != 39 and tile != 31:
                         rtrn_list.append(tile_data)
 
-                        
-                                       
+                                 
     def draw_bg_layers(self, screen, scroll_X, scroll_Y, data, player_hitting_wall):
         #currently only handles x scrolling
         #scroll_amnt = scroll_X
         #logic for looping bg, maximum sprite size is 480x480
         for tile in data:
-            if (data in self.detailed_lvl_data_list[6:9]):#parallax layers
+            if (data in self.detailed_lvl_data_list[len(self.detailed_lvl_data_list)-3:len(self.detailed_lvl_data_list)]
+                ):#parallax layers will always be last 3
                 if tile[1][0] > tile[1].width:
                     tile[1][0] -= (2 * tile[1].width)
                 elif tile[1][0] < -tile[1].width:
@@ -357,12 +397,6 @@ class World():
                 if tile[1].x <= self.screen_w and tile[1].x > -self.screen_w//2 and data != self.fg:
                     screen.blit(tile[0], tile[1]) # (image, position)
                     
-               
-
-                
-    def draw_filter_layer(self, screen, data):#filter layer doesn't scroll, for efficiency it should be 640x480
-        for tile in data:
-            screen.blit(tile[0], tile[1])
         
     def update_tiles(self, tile, screen, scroll_X, scroll_Y):
         tile[1][0] -= scroll_X

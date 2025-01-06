@@ -1,26 +1,13 @@
 import pygame
 import os
 import random
-#from music_player import music_player #type: ignore
-'''
-x, y: location, floats
-direction: for directional particles, int
-scale: size of particle, int
-type: type of particle, string
-frame_sync: whether or not the particle's animation is synchronized with another animation, bool
-frame: for frame sync, int
 
-The particle object does not move, only scrolls w/ the screen or w/ its obj
-
-Particles are created by other objects, like the player
-'''
 class particle_2(pygame.sprite.Sprite):
     def __init__(self, particle_img_dict):
         #load every frame for every particle into lists of a dict
         pygame.sprite.Sprite.__init__(self)
         self.Active = True
-        self.is_permanent = True
-        
+ 
         if particle_img_dict == None:
             particle_path = 'sprites/particle'
             self.particle_img_dict = {}
@@ -42,20 +29,14 @@ class particle_2(pygame.sprite.Sprite):
             'player_bullet_explosion': 60, 
             'enemy_bullet_explosion': 60,
             'shooter_death': 80,
-            #'dog_death': 100,
-            #'fly_death': 100,
             'player_mvmt': 75,
             'player_impact': 60,
             'sparks': 40,
             'grass_cut': 90,
-            #'walker_death': 100,
             'player_atk1_trail':150
         }    
             
         #print(self.particle_img_dict)
-        
-    def test(self):
-        print("hi")
         
     def add_particle(self, name, x, y, direction, scale, frame_sync, frame):
         

@@ -53,7 +53,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         self.idle_bypass = False
         
         self.enemy_type = type
-        self.animation_types = []
+        animation_types = []
         self.frame_list = []
         self.frame_index = 0
         self.update_time = pygame.time.get_ticks()
@@ -66,26 +66,26 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
 
         #fill animation frames
         if type == 'dog':
-            self.animation_types = ['idle', 'move', 'hurt', 'die']
+            animation_types = ['idle', 'move', 'hurt', 'die']
             self.hp = 6
             self.recoil = 58
             self.recoil_slow = 2
             sfx_list = ['bassdrop2.wav', 'hit.wav', 'dog_hurt.wav', 'woof.wav', 'step2soft.wav']
         elif type == 'shooter':   
-            self.animation_types = ['idle', 'move', 'hurt', 'die', 'shoot', 'jump'] 
+            animation_types = ['idle', 'move', 'hurt', 'die', 'shoot', 'jump'] 
             self.hp = 10
             self.recoil = 50
             self.recoil_slow = 2
             sfx_list = ['bassdrop2.wav', 'hit.wav', 'roblox2.wav', 'shoot.wav', 'step2soft.wav']
             #, '', 'bite.wav', 'bee.wav'
         elif type == 'fly':
-            self.animation_types = ['idle', 'move', 'hurt', 'die']
+            animation_types = ['idle', 'move', 'hurt', 'die']
             self.hp = 4
             self.recoil = 43
             self.recoil_slow = 3
             sfx_list = ['bassdrop2.wav', 'hit.wav', 'bee_hurt.wav', 'bee.wav', 'step2soft.wav']
         elif type == 'walker':
-            self.animation_types = ['idle', 'move', 'hurt']
+            animation_types = ['idle', 'move', 'hurt']
             self.action = 1
             self.hp = 6
             self.recoil = 54
@@ -95,15 +95,21 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         self.m_player = music_player(sfx_list, ini_vol)
         self.ini_vol = ini_vol
 
-        for animation in self.animation_types:
+        for animation in animation_types:
             temp_list = []
             frames = len(os.listdir(f'sprites/enemies/{self.enemy_type}/{animation}'))
 
             for i in range(frames):
                 img = pygame.image.load(f'sprites/enemies/{self.enemy_type}/{animation}/{i}.png').convert_alpha()
-                img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
+                
+                if animation == 'hurt' and i < 2:
+                    img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * 0.9 * scale)))
+                else:
+                    img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
+                
                 temp_list.append(img)
             self.frame_list.append(temp_list)
+
 
         self.image = self.frame_list[self.action][self.frame_index]
         self.mask = pygame.mask.from_surface(self.image)
@@ -311,7 +317,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 #print(self.action)
                 if self.inundated == False: #cannot move towards player when inundated
                     #move if the player gets too close
-                    chase_range = 2.4
+                    chase_range = 3
                 
                     if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x <= self.rect.x:
                         dx = -self.speed

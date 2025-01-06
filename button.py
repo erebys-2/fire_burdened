@@ -26,6 +26,7 @@ class Button():
   
 		self.count_down = 0
 		self.img_highlight_en = True
+		self.force_body_highlight = False
 		
 	def show_text(self, screen, font, text):
 		# self.text_manager0.disp_text_box(screen, font, text, (-1,-1,-1), (0,0,0), 
@@ -66,6 +67,9 @@ class Button():
 				
 			if self.img_highlight_en and self.count_down == 0:
 				img = self.image3
+		elif self.force_body_highlight:
+			img = self.image3
+			#self.force_body_highlight = False
 		else:
 			self.highlight = False
 

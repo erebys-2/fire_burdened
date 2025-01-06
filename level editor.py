@@ -18,8 +18,8 @@ level_sizes_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path 
 
 #should be user entered for later
 print('\nstandard level is 15 rows, 200 cols ')
-print('layer 1 is the game layer, layer 2-3 is detailed BG')
-print('layer 0 is FG. layer 4 is for gradient filter. layers 5+ is scrolling BG')
+# print('layer 1 is the game layer, layer 2-3 is detailed BG')
+# print('layer 0 is FG. layer 4 is for gradient filter. layers 5+ is scrolling BG')
 
 #level is selected
 print('level input will either be loaded or a new level creation will be prompted')
@@ -68,7 +68,20 @@ FPS = 60
 
 #set bg rect
 canvas_rect = pygame.Rect((0,0), (SCREEN_WIDTH,480))
-layer = 1
+layer = 2
+layer_desc_dict = {
+    0:'true foreground',
+    1:'foreground',
+    2:'game layer',
+    3:'game layer filler',
+    4:'filter',
+    5:'detailed bg1',
+    6:'detailed bg2',
+    7:'parallax fast',
+    8:'parallax med',
+    9:'parallax slow'
+}
+
 #level = 0
 t_set_index = 0
 tile_index = 0
@@ -126,25 +139,29 @@ def empty_list_gen(data):
         row = [-1] * MAX_COLS
         data.append(row)
 
-world_data = []#layer 1
+world_data = []#interactable
 coord_data = []#blank, cannot edit
 #bg1_data = world_data.copy() #bruh this shit is wack
 
-fg_data = []#layer 0
-bg1_data = []#layer 2
-bg2_data = []#layer 3
-bg3_data = []#layer 4, gradient
-bg4_data = []#layer 5, scrolling 
-bg5_data = []#layer 6, scrolling
-bg6_data = []#layer 7, scrolling 
+fg_data = []#
+fg_1_data = []
+bg1_data = []#
+bg2_data = []#filtered bg
+bg2_1_data = []
+filter_data = []#filter
+bg4_data = []#scrolling 
+bg5_data = []#scrolling
+bg6_data = []#scrolling 
 
 layer_list = [
     world_data,
     coord_data,
     fg_data,
+    fg_1_data,
     bg1_data,
     bg2_data,
-    bg3_data,
+    bg2_1_data,
+    filter_data,
     bg4_data,
     bg5_data,
     bg6_data
@@ -295,11 +312,13 @@ if load_level_flag:
     read_level_data(level, coord_data, 'coord_data')
     read_level_data(level, bg1_data, 'bg1_data')
     read_level_data(level, bg2_data, 'bg2_data')
-    read_level_data(level, bg3_data, 'bg3_data')
+    read_level_data(level, bg2_1_data, 'bg2_1_data')
+    read_level_data(level, filter_data, 'bg3_data')
     read_level_data(level, bg4_data, 'bg4_data')
     read_level_data(level, bg5_data, 'bg5_data')
     read_level_data(level, bg6_data, 'bg6_data')
     read_level_data(level, fg_data, 'fg_data')
+    read_level_data(level, fg_1_data, 'fg_1_data')
     
     print('~~loaded!~~')   
     load_level_flag = False
@@ -321,13 +340,15 @@ while run:
     else:
         overwrite = False     
         
-    draw_bg(bg6_data, layer, 7)
-    draw_bg(bg5_data, layer, 6)
-    draw_bg(bg4_data, layer, 5)
-    draw_bg(bg3_data, layer, 4)
-    draw_bg(bg2_data, layer, 3)
-    draw_bg(bg1_data, layer, 2)
-    draw_world(static_bg_oversized_tiles_dict, sprite_group_tiles_dict, layer, 1)
+    draw_bg(bg6_data, layer, 9)
+    draw_bg(bg5_data, layer, 8)
+    draw_bg(bg4_data, layer, 7)
+    draw_bg(bg2_data, layer, 6)
+    draw_bg(bg2_1_data, layer, 5)
+    draw_bg(filter_data, layer, 4)
+    draw_bg(bg1_data, layer, 3)
+    draw_world(static_bg_oversized_tiles_dict, sprite_group_tiles_dict, layer, 2)
+    draw_bg(fg_1_data, layer, 1)
     draw_bg(fg_data, layer, 0)
     
     if grid_on == True:
@@ -338,7 +359,7 @@ while run:
     draw_text('Press W or S to change level, A or D to scroll, Q to adjust scroll speed', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 75)
     draw_text(f'Current dimensions: row x col = {row_str} x {col_str}', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 60)
     draw_text(f'Restart editor to load a level with different dimensions.', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 45)
-    draw_text(f'Press X to show grid, L to change level', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 30)
+    draw_text(f'Press X to show grid, L and K to change level', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 30)
 
     #update to accomodate multiple csv files
     #-------------------------------------------------------------------------------------------------------------------------------------
@@ -349,10 +370,12 @@ while run:
         write_level_data(level, coord_data, 'coord_data')
         write_level_data(level, bg1_data, 'bg1_data')
         write_level_data(level, bg2_data, 'bg2_data')
-        write_level_data(level, bg3_data, 'bg3_data')
+        write_level_data(level, bg2_1_data, 'bg2_1_data')
+        write_level_data(level, filter_data, 'bg3_data')
         write_level_data(level, bg4_data, 'bg4_data')
         write_level_data(level, bg5_data, 'bg5_data')
         write_level_data(level, bg6_data, 'bg6_data')
+        write_level_data(level, fg_1_data, 'fg_1_data')
         write_level_data(level, fg_data, 'fg_data')
         
         print('~~Saved!~~')
@@ -371,11 +394,13 @@ while run:
             read_level_data(level, coord_data, 'coord_data')
             read_level_data(level, bg1_data, 'bg1_data')
             read_level_data(level, bg2_data, 'bg2_data')
-            read_level_data(level, bg3_data, 'bg3_data')
+            read_level_data(level, bg2_1_data, 'bg2_1_data')
+            read_level_data(level, filter_data, 'bg3_data')
             read_level_data(level, bg4_data, 'bg4_data')
             read_level_data(level, bg5_data, 'bg5_data')
             read_level_data(level, bg6_data, 'bg6_data')
             read_level_data(level, fg_data, 'fg_data')
+            read_level_data(level, fg_1_data, 'fg_1_data')
             
             print('~~loaded!~~')
         else:
@@ -416,22 +441,27 @@ while run:
     if pos[0] < 640 and pos[1] < SCREEN_HEIGHT:
         #update tile value 
         #THIS IS ACTUALLY CHANGING THE TILE VALUES-------------------------------------------------------------------------------
-        if layer == 1:
+        if layer == 2:
             editing_lvl_data(world_data)
-        elif layer == 2:
-            editing_lvl_data(bg1_data)
         elif layer == 3:
-            editing_lvl_data(bg2_data)
+            editing_lvl_data(bg1_data)
         elif layer == 4:
-            editing_lvl_data(bg3_data)
+            editing_lvl_data(filter_data)
         elif layer == 5:
-            editing_lvl_data(bg4_data)
+            editing_lvl_data(bg2_1_data)
         elif layer == 6:
-            editing_lvl_data(bg5_data)
+            editing_lvl_data(bg2_data)
         elif layer == 7:
+            editing_lvl_data(bg4_data)
+        elif layer == 8:
+            editing_lvl_data(bg5_data)
+        elif layer == 9:
             editing_lvl_data(bg6_data)
+        elif layer == 1:
+            editing_lvl_data(fg_1_data)
         elif layer == 0:
             editing_lvl_data(fg_data)
+
 
 
     for event in pygame.event.get():
@@ -462,24 +492,16 @@ while run:
             if event.key == pygame.K_l and change_once == False:
                 layer += 1
                 change_once = True
-                if layer > 7:
+                if layer > len(layer_list) - 2:
                     layer = 0
-                if layer == 0:
-                    description = 'foreground'
-                elif layer == 1:
-                    description = 'game layer'
-                elif layer == 2:
-                    description = 'detailed bg layer 1'
-                elif layer == 3:
-                    description = 'detailed bg layer 2'
-                elif layer == 4:
-                    description = 'filter layer'
-                elif layer == 5:
-                    description = 'bg layer fast'
-                elif layer == 6:
-                    description = 'bg layer med'
-                else:
-                    description = 'bg layer slow'
+                description = layer_desc_dict[layer]
+                
+            if event.key == pygame.K_k and change_once == False:
+                layer -= 1
+                change_once = True
+                if layer < 0:
+                    layer = len(layer_list) - 2
+                description = layer_desc_dict[layer]
                 
                 #print(f'Current layer is: {layer}, {description}')
                 
@@ -492,6 +514,8 @@ while run:
             if event.key == pygame.K_x:
                 grid_on = False
             if event.key == pygame.K_l:
+                change_once = False
+            if event.key == pygame.K_k:
                 change_once = False
 
 

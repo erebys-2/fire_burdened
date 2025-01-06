@@ -7,9 +7,14 @@ from ItemFile import Item
 
 class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that can interact with the player/have hitboxes
     #constructor
-    def __init__(self, x, y, scale, direction, type, ini_vol, enabled, moveable, is_moving_plat):
+    def __init__(self, x, y, scale, direction, Type, ini_vol, enabled, moveable, is_moving_plat):
         pygame.sprite.Sprite.__init__(self)
         self.direction = direction
+        if Type == 'tall_plant':
+            self.direction = random.randint(0,1)
+            if self.direction == 0:
+                self.direction = -1
+            
         self.enabled = enabled
         self.moveable = moveable
         self.is_moving_plat = is_moving_plat
@@ -20,12 +25,12 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         self.scale = scale
         self.already_falling = False
         
-        if direction < 0:
+        if self.direction < 0:
             self.flip = False
         else:
             self.flip = True
         
-        self.type = type
+        self.type = Type
         
         self.frame_list = []
         self.frame_index = 0
@@ -33,23 +38,13 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         self.update_time2 = pygame.time.get_ticks()
         self.action = 0
         
-        animation_types = {
-            'spinning_blades':('spin', 'spin2'),
-            'crusher_top':('crush', 'grimace'),
-            'moving_plat_h':('move', 'move2'),
-            'moving_plat_v':('move', 'move2'),
-            'grass':('wave', 'cut_down'),
-            'tall_plant':('wave', 'cut_down'),
-            'breakable_brick1':('default',),
-            'flame_pillar':('default',)
-        }
         
-        if type == 'flame_pillar':
+        if self.type == 'flame_pillar':
             scale2 = 3
         else:
             scale2 = 1
-        
-        for animation in animation_types[self.type]:
+            
+        for animation in os.listdir(f'sprites/player_interactable/{self.type}'):#order matters for these, I don't want to keep adding to dictionaries 
             temp_list = []
             frames = len(os.listdir(f'sprites/player_interactable/{self.type}/{animation}'))
         
@@ -58,11 +53,21 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                 img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale * scale2)))
                 temp_list.append(img)
             self.frame_list.append(temp_list)
+            
+        #generate squashed frames for plants
+        if self.type in ('grass', 'tall_plant'):
+            temp_list = []
+            for img in self.frame_list[0]:
+                frame = pygame.transform.scale(img, (int(img.get_width() * 1.2), int(img.get_height() * 0.6)))
+                temp_list.append(frame)
+            self.frame_list.append(temp_list)
 
         self.image = self.frame_list[self.action][self.frame_index]
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.rect.topleft = (x,y)
+        self.img_rect = self.image.get_rect()
+        self.img_rect.topleft = (x,y)
         
         self.width = self.image.get_width()
         self.height = self.image.get_height()
@@ -89,19 +94,24 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
             'flame_pillar':(False, True)
         }
         
-        # self.is_hostile = {
-        #     'spinning_blades':True,
-        #     'crusher_top':True,
-        #     'moving_plat_h':False,
-        #     'moving_plat_v':False
-        # }
+        self.has_mask_collisions = ('spinning_blades',)
+        
         self.atk_rect = pygame.Rect(0,0,0,0)
         
-        if type == 'breakable_brick1':
+        if self.type == 'breakable_brick1':
             self.durability = 2
         else:
             self.durability = 1
         self.durability_changed = False
+        
+        self.framerates = {
+            'spinning_blades': 30,
+            'crusher_top': 70,
+            'grass': 270,
+            'tall_plant':270,
+            'flame_pillar': 120
+        }    
+        
     
     def check_if_onscreen(self):
         return (self.rect.x > -self.rect.width and self.rect.x < 640)
@@ -163,7 +173,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         if self.enabled:
             if self.type == 'spinning_blades':
                 if self.check_if_onscreen():
-                    self.animate()
+                    self.animate(None)
                     
             if self.type == 'flame_pillar':
                 self.atk_rect = pygame.Rect(self.rect.x + 16, self.rect.y, self.width - 32, self.height)
@@ -189,15 +199,18 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                     if self.rect.bottom < -self.rect.height//4:
                         self.rect.bottom = 480 + self.rect.height//4
 
-                    self.animate()
+                    self.animate(None)
                     
             elif self.type in ('grass', 'tall_plant'):
                 if self.check_if_onscreen():
-                    if (self.action == 0 and 
+                    frame_update = None
+                    if (self.action in (0,2) and 
                         (self.do_player_atk_collisions(player_atk_rect) or 
                          self.do_bullet_collisions((sp_group_list[1], sp_group_list[2])))
                         ):
                         #self.m_player.play_sound(self.m_player.sfx[1])
+                        self.img_rect.y = self.rect.y
+                        self.img_rect.width = self.rect.width
                         self.frame_index = 0
                         self.action = 1
                         self.rect.height = 0
@@ -205,7 +218,22 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                             sp_group_list[5].sprite.add_particle('grass_cut', self.rect.x + random.randint(-8,8), self.rect.y + random.randint(-16,8), -self.direction, self.scale, True, random.randint(0,2))
                         if random.randint(0,15) == 0:
                             sp_group_list[12].add(Item('Mild Herb', self.rect.centerx + 2*random.randint(-5,5), self.rect.centery + 2*random.randint(-5,5), 1))
-                    self.animate()
+                    
+                    if self.action != 1:#not cut down
+                        if player_rect.colliderect(self.rect):#squish the plant!!
+                            self.action = 2
+                            self.img_rect.width = int(1.2*self.rect.width)
+                            if self.img_rect.y == self.rect.y:
+                                #sp_group_list[5].sprite.add_particle('grass_cut', self.rect.x + random.randint(-8,8), self.img_rect.centery + random.randint(-16,0), -self.direction, self.scale, True, 2)
+                                self.img_rect.y = self.rect.y + int(0.4*self.height) + self.scale
+                            frame_update = 340
+                        else:#reset the plant
+                            self.action = 0
+                            self.img_rect.width = self.rect.width
+                            self.img_rect.y = self.rect.y
+                        
+                        
+                    self.animate(frame_update)
                 else:
                     self.action = 0
                     self.rect.height = 32
@@ -279,7 +307,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                     ):
                     self.already_falling = True
                     self.vel_y = 15
-                    self.animate()
+                    self.animate(None)
                 elif not self.dropping and self.on_ground and not self.pause:
                     self.vel_y = -5
                     self.image = self.frame_list[0][0]
@@ -290,7 +318,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                     if self.pause:
                         #self.image = self.frame_list[self.action][random.randint(4,6)]
                         self.update_action(1)
-                        self.animate()
+                        self.animate(None)
                     else:
                         self.image = self.frame_list[0][0]
         
@@ -300,27 +328,25 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
             self.mask.clear()
             self.atk_rect = pygame.Rect(0,0,0,0)
                 
-                
         self.rect.x += ( - scrollx) + self.vel_x
+        self.img_rect.centerx = self.rect.centerx
         
     def force_ini_position(self, scrollx):
         self.rect.x -= scrollx
                 
                 
-    def animate(self):
-        framerates = {
-            'spinning_blades': 30,
-            'crusher_top': 70,
-            'grass': 270,
-            'tall_plant':270,
-            'flame_pillar': 120
-        }    
+    def animate(self, frame_update_forced):
+
+        if self.type in self.has_mask_collisions:
+            self.mask = pygame.mask.from_surface(self.image)
         
-        self.mask = pygame.mask.from_surface(self.image)
-        if self.type in framerates:
-            frame_update = framerates[self.type]
+        if frame_update_forced == None:
+            if self.type in self.framerates:
+                frame_update = self.framerates[self.type]
+            else:
+                frame_update = 100
         else:
-            frame_update = 100
+            frame_update = frame_update_forced
         #setting the image
         self.image = self.frame_list[self.action][self.frame_index]
 
@@ -338,8 +364,6 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         #check if action has changed
 
         if new_action != self.action:
-            #if new_action != 5:
-                #self.jump_counter = 0
             self.action = new_action
             #update animation settings
             self.frame_index = 0
@@ -348,5 +372,6 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
     
     def draw(self, screen):
         if self.check_if_onscreen():
-            screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+            screen.blit(pygame.transform.flip(self.image, self.flip, False), self.img_rect)
+            #pygame.draw.rect(screen, (255,0,0), self.rect)
         

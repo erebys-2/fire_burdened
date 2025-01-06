@@ -32,8 +32,9 @@ class player(pygame.sprite.Sprite):
         self.squat = False
         self.squat_done = False
         self.jump_dampen = False
+        self.double_jump = False
+        self.double_jump_en = False
 
-        self.jump = False
         self.in_air = False
         self.vel_y = 0
         self.landing = False
@@ -96,7 +97,7 @@ class player(pygame.sprite.Sprite):
         self.update_time3 = pygame.time.get_ticks()#stamina regen
         self.particle_update = pygame.time.get_ticks()#crit particles
         self.BP_update_time = pygame.time.get_ticks()#charging particles
-        self.coyote_jump_update_time = pygame.time.get_ticks()
+        #self.coyote_jump_update_time = pygame.time.get_ticks()
         self.hitting_wall_timer = pygame.time.get_ticks()
         
         self.angle = 0
@@ -140,7 +141,7 @@ class player(pygame.sprite.Sprite):
         self.m_player = music_player(['hat.wav', 'hat2.wav', 'step.wav', 'step2.wav', 'slash.wav', 'shoot.wav', 'slash2.wav', 'boonk.wav', 'woop.wav', 'woop2.wav'], ini_vol)
         self.ini_vol = ini_vol
         self.play_sound_once_en = True
-        
+
         self.disp_states = ( #actions/states when the player has a larger and or displaced hitbox
             False, #idle
             False, #run
@@ -211,10 +212,10 @@ class player(pygame.sprite.Sprite):
         
         if self.in_air != self.curr_state and not self.disp_flag and self.action != 1 and not self.in_cutscene and self.Alive:
             if not self.in_air:
-                the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, -self.direction, self.scale, True, 0)
+                the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 0)
                 self.m_player.play_sound(self.m_player.sfx[2])
             else:
-                the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, -self.direction, self.scale, True, 1)
+                the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 1)
             self.curr_state = self.in_air
             
     def particles_by_frame(self, particle_index, the_sprite_group, sound):
@@ -223,12 +224,13 @@ class player(pygame.sprite.Sprite):
                 x = self.rect.centerx
             else:
                 x = self.rect.right
+                
             scale = self.scale
             y = self.rect.centery
             if self.sprint:
                 scale = self.scale * 1.5
                 y -= 16
-            the_sprite_group.particle_group.sprite.add_particle('player_mvmt', x - self.direction*self.width//2, y, -self.direction, scale, True, particle_index)
+            the_sprite_group.particle_group.sprite.add_particle('player_mvmt', x + self.direction*scale, y, self.direction, scale, True, particle_index)
             self.m_player.play_sound(self.m_player.sfx[sound])
         self.last_frame = self.frame_index
         
@@ -600,7 +602,7 @@ class player(pygame.sprite.Sprite):
                         elif tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height//2):
                             dy = tile[1].bottom  - self.rect.top
                 elif  ( not self.in_air
-                        and self.vel_y > 6 #velocity based coyote jump
+                        and self.vel_y > 10 #velocity based coyote jump, default 6
                         and not tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height)
                         ):
                     self.curr_state = True
@@ -742,14 +744,14 @@ class player(pygame.sprite.Sprite):
                         dx = self.direction * 2 * self.speed
                         self.rect.x += self.direction * 2 * self.speed
                         
-                        if self.in_air and self.vel_y + 5 <= 20:
+                        if self.in_air and self.vel_y + 5 <= 15:
                             self.vel_y += 5
                         else:
-                            self.vel_y = 20
+                            self.vel_y = 15
                     elif self.heavy:
                         dx = self.direction * self.speed
                         self.rect.x += self.direction
-                    elif self.atk1_stamina_cost == 1:
+                    elif self.atk1_stamina_cost == self.atk1_default_stam:
                         if moveL or moveR:
                             multiplier = 2
                         else:
@@ -799,11 +801,10 @@ class player(pygame.sprite.Sprite):
         #==========================================================================================================================================
         
         #jump
-        if (self.jump and not self.in_air) or self.squat_done:
-            # if self.squat_done == False:
-            #     self.squat = True
+        
+        if (not self.in_air) or self.squat_done:
             if self.squat_done and not(self.atk1):
-                
+                self.double_jump_en = True
                 self.squat_done = False
                 self.vel_y = -9.5
                 self.in_air = True
@@ -813,6 +814,11 @@ class player(pygame.sprite.Sprite):
                 self.landing = True
             else:
                 self.landing = False
+                
+        if self.double_jump:
+            self.vel_y -= 9.5
+            self.double_jump_en = False
+            self.double_jump = False
                 
         if self.jump_dampen:
             if self.squat or (self.squat_done and self.in_air):
@@ -1127,7 +1133,7 @@ class player(pygame.sprite.Sprite):
                 self.frame_index = 0
             if self.action == 1 or self.action == 0:
                 self.update_action_history(-1)
-                self.atk1_stamina_cost = 1
+                self.atk1_stamina_cost = self.atk1_default_stam
             
             if self.action == 15:
                 for i in range(5):
@@ -1277,14 +1283,14 @@ class player(pygame.sprite.Sprite):
             #update stamina bar
             #should play a sound when there's no stamina
             if new_action == 7 or new_action == 8:
-                self.stamina_used += self.atk1_stamina_cost
-                self.ini_stamina += self.atk1_stamina_cost
                 if self.check_atk1_history() == 4: #stamina cost for melee will exponentially increase if the action history is just all atk1
-                    self.atk1_stamina_cost = 3*self.atk1_default_stam
+                    self.atk1_stamina_cost = self.stamina*2/3
                     if self.atk1:
                         self.heavy = True
                 else:
                     self.atk1_stamina_cost = self.atk1_default_stam
+                self.stamina_used += self.atk1_stamina_cost
+                self.ini_stamina += self.atk1_stamina_cost
                 
             if new_action == 9:
                 self.stamina_used += self.roll_stam_rate
