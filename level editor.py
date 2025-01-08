@@ -49,7 +49,7 @@ else:
 TILE_SIZE = 32
 
 
-#TILE_TYPES = 21
+isolate_layer = False
 
 grid_on = False
 scroll_left = False
@@ -188,37 +188,55 @@ def draw_text(text, font, text_col, x, y):
 	img = font.render(text, True, text_col)
 	screen.blit(img, (x, y))
 
+def dark_filter_imgs(img, tile, ref_layer, dark_layers):
+    if tile not in (8, 57) and ref_layer in dark_layers:
+        img = pygame.transform.hsl(img, -0.75, -0.75, -0.75)
+    
+    return img
+
 def draw_bg(data, layer, ref_layer):
+    dark_layers = (5,6)
     
     for y, row in enumerate(data):#world data and bg data should have the same amount of data
         for x, tile_ in enumerate(row):
             if tile_ >= 0:
-                
+                y_disp = 0
                 if tile_ == 15 or tile_ == 16 or tile_ == 18:#these don't quite work??
                     #blit(source, dest, area=None, special_flags=0) -> Rect
-                    screen.blit(tile_list[t_set_index][tile_], (x * TILE_SIZE - scroll, (y * TILE_SIZE)+ 16))
+                    img = tile_list[t_set_index][tile_]
+                    img = dark_filter_imgs(img, tile, ref_layer, dark_layers)
+                    y_disp = 16
+                    #screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)+ 16))
                     
                 elif tile_ in sprite_group_tiles_dict and sprite_group_tiles_dict[tile_][3] != -1:
                     img = tile_list[1][sprite_group_tiles_dict[tile_][3]]
+                    img = dark_filter_imgs(img, tile, ref_layer, dark_layers)
                     if tile_ != 46:
                         scale = 1
                     else:
                         scale = 2
                     img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-                    screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)))
+                    #screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)))
                     
                 elif tile_ in static_bg_oversized_tiles_dict:
                     img = tile_list[1][static_bg_oversized_tiles_dict[tile_]]
+                    img = dark_filter_imgs(img, tile, ref_layer, dark_layers)
                     if tile_ != 46:
                         scale = 1
                     else:
                         scale = 2
                     img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-                    screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)))
+                    #screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)))
                     
                 else: 
-                    screen.blit(tile_list[t_set_index][tile_], (x * TILE_SIZE - scroll, y * TILE_SIZE))
+                    img = tile_list[t_set_index][tile_]
+                    img = dark_filter_imgs(img, tile, ref_layer, dark_layers)
+                    #screen.blit(img, (x * TILE_SIZE - scroll, y * TILE_SIZE))
                 #draw sprite text
+                if isolate_layer and layer == ref_layer:
+                    screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)+y_disp))
+                elif not isolate_layer:
+                    screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)+y_disp))
                 if layer == ref_layer:
                     draw_text(str(tile_), font2, WHITE, x*32 + 8 - scroll, y*32 + 8)
 
@@ -227,6 +245,7 @@ def draw_world(static_bg_oversized_tiles_dict, sprite_group_tiles_dict, layer, r
     for y, row in enumerate(world_data):#world data and bg data should have the same amount of data
         for x, tile in enumerate(row):
             if tile >= 0:
+                y_disp = 0
                 if tile in sprite_group_tiles_dict and sprite_group_tiles_dict[tile][3] != -1:
                     img = tile_list[1][sprite_group_tiles_dict[tile][3]]
                     if tile != 46:
@@ -234,7 +253,7 @@ def draw_world(static_bg_oversized_tiles_dict, sprite_group_tiles_dict, layer, r
                     else:
                         scale = 2
                     img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-                    screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)))
+                    #screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)))
                     
                 elif tile in static_bg_oversized_tiles_dict:
                     img = tile_list[1][static_bg_oversized_tiles_dict[tile]]
@@ -243,14 +262,21 @@ def draw_world(static_bg_oversized_tiles_dict, sprite_group_tiles_dict, layer, r
                     else:
                         scale = 2
                     img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-                    screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)))
+                    #screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)))
                     
                 elif tile in (15,16,18,2,60):
-                    screen.blit(tile_list[t_set_index][tile], (x * TILE_SIZE - scroll, (y * TILE_SIZE)+ 16))
+                    y_disp = 16
+                    img = tile_list[t_set_index][tile]
+                    #screen.blit(tile_list[t_set_index][tile], (x * TILE_SIZE - scroll, (y * TILE_SIZE)+ 16))
  
                 else: 
-                    screen.blit(tile_list[t_set_index][tile], (x * TILE_SIZE - scroll, y * TILE_SIZE))
+                    img = tile_list[t_set_index][tile]
+                    #screen.blit(tile_list[t_set_index][tile], (x * TILE_SIZE - scroll, y * TILE_SIZE))
                 
+                if isolate_layer and layer == ref_layer:
+                    screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE) + y_disp))
+                elif not isolate_layer:
+                    screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE) + y_disp))
                 if layer == ref_layer:
                     draw_text(str(tile), font2, WHITE, x*32 + 8 - scroll, y*32 + 8)
 
@@ -359,7 +385,7 @@ while run:
     draw_text('Press W or S to change level, A or D to scroll, Q to adjust scroll speed', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 75)
     draw_text(f'Current dimensions: row x col = {row_str} x {col_str}', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 60)
     draw_text(f'Restart editor to load a level with different dimensions.', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 45)
-    draw_text(f'Press X to show grid, L and K to change level', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 30)
+    draw_text(f'Press X to show grid, L and K to change layer, I to isolate layer', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 30)
 
     #update to accomodate multiple csv files
     #-------------------------------------------------------------------------------------------------------------------------------------
@@ -483,12 +509,12 @@ while run:
             if event.key == pygame.K_d:
                 scroll_right = True
             if event.key == pygame.K_q:
-                if scroll_speed != 5:
-                    scroll_speed = 5
+                if scroll_speed != 8:
+                    scroll_speed = 8
                 else:
                     scroll_speed = 1
             if event.key == pygame.K_x:
-                grid_on = True
+                grid_on = not grid_on
             if event.key == pygame.K_l and change_once == False:
                 layer += 1
                 change_once = True
@@ -505,20 +531,21 @@ while run:
                 
                 #print(f'Current layer is: {layer}, {description}')
                 
+            if event.key == pygame.K_i:
+                isolate_layer = not isolate_layer
+                
 
         if(event.type == pygame.KEYUP):
             if event.key == pygame.K_a:
                 scroll_left = False
             if event.key == pygame.K_d:
                 scroll_right = False
-            if event.key == pygame.K_x:
-                grid_on = False
             if event.key == pygame.K_l:
                 change_once = False
             if event.key == pygame.K_k:
                 change_once = False
 
-
+    pygame.display.set_caption(f"editor window @ {clock.get_fps():.1f} FPS")
     pygame.display.update()
 
 pygame.quit()

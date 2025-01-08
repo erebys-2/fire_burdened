@@ -442,7 +442,7 @@ class player(pygame.sprite.Sprite):
                         dy = -dy
                         dy += p_int.rect.bottom - self.collision_rect.top
                     else:
-                        in_air = True
+                        self.in_air = True
                         
 
                 #x collisions
@@ -514,6 +514,7 @@ class player(pygame.sprite.Sprite):
         if self.hitting_wall_timer + 100 < pygame.time.get_ticks():
             self.hitting_wall = False
         
+        one_way_tiles = (17, 69, 70)
         
         #size adjust for displaced rects
         if self.direction < 0:
@@ -527,7 +528,7 @@ class player(pygame.sprite.Sprite):
                         (tile[1].bottom > self.collision_rect.bottom and tile[1].y < self.collision_rect.y)
                      ]:
             #x collisions
-            if (tile[2] not in (17, 10, 2, 60)):
+            if (tile[2] not in (10, 2, 60) and tile[2] not in one_way_tiles):
                 self.atk1_grinding(tile[1], the_sprite_group)
                     
                 #dx collisions, tile walls
@@ -535,7 +536,7 @@ class player(pygame.sprite.Sprite):
                 #hitting wall while rolling
                 if self.action == 9 and tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//4 - 2):
                     dx = 0 #-1 * self.direction 
-                    dy = dy//2
+                    #dy = dy//2
                     self.rolled_into_wall = True
                     self.hitting_wall = True
                     self.hitting_wall_timer = pygame.time.get_ticks()
@@ -560,16 +561,17 @@ class player(pygame.sprite.Sprite):
                     self.hitting_wall_timer = pygame.time.get_ticks()
                 
                 #wall collisions while NOT rolling
-                elif (self.action != 9 and #this line is important for consistency
-                    tile[1].colliderect(self.collision_rect.x + 1 + dx, self.collision_rect.y, self.width - 2, self.height - 16) 
+                elif (self.action != 9 #this line is important for consistency
+                    and not self.disp_flag
+                    and tile[1].colliderect(self.collision_rect.x + 1 + dx, self.collision_rect.y, self.width - 2, self.height - 16) 
                     ):
                     self.hitting_wall = True
                     self.hitting_wall_timer = pygame.time.get_ticks()
-
+                    
                     if abs(self.direction + dx) < abs(dx):
-                        dx = 1*self.direction
+                        dx = self.direction
                     else:
-                        dx = -1*self.direction
+                        dx = -self.direction
 
                         
                 #dy collision stuff, sinking through tiles etc
@@ -591,16 +593,20 @@ class player(pygame.sprite.Sprite):
                         elif (tile[1].bottom < self.collision_rect.y + self.height -32): #upper collisions
                             dy = tile[1].bottom  - self.rect.top
                             
-                    else: #IMPORTANT---------------------default floor and ceiling collisions
+                    else: 
+                        #IMPORTANT---------------------default floor and ceiling collisions
                         #basically there's 2 collision checks that each make up half of the collision rect, upper and lower
                         
-                        if tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + self.height//2 + dy, self.width - 4, self.height//2):
+                        #bottom collisions
+                        if self.height//2 < tile[1].y - self.rect.y and tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + self.height//2 + dy, self.width - 4, self.height//2):
                             dy = tile[1].top - self.rect.bottom #-1
                             self.rolled_into_wall = False
                             self.in_air = False
                             
-                        elif tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height//2):
+                        #upper collisions
+                        if self.rect.bottom - tile[1].bottom > self.height//2 and tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height//2):
                             dy = tile[1].bottom  - self.rect.top
+
                 elif  ( not self.in_air
                         and self.vel_y > 10 #velocity based coyote jump, default 6
                         and not tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height)
@@ -615,7 +621,7 @@ class player(pygame.sprite.Sprite):
                 if tile[1].colliderect(self.collision_rect.x + self.width//4 + dx, self.collision_rect.y + dy, self.width//2, self.height - 8):
                     self.hits_tanked = 6
             
-            elif(tile[2] == 17):#one way tiles
+            elif(tile[2] in one_way_tiles):#one way tiles
                 if tile[1].colliderect(self.collision_rect.x, self.collision_rect.bottom - 16 + dy, self.width, 18):
                     if self.vel_y >= 0: 
                         self.vel_y = 0
@@ -722,6 +728,11 @@ class player(pygame.sprite.Sprite):
                 if (self.action != 7 and self.action != 8):
                     self.rolling = False
                     #self.roll_count = self.roll_limit
+                #print(self.action_history)
+                if self.squat and self.action_history[2] != 9 and self.action_history[0] != 7:
+                    the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 1)
+                    self.squat_done = True
+                    self.vel_y += 2
                 
         #------------------------------------------------------------------------------------------------------------------------------------------------------
         #atk1------------------------------------------------------------------------------------------------------------------------------------
@@ -740,9 +751,9 @@ class player(pygame.sprite.Sprite):
                     # if pygame.time.get_ticks() < self.update_time + 20:
                     #     self.m_player.play_sound(self.m_player.sfx[1])
                     if self.crit and self.check_if_in_ss_range():
-                        
+                        crit_speed =int(self.speed * 1.5)
                         dx = self.direction * 2 * self.speed
-                        self.rect.x += self.direction * 2 * self.speed
+                        self.rect.x += self.direction * crit_speed
                         
                         if self.in_air and self.vel_y + 5 <= 15:
                             self.vel_y += 5
@@ -762,12 +773,19 @@ class player(pygame.sprite.Sprite):
                         
                         if self.action == 7:
                             self.vel_y -= 0.6
+                            #self.in_air = True
                         elif self.action == 8 and self.vel_y + 7 <= 28 and self.vel_y > 0 and self.in_air: #25 max 
                             self.vel_y += 7
 
                 elif self.frame_index > 1 :# slow forward speed
                     if self.crit and self.check_if_in_ss_range():
-                        dx = self.direction * 2
+                        # dx = self.direction * 2
+                        # if self.in_air:
+                        #     dx += self.direction
+                        if not self.in_air:
+                            dx = self.direction * 2
+                        else:
+                            self.rect.x += self.direction * 2 * self.speed
                     else:
                         if self.action == 7 and self.frame_index <= 2 and self.vel_y > 0: #add hang time for upstrike
                             self.vel_y = 0
@@ -776,6 +794,7 @@ class player(pygame.sprite.Sprite):
                             dx = -self.direction
                         else:
                             dx = self.direction
+
                 
                 #add trailing particles
                 if not self.heavy and not self.crit and self.frame_index < 1:
@@ -790,12 +809,14 @@ class player(pygame.sprite.Sprite):
                 self.atk1 = False
                 self.crit = False
                 self.heavy = False
+                self.atk1_stamina_cost = self.atk1_default_stam
                 self.draw_trail = False
         else:
             self.atk1_kill_hitbox()
             self.atk1 = False
             self.crit = False
             self.heavy = False
+            self.atk1_stamina_cost = self.atk1_default_stam
             self.draw_trail = False
 
         #==========================================================================================================================================
@@ -823,6 +844,7 @@ class player(pygame.sprite.Sprite):
         if self.jump_dampen:
             if self.squat or (self.squat_done and self.in_air):
                 self.vel_y *= 0.6
+                self.in_air = True
                 
             elif self.vel_y <= -1: #minimum jump velocity
                 self.vel_y *= 0.4
@@ -833,7 +855,7 @@ class player(pygame.sprite.Sprite):
             
         if self.action == 3 or self.action == 1 or self.action == 0:
             self.jump_dampen = False
-            self.in_air = False
+            #self.in_air = False
         
         #land
         
@@ -970,6 +992,7 @@ class player(pygame.sprite.Sprite):
         if not self.Alive:
             self.crit = False
             self.heavy = False
+            self.atk1_stamina_cost = self.atk1_default_stam
             self.atk1 = False
             self.atk1_kill_hitbox()
             self.rolling = False
@@ -1257,10 +1280,11 @@ class player(pygame.sprite.Sprite):
         #check if action has changed
         if new_action != self.action:
             if self.action != 5:
-                self.update_action_history(self.action)
+                self.update_action_history(self.action)#updated with the last action
             if (self.action == 7 or self.action == 8) and (self.rolling or self.action == 9):
                 self.crit = False
                 self.heavy = False
+                self.atk1_stamina_cost = self.atk1_default_stam
                 self.atk1 = False
             elif self.action == 9 and (new_action == 7 or new_action == 8) and self.atk1:
                 self.crit = True
@@ -1288,6 +1312,7 @@ class player(pygame.sprite.Sprite):
                     if self.atk1:
                         self.heavy = True
                 else:
+                    self.heavy = False
                     self.atk1_stamina_cost = self.atk1_default_stam
                 self.stamina_used += self.atk1_stamina_cost
                 self.ini_stamina += self.atk1_stamina_cost

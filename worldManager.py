@@ -241,7 +241,10 @@ class World():
                     elif tile in self.special_hitbox_tiles_dict:
                         self.set_hitbox_for_special_tile(tile, x, y, level_data)
                     else:
-                        img = self.tileList[0][tile]
+                        if tile in self.static_bg_oversized_tiles_dict:
+                            img = self.tileList[1][self.static_bg_oversized_tiles_dict[tile]]
+                        else:
+                            img = self.tileList[0][tile]
                         img_rect = img.get_rect()
                         
                         img_rect.x = x * 32
@@ -252,15 +255,18 @@ class World():
                         self.solids.append(tile_data)
         #load bg
         for i in range(4,len(self.detailed_lvl_data_list)):
-            self.process_bg(raw_lvl_data_list[i], self.detailed_lvl_data_list[i], the_sprite_group, i)
+            is_detailed_bg = False
+            if i in (5,6):
+                is_detailed_bg = True
+            self.process_bg(raw_lvl_data_list[i], self.detailed_lvl_data_list[i], the_sprite_group, is_detailed_bg)
             
         #process filter layer
         if self.bg3 != []:
             self.bg3 = self.post_process_filter_layer(self.bg3, level_data[1]*32)
                 
         #load fg and fg_1
-        self.process_bg(raw_lvl_data_list[1], self.detailed_lvl_data_list[1], the_sprite_group, 1)
-        self.process_bg(raw_lvl_data_list[2], self.detailed_lvl_data_list[2], the_sprite_group, 1)
+        self.process_bg(raw_lvl_data_list[1], self.detailed_lvl_data_list[1], the_sprite_group, False)
+        self.process_bg(raw_lvl_data_list[2], self.detailed_lvl_data_list[2], the_sprite_group, False)
         
         #create maps
         layer_list = [self.fg_1, self.solids, self.bg1, self.bg3, self.bg2_1, self.bg2]
@@ -337,7 +343,7 @@ class World():
         
         return temp_list
         
-    def process_bg(self, data, rtrn_list, the_sprite_group, index_):   
+    def process_bg(self, data, rtrn_list, the_sprite_group, is_detailed_bg):   
         for y, row in enumerate(data):
             for x, tile in enumerate(row):
                 if tile >= 0:
@@ -351,6 +357,9 @@ class World():
                             img = self.tileList[1][self.static_bg_oversized_tiles_dict[tile]]
                         else:
                             img = self.tileList[0][tile]
+                            
+                        if is_detailed_bg and tile not in (8,57):
+                            img = pygame.transform.hsl(img, -0.75, -0.75, -0.75)
                             
                         if tile in self.slightly_oversized_tiles_dict:
                             scale = self.slightly_oversized_tiles_dict[tile]

@@ -515,7 +515,8 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                             tile[1].bottom < self.rect.bottom + 64 and tile[1].y > self.rect.y - 64 or
                             (tile[1].bottom > self.rect.bottom and tile[1].y < self.rect.y)
                             ]:
-                if tile[2] not in (17, 2, 60):
+                one_way_tiles = (17, 69, 70)
+                if tile[2] not in (2, 60) and tile[2] not in one_way_tiles:
                     #x tile collisions
 
                     if tile[1].colliderect(self.rect.x + dx, self.rect.y + self.quarter_height, self.width, self.height*0.6):
@@ -576,7 +577,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     if tile[1].colliderect(self.rect.x + self.quarter_width//2, self.rect.y, self.width - self.quarter_width, self.height - 8):
                         self.dead = True
                         self.m_player.play_sound(self.m_player.sfx[2])
-                elif(tile[2] == 17):#one way tiles
+                elif(tile[2] in one_way_tiles):#one way tiles
                     if tile[1].colliderect(self.rect.x + dx, self.rect.bottom - 16 + dy, self.width, 17):
                         if self.vel_y >= 0: 
                             self.vel_y = 0
