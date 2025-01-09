@@ -189,7 +189,7 @@ def draw_text(text, font, text_col, x, y):
 	screen.blit(img, (x, y))
 
 def dark_filter_imgs(img, tile, ref_layer, dark_layers):
-    if tile not in (8, 57) and ref_layer in dark_layers:
+    if tile not in (8, 57, 58) and ref_layer in dark_layers:
         img = pygame.transform.hsl(img, -0.75, -0.75, -0.75)
     
     return img
@@ -201,14 +201,9 @@ def draw_bg(data, layer, ref_layer):
         for x, tile_ in enumerate(row):
             if tile_ >= 0:
                 y_disp = 0
-                if tile_ == 15 or tile_ == 16 or tile_ == 18:#these don't quite work??
-                    #blit(source, dest, area=None, special_flags=0) -> Rect
-                    img = tile_list[t_set_index][tile_]
-                    img = dark_filter_imgs(img, tile, ref_layer, dark_layers)
-                    y_disp = 16
-                    #screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)+ 16))
+                
                     
-                elif tile_ in sprite_group_tiles_dict and sprite_group_tiles_dict[tile_][3] != -1:
+                if tile_ in sprite_group_tiles_dict and sprite_group_tiles_dict[tile_][3] != -1:
                     img = tile_list[1][sprite_group_tiles_dict[tile_][3]]
                     img = dark_filter_imgs(img, tile, ref_layer, dark_layers)
                     if tile_ != 46:
@@ -227,6 +222,13 @@ def draw_bg(data, layer, ref_layer):
                         scale = 2
                     img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
                     #screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)))
+                    
+                elif tile_ in (15,16,18,2,60):#these don't quite work??
+                    #blit(source, dest, area=None, special_flags=0) -> Rect
+                    img = tile_list[t_set_index][tile_]
+                    img = dark_filter_imgs(img, tile, ref_layer, dark_layers)
+                    y_disp = 16
+                    #screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)+ 16))
                     
                 else: 
                     img = tile_list[t_set_index][tile_]

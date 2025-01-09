@@ -194,7 +194,7 @@ class World():
         #modify the shape of a rect
         if tile_type == 'one_way_pass':#pass thru 1 way
             img_rect = pygame.Rect(0, 0, 32, 16)
-        elif tile_type == 'lvl_transition':#level transition tile
+        elif level_data != None and tile_type == 'lvl_transition':#level transition tile
             img = self.tileList[0][9]
             img_rect = pygame.Rect(0, 0, level_data[2][self.transition_index][0], level_data[2][self.transition_index][1])
             transition_data = level_data[2][self.transition_index][2:5] #passed to the player: next_level, next coords
@@ -351,6 +351,9 @@ class World():
                     disp = 0
                     if tile in self.sprite_group_tiles_dict: #avoid key errors
                         self.sp_ini.instantiate_sprites_from_tiles(tile, x, y, the_sprite_group, 0, 0, [], self)
+                        
+                    elif tile in self.special_hitbox_tiles_dict:
+                        self.set_hitbox_for_special_tile(tile, x, y, None)
 
                     else:
                         if tile in self.static_bg_oversized_tiles_dict:
@@ -358,7 +361,7 @@ class World():
                         else:
                             img = self.tileList[0][tile]
                             
-                        if is_detailed_bg and tile not in (8,57):
+                        if is_detailed_bg and tile not in (8,57,58):
                             img = pygame.transform.hsl(img, -0.75, -0.75, -0.75)
                             
                         if tile in self.slightly_oversized_tiles_dict:

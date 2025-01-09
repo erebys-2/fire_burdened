@@ -615,7 +615,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
     
     def animate(self, sp_group_list):
         
-        if self.dead == True:
+        if self.dead and self.Alive:
             self.m_player.play_sound(self.m_player.sfx[0])
             self.explode(sp_group_list)
             self.Alive = False

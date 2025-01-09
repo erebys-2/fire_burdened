@@ -13,8 +13,8 @@ class particle_2(pygame.sprite.Sprite):
             self.particle_img_dict = {}
             for subdir in os.listdir(particle_path):
                 temp_list = []
-                for img in os.listdir(f'{particle_path}/{subdir}'):
-                    loaded_img = pygame.image.load(f'{particle_path}/{subdir}/{img}').convert_alpha()
+                for i in range(len(os.listdir(f'{particle_path}/{subdir}'))):
+                    loaded_img = pygame.image.load(f'{particle_path}/{subdir}/{i}.png').convert_alpha()
                     temp_list.append(loaded_img)
                 self.particle_img_dict[subdir] = temp_list
         else:
@@ -104,9 +104,9 @@ class particle_2(pygame.sprite.Sprite):
             #     self.kill()
                 
             if particle0[11] == 'shooter_death':
-                particle0[2] -= 4*(1/(particle0[6]+1))
+                particle0[2] -= 0.75*(1/(particle0[6]+1))
                 
-            elif particle0[11] in ('dog_death', 'fly_death', 'walker_death'):
+            if particle0[11] in ('dog_death', 'fly_death', 'walker_death'):
                 particle0[2] -= (1/(particle0[6]+1))
                 
             elif particle0[11] == 'player_down_strike':

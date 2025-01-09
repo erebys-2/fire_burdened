@@ -130,13 +130,15 @@ def main():
 		0:[black, 'none', 15, 30, [], False, ''], #lvl 0
 		1:[grey, 'none', 15, 200, [(2, 15*32, 2, 44*32, -999), (2, 15*32, 3, 0, -999)], True, 'Outer City Ruins'], #lvl 1
 		2:[grey, 'none', 15, 45, [(2, 15*32, 1, 0, -999)], True, "Barrier's Edge"], #lvl 2
-		3:[grey, 'none', 15, 40, [(2, 15*32, 1, 199*32, -999)], True, 'Outer City Ruins']
+		3:[grey, 'none', 15, 40, [(2, 15*32, 1, 199*32, -999), (2, 15*32, 4, 0, -999)], True, 'Outer City Ruins'],
+		4:[grey, 'none', 15, 200, [(2, 15*32, 3, 39*32, -999)], True, 'Outer City Ruins']
 	}
  
 	level_ambiance_dict = {#scale, p_type, frame, density, sprite_group
 		1:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),),#have to put an extra comma in
 		2:((0.3, 'player_bullet_explosion', 0, 1, the_sprite_group.particle_group_bg), (0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg)),
-		3:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),)
+		3:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),),
+		4:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),)
 	}
 	
 	#populate area name dict
@@ -251,8 +253,8 @@ def main():
 	particle_img_dict = {}
 	for subdir in os.listdir(particle_path):
 		temp_list = []
-		for img in os.listdir(f'{particle_path}/{subdir}'):
-			loaded_img = pygame.image.load(f'{particle_path}/{subdir}/{img}').convert_alpha()
+		for i in range(len(os.listdir(f'{particle_path}/{subdir}'))):
+			loaded_img = pygame.image.load(f'{particle_path}/{subdir}/{i}.png').convert_alpha()
 			temp_list.append(loaded_img)
 		particle_img_dict[subdir] = temp_list
 	
@@ -458,11 +460,9 @@ def main():
 			the_sprite_group.pause_game = pause_game or ui_manager0.saves_menu_enable
 			the_sprite_group.scroll_x = scroll_x
 			#if not level_transitioning: #surpress sprite logic while level transitioning
-				
-			the_sprite_group.update_bg_sprite_group(screen, player0.hitbox_rect, player0.atk_rect_scaled)
 
 			screen.blit(world.world_map_non_parallax, (world.coords[0][1][0], world.coords[0][1][1]))
-			#player, world
+			the_sprite_group.update_bg_sprite_group(screen, player0.hitbox_rect, player0.atk_rect_scaled)
 			the_sprite_group.update_text_prompt_group(screen, dialogue_enable, next_dialogue, player0, world, selected_slot)#player and world
 			next_dialogue = False
 			the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, player0.direction, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
