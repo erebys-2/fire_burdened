@@ -112,6 +112,8 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
             'flame_pillar': 120
         }    
         
+        self.is_onscreen = False
+        
     
     def check_if_onscreen(self):
         return (self.rect.x > -self.rect.width and self.rect.x < 640)
@@ -171,13 +173,14 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         
     def enable(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list):
         if self.enabled:
+            self.is_onscreen = self.check_if_onscreen()
             if self.type == 'spinning_blades':
-                if self.check_if_onscreen():
+                if self.is_onscreen:
                     self.animate(None)
                     
             if self.type == 'flame_pillar':
                 self.atk_rect = pygame.Rect(self.rect.x + 16, self.rect.y, self.width - 32, self.height)
-                if self.check_if_onscreen():
+                if self.is_onscreen:
                     if player_rect.colliderect(self.atk_rect):
                         for i in range(random.randrange(2,4)):
                             sp_group_list[5].sprite.add_particle('player_bullet_explosion', 
@@ -202,7 +205,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                     self.animate(None)
                     
             elif self.type in ('grass', 'tall_plant'):
-                if self.check_if_onscreen():
+                if self.is_onscreen:
                     frame_update = None
                     if (self.action in (0,2) and 
                         (self.do_player_atk_collisions(player_atk_rect) or 
@@ -241,7 +244,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
             elif self.type == 'breakable_brick1':
                 #print(self.durability)
                 if self.durability > 0:
-                    if (self.check_if_onscreen() and 
+                    if (self.is_onscreen and 
                         (self.do_player_atk_collisions(player_atk_rect) or 
                          self.do_bullet_collisions((sp_group_list[1], sp_group_list[2])))
                         ):
@@ -273,7 +276,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                 self.vel_x = 4*self.direction
                 #print(self.rect.x)
 
-            elif self.type == 'moving_plat_v' and self.check_if_onscreen():
+            elif self.type == 'moving_plat_v' and self.is_onscreen:
                 self.do_tile_y_collisions(world_solids, self.vel_x)
 
                 if (self.dropping and not self.on_ground):
@@ -284,7 +287,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                     
                 self.rect.y += self.vel_y
                 
-            elif self.type == 'crusher_top' and self.check_if_onscreen():
+            elif self.type == 'crusher_top' and self.is_onscreen:
                 self.atk_rect = pygame.Rect(self.rect.x + 4, self.rect.bottom - 32, self.width - 8, 32)
                 if pygame.time.get_ticks() - self.update_time2 > 720:
                     self.update_time2 = pygame.time.get_ticks()
@@ -350,7 +353,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         #setting the image
         self.image = self.frame_list[self.action][self.frame_index]
 
-        if pygame.time.get_ticks() - self.update_time > frame_update and self.check_if_onscreen():
+        if pygame.time.get_ticks() - self.update_time > frame_update and self.is_onscreen:
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1 
 
@@ -371,7 +374,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
 
     
     def draw(self, screen):
-        if self.check_if_onscreen():
+        if self.is_onscreen:
             screen.blit(pygame.transform.flip(self.image, self.flip, False), self.img_rect)
             #pygame.draw.rect(screen, (255,0,0), self.rect)
         

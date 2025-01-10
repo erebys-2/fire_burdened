@@ -73,8 +73,8 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             sfx_list = ['bassdrop2.wav', 'hit.wav', 'dog_hurt.wav', 'woof.wav', 'step2soft.wav']
         elif type == 'shooter':   
             animation_types = ['idle', 'move', 'hurt', 'die', 'shoot', 'jump'] 
-            self.hp = 10
-            self.recoil = 50
+            self.hp = 8
+            self.recoil = 58
             self.recoil_slow = 2
             sfx_list = ['bassdrop2.wav', 'hit.wav', 'roblox2.wav', 'shoot.wav', 'step2soft.wav']
             #, '', 'bite.wav', 'bee.wav'

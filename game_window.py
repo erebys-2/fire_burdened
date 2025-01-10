@@ -326,13 +326,17 @@ def main():
 
 		#----------------------------------------------------------------------level changing-------------------------------------------------
 		if level != next_level:
+			level_transitioning = True
+
+			#update world's completion dict
+			world.update_lvl_completion(level, the_sprite_group.enemy_death_count, next_level != 0)
+   
 			player_en = False
 			scroll_x = 0
 			scroll_y = 0
 			the_sprite_group.purge_sprite_groups()
 			dialogue_box0.reset_internals()
-			world.clear_data()
-			level_transitioning = True
+
 			lvl_transition_counter = 3#how many cycles to show a black screen
 			level = next_level
 
@@ -465,15 +469,16 @@ def main():
 			the_sprite_group.update_bg_sprite_group(screen, player0.hitbox_rect, player0.atk_rect_scaled)
 			the_sprite_group.update_text_prompt_group(screen, dialogue_enable, next_dialogue, player0, world, selected_slot)#player and world
 			next_dialogue = False
+			player0.check_melee_hits(the_sprite_group)#seems to work, wasn't responsive at first
 			the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, player0.direction, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
-
+   
 			the_sprite_group.update_item_group(screen, player0.hitbox_rect)
 			player0.draw(screen)
     
 			screen.blit(world.world_map_non_parallax_fg, (world.coords[0][1][0], world.coords[0][1][1]))
 			the_sprite_group.update_groups_infront_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, world.solids)
 		
-			status_bars.draw(screen, player0.get_status_bars(), font)
+			status_bars.draw(screen, player0.get_status_bars(), font, False)
 			status_bars.draw2(screen, player0.action_history, (7,8,16))
 			player_inv_UI.show_selected_item(player0.inventory_handler.inventory, screen)
    
@@ -488,8 +493,6 @@ def main():
 					screen.blit(area_name_img, coord2)
 					screen.blit(font_larger.render(area_name_dict[level], True, (white)), (coord))
 					last_area_name = area_name_dict[level]
-
-
 
 		else:
 			#print(selected_slot)
@@ -552,23 +555,25 @@ def main():
 		if level == 0 or ui_manager0.saves_menu_enable: 
 			draw_bg(screen, gradient_dict, level_dict[level][1], level_dict[level][0])
 			pause_game = False
-			exit_to_title = False
 
 			#plot index list's csv is read within ui_manager
 			if ui_manager0.saves_menu_enable:
 				ui_output = ui_manager0.show_saves_menu(screen)
 
 				if ui_manager0.selected_slot != -1 and selected_slot != ui_manager0.selected_slot:
-        			#change slot and reset death counters across levels if a different slot is selected
+        			#change slot and reset death counters and lvl copmletion dict across levels if a different slot is selected
 					world.death_counters_dict = {0: 0}
+					world.lvl_completion_dict = {}
 					selected_slot = ui_manager0.selected_slot
 				if ui_manager0.reset_death_counters: #reset death counters if reset buttons is pressed
 					ui_manager0.reset_death_counters = False
 					world.death_counters_dict = {0: 0}
+					world.lvl_completion_dict = {}
 			elif ui_manager0.saves_menu2_enable:
 				ui_output = ui_manager0.show_saves_menu2(screen) #select slot for new game
 				if ui_manager0.selected_slot != -1:# and selected_slot != ui_manager0.selected_slot:
 					world.death_counters_dict = {0: 0}#slot changes from -1 if a slot is chosen, this will always execute
+					world.lvl_completion_dict = {}
 					selected_slot = ui_manager0.selected_slot
 			else:
 				ui_output = ui_manager0.show_main_menu(screen)
@@ -858,8 +863,10 @@ def main():
 								player0.squat = True
 
 						if event.key == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and event.key != ctrls_list[0] and not player0.using_item: #pygame.K_i, pygame.K_w
+							#player0.atk1_stamina_cost is not getting updated during heavy attack
 							change_once = True
 							player0.atk1 = True # (event.key == ctrls_list[4])
+							player0.melee_hit = False
 
 						elif event.key == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
 							status_bars.warning = True
@@ -1096,6 +1103,7 @@ def main():
 						if event.button == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and event.button != ctrls_list[0] and not player0.using_item: #pygame.K_i, pygame.K_w
 							change_once = True
 							player0.atk1 = True # (event.button == ctrls_list[4])
+							player0.melee_hit = False
 
 						elif event.button == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
 							status_bars.warning = True

@@ -46,6 +46,9 @@ class player(pygame.sprite.Sprite):
         self.draw_trail = False
         self.trail_coords = []
         
+        self.melee_hit = False
+        self.inst_stamina = 1.5
+        
         self.disp_flag = False
         self.curr_disp_flag = False
 
@@ -72,7 +75,7 @@ class player(pygame.sprite.Sprite):
         self.rolling = False
         self.roll_count = 0
         self.roll_limit = 1
-        self.roll_stam_rate = 0.25
+        self.roll_stam_rate = 0.22
         self.hitting_wall = False
         
         self.using_item = False
@@ -235,6 +238,7 @@ class player(pygame.sprite.Sprite):
         self.last_frame = self.frame_index
         
     def atk1_kill_hitbox(self):
+        self.melee_hit = False
         self.atk_show_sprite = False
         self.atk_rect.x = 0
         self.atk_rect.y = 0
@@ -362,11 +366,45 @@ class player(pygame.sprite.Sprite):
             for enemy in [enemy for enemy in the_sprite_group.enemy0_group 
                           if enemy.is_on_screen and enemy.atk_rect_scaled.width != 0
                          ]:
-                if (self.hitbox_rect.colliderect(enemy.atk_rect_scaled)):
+                if self.hitbox_rect.colliderect(enemy.atk_rect_scaled):
                     damage += 1.5
                     self.hurting = True
                     self.take_damage(damage) 
                 damage = 0
+        
+    def do_instant_st_regen(self, amnt):
+        if amnt == 0:
+            amnt = self.inst_stamina
+        
+        if not self.melee_hit:
+            if self.stamina_used > 0 and self.stamina_used - amnt <= self.stamina_usage_cap:
+                self.stamina_used = self.stamina_usage_cap
+                
+            elif self.stamina_used > 0 and self.stamina_used - amnt > self.stamina_usage_cap:
+                self.stamina_used -= amnt
+                        
+            self.melee_hit = True
+        
+    def check_melee_hits(self, the_sprite_group):
+        for enemy in [enemy for enemy in the_sprite_group.enemy0_group 
+                        if enemy.is_on_screen
+                        ]:
+            if self.atk_rect.colliderect(enemy.rect):
+                self.do_instant_st_regen(0)
+        
+        for p_int in [p_int for p_int in the_sprite_group.p_int_group
+                      if p_int.type == 'breakable_brick1' and p_int.is_onscreen
+                      ]:
+            if self.atk_rect.colliderect(p_int.rect):
+                self.do_instant_st_regen(1)
+                
+        for bullet in the_sprite_group.enemy_bullet_group: #[bullet for bullet in the_sprite_group.enemy_bullet_group]:
+            if self.atk_rect.colliderect(bullet.rect):
+                self.do_instant_st_regen(0)
+
+            
+                    
+        
 
         for item in the_sprite_group.item_group:
             if (self.hitbox_rect.colliderect(item.rect)):
@@ -818,6 +856,7 @@ class player(pygame.sprite.Sprite):
             self.heavy = False
             self.atk1_stamina_cost = self.atk1_default_stam
             self.draw_trail = False
+            
 
         #==========================================================================================================================================
         
@@ -1029,7 +1068,7 @@ class player(pygame.sprite.Sprite):
             rate = 80
  
             if self.speed > self.default_speed and not self.rolling:
-                stamina_increment_unit = -0.18
+                stamina_increment_unit = -0.16
             elif self.rolling and self.stamina_used + self.roll_stam_rate <= self.stamina:
                 stamina_increment_unit = self.roll_stam_rate
             else:
@@ -1314,7 +1353,10 @@ class player(pygame.sprite.Sprite):
                 else:
                     self.heavy = False
                     self.atk1_stamina_cost = self.atk1_default_stam
-                self.stamina_used += self.atk1_stamina_cost
+                if self.stamina_used + self.atk1_stamina_cost >= self.stamina:
+                    self.stamina_used = self.stamina
+                else:
+                    self.stamina_used += self.atk1_stamina_cost
                 self.ini_stamina += self.atk1_stamina_cost
                 
             if new_action == 9:

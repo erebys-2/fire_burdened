@@ -23,7 +23,7 @@ class sprite_instantiator():
         sprite_id = sprite_info[1]
 
         #enemies and player interactables/obstacles
-        if sprite_category == 'enemy':
+        if not world.lvl_completed and sprite_category == 'enemy':
             if sprite_id == 'dog':
                 enemy0 = enemy_32wide(x * 32, y * 32, 3, 2, 'dog', world.enemy0_id, ini_vol)
                 the_sprite_group.enemy0_group.add(enemy0)

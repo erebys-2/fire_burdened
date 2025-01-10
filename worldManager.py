@@ -117,8 +117,10 @@ class World():
         
         self.sp_ini = sprite_instantiator()
         
-        self.death_counters_dict = {}
-        
+        #resets per instance
+        self.death_counters_dict = {} #player deaths per level
+        self.lvl_completion_dict = {} #if all enemies are killed in a level
+        self.lvl_completed = False
             
     # Rabbid76's game map method, modified, from https://stackoverflow.com/questions/66781952/
     def create_map(self, size, level_tile_lists): #apply to all 1:1 layers
@@ -131,6 +133,12 @@ class World():
                 y_pixel = tile[1][1]
                 game_map.blit(tile[0], (x_pixel, y_pixel))
         return game_map
+    
+    def update_lvl_completion(self, level, enemy_death_count, player_alive):#called on level change
+        #player_alive is true when the next_level isn't the menu level, when the player dies they are sent to this level
+        #so if the player kills all the enemies in a level then dies or exits to the main menu, the dict will not be updated
+        if player_alive and self.enemy0_id != 0 and self.enemy0_id == enemy_death_count:
+            self.lvl_completion_dict[level] = 2#how many times a level will be loaded without enemies
                 
     def get_death_count(self, level):#death counts are a dictionary with levels as keys, it is reset everytime a mew slot is selected or the game is restarted
         death_count = 0
@@ -176,11 +184,7 @@ class World():
     #for saving
     def get_plot_index_dict(self):
         return self.plot_index_dict
-    
-    def clear_data(self):
-        for lvl_data in self.detailed_lvl_data_list:
-            lvl_data *= 0
-   
+            
    
     #=======================================  SET HITBOXES FOR SPECIAL TILES =================================
     
@@ -221,7 +225,8 @@ class World():
     def process_data(self, level, the_sprite_group, screenW, screenH, level_data, ini_vol):
         #clear old data
         raw_lvl_data_list = []
-        self.clear_data()
+        for lvl_data in self.detailed_lvl_data_list:
+            lvl_data *= 0
         
         #populate raw_lvl_data_list with lists of int values from level csv files
         raw_lvl_data_list = self.get_raw_csv_data(level, level_data[0:2])
@@ -230,6 +235,13 @@ class World():
         self.process_coords_vslice(raw_lvl_data_list[0], screenW, screenH, self.detailed_lvl_data_list[0])
         self.enemy0_id = 0
         self.transition_index = 0
+        
+        #check world lvl completion dict
+        self.lvl_completed = False
+        if level in self.lvl_completion_dict:
+            if self.lvl_completion_dict[level] > 0:
+                self.lvl_completed = True
+                self.lvl_completion_dict[level] -= 1 #reset the completion status of the level
         
         #processing interactable layer
         for y, row in enumerate(raw_lvl_data_list[3]):
@@ -278,6 +290,7 @@ class World():
         #add another death counter
         if level not in self.death_counters_dict:
             self.death_counters_dict[level] = 0
+            
 
         
     def process_coords_hslice(self, data, screenW, screenH, rtrn_list):

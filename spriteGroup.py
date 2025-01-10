@@ -47,6 +47,7 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 	
 		self.scroll_x = 0
 		self.pause_game = False
+		self.enemy_death_count = 0
   
 	def update_vol_lvl(self, level):
 		for sp_group in self.sp_groups_with_vol:
@@ -60,6 +61,7 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 			elif group in (self.particle_group, self.particle_group_bg, self.particle_group_fg):
 				group.sprite.empty_list()
    
+		self.enemy_death_count = 0
 		self.textbox_output = ('', False, False, '', 0, 0, (False, ''))
   
 	# def update_scroll_x(self, scroll_x):
@@ -126,6 +128,7 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 				enemy0.animate(self.sp_group_list)
 				enemy0.move(player_hitbox_rect, player_atk_rect_scaled, player_direction, world_solids, self.scroll_x, player_action, self.sp_group_list)
 			if enemy0.Alive == False:
+				self.enemy_death_count += 1
 				self.enemy0_group.remove(enemy0)
 
 		for enemy_bullet in self.enemy_bullet_group:

@@ -56,7 +56,7 @@ class StatusBars():
                 if pygame.time.get_ticks()%4 == 0:
                     screen.blit(self.img5, rect_)
         
-    def draw(self, screen, stat_data, font):
+    def draw(self, screen, stat_data, font, flicker):
         hp_color = (105,31,46)
         stam_color = (0,80,28)
         charge_color = (255,0,86)
@@ -81,7 +81,10 @@ class StatusBars():
             if stat_data[2] > 0:
                 if pygame.time.get_ticks()%2 == 0:
                     pygame.draw.rect(screen, charge_color, charge_rect)
-            pygame.draw.rect(screen, stam_color, stam_rect)
+            if not flicker:
+                pygame.draw.rect(screen, stam_color, stam_rect)
+            else:
+                pygame.draw.rect(screen, (255,255,255), stam_rect)
             screen.blit(self.image, self.rect)
             
             if self.warning == True:
