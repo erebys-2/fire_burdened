@@ -200,8 +200,13 @@ class World():
             img_rect = pygame.Rect(0, 0, 32, 16)
         elif level_data != None and tile_type == 'lvl_transition':#level transition tile
             img = self.tileList[0][9]
+            
+            # img = pygame.Surface((level_data[2][self.transition_index][0], level_data[2][self.transition_index][1]))
+            # img.fill((255,0,0))        
             img_rect = pygame.Rect(0, 0, level_data[2][self.transition_index][0], level_data[2][self.transition_index][1])
-            transition_data = level_data[2][self.transition_index][2:5] #passed to the player: next_level, next coords
+            transition_data = list(level_data[2][self.transition_index][2:6]) #passed to the player: next_level, player new x, player new y, bound index
+            transition_data.append((x*32,y*32))
+            #print(transition_data)
             self.transition_index += 1
         
         #modify placement of the rect
@@ -210,6 +215,9 @@ class World():
             img_rect.y = (y * 32) + 16
         else:
             img_rect.y = y * 32
+            
+        if tile_type == 'lvl_transition' and y > 0:
+            img_rect.y += 30
         
         tile_data = (img, img_rect, tile, transition_data)
         

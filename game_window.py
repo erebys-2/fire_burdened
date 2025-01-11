@@ -79,7 +79,7 @@ def main():
 	level_transitioning = False
 	lvl_transition_counter = 0
 
-	tile_size = 32
+	ts = 32 #tile size
 	tile_set = 'standard'
 
 	damage = 0
@@ -97,7 +97,7 @@ def main():
 	font_massive = pygame.font.SysFont('SimSun', 48)
 
 	#camera instance
-	camera_offset = int(0.75 * tile_size)
+	camera_offset = int(0.75 * ts)
 	camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, camera_offset)
  
 	#instantiate sprite groups=========
@@ -124,21 +124,28 @@ def main():
 
 	#tuple for level transitions
 	#level_dict: (color, gradient, y tile count, x tile count, lvl trans data, player enable)
-	#lvl trans data: (width, height, next_level, player_new_x, player_new_y)
+	#lvl trans data: (width, height, next_level, player_new_x, player_new_y, paired_index)
  	# 			=> (tile rect, next level, new player location)
+	null = -999
+	ht = SCREEN_HEIGHT
+	wd = SCREEN_WIDTH
+	std_y_disp = ht - 3*ts
+	
 	level_dict = {
 		0:[black, 'none', 15, 30, [], False, ''], #lvl 0
-		1:[grey, 'none', 15, 200, [(2, 15*32, 2, 44*32, -999), (2, 15*32, 3, 0, -999)], True, 'Outer City Ruins'], #lvl 1
-		2:[grey, 'none', 15, 45, [(2, 15*32, 1, 0, -999)], True, "Barrier's Edge"], #lvl 2
-		3:[grey, 'none', 15, 40, [(2, 15*32, 1, 199*32, -999), (2, 15*32, 4, 0, -999)], True, 'Outer City Ruins'],
-		4:[grey, 'none', 15, 200, [(2, 15*32, 3, 39*32, -999)], True, 'Outer City Ruins']
+		1:[grey, 'none', 15, 200, [(2, ht, 2, 44*ts, null, null), (2, ht, 3, 0, null, null)], True, 'Outer City Ruins'], #lvl 1
+		2:[grey, 'none', 15, 45, [(2, ht, 1, 0, null, null)], True, "Barrier's Edge"], #lvl 2
+		3:[grey, 'none', 15, 40, [(2, ht, 1, 199*ts, null, null), (2, ht, 4, 0, null, null)], True, 'Outer City Ruins'],
+		4:[grey, 'none', 15, 200, [(2, ht, 3, 39*ts, null, null), (SCREEN_WIDTH, 2, 5, null, 2, 0)], True, 'Outer City Ruins'],
+		5:[grey, 'none', 15, 20, [(wd, 2, 4, null, std_y_disp, 1)], True, 'Outer City Ruins']
 	}
  
 	level_ambiance_dict = {#scale, p_type, frame, density, sprite_group
 		1:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),),#have to put an extra comma in
 		2:((0.3, 'player_bullet_explosion', 0, 1, the_sprite_group.particle_group_bg), (0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg)),
 		3:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),),
-		4:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),)
+		4:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),),
+		5:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),)
 	}
 	
 	#populate area name dict
@@ -279,6 +286,7 @@ def main():
 	run = True
 	player_new_x = 32
 	player_new_y = 32
+	bound_index = null
 	transition_orientation = 'vertical'
 	ld_title_screen_en = True
 
@@ -320,7 +328,12 @@ def main():
 			next_level = player0_lvl_transition_data[1][0]
 			player_new_x = player0_lvl_transition_data[1][1]
 			player_new_y = player0_lvl_transition_data[1][2]
+			bound_index = player0_lvl_transition_data[1][3]
 			transition_orientation = player0_lvl_transition_data[2]
+			transition_disp = player0_lvl_transition_data[3]
+		else:
+			transition_orientation = 'vertical' #default case
+	
    
 		#need to set a player new_x and directly set player's rect y, need to set level as well
 
@@ -332,6 +345,8 @@ def main():
 			world.update_lvl_completion(level, the_sprite_group.enemy_death_count, next_level != 0)
    
 			player_en = False
+			
+			player0.scrollx = 0
 			scroll_x = 0
 			scroll_y = 0
 			the_sprite_group.purge_sprite_groups()
@@ -341,7 +356,8 @@ def main():
 			level = next_level
 
 			# load level data
-			world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][2:5], vol_lvl)
+			world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][2:6], vol_lvl)
+			# each tile is set with data
 			
 			if move_L:
 				temp_move_L = move_L
@@ -353,25 +369,33 @@ def main():
 			if ui_manager0.set_player_location:
 				ui_manager0.set_player_location = set_player_coords(ui_manager0.player_new_coords)
 			else:
-				player0.rect.x = player_new_x - 32 #set player location
-				if transition_orientation == 'horizontal':
+				if transition_orientation == 'vertical':
+					player0.rect.x = player_new_x - 32 #set player location
+				else:
+					#loads all the lvl trans tiles from new level, these have specific coordinates
+					loaded_lvl_trans_tiles = []
+					for tile in [tile for tile in world.solids if tile[2] == 10]:
+						loaded_lvl_trans_tiles.append(tile)
+					#set new x to the x position of the paired lvl trans tile 
+     				#with some transition_disp = previous player rect.x - previous lvl trans tile rect.x
+					player0.rect.x = loaded_lvl_trans_tiles[bound_index][3][4][0] + transition_disp
 					player0.rect.y = player_new_y
+					camera.scrollx = 0				
+	
 				player0.vel_y = 0
 			
 			camera.rect.centerx = HALF_SCREEN_W
-			if world.x_scroll_en:
-				camera.set_ini_pos = True #signal to force camera into position next cycle
-	
+   
 			if temp_move_R:
 				move_R = temp_move_R
 			if temp_move_L:
 				move_L = temp_move_L
-
-			#area_name_time = pygame.time.get_ticks()
+			
+			if world.x_scroll_en:
+				camera.set_ini_pos = True #signal to force camera into position next cycle
+			else:
+				camera.set_ini_pos = False
 	
-		# elif level_transitioning and pygame.time.get_ticks() - 180 > level_trans_timing:
-		# 	level_trans_timing = pygame.time.get_ticks()
-		# 	level_transitioning = False
 		elif not camera.set_ini_pos:
 			level_transitioning = False
 		
@@ -384,7 +408,7 @@ def main():
 		if world.x_scroll_en and not pause_game:
 			
 			camera.auto_correct(player0.rect, player0.direction, player0.x_coord, 
-                       [tile for tile in world.coords if tile[1][0] > - tile_size and tile[1][0] < SCREEN_WIDTH], 
+                       [tile for tile in world.coords if tile[1][0] > - ts and tile[1][0] < SCREEN_WIDTH], 
                        world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
 		world_tile0_coord = world.draw(screen, scroll_x, scroll_y, player0.hitting_wall)#this draws the world and scrolls it 
   
@@ -407,7 +431,7 @@ def main():
 			if player_enable_master: 
 				player0.animate(the_sprite_group)
 				player0.do_entity_collisions(the_sprite_group)
-				player0_lvl_transition_data = player0.move(pause_game, move_L, move_R, [tile for tile in world.solids if tile[1][0] > -32 and tile[1][0] < 640], 
+				player0_lvl_transition_data = player0.move(pause_game, move_L, move_R, world.solids, 
                                                				world.coords, world.world_limit, world.x_scroll_en, world.y_scroll_en, 
 															HALF_SCREEN_W, SCREEN_HEIGHT, the_sprite_group, ccsn_chance)
 				use_item_tuple = player0.inventory_handler.item_usage_hander0.process_use_signal(player_inv_UI.use_item_flag, player_inv_UI.item_to_use, player0)
@@ -1282,7 +1306,7 @@ def main():
 		screen_r_edge = 0
 		if world_tile0_coord[0] > 0:
 			screen_l_edge = world_tile0_coord[0]
-		elif world_tile0_coord[0] < -world.world_limit[0] + (SCREEN_WIDTH - tile_size):
+		elif world_tile0_coord[0] < -world.world_limit[0] + (SCREEN_WIDTH - ts):
 			screen_r_edge = SCREEN_WIDTH - (world_tile0_coord[0] + world.world_limit[0])
   
 		pygame.display.update(pygame.rect.Rect(screen_l_edge, world_tile0_coord[1], SCREEN_WIDTH - screen_r_edge, SCREEN_HEIGHT-2*world_tile0_coord[1]))
