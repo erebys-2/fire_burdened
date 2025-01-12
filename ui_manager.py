@@ -116,6 +116,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         
         #sets plot index list to 0
         plot_index_dict = {} #populate plot index for each npc
+        lvl_completion_dict = {0: 0}
         for npc in os.listdir('sprites/npcs'):
             plot_index_dict[npc] = -1
         
@@ -164,7 +165,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         elif not self.options_menu_enable and not self.saves_menu_enable and self.saves_menu2_enable:
             self.show_saves_menu2(screen)
             
-        return (next_level, self.run_game, plot_index_dict)
+        return (next_level, self.run_game, plot_index_dict, lvl_completion_dict)
 
 #-----------------------------------------------------------pause menu---------------------------------------------------------
     def show_pause_menu(self, screen):
@@ -270,6 +271,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         next_level = 0
         #sets plot index list to 0
         plot_index_dict = {} #populate plot index for each npc
+        lvl_completion_dict = {0: 0}
         for npc in os.listdir('sprites/npcs'):
             plot_index_dict[npc] = -1
         
@@ -309,7 +311,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                                          (self.S_W//2 - 100, self.S_H//2 - 128,self.S_W,self.S_H), False, False, 'none')
         
      
-        return (next_level, self.run_game, plot_index_dict)
+        return (next_level, self.run_game, plot_index_dict, lvl_completion_dict)
 
             
 #---------------------------------------------------------Save select sub menu-----------------------------------
@@ -318,6 +320,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         next_level = 0
         #sets plot index list to 0
         plot_index_dict = {} #populate plot index for each npc
+        lvl_completion_dict = {0: 0}
         for npc in os.listdir('sprites/npcs'):
             plot_index_dict[npc] = -1
         
@@ -342,6 +345,9 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 path = f'save_files/{i}'
                 self.player_new_inv = self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(path, 'player_inventory.txt')))
                 self.set_player_inv = True
+                
+                #set lvl completion dict
+                lvl_completion_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'lvl_completion_dict.txt')), 'int')
                 
                 #set plot index
                 if self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt'))[0] != 'empty': #this way I don't have to keep adding -1 if a player loads from a new save
@@ -389,8 +395,10 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 
                 #set plot index
                 if self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt'))[0] != 'empty': #this way I don't have to keep adding -1 if a player loads from a new save
-                    #print(self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt')))
                     plot_index_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt')), 'int')
+                    
+                #set lvl completion dict
+                lvl_completion_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'lvl_completion_dict.txt')), 'int')
                 
                 #get level and player location data
                 new_lvl_and_player_dat = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'level_and_player_coords.txt')), 'int')
@@ -408,7 +416,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             self.button_list[6].show_text(screen, self.fontlist[1], ('',f'Last File: {self.selected_slot}'))
             
      
-        return (next_level, self.run_game, plot_index_dict)
+        return (next_level, self.run_game, plot_index_dict, lvl_completion_dict)
 
             
 #---------------------------------------------------------Controls sub menu---------------------------                

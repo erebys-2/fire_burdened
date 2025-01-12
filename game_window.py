@@ -340,7 +340,7 @@ def main():
 		#----------------------------------------------------------------------level changing-------------------------------------------------
 		if level != next_level:
 			level_transitioning = True
-
+			
 			#update world's completion dict
 			world.update_lvl_completion(level, the_sprite_group.enemy_death_count, next_level != 0)
    
@@ -357,6 +357,7 @@ def main():
 
 			# load level data
 			world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][2:6], vol_lvl)
+			#print(world.lvl_completion_dict)
 			# each tile is set with data
 			
 			if move_L:
@@ -578,6 +579,7 @@ def main():
 		#--------------------------------------------------------------MAIN MENU CODE---------------------------------------------------------------------
 		if level == 0 or ui_manager0.saves_menu_enable: 
 			draw_bg(screen, gradient_dict, level_dict[level][1], level_dict[level][0])
+			world.lvl_completion_dict = {0:0} #reset 
 			pause_game = False
 
 			#plot index list's csv is read within ui_manager
@@ -587,21 +589,20 @@ def main():
 				if ui_manager0.selected_slot != -1 and selected_slot != ui_manager0.selected_slot:
         			#change slot and reset death counters and lvl copmletion dict across levels if a different slot is selected
 					world.death_counters_dict = {0: 0}
-					world.lvl_completion_dict = {}
 					selected_slot = ui_manager0.selected_slot
 				if ui_manager0.reset_death_counters: #reset death counters if reset buttons is pressed
 					ui_manager0.reset_death_counters = False
 					world.death_counters_dict = {0: 0}
-					world.lvl_completion_dict = {}
 			elif ui_manager0.saves_menu2_enable:
 				ui_output = ui_manager0.show_saves_menu2(screen) #select slot for new game
 				if ui_manager0.selected_slot != -1:# and selected_slot != ui_manager0.selected_slot:
 					world.death_counters_dict = {0: 0}#slot changes from -1 if a slot is chosen, this will always execute
-					world.lvl_completion_dict = {}
 					selected_slot = ui_manager0.selected_slot
 			else:
 				ui_output = ui_manager0.show_main_menu(screen)
-	
+				
+    
+			world.lvl_completion_dict = ui_output[3]
 			world.set_plot_index_dict(plot_index_dict = ui_output[2])#world plot index saved here
 			run = ui_output[1]
 			next_level = ui_output[0]

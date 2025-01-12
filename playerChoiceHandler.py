@@ -84,7 +84,7 @@ class player_choice_handler():
                 #self.trigger_once = True
                 if key == 'save_game': # write to save file
                     #t1, slot, level, world, player
-                    self.save_handler.save(self.t1, i, level, world.plot_index_dict, player)
+                    self.save_handler.save(self.t1, i, level, world.plot_index_dict, world.lvl_completion_dict, player)
                     
                     self.last_save_slot = i
                     self.save_indicator = True

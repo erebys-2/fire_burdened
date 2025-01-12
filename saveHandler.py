@@ -4,13 +4,13 @@ class save_file_handler():
     def __init__(self) -> None:
         pass
     
-    def save(self, t1, slot, level, plot_index_dict, player):
+    def save(self, t1, slot, level, plot_index_dict, lvl_completion_dict, player):
         path = f'save_files/{slot}'
         str1 = f'level: {level}\nplayer_x: {player.x_coord}\nplayer_y: {player.rect.y - 8}'
         
         str2 = ''
         for key_ in plot_index_dict:
-            str2 = str2 + (f'{key_}: {plot_index_dict[key_]}\n')
+            str2 = str2 + f'{key_}: {plot_index_dict[key_]}\n'
         str2 = str2[0:len(str2)-1]
             
         str3 = ''
@@ -18,9 +18,15 @@ class save_file_handler():
             str3 = str3 + f'{slot[0]}, {slot[1]}\n'
         str3 = str3[0:len(str3)-1]
         
+        str4 = ''
+        for lvl in lvl_completion_dict:
+            str4 = str4 + f'{lvl}: {lvl_completion_dict[lvl]}\n'
+        str4 = str4[0:len(str4)-1]
+        
         t1.overwrite_file(os.path.join(path, 'level_and_player_coords.txt'), str1)
         t1.overwrite_file(os.path.join(path, 'plot_index_dict.txt'), str2)
         t1.overwrite_file(os.path.join(path, 'player_inventory.txt'), str3)
+        t1.overwrite_file(os.path.join(path, 'lvl_completion_dict.txt'), str4)
         
     def reset_specific_save(self, slot, t1):
         path = f'save_files/{slot}'
@@ -33,9 +39,12 @@ class save_file_handler():
             str3 = str3 + f'empty, 0\n'
         str3 = str3[0:len(str3)-1]
         
+        str4 = '0: 0'
+        
         t1.overwrite_file(os.path.join(path, 'level_and_player_coords.txt'), str1)
         t1.overwrite_file(os.path.join(path, 'plot_index_dict.txt'), str2)
         t1.overwrite_file(os.path.join(path, 'player_inventory.txt'), str3)
+        t1.overwrite_file(os.path.join(path, 'lvl_completion_dict.txt'), str4)
         
     def reset_all_saves(self, t1):
         for i in range(4):

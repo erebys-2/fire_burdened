@@ -675,7 +675,7 @@ class player(pygame.sprite.Sprite):
                            
             elif(tile[2] == 10):#level transition tiles
                     
-                if tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + dy, 4, self.height):
+                if tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + self.height*0.25 + dy, 4, 0.5*self.height):
                     #this collision will be used to initiate a level change
                     #tile[3][0]: next_level, [1]: player new x, [2]: player new y
                     if tile[1].width < tile[1].height:
@@ -684,7 +684,7 @@ class player(pygame.sprite.Sprite):
                         lvl_trans_orientation = 'horizontal'
                     
                     self.scrollx = 0
-                    if not self.disp_flag:
+                    if not self.disp_flag or lvl_trans_orientation == 'horizontal':
                         self.do_screenshake = False
                         dx = 0
                         dy = 0
@@ -693,16 +693,12 @@ class player(pygame.sprite.Sprite):
                         lvl_trans_disp = self.rect.x - tile[1].x
                     elif lvl_trans_orientation == 'vertical':
                         dx = -self.direction*8
-                    # elif lvl_trans_orientation == 'horizontal':
-                    #     dy = 0
-                        
+    
 
-        
+
         #debuggin bottom boundary
-        if self.rect.bottom + dy > 480 + self.rect.height//2:
+        if self.rect.y + self.rect.height//2 + dy > 480:
             dy -= self.rect.bottom - (480)
-            #self.hits_tanked = self.hp
-            #self.rect.top = 481
             self.in_air = False
  
         return (dx, dy, (lvl_transition_flag, lvl_transition_data, lvl_trans_orientation, lvl_trans_disp))
@@ -972,17 +968,18 @@ class player(pygame.sprite.Sprite):
         self.update_coords(world_coords, dx, dy)
 
         #---------------------------------------------------------world boundaries------------------------------------------------------------------
-        if self.collision_rect.x < 0:
+        if self.collision_rect.x < -2:
             dx = 1
-        elif self.x_coord > world_limit[0]:
+        elif self.x_coord > world_limit[0] + 2:
             dx = -1
         
-        if self.collision_rect.x < -8:
+        #--------------------------------------window boundaries
+        if self.collision_rect.x < -4:
             dy = 0
-            dx = 8
-        elif self.collision_rect.x >= 608:
+            dx = 4
+        elif self.collision_rect.x >= 604:
             dy = 0
-            dx = -8
+            dx = -4
         
         #----------------------------------------------------------------------------------------------------------------------------------
         #================================================================TILE COLLISIONS=====================================================================
@@ -993,10 +990,7 @@ class player(pygame.sprite.Sprite):
         else:
             dxdy = self.do_tile_collisions(world_solids, the_sprite_group, dx, dy, ccsn_chance)
             lvl_transition_flag_and_data = dxdy[2]
-            
-        # if lvl_transition_flag_and_data[0]:
-        #     self.update_coords(world_coords, dx, dy)
-            
+
         dx = dxdy[0]
         dy = dxdy[1]
         

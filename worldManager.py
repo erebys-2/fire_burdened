@@ -119,7 +119,7 @@ class World():
         
         #resets per instance
         self.death_counters_dict = {} #player deaths per level
-        self.lvl_completion_dict = {} #if all enemies are killed in a level
+        self.lvl_completion_dict = {0:0} #if all enemies are killed in a level
         self.lvl_completed = False
             
     # Rabbid76's game map method, modified, from https://stackoverflow.com/questions/66781952/
@@ -138,7 +138,7 @@ class World():
         #player_alive is true when the next_level isn't the menu level, when the player dies they are sent to this level
         #so if the player kills all the enemies in a level then dies or exits to the main menu, the dict will not be updated
         if player_alive and self.enemy0_id != 0 and self.enemy0_id == enemy_death_count:
-            self.lvl_completion_dict[level] = 2#how many times a level will be loaded without enemies
+            self.lvl_completion_dict[level] = 4#how many times a level will be loaded without enemies
                 
     def get_death_count(self, level):#death counts are a dictionary with levels as keys, it is reset everytime a mew slot is selected or the game is restarted
         death_count = 0
@@ -246,7 +246,7 @@ class World():
         
         #check world lvl completion dict
         self.lvl_completed = False
-        if level in self.lvl_completion_dict:
+        if level != 0 and level in self.lvl_completion_dict:
             if self.lvl_completion_dict[level] > 0:
                 self.lvl_completed = True
                 self.lvl_completion_dict[level] -= 1 #reset the completion status of the level
