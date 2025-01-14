@@ -132,6 +132,7 @@ def main():
 	std_y_disp = ht - 3*ts
 	
 	level_dict = {
+		#==================================================================Note that tile order priority is row then column=================================================================
 		0:[black, 'none', 15, 30, [], False, ''], #lvl 0
 		1:[grey, 'none', 15, 200, [(2, ht, 2, 44*ts, null, null), (2, ht, 3, 0, null, null)], True, 'Outer City Ruins'], #lvl 1
 		2:[grey, 'none', 15, 45, [(2, ht, 1, 0, null, null)], True, "Barrier's Edge"], #lvl 2
@@ -155,7 +156,7 @@ def main():
 	area_name_img = pygame.image.load('sprites/pause_bg2.png').convert_alpha()
 	area_name_img = pygame.transform.scale(area_name_img, (SCREEN_WIDTH, SCREEN_HEIGHT//15))
 
-	#lists for dynamic CSVs
+	#lists for game_settings
 	vol_lvl = [10,10]
 	ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054, 121, 117]
 	
@@ -181,7 +182,7 @@ def main():
 	#reading settings data
 	def read_settings_data(data):
 		temp_list = []
-		with open(f'dynamic_CSVs/{data}.csv', newline= '') as csvfile:
+		with open(f'game_settings/{data}.csv', newline= '') as csvfile:
 			reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
 			for row in reader:
 				for entry in row:
@@ -239,16 +240,18 @@ def main():
 
 	#player inventory manager
 	player_inv_UI = inventory_UI(3, 3, [font, font_larger, font_massive], SCREEN_WIDTH, SCREEN_HEIGHT, vol_lvl)
+	item_picked_up = 'empty'
 	inv_toggle = False
 	inv_toggle_en = False
 
 
 	#instantiate player at the start of load
+	stam = 6
 	hp = 6
 	speed = 4
 	ccsn_chance = 10
 	
-	player0 = player(32, 160, speed, hp, 6, 0, 0, vol_lvl, camera_offset)#6368 #5856 #6240 #test coords for camera autocorrect
+	player0 = player(32, 160, speed, hp, stam, 0, 0, vol_lvl, camera_offset)#6368 #5856 #6240 #test coords for camera autocorrect
 	#good news is that the player's coordinates can go off screen and currently the camera's auto scroll will eventually correct it
 	normal_speed = player0.speed
 	debugger_sprint = False
@@ -276,6 +279,10 @@ def main():
 	the_sprite_group.particle_group_bg.add(particle_2_bg)
 	
 	the_sprite_group.purge_sprite_groups()#does as the name suggests at the start of each load of the game
+ 
+	passive_effects_dict = {
+		'salted_earth':False
+	}
 
 	# load level data
 	world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][2:5], vol_lvl)
@@ -310,6 +317,9 @@ def main():
 	selected_slot = -1
  
 	joysticks = {}
+ 
+
+ 
 
 	while run:
 		clock.tick(FPS)
@@ -340,9 +350,10 @@ def main():
 		#----------------------------------------------------------------------level changing-------------------------------------------------
 		if level != next_level:
 			level_transitioning = True
-			
-			#update world's completion dict
-			world.update_lvl_completion(level, the_sprite_group.enemy_death_count, next_level != 0)
+			#print(pygame.time.get_ticks())
+			#update world's persistent dictionaries
+			world.update_lvl_completion(level, the_sprite_group.enemy_death_count, next_level != 0, passive_effects_dict)
+			world.check_onetime_spawn_dict(level)
    
 			player_en = False
 			
@@ -357,7 +368,6 @@ def main():
 
 			# load level data
 			world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][2:6], vol_lvl)
-			#print(world.lvl_completion_dict)
 			# each tile is set with data
 			
 			if move_L:
@@ -495,6 +505,7 @@ def main():
 			the_sprite_group.update_text_prompt_group(screen, dialogue_enable, next_dialogue, player0, world, selected_slot)#player and world
 			next_dialogue = False
 			player0.check_melee_hits(the_sprite_group)#seems to work, wasn't responsive at first
+			player0.check_item_pickup(the_sprite_group)
 			the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, player0.direction, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
    
 			the_sprite_group.update_item_group(screen, player0.hitbox_rect)
@@ -506,6 +517,10 @@ def main():
 			status_bars.draw(screen, player0.get_status_bars(), font, False)
 			status_bars.draw2(screen, player0.action_history, (7,8,16))
 			player_inv_UI.show_selected_item(player0.inventory_handler.inventory, screen)
+   
+			#passive items temp code
+			passive_effects_dict['salted_earth'] = player0.inventory_handler.check_for_item('Talisman of Salted Earth')
+				
    
 			#draw area name here
 			if area_name_time + 2500 > pygame.time.get_ticks():
@@ -580,20 +595,21 @@ def main():
 		if level == 0 or ui_manager0.saves_menu_enable: 
 			draw_bg(screen, gradient_dict, level_dict[level][1], level_dict[level][0])
 			world.lvl_completion_dict = {0:0} #reset 
+			world.onetime_spawn_dict = {}
 			pause_game = False
 
 			#plot index list's csv is read within ui_manager
-			if ui_manager0.saves_menu_enable:
+			if ui_manager0.saves_menu_enable: #load file
 				ui_output = ui_manager0.show_saves_menu(screen)
 
 				if ui_manager0.selected_slot != -1 and selected_slot != ui_manager0.selected_slot:
         			#change slot and reset death counters and lvl copmletion dict across levels if a different slot is selected
 					world.death_counters_dict = {0: 0}
 					selected_slot = ui_manager0.selected_slot
-				if ui_manager0.reset_death_counters: #reset death counters if reset buttons is pressed
-					ui_manager0.reset_death_counters = False
+				if ui_manager0.reset_all_slots: #reset death counters if reset button is pressed
+					ui_manager0.reset_all_slots = False
 					world.death_counters_dict = {0: 0}
-			elif ui_manager0.saves_menu2_enable:
+			elif ui_manager0.saves_menu2_enable: #new game menu
 				ui_output = ui_manager0.show_saves_menu2(screen) #select slot for new game
 				if ui_manager0.selected_slot != -1:# and selected_slot != ui_manager0.selected_slot:
 					world.death_counters_dict = {0: 0}#slot changes from -1 if a slot is chosen, this will always execute
@@ -601,7 +617,7 @@ def main():
 			else:
 				ui_output = ui_manager0.show_main_menu(screen)
 				
-    
+			world.onetime_spawn_dict = ui_output[4]
 			world.lvl_completion_dict = ui_output[3]
 			world.set_plot_index_dict(plot_index_dict = ui_output[2])#world plot index saved here
 			run = ui_output[1]
@@ -612,7 +628,7 @@ def main():
 			
 			elif run and ui_manager0.saves_menu_enable and player0.hits_tanked == hp and not player0.Alive and not ui_manager0.set_player_location:
 				#reset player0
-				player0 = player(32, 160, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+				player0 = player(32, 160, speed, hp, stam, 0, 0, vol_lvl, camera_offset)
 	
 		#-------------------------------------------------pausing game--------------------------------------------------------
 		if pause_game:
@@ -622,7 +638,7 @@ def main():
 			pause_game = ui_tuple0[0]
 			if ui_tuple0[1]:
 				next_level = 0
-				player0 = player(32, 160, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+				player0 = player(32, 160, speed, hp, stam, 0, 0, vol_lvl, camera_offset)
 				player_new_x = 32
 				player_new_y = 32
 		
@@ -688,7 +704,7 @@ def main():
 
 			if ui_manager0.show_death_menu(screen):
 				next_level = 0
-				player0 = player(32, 160, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+				player0 = player(32, 160, speed, hp, stam, 0, 0, vol_lvl, camera_offset)
 				player_new_x = 32
 				player_new_y = 32
 	
@@ -961,7 +977,7 @@ def main():
 
 						if (pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
 							next_level = 0
-							player0 = player(32, 160, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+							player0 = player(32, 160, speed, hp, stam, 0, 0, vol_lvl, camera_offset)
 							player_new_x = 32
 							#player_new_y = 32
 							dialogue_box0.reset_internals()
@@ -1197,7 +1213,7 @@ def main():
 
 						if (pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
 							next_level = 0
-							player0 = player(32, 160, speed, hp, 6, 0, 0, vol_lvl, camera_offset)
+							player0 = player(32, 160, speed, hp, stam, 0, 0, vol_lvl, camera_offset)
 							player_new_x = 32
 							player_new_y = 32
 							dialogue_box0.reset_internals()

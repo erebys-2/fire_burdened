@@ -386,32 +386,31 @@ class player(pygame.sprite.Sprite):
             self.melee_hit = True
         
     def check_melee_hits(self, the_sprite_group):
-        for enemy in [enemy for enemy in the_sprite_group.enemy0_group 
-                        if enemy.is_on_screen
-                        ]:
-            if self.atk_rect.colliderect(enemy.rect):
-                self.do_instant_st_regen(0)
-        
-        for p_int in [p_int for p_int in the_sprite_group.p_int_group
-                      if p_int.type == 'breakable_brick1' and p_int.is_onscreen
-                      ]:
-            if self.atk_rect.colliderect(p_int.rect):
-                self.do_instant_st_regen(1)
-                
-        for bullet in the_sprite_group.enemy_bullet_group: #[bullet for bullet in the_sprite_group.enemy_bullet_group]:
-            if self.atk_rect.colliderect(bullet.rect):
-                self.do_instant_st_regen(0)
-
+        if self.atk1:
+            for enemy in [enemy for enemy in the_sprite_group.enemy0_group 
+                            if enemy.is_on_screen
+                            ]:
+                if self.atk_rect.colliderect(enemy.rect):
+                    self.do_instant_st_regen(0)
             
+            for p_int in [p_int for p_int in the_sprite_group.p_int_group
+                        if p_int.id == 'breakable_brick1' and p_int.is_onscreen
+                        ]:
+                if self.atk_rect.colliderect(p_int.rect):
+                    self.do_instant_st_regen(1)
                     
-        
+            for bullet in the_sprite_group.enemy_bullet_group: #[bullet for bullet in the_sprite_group.enemy_bullet_group]:
+                if self.atk_rect.colliderect(bullet.rect):
+                    self.do_instant_st_regen(0)
 
+    def check_item_pickup(self, the_sprite_group):#player side confirmation an item is picked up
         for item in the_sprite_group.item_group:
             if (self.hitbox_rect.colliderect(item.rect)):
                 #print("gotteem")
                 #last param is a boolean for exluding items in the item id list prior, when set to False it will only include those items
-                if self.inventory_handler.pick_up_item(self.collision_rect, the_sprite_group.item_group, ['Cursed Flesh'], True): 
+                if self.inventory_handler.pick_up_item(self.collision_rect, the_sprite_group.item_group, ['Cursed Flesh'], True):
                     self.m_player.play_sound(self.m_player.sfx[8])
+
     
     def do_npc_collisions(self, dx, the_sprite_group):
         for obj in [obj for obj in the_sprite_group.textprompt_group 
@@ -456,7 +455,7 @@ class player(pygame.sprite.Sprite):
         hitting_wall_timer = self.hitting_wall_timer
         
         for p_int in [p_int for p_int in platform_sprite_group if p_int.rect.x > -32 and p_int.rect.x < 640]:
-            if p_int.collision_and_hostility[p_int.type][0]:
+            if p_int.collision_and_hostility[p_int.id][0]:
                 #self.atk1_grinding(p_int.rect, the_sprite_group)
                 #y collisions
                 if (p_int.rect.colliderect(self.collision_rect.x+2, self.collision_rect.y + dy, self.width-4, self.height)
@@ -522,7 +521,7 @@ class player(pygame.sprite.Sprite):
                 
                     
             #taking damage from crushing traps
-            if p_int.collision_and_hostility[p_int.type][1]:
+            if p_int.collision_and_hostility[p_int.id][1]:
                 rate = 0.5
                 if (self.hitbox_rect.colliderect(p_int.atk_rect)):
                     if self.hits_tanked + rate > self.hp:
@@ -807,10 +806,10 @@ class player(pygame.sprite.Sprite):
                         dx = self.direction * 2 * self.speed
                         self.rect.x += self.direction * crit_speed
                         
-                        if self.in_air and self.vel_y + 5 <= 15:
-                            self.vel_y += 5
-                        else:
-                            self.vel_y = 15
+                        # if self.in_air and self.vel_y + 5 <= 15:
+                        #     self.vel_y += 5
+                        # else:
+                        self.vel_y = 15
                     elif self.heavy:
                         dx = self.direction * self.speed
                         self.rect.x += self.direction
@@ -889,10 +888,15 @@ class player(pygame.sprite.Sprite):
             else:
                 self.landing = False
                 
-        if self.double_jump:
-            self.vel_y -= 9.5
-            self.double_jump_en = False
-            self.double_jump = False
+        # if self.double_jump:
+        #     self.vel_y -= 9.5
+        #     self.double_jump_en = False
+        #     self.double_jump = False
+        
+        # if self.action == 2:
+        #     self.draw_trail = True
+        # elif self.action != 2 and not self.atk1:
+        #     self.draw_trail = False
                 
         if self.jump_dampen:
             if self.squat or (self.squat_done and self.in_air):
@@ -968,16 +972,16 @@ class player(pygame.sprite.Sprite):
         self.update_coords(world_coords, dx, dy)
 
         #---------------------------------------------------------world boundaries------------------------------------------------------------------
-        if self.collision_rect.x < -2:
+        if self.collision_rect.x < -6:
             dx = 1
-        elif self.x_coord > world_limit[0] + 2:
+        elif self.x_coord > world_limit[0] + 6:
             dx = -1
         
         #--------------------------------------window boundaries
-        if self.collision_rect.x < -4:
+        if self.collision_rect.x < -6:
             dy = 0
             dx = 4
-        elif self.collision_rect.x >= 604:
+        elif self.collision_rect.x >= 606:
             dy = 0
             dx = -4
         
@@ -1079,7 +1083,7 @@ class player(pygame.sprite.Sprite):
             elif self.rolling and self.stamina_used + self.roll_stam_rate <= self.stamina:
                 stamina_increment_unit = self.roll_stam_rate
             else:
-                stamina_increment_unit = -0.24
+                stamina_increment_unit = -0.32
             
                 
             self.ini_stamina = self.stamina_used
@@ -1291,11 +1295,11 @@ class player(pygame.sprite.Sprite):
                 
                 self.rolling = False
                 
-    def draw_trail_line(self, screen):
-        if self.draw_trail and self.trail_coords != []:
-            for vect_pair in self.trail_coords:
-                width = self.trail_coords.index(vect_pair) + 2
-                pygame.draw.line(screen, (255,0,86), vect_pair[0], vect_pair[1], width)
+    def draw_trail_line(self, screen, color, trail_coords):
+        if trail_coords != []:
+            for vect_pair in trail_coords:
+                width = trail_coords.index(vect_pair) + 2
+                pygame.draw.line(screen, color, vect_pair[0], vect_pair[1], width)
                 
     def draw_with_flicker(self, image, rect, screen, flicker):
         if flicker:
@@ -1306,7 +1310,11 @@ class player(pygame.sprite.Sprite):
         
     
     def draw(self, screen):
-        self.draw_trail_line(screen)
+        if self.atk1:
+            color = (255,0,86)
+        else:
+            color = (255,255,255)
+        self.draw_trail_line(screen, color, self.trail_coords)
         if self.shot_charging and self.action < 5:
             self.BP_animate()
             screen.blit(pygame.transform.flip(self.image2, self.flip, False), self.BP_rect)

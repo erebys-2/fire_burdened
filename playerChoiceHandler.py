@@ -18,7 +18,10 @@ class player_choice_handler():
         
         self.t1 = textfile_formatter()
         path = 'npc_dialogue_files/player_choice_config/'
-        self.player_choice_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'choice_selection_dict.txt')), 'list_list')
+        self.player_choice_dict = {}
+        player_choice_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'choice_selection_dict.txt')), 'list_list')
+        for entry in player_choice_dict:
+            self.player_choice_dict[entry] = tuple(player_choice_dict[entry])
         
         #2nd dictionary for prompts
         self.player_prompt_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'prompt_dict.txt')), 'text_box')
@@ -84,7 +87,7 @@ class player_choice_handler():
                 #self.trigger_once = True
                 if key == 'save_game': # write to save file
                     #t1, slot, level, world, player
-                    self.save_handler.save(self.t1, i, level, world.plot_index_dict, world.lvl_completion_dict, player)
+                    self.save_handler.save(self.t1, i, level, world.plot_index_dict, world.lvl_completion_dict, world.onetime_spawn_dict, player)
                     
                     self.last_save_slot = i
                     self.save_indicator = True

@@ -26,6 +26,8 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.std_size = (SCREEN_WIDTH, SCREEN_HEIGHT)
         self.fs_size = fs_size
         
+        self.in_fullscreen = False
+        
         self.options_menu_enable = False
         self.ctrl_menu_enable = False
         self.vol_menu_enable = False
@@ -86,15 +88,20 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         
         #filler value, selected slot will always be set by clicking a slot before loading a game
         self.selected_slot = -1
-        self.reset_death_counters = False
+        self.reset_all_slots = False
         self.controller_connected = False
         
         self.help_open = False
         self.help_btn_str = '[Open Tips]'
         
+        path = 'game_settings'
+        self.toggle_settings_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'toggle_settings.txt')), 'int')
+        
+        self.came_from_death_menu = False
+        
     def read_csv_data(self, data_name):
         temp_list = []
-        with open(f'dynamic_CSVs/{data_name}.csv', newline= '') as csvfile:
+        with open(f'game_settings/{data_name}.csv', newline= '') as csvfile:
             reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
             for row in reader:
                 for entry in row:
@@ -103,7 +110,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         return temp_list
         
     def write_csv_data(self, data_name, data):
-        with open(f'dynamic_CSVs/{data_name}.csv', 'w', newline='') as csvfile:
+        with open(f'game_settings/{data_name}.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter = ',')
             writer.writerow(data)
             
@@ -116,9 +123,11 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         
         #sets plot index list to 0
         plot_index_dict = {} #populate plot index for each npc
-        lvl_completion_dict = {0: 0}
         for npc in os.listdir('sprites/npcs'):
             plot_index_dict[npc] = -1
+            
+        lvl_completion_dict = {0: 0}
+        onetime_spawn_dict = {}
         
         if not self.options_menu_enable and not self.saves_menu_enable and not self.saves_menu2_enable and next_level == 0:
             if self.trigger_once:
@@ -128,6 +137,8 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 for i in range(4):
                     self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +64 +36*i, self.generic_img, 1))
                 self.trigger_once = False
+                
+                self.came_from_death_menu = False
                 
             screen.blit(self.title_screen, self.ts_rect)
             
@@ -165,7 +176,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         elif not self.options_menu_enable and not self.saves_menu_enable and self.saves_menu2_enable:
             self.show_saves_menu2(screen)
             
-        return (next_level, self.run_game, plot_index_dict, lvl_completion_dict)
+        return (next_level, self.run_game, plot_index_dict, lvl_completion_dict, onetime_spawn_dict)
 
 #-----------------------------------------------------------pause menu---------------------------------------------------------
     def show_pause_menu(self, screen):
@@ -224,8 +235,8 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         if not self.ctrl_menu_enable and not self.vol_menu_enable:
             if self.trigger_once:
                 self.button_list *= 0
-                for i in range(4):
-                    self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +48*i, self.generic_img, 1))
+                for i in range(5):
+                    self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -80 +48*i, self.generic_img, 1))
                 
                 self.trigger_once = False
                 
@@ -243,20 +254,29 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             
             if self.button_list[2].draw(screen):
                 self.m_player.play_sound(self.m_player.sfx[1])
-                # if self.disp_flags == pygame.DOUBLEBUF|pygame.SHOWN: #windowed mode
-                #     self.disp_flags = pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN #full screen mode
-                #     screen = pygame.display.set_mode(self.std_size, self.disp_flags)
-                # elif self.disp_flags == pygame.DOUBLEBUF|pygame.FULLSCREEN|pygame.SHOWN:
-                #     self.disp_flags = pygame.DOUBLEBUF|pygame.SHOWN
-                #     screen = pygame.display.set_mode(self.std_size, self.disp_flags)
                 pygame.display.toggle_fullscreen()
-            self.button_list[2].show_text(screen, self.fontlist[1], ('','Screen Toggle')) 
-                
+                self.in_fullscreen = not self.in_fullscreen
+            self.button_list[2].show_text(screen, self.fontlist[1], ('','Full Screen')) 
+            self.text_manager0.disp_text_box(screen, self.fontlist[1], (f'[{str(self.in_fullscreen)}]',''),
+                                    (-1,-1,-1), (200,200,200), (self.button_list[2].rect.right + 10, self.button_list[2].rect.y + 8, 0, 0), False, False, 'none')
+            
             if self.button_list[3].draw(screen):
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.toggle_settings_dict['skip_death_screen'] *= -1
+                str2 = ''
+                for key_ in self.toggle_settings_dict:
+                    str2 = str2 + f'{key_}: {self.toggle_settings_dict[key_]}\n'
+                str2 = str2[0:len(str2)-1]
+                self.t1.overwrite_file('game_settings/toggle_settings.txt', str2)
+            self.button_list[3].show_text(screen, self.fontlist[0], ('','Skip Death Screen')) 
+            self.text_manager0.disp_text_box(screen, self.fontlist[1], (f'[{str(self.toggle_settings_dict['skip_death_screen'] > 0)}]',''),
+                                    (-1,-1,-1), (200,200,200), (self.button_list[3].rect.right + 10, self.button_list[3].rect.y + 8, 0, 0), False, False, 'none')
+                
+            if self.button_list[4].draw(screen):
                 self.options_menu_enable = False
                 self.m_player.play_sound(self.m_player.sfx[1])
                 self.trigger_once = True
-            self.button_list[3].show_text(screen, self.fontlist[1], ('','Back'))  
+            self.button_list[4].show_text(screen, self.fontlist[1], ('','Back'))  
             
         elif self.ctrl_menu_enable and not self.vol_menu_enable:
             self.show_ctrl_menu(screen)
@@ -271,9 +291,11 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         next_level = 0
         #sets plot index list to 0
         plot_index_dict = {} #populate plot index for each npc
-        lvl_completion_dict = {0: 0}
         for npc in os.listdir('sprites/npcs'):
             plot_index_dict[npc] = -1
+            
+        lvl_completion_dict = {0: 0}
+        onetime_spawn_dict = {}
         
         
         if self.trigger_once: #deploy buttons
@@ -293,6 +315,10 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 self.run_game = True    
                 next_level = 1
                 
+                #populate onetime_spawn_dict with default values
+                path2 = 'config_textfiles/world_config'
+                onetime_spawn_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path2, 'ini_onetime_spawns.txt')), 'list_list')
+        
                 #get out of the sub menu
                 self.saves_menu2_enable = False
                 self.m_player.play_sound(self.m_player.sfx[1])
@@ -311,7 +337,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                                          (self.S_W//2 - 100, self.S_H//2 - 128,self.S_W,self.S_H), False, False, 'none')
         
      
-        return (next_level, self.run_game, plot_index_dict, lvl_completion_dict)
+        return (next_level, self.run_game, plot_index_dict, lvl_completion_dict, onetime_spawn_dict)
 
             
 #---------------------------------------------------------Save select sub menu-----------------------------------
@@ -320,10 +346,11 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         next_level = 0
         #sets plot index list to 0
         plot_index_dict = {} #populate plot index for each npc
-        lvl_completion_dict = {0: 0}
         for npc in os.listdir('sprites/npcs'):
             plot_index_dict[npc] = -1
         
+        lvl_completion_dict = {0: 0}
+        onetime_spawn_dict = {}
         
         if self.trigger_once: #deploy buttons
             self.button_list *= 0
@@ -342,20 +369,27 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 self.selected_slot = i
                 
                 #fill inventory
-                path = f'save_files/{i}'
-                self.player_new_inv = self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(path, 'player_inventory.txt')))
+                saves_path = f'save_files/{i}'
+                self.player_new_inv = self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(saves_path, 'player_inventory.txt')))
                 self.set_player_inv = True
                 
                 #set lvl completion dict
-                lvl_completion_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'lvl_completion_dict.txt')), 'int')
+                lvl_completion_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(saves_path, 'lvl_completion_dict.txt')), 'int')
+                
+                #set onetime_spawn_dict
+                if self.t1.read_text_from_file(os.path.join(saves_path, 'onetime_spawn_dict.txt'))[0] != 'empty':
+                    onetime_spawn_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(saves_path, 'onetime_spawn_dict.txt')), 'list_list')
+                else:
+                    path2 = 'config_textfiles/world_config'
+                    onetime_spawn_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path2, 'ini_onetime_spawns.txt')), 'list_list')
                 
                 #set plot index
-                if self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt'))[0] != 'empty': #this way I don't have to keep adding -1 if a player loads from a new save
-                    #print(self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt')))
-                    plot_index_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt')), 'int')
+                if self.t1.read_text_from_file(os.path.join(saves_path, 'plot_index_dict.txt'))[0] != 'empty': #this way I don't have to keep adding -1 if a player loads from a new save
+                    #print(self.t1.read_text_from_file(os.path.join(saves_path, 'plot_index_dict.txt')))
+                    plot_index_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(saves_path, 'plot_index_dict.txt')), 'int')
                 
                 #get level and player location data
-                new_lvl_and_player_dat = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'level_and_player_coords.txt')), 'int')
+                new_lvl_and_player_dat = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(saves_path, 'level_and_player_coords.txt')), 'int')
                 self.player_new_coords = (new_lvl_and_player_dat['player_x'], new_lvl_and_player_dat['player_y'])
                 self.set_player_location = True
                 
@@ -381,27 +415,34 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         if self.button_list[5].draw(screen):
             self.m_player.play_sound(self.m_player.sfx[1])
             self.save_handler.reset_all_saves(self.t1)
-            self.reset_death_counters = True
+            self.reset_all_slots = True
             self.selected_slot = -1
         self.button_list[5].show_text(screen, self.fontlist[1], ('','[Reset All]'))  
         
         #select current slot
-        if self.selected_slot != -1 and len(self.button_list) == 7:
-            if self.button_list[6].draw(screen):
+        if self.selected_slot != -1 and len(self.button_list) >= 7:
+            if self.button_list[6].draw(screen) or (self.came_from_death_menu and self.toggle_settings_dict['skip_death_screen'] > 0):
                 #fill inventory
-                path = f'save_files/{self.selected_slot}'
-                self.player_new_inv = self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(path, 'player_inventory.txt')))
+                saves_path = f'save_files/{self.selected_slot}'
+                self.player_new_inv = self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(saves_path, 'player_inventory.txt')))
                 self.set_player_inv = True
                 
                 #set plot index
-                if self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt'))[0] != 'empty': #this way I don't have to keep adding -1 if a player loads from a new save
-                    plot_index_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'plot_index_dict.txt')), 'int')
+                if self.t1.read_text_from_file(os.path.join(saves_path, 'plot_index_dict.txt'))[0] != 'empty': #this way I don't have to keep adding -1 if a player loads from a new save
+                    plot_index_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(saves_path, 'plot_index_dict.txt')), 'int')
                     
                 #set lvl completion dict
-                lvl_completion_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'lvl_completion_dict.txt')), 'int')
+                lvl_completion_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(saves_path, 'lvl_completion_dict.txt')), 'int')
+                
+                #set onetime_spawn_dict
+                if self.t1.read_text_from_file(os.path.join(saves_path, 'onetime_spawn_dict.txt'))[0] != 'empty':
+                    onetime_spawn_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(saves_path, 'onetime_spawn_dict.txt')), 'list_list')
+                else:
+                    path2 = 'config_textfiles/world_config'
+                    onetime_spawn_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path2, 'ini_onetime_spawns.txt')), 'list_list')
                 
                 #get level and player location data
-                new_lvl_and_player_dat = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'level_and_player_coords.txt')), 'int')
+                new_lvl_and_player_dat = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(saves_path, 'level_and_player_coords.txt')), 'int')
                 self.player_new_coords = (new_lvl_and_player_dat['player_x'], new_lvl_and_player_dat['player_y'])
                 self.set_player_location = True
                 
@@ -415,8 +456,10 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 self.trigger_once = True
             self.button_list[6].show_text(screen, self.fontlist[1], ('',f'Last File: {self.selected_slot}'))
             
+            if self.came_from_death_menu and self.toggle_settings_dict['skip_death_screen'] > 0:
+                pygame.draw.rect(screen, (0,0,0), pygame.rect.Rect(0,0,self.S_W,self.S_H))
      
-        return (next_level, self.run_game, plot_index_dict, lvl_completion_dict)
+        return (next_level, self.run_game, plot_index_dict, lvl_completion_dict, onetime_spawn_dict)
 
             
 #---------------------------------------------------------Controls sub menu---------------------------                
@@ -661,8 +704,10 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 for i in range(2):
                     self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +32 +36*i, self.generic_img, 1))
                 self.trigger_once = False
+                
+                self.came_from_death_menu = True
             
-            if self.button_list[0].draw(screen):
+            if self.button_list[0].draw(screen) or self.toggle_settings_dict['skip_death_screen'] > 0:
                 self.trigger_once = True
                 self.saves_menu_enable = True
                 exit_to_title = True
@@ -676,6 +721,9 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 pygame.mixer.stop()
                 self.m_player.play_sound(self.m_player.sfx[1])
             self.button_list[1].show_text(screen, self.fontlist[1], ('','Main Menu'))  
+            
+        if self.toggle_settings_dict['skip_death_screen'] > 0:
+            pygame.draw.rect(screen, (0,0,0), pygame.rect.Rect(0,0,self.S_W,self.S_H))
         
         elif self.saves_menu_enable:
             self.show_saves_menu(screen)

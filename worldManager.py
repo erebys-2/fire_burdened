@@ -86,6 +86,17 @@ class World():
         self.static_bg_oversized_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'static_bg_oversized_tiles_dict.txt')), 'int')
         self.special_hitbox_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'special_hitbox_tiles_dict.txt')), 'none')
         self.slightly_oversized_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'slightly_oversized_tiles_dict.txt')), 'float')
+
+        #load onetime_spawn_dict whenever a save file is selected
+        #this will be saved as a textfile, used for items and chests
+        #level: item: enabled, item2: enabled
+        
+        #for a given level, sprite instantiator will instantiate sprites in the 1 time spawn dict if their output == True
+        #the dictionary will be modified by a method that will check if the specific sprite was removed from their respective sprite group
+        #note might have to do some enemy_id type thing to specify generic sprites like chests
+        self.onetime_spawn_dict = {}
+        self.ots_id = 0
+        self.sp_groups_to_check = []
         
         self.plot_index_dict = {}
         self.npc_current_dialogue_list = []
@@ -101,7 +112,7 @@ class World():
         self.screen_w = screen_w
         self.screen_h = screen_h
         
-        self.enemy0_id = 0
+        self.enemy0_order_id = 0
         self.transition_index = 0
         
         # self.wall_hitting_time = pygame.time.get_ticks()
@@ -131,13 +142,13 @@ class World():
             for tile in level_tile_lists[len(level_tile_lists)-1-layer]:
                 x_pixel = tile[1][0]
                 y_pixel = tile[1][1]
-                game_map.blit(tile[0], (x_pixel, y_pixel))
+                game_map.blit(tile[0].convert_alpha(), (x_pixel, y_pixel))
         return game_map
     
-    def update_lvl_completion(self, level, enemy_death_count, player_alive):#called on level change
+    def update_lvl_completion(self, level, enemy_death_count, player_alive, passive_effects):#called on level change
         #player_alive is true when the next_level isn't the menu level, when the player dies they are sent to this level
         #so if the player kills all the enemies in a level then dies or exits to the main menu, the dict will not be updated
-        if player_alive and self.enemy0_id != 0 and self.enemy0_id == enemy_death_count:
+        if passive_effects['salted_earth'] and player_alive and self.enemy0_order_id != 0 and self.enemy0_order_id == enemy_death_count:
             self.lvl_completion_dict[level] = 4#how many times a level will be loaded without enemies
                 
     def get_death_count(self, level):#death counts are a dictionary with levels as keys, it is reset everytime a mew slot is selected or the game is restarted
@@ -184,6 +195,7 @@ class World():
     #for saving
     def get_plot_index_dict(self):
         return self.plot_index_dict
+    
             
    
     #=======================================  SET HITBOXES FOR SPECIAL TILES =================================
@@ -192,7 +204,7 @@ class World():
         tile_type = self.special_hitbox_tiles_dict[tile]
         
         transition_data = []
-        img = self.tileList[0][tile]
+        img = self.tileList[0][tile].convert_alpha()
         img_rect = img.get_rect()
         
         #modify the shape of a rect
@@ -219,14 +231,32 @@ class World():
         if tile_type == 'lvl_transition' and y > 0:
             img_rect.y += 30
         
-        tile_data = (img, img_rect, tile, transition_data)
+        if level_data != None and tile == 10:
+            tile_data = (img, img_rect, tile, transition_data)
+        else:
+            tile_data = (img, img_rect, tile)
         
-        self.solids.append(tile_data)
+        return tile_data
+    
+    #check onetime spawn dict
+    def check_onetime_spawn_dict(self, level): #called before sprite groups are purged during level change
+        if level != 0 and level in self.onetime_spawn_dict:
+            for i in range(len(self.onetime_spawn_dict[level])):
+                found = False
+                for sp_group in self.sp_groups_to_check:
+                    for sprite in sp_group:
+                        if sprite.id == self.onetime_spawn_dict[level][i][1]:#bottleneck: ots sprites need an id
+                            found = True
+                            break
+                    if found:
+                        break
+                #print(f'world check: {found}')
+                self.onetime_spawn_dict[level][i][2] = str(found)
+                
+            self.sp_groups_to_check *= 0
+
+
         
-    #IDEA: make a secondary processing function called combine rects that combines the tile rects of horizontally adjacent rects
-    #can look into rect union all, breaking the rect_sequence whenever a half tile special tile is found  
-    #THIS WILL ONLY WORK IF YOU COMBINE THE IMAGES OF ALL TILES INTO A SINGLE IMAGE
-    #YOU WOULD ALSO HAVE TO MAKE ENEMIES AND THE PLAYER PROCESS ALL THE TILES IN THE WORLLD
 
     #======================================================= loading the level ============================================
     
@@ -241,7 +271,8 @@ class World():
         
         #process int lists into detailed list
         self.process_coords_vslice(raw_lvl_data_list[0], screenW, screenH, self.detailed_lvl_data_list[0])
-        self.enemy0_id = 0
+        self.enemy0_order_id = 0
+        self.ots_id = 0
         self.transition_index = 0
         
         #check world lvl completion dict
@@ -257,9 +288,9 @@ class World():
                 if tile >= 0:
                     if tile in self.sprite_group_tiles_dict:
                         self.sp_ini.instantiate_sprites_from_tiles(tile, x, y, the_sprite_group, ini_vol, level, [], self)
-                        #pass
                     elif tile in self.special_hitbox_tiles_dict:
-                        self.set_hitbox_for_special_tile(tile, x, y, level_data)
+                        tile_data = self.set_hitbox_for_special_tile(tile, x, y, level_data)
+                        self.solids.append(tile_data)
                     else:
                         if tile in self.static_bg_oversized_tiles_dict:
                             img = self.tileList[1][self.static_bg_oversized_tiles_dict[tile]]
@@ -370,11 +401,12 @@ class World():
                 if tile >= 0:
                     scale = 1
                     disp = 0
-                    if tile in self.sprite_group_tiles_dict: #avoid key errors
-                        self.sp_ini.instantiate_sprites_from_tiles(tile, x, y, the_sprite_group, 0, 0, [], self)
+                    # if tile in self.sprite_group_tiles_dict: #avoid key errors
+                    #     self.sp_ini.instantiate_sprites_from_tiles(tile, x, y, the_sprite_group, 0, 0, [], self)
                         
-                    elif tile in self.special_hitbox_tiles_dict:
-                        self.set_hitbox_for_special_tile(tile, x, y, None)
+                    if tile in self.special_hitbox_tiles_dict:
+                        tile_data = self.set_hitbox_for_special_tile(tile, x, y, None)
+                        rtrn_list.append(tile_data)
 
                     else:
                         if tile in self.static_bg_oversized_tiles_dict:
@@ -389,19 +421,19 @@ class World():
                             scale = self.slightly_oversized_tiles_dict[tile]
                             img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale )))
                     
-                    if scale != 1:
-                        disp = int((scale - 1)*32/2)
-                    
-                    img_rect = img.get_rect()
-                    img_rect.x = x * 32 - disp
-                    img_rect.y = y * 32 - disp
+                        if scale != 1:
+                            disp = int((scale - 1)*32/2)
+                        
+                        img_rect = img.get_rect()
+                        img_rect.x = x * 32 - disp
+                        img_rect.y = y * 32 - disp
 
-                    tile_data = (img, img_rect, tile)
-                    
+                        tile_data = (img, img_rect, tile)
+                        
 
-                    
-                    if tile != 36 and tile != 39 and tile != 31:
-                        rtrn_list.append(tile_data)
+                        
+                        if tile != 36 and tile != 39 and tile != 31:
+                            rtrn_list.append(tile_data)
 
                                  
     def draw_bg_layers(self, screen, scroll_X, scroll_Y, data, player_hitting_wall):

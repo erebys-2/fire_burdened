@@ -14,6 +14,17 @@ class textfile_formatter():
 
         return tuple(str_list)
     
+    def add_line_to_file(self, line, path):
+        with open(path, 'a') as file:
+            file.write('\n' + line)
+            file.close()
+            
+    def overwrite_file(self, path, data):
+        text_file = open(path, 'w')
+        text_file.write(data)
+        text_file.close()
+    
+    
     #takes string list output from reading a text file and formats into a dictionary
     #the values of the dictionary can be further formatted if correctly typed out
     def str_list_to_dict(self, str_list, format_mode):
@@ -32,7 +43,7 @@ class textfile_formatter():
                         temp_value = self.format_line_to_list(line[line.index(char)+2: len(line)], ';')
                         for element in temp_value:
                             value.append(self.format_line_to_list(element, '#'))
-                        value = tuple(value)
+                        #value = tuple(value)
                     elif format_mode == 'text_box':
                         value = tuple(self.split_string(line[line.index(char)+2: len(line)], 60, self.endcase_char))
                     elif format_mode == 'int':
@@ -46,6 +57,15 @@ class textfile_formatter():
             
         return rtn_dict
     
+    def str_list_to_dict_dict(self, str_list, format_mode):
+        temp_dict = self.str_list_to_dict(str_list, 'list')
+        rtn_dict = {}
+        for entry in temp_dict:
+            rtn_dict[entry] = self.str_list_to_dict(temp_dict[entry], format_mode)
+            
+        return rtn_dict
+    
+
     def str_list_to_dialogue_list(self, str_list, limit, endcase_char):
         rtn_list = []
         temp_list = []
@@ -125,17 +145,12 @@ class textfile_formatter():
             
         return rtn_val
     
-    def add_line_to_file(self, line, path):
-        with open(path, 'a') as file:
-            file.write('\n' + line)
-            file.close()
-    
+
     
     #takes list of strings, splits each string into another list of strings that will fit a box
     def str_to_str_list(self, input_list, limit, endcase_char):
         destination_list = []
         for item in input_list:
-           
             str_list = self.split_string(item[0], limit, endcase_char)
             destination_list.append((tuple(str_list),item[1],item[2]))
         
@@ -173,7 +188,4 @@ class textfile_formatter():
         
         return str_list
     
-    def overwrite_file(self, path, data):
-        text_file = open(path, 'w')
-        text_file.write(data)
-        text_file.close()
+    

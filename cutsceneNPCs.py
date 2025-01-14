@@ -49,12 +49,12 @@ class opening_scene(npc):
             if self.current_dialogue_index == 13:# and self.last_dialogue_index == 2:
                 world.plot_index_dict[self.name] = -4
                 self.enabled = False
-                cutscene_autosave.save(custscene_t1, selected_slot, self.current_level, world.plot_index_dict, world.lvl_completion_dict, player)
+                cutscene_autosave.save(custscene_t1, selected_slot, self.current_level, world.plot_index_dict, world.lvl_completion_dict, world.onetime_spawn_dict, player)
             elif self.current_dialogue_index == 20:
                 world.plot_index_dict[self.name] = -5
                 world.plot_index_dict['Mars'] = 1
                 self.enabled = False
-                cutscene_autosave.save(custscene_t1, selected_slot, self.current_level, world.plot_index_dict, world.lvl_completion_dict, player)
+                cutscene_autosave.save(custscene_t1, selected_slot, self.current_level, world.plot_index_dict, world.lvl_completion_dict, world.onetime_spawn_dict, player)
             else:
                 self.current_dialogue_index = self.current_dialogue_index
             self.get_dialogue_flag = False

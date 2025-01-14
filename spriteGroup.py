@@ -103,7 +103,7 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 		for item in self.item_group:
 			item.draw(screen)
 			item.scroll_along(self.scroll_x)
-			item.enable(player_hitbox_rect, self.pause_game)#player has to send pick up confirmation
+			item.enable(player_hitbox_rect, self, self.pause_game)#player has to send pick up confirmation
 	
 	def update_bg_sprite_group(self, screen, player_hitbox_rect, player_atk_rect_scaled):
 		particle = self.particle_group_bg.sprite

@@ -55,7 +55,7 @@ class particle_2(pygame.sprite.Sprite):
         
         #shift x,y if centered
         if base_name in ('player_bullet_explosion', 'enemy_bullet_explosion', 'player_impact', 'player_mvmt', 'player_crit', 'bloom',
-                    'player_atk1_trail'
+                    'player_atk1_trail', 'sparkle_white'
                     ):#centered particles
             x -= (self.particle_img_dict[base_name][0].get_width()//2)*scale
             y -= (self.particle_img_dict[base_name][0].get_height()//2)*scale

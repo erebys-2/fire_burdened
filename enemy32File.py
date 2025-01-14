@@ -11,13 +11,13 @@ import math
 
 class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemies
     #constructors
-    def __init__(self, x, y, speed, scale, type, enemy0_id, ini_vol):
+    def __init__(self, x, y, speed, scale, id, enemy0_order_id, ini_vol):
         pygame.sprite.Sprite.__init__(self)
 
         
         #self.m_player.set_sound_vol(self.m_player.sfx[0], 7) #looks like you can adjust vol in the constructor
 
-        self.id = enemy0_id
+        self.spawn_order_id = enemy0_order_id
         
         self.Alive = True
         self.action = 0
@@ -52,7 +52,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         self.idle_counter = 0
         self.idle_bypass = False
         
-        self.enemy_type = type
+        self.id = id
         animation_types = []
         self.frame_list = []
         self.frame_index = 0
@@ -65,26 +65,26 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         self.increment = 0
 
         #fill animation frames
-        if type == 'dog':
+        if id == 'dog':
             animation_types = ['idle', 'move', 'hurt', 'die']
             self.hp = 6
             self.recoil = 58
             self.recoil_slow = 2
             sfx_list = ['bassdrop2.wav', 'hit.wav', 'dog_hurt.wav', 'woof.wav', 'step2soft.wav']
-        elif type == 'shooter':   
+        elif id == 'shooter':   
             animation_types = ['idle', 'move', 'hurt', 'die', 'shoot', 'jump'] 
             self.hp = 8
             self.recoil = 58
             self.recoil_slow = 2
             sfx_list = ['bassdrop2.wav', 'hit.wav', 'roblox2.wav', 'shoot.wav', 'step2soft.wav']
             #, '', 'bite.wav', 'bee.wav'
-        elif type == 'fly':
+        elif id == 'fly':
             animation_types = ['idle', 'move', 'hurt', 'die']
             self.hp = 4
             self.recoil = 43
             self.recoil_slow = 3
             sfx_list = ['bassdrop2.wav', 'hit.wav', 'bee_hurt.wav', 'bee.wav', 'step2soft.wav']
-        elif type == 'walker':
+        elif id == 'walker':
             animation_types = ['idle', 'move', 'hurt']
             self.action = 1
             self.hp = 6
@@ -97,10 +97,10 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
 
         for animation in animation_types:
             temp_list = []
-            frames = len(os.listdir(f'sprites/enemies/{self.enemy_type}/{animation}'))
+            frames = len(os.listdir(f'sprites/enemies/{self.id}/{animation}'))
 
             for i in range(frames):
-                img = pygame.image.load(f'sprites/enemies/{self.enemy_type}/{animation}/{i}.png').convert_alpha()
+                img = pygame.image.load(f'sprites/enemies/{self.id}/{animation}/{i}.png').convert_alpha()
                 
                 if animation == 'hurt' and i < 2:
                     img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * 0.9 * scale)))
@@ -113,7 +113,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
 
         self.image = self.frame_list[self.action][self.frame_index]
         self.mask = pygame.mask.from_surface(self.image)
-        if self.enemy_type != 'fly':
+        if self.id != 'fly':
             self.rect = self.image.get_rect()
         else:
             self.rect = self.image.get_bounding_rect()
@@ -152,7 +152,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
     def do_p_int_group_collisions(self, p_int_group, dx, dy):
        
         for p_int in [p_int for p_int in p_int_group if p_int.rect.x > -160 and p_int.rect.x < 800]:
-            if p_int.collision_and_hostility[p_int.type][0]:
+            if p_int.collision_and_hostility[p_int.id][0]:
                 if (p_int.rect.colliderect(self.rect.x+2, self.rect.y + dy, self.width-4, self.height) and self.action != 2):
                     if self.rect.bottom >= p_int.rect.top and self.rect.bottom <= p_int.rect.y + 32:
                         self.in_air = False
@@ -175,14 +175,14 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     else:
                         dx = -dx + p_int.vel_x
                         
-                    if self.enemy_type == 'walker' and not self.inundated:
+                    if self.id == 'walker' and not self.inundated:
                         self.direction = -self.direction
                         self.flip = not self.flip
                         dx = self.direction*8
  
                     
             #taking damage from crushing traps
-            if p_int.collision_and_hostility[p_int.type][1]:
+            if p_int.collision_and_hostility[p_int.id][1]:
                 rate = self.hp//3
                 if (self.rect.colliderect(p_int.atk_rect)):
                     if self.hits_tanked + rate > self.hp:
@@ -205,8 +205,8 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         
         # if player is within left range, or right range
         if self.inundated == False and self.check_if_in_simulation_range():
-            #enemy type specific behaviors--------------------------------------------------------------------------------------
-            if self.enemy_type == 'dog':
+            #enemy id specific behaviors--------------------------------------------------------------------------------------
+            if self.id == 'dog':
                 chase_range = 1.5
                 if player_rect.y > self.rect.y - 2*chase_range*self.height and  player_rect.y < self.rect.y + self.height + 2*chase_range*self.height:
                     if player_rect.x > self.rect.x - 5*32 and player_rect.x <= self.rect.x:
@@ -244,7 +244,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     self.vel_y = -8
                     
                     
-            elif self.enemy_type == 'shooter':
+            elif self.id == 'shooter':
                 #always face the player
                 
                 if player_rect.centerx >= self.rect.left and player_rect.centerx <= self.rect.right:
@@ -313,7 +313,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     self.in_air = True
                     
                 
-            elif self.enemy_type == 'fly':
+            elif self.id == 'fly':
                 #print(self.action)
                 if self.inundated == False: #cannot move towards player when inundated
                     #move if the player gets too close
@@ -359,7 +359,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     self.ini_y = self.rect.centery
                     
                     
-            elif self.enemy_type == 'walker':
+            elif self.id == 'walker':
                 if not self.inundated and self.check_if_in_simulation_range():
                     self.moving = True
                     dx = self.direction * self.speed
@@ -415,7 +415,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
  
         
         #gravity 
-        if self.enemy_type != 'fly':
+        if self.id != 'fly':
             if self.Alive == True and self.check_if_in_simulation_range():  
             
                 g = 0.4
@@ -449,7 +449,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             else:
                 self.rando_frame = 0
             
-            if self.enemy_type == 'fly':
+            if self.id == 'fly':
                 dy += self.vertical_direction * self.recoil//2
             else:
                 dy += self.vel_y * 2
@@ -469,12 +469,12 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         elif (player_atk_rect.width == 0 and   
               player_rect.x > self.rect.x - 64 and player_rect.right < self.rect.right + 64 and
                 (self.rect.colliderect(player_rect.scale_by(0.2)) or (self.rect.x < player_rect.x and self.rect.right > player_rect.right ))
-                and self.enemy_type != 'walker'
+                and self.id != 'walker'
             #and not (self.inundated or self.rect.colliderect(player_atk_rect))
               ):
             dx = -dx
             self.direction = 0
-            if self.enemy_type == 'shooter':
+            if self.id == 'shooter':
                 self.jump = True
             
         elif player_action == 6 and self.rect.colliderect(player_rect):
@@ -494,22 +494,22 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                          (enemy0.rect.bottom > self.rect.bottom and enemy0.rect.y < self.rect.y) or
                          (enemy0.rect.right > self.rect.bottom and enemy0.rect.x < self.rect.x)
                        ]:
-            if self.rect.colliderect(enemy0.rect) and self.id != enemy0.id:
+            if self.spawn_order_id != enemy0.spawn_order_id and self.rect.colliderect(enemy0.rect):
 
-                if self.id < enemy0.id:
+                if self.spawn_order_id < enemy0.spawn_order_id:
                     dx += -self.direction * 2
                 else:
                     dx += self.direction * 2
 
 
         dxdy = self.do_p_int_group_collisions(sp_group_list[8], dx, dy)
-        if self.enemy_type != 'fly':
+        if self.id != 'fly':
             dx = dxdy[0]
             dy = dxdy[1]
         #world collisions
         
         
-        if self.check_if_in_simulation_range() and self.enemy_type != 'fly':
+        if self.check_if_in_simulation_range() and self.id != 'fly':
             for tile in [tile for tile in world_solids 
                          if tile[1].x > -224 and tile[1].x < 864 and 
                             tile[1].bottom < self.rect.bottom + 64 and tile[1].y > self.rect.y - 64 or
@@ -522,13 +522,13 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     if tile[1].colliderect(self.rect.x + dx, self.rect.y + self.quarter_height, self.width, self.height*0.6):
                         dx = 0
                         if self.in_air == False:
-                            if self.enemy_type == 'shooter':
+                            if self.id == 'shooter':
                                 self.jump = True
-                            if self.enemy_type == 'dog' and self.rect.bottom == tile[1].top + 16 and self.inundated == False:
+                            if self.id == 'dog' and self.rect.bottom == tile[1].top + 16 and self.inundated == False:
                                 self.vel_y = -8.5
                                 self.in_air = True
                         
-                        if self.enemy_type == 'walker':
+                        if self.id == 'walker':
                             self.flip = not self.flip
                             dx = -self.direction*8
                             self.direction = -self.direction
@@ -592,7 +592,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                             self.on_ground = False
 
                         dy = tile[1].top - self.rect.bottom
-        elif self.enemy_type != 'fly':
+        elif self.id != 'fly':
             dy = 0
             dx = 0
             self.moving = False
@@ -602,7 +602,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         if self.rect.bottom + dy > 480 + self.rect.height:
             self.Alive = False
             self.kill()
-        if self.enemy_type == 'shooter':
+        if self.id == 'shooter':
             if self.in_air == True and self.inundated == False:
                 dx *=0.70
                 
@@ -622,8 +622,8 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             # #print(obj_list[0].index(self))
             # #obj_list[0].pop(obj_list[0].index(self))
             # del obj_list[0][obj_list[0].index(self)]
-            sp_group_list[12].add(Item('Cursed Flesh', self.rect.centerx + 2*random.randint(-5,5), self.rect.centery + 2*random.randint(-5,5), 1))
-            sp_group_list[12].add(Item('test', self.rect.centerx + 2*random.randint(-5,5), self.rect.centery + 2*random.randint(-5,5), 1))
+            sp_group_list[12].add(Item('Cursed Flesh', self.rect.centerx + 2*random.randint(-5,5), self.rect.centery + 2*random.randint(-5,5), 1, False))
+            sp_group_list[12].add(Item('test', self.rect.centerx + 2*random.randint(-5,5), self.rect.centery + 2*random.randint(-5,5), 1, False))
             self.kill()
         
         #colliding with bullet 
@@ -663,7 +663,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         else:
             frame_update = 95
             
-        if self.enemy_type == 'walker' and not self.inundated:
+        if self.id == 'walker' and not self.inundated:
             frame_update = 90
 
         #--shooting bullet---------------------------------------------------------------------------------
@@ -695,9 +695,9 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             # if self.action == 5 and self.frame_index == 0:
             #     self.m_player.play_sound(self.m_player.sfx[4])
             if self.check_if_onscreen():
-                if self.enemy_type == 'walker' and self.action == 0 and self.frame_index == 2:
+                if self.id == 'walker' and self.action == 0 and self.frame_index == 2:
                     self.m_player.play_sound(self.m_player.sfx[3])
-                elif self.enemy_type == 'fly' and self.action == 1 and self.frame_index == 0:
+                elif self.id == 'fly' and self.action == 1 and self.frame_index == 0:
                     self.m_player.play_sound(self.m_player.sfx[3])
             
             self.update_time = pygame.time.get_ticks()
@@ -715,7 +715,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 self.recovering = True
                 self.idle_counter = 0
                 
-                if self.enemy_type == 'walker':
+                if self.id == 'walker':
                     if (self.flip and self.direction == -1) or (not self.flip and self.direction == 1):
                         self.flip = not self.flip
                 
@@ -742,7 +742,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     self.jump_counter = 0
     
     def explode(self, sp_group_list):
-        particle_name = self.enemy_type + '_death'
+        particle_name = self.id + '_death'
         sp_group_list[3].sprite.add_particle(particle_name, self.rect.x - self.half_width, self.rect.y - self.half_height, self.direction, self.scale, False, 0)
         
 
@@ -771,14 +771,14 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 self.hits_tanked += self.dmg_multiplier
                 self.dmg_multiplier = 0
                 
-                if self.enemy_type == 'dog':
+                if self.id == 'dog':
                     self.vel_y = -7
                     self.in_air = True
-                elif self.enemy_type == 'walker':
+                elif self.id == 'walker':
                     self.vel_y = -3
                     self.in_air = True
             elif new_action == 1:
-                if self.enemy_type == 'dog' and self.in_air == False:
+                if self.id == 'dog' and self.in_air == False:
                     self.speed_boost = 8
                     self.m_player.play_sound(self.m_player.sfx[3])
             # elif new_action == 5:

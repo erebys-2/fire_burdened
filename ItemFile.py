@@ -16,7 +16,7 @@ item_sprites_path = 'sprites/items'
 #Behaviors in inventory space involve keeping track of item count and apply status effects.
 
 class Item(pygame.sprite.Sprite): #helper class with logic for item behavior outside of player inventory
-    def __init__(self, id, x, y, count):
+    def __init__(self, id, x, y, count, is_immortal):
         pygame.sprite.Sprite.__init__(self)
         self.id = id
         self.image = pygame.image.load(os.path.join(item_sprites_path, f'{self.id}.png')).convert_alpha()
@@ -31,7 +31,7 @@ class Item(pygame.sprite.Sprite): #helper class with logic for item behavior out
 
         self.increment = 3*random.random()
         
-        self.is_key_item = False
+        self.is_immortal = is_immortal
         self.life_span = 10000
         self.initial_time = pygame.time.get_ticks()
         
@@ -42,14 +42,15 @@ class Item(pygame.sprite.Sprite): #helper class with logic for item behavior out
         self.gravitation_rect.scale_by_ip(8)
         
         weight_dict = {
-            'Rock': 5
+            'Rock': 5,
+            'Talisman of Salted Earth': 3
         }
         self.weight = 9
         if self.id in weight_dict:
             self.weight = weight_dict[self.id]
 
         
-    def enable(self, player_rect, pause_game):
+    def enable(self, player_rect, the_sprite_group, pause_game):
         #THE ORDER OF EXECUTION MATTERS FOR THIS METHOD
         disable = False
         
@@ -73,14 +74,21 @@ class Item(pygame.sprite.Sprite): #helper class with logic for item behavior out
         #player can get item data from the sprite group
         
         #despawning
-        if not pause_game and not self.is_key_item and pygame.time.get_ticks() > self.initial_time + int(self.life_span):
+        if not pause_game and not self.is_immortal and pygame.time.get_ticks() > self.initial_time + int(self.life_span):
             disable = True
-        elif not pause_game and not self.is_key_item and pygame.time.get_ticks() > self.initial_time + int(0.8*self.life_span):
+        elif not pause_game and not self.is_immortal and pygame.time.get_ticks() > self.initial_time + int(0.8*self.life_span):
             self.flicker = True
-        elif pause_game and not self.is_key_item:
+        elif pause_game and not self.is_immortal:
             #self.life_span *= 0.7 #decreases the lifespan everytime game is paused otherwise items' lifespans will be restored by the line below
             self.initial_time = pygame.time.get_ticks()
             
+        if not pause_game and self.is_immortal:
+            if pygame.time.get_ticks()%50 == 0:
+                the_sprite_group.particle_group_fg.sprite.add_particle('sparkle_white', 
+                                                                        self.rect.centerx + random.randrange(-16,16), 
+                                                                        self.rect.centery + random.randrange(-16,16), 
+                                                                        1, 1, False, 0)
+                
         if disable:
             self.disable()
             
@@ -199,7 +207,7 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
     #call this whenever the player collides with an item
     def pick_up_item(self, player_rect, item_group, item_id_list, exclude):
         picked_up = False
-        
+
         for item in item_group:
             if player_rect.colliderect(item.rect):
                 slot_index = self.find_available_slot(item.id)
@@ -452,14 +460,13 @@ class inventory_UI(): #handles displaying inventory, item description and counts
         #print(self.slot)
         item_can_be_used = False
         if (inventory[self.slot][1] > 0 
-            and not self.item_details0.is_key_item(inventory[self.slot][0]) 
+            and self.item_details0.get_item_class(inventory[self.slot][0]) != 'Key'
             and inventory[self.slot][0] in self.item_details0.sub_function_dict
             ):#add some additional logic for key items
             #self.use_item_flag = True#sets internal flag to true
             self.item_to_use = inventory[self.slot][0]
             item_can_be_used = True
-        #elif self.item_details0.is_key_item(inventory[self.slot][0]:
-        
+
         return item_can_be_used
             
     def discard_item(self, inventory):
@@ -522,17 +529,17 @@ class inventory_UI(): #handles displaying inventory, item description and counts
             screen.blit(self.aria_frame_list[0], (-40,0))
             
             #draw item description box
-            pygame.draw.rect(screen, (24,23,25), (self.S_W//2, self.S_H//2 - 128, 224, 192))
-            pygame.draw.rect(screen, (38,37,41), (self.S_W//2 + 2, self.S_H//2 - 126, 220, 188))
+            pygame.draw.rect(screen, (24,23,25), (self.S_W//2, self.S_H//2 - 160, 304, 224))
+            pygame.draw.rect(screen, (38,37,41), (self.S_W//2 + 2, self.S_H//2 - 158, 300, 220))
             
             #set up and draw text
             # print(len(inventory))
             # print(self.slot)
-            is_key_item = self.item_details0.is_key_item(inventory[self.slot][0])
+            item_class = self.item_details0.get_item_class(inventory[self.slot][0])
 
             item_details = ['Slot: ' + inventory[self.slot][0],
                             'Count: ' + str(inventory[self.slot][1]),
-                            'Is Key Item: ' + str(is_key_item),
+                            'Item Class: ' + item_class,
                             'Description: ',
                             ' '
                             ]
@@ -543,7 +550,7 @@ class inventory_UI(): #handles displaying inventory, item description and counts
                 
             
             self.text_manager0.disp_text_box(screen, self.fontlist[1], item_details,
-                                             (-1,-1,-1), (200,200,200), (self.S_W//2 + 4, self.S_H//2 - 124, 220, 188), False, False, 'none')
+                                             (-1,-1,-1), (200,200,200), (self.S_W//2 + 4, self.S_H//2 - 158, 220, 188), False, False, 'none')
             
             self.text_manager0.disp_text_box(screen, self.fontlist[1], ('Exit:[' + pygame.key.name(ctrl_list[8]) + '] or [Esc]', ''), 
                                              (-1,-1,-1), (100,100,100), ((480 - 8*len(pygame.key.name(ctrl_list[8]))), 456, 32, 32), False, False, 'none')
@@ -657,21 +664,24 @@ class item_details():#helper class for getting and formatting item descriptions 
     def __init__(self):
         self.t = textfile_formatter()
         self.sub_function_dict = self.t.str_list_to_dict(self.t.read_text_from_file(os.path.join(config_path, 'item_subfunctions.txt')), 'list')
-        self.key_items = self.t.read_text_from_file(os.path.join(config_path, 'keyitems_list.txt')) #list of strings that are id's of key items
-        self.item_desc_dict = self.t.str_list_to_dict(self.t.read_text_from_file(os.path.join(config_path, 'item_descriptions.txt')), 'none')
+        self.item_desc_dict = self.t.str_list_to_dict(self.t.read_text_from_file(os.path.join(config_path, 'item_descriptions.txt')), 'list')
         
-        self.f_item_desc_dict = self.format_into_str_list(self.item_desc_dict, 26)
+        self.f_item_desc_dict = self.format_desc_dict(self.item_desc_dict, 36)
         
-    def format_into_str_list(self, input_dict, limit):
+    def format_desc_dict(self, input_dict, limit):
         temp_list = []
         for key in input_dict:
-            str_list = self.t.split_string(input_dict[key], limit, (',', '.', ' ', ':', ';', '-'))
+            str_list = self.t.split_string(input_dict[key][1], limit, (',', '.', ' ', ':', ';', '-'))
             temp_list.append([key, str_list])
             
         return dict(temp_list)
         
-    def is_key_item(self, item_id):
-        return item_id in self.key_items
+    def get_item_class(self, item_id):
+        if item_id in self.item_desc_dict:
+            item_class = self.item_desc_dict[item_id][0]
+        else:
+            item_class = ' '
+        return item_class
     
     def get_formatted_description(self, item_id):
         if item_id in self.f_item_desc_dict:
