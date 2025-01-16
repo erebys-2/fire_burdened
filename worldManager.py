@@ -15,6 +15,7 @@ import csv
 
 class World():
     def __init__(self, screen_w, screen_h):
+        self.rect = pygame.rect.Rect(0,0,1,1)
         self.coords = []
         self.fg = []
         self.fg_1 = []
@@ -265,12 +266,12 @@ class World():
         raw_lvl_data_list = []
         for lvl_data in self.detailed_lvl_data_list:
             lvl_data *= 0
+            
+        self.rect = pygame.rect.Rect(0,0,1,1)
         
         #populate raw_lvl_data_list with lists of int values from level csv files
         raw_lvl_data_list = self.get_raw_csv_data(level, level_data[0:2])
-        
-        #process int lists into detailed list
-        self.process_coords_vslice(raw_lvl_data_list[0], screenW, screenH, self.detailed_lvl_data_list[0])
+
         self.enemy0_order_id = 0
         self.ots_id = 0
         self.transition_index = 0
@@ -285,6 +286,12 @@ class World():
         #processing interactable layer
         for y, row in enumerate(raw_lvl_data_list[3]):
             for x, tile in enumerate(row):
+                #bind the world's rect
+                if y == 0 and x == 0: 
+                    self.rect.x = x
+                    self.rect.y = y
+                
+                #process tiles into detailed game layer list
                 if tile >= 0:
                     if tile in self.sprite_group_tiles_dict:
                         self.sp_ini.instantiate_sprites_from_tiles(tile, x, y, the_sprite_group, ini_vol, level, [], self)
@@ -304,6 +311,21 @@ class World():
                         tile_data = (img, img_rect, tile, [])
                         
                         self.solids.append(tile_data)
+                        
+        #set world limits as width/height of the world's rect
+        self.rect.width = x * 32
+        self.rect.height = y * 32
+        
+        #set scroll en        
+        if self.rect.width + 32 > screenW:
+            self.x_scroll_en = True
+        else:
+            self.x_scroll_en = False
+            
+        self.y_scroll_en = False
+        
+        
+        
         #load bg
         for i in range(4,len(self.detailed_lvl_data_list)):
             is_detailed_bg = False
@@ -330,56 +352,8 @@ class World():
         if level not in self.death_counters_dict:
             self.death_counters_dict[level] = 0
             
-
         
-    def process_coords_hslice(self, data, screenW, screenH, rtrn_list):
-        x_coord = 0
-        y_coord = 0
-        for y in enumerate(data):
-            y_coord = y * 32
-            
-            img_rect = pygame.Rect(0, 0, screenW, 32)
-            img_rect.x = x_coord
-            img_rect.y = y_coord
-            
-            tile_data = (0, img_rect, (x_coord, y_coord))
-            #print(tile_data)
-            #self.fill_slice_list(0, x_coord, tile_data)
-            
-            rtrn_list.append(tile_data)
-
-        
-    def process_coords_vslice(self, data, screenW, screenH, rtrn_list):
-        x_coord = 0
-        y_coord = 0
-        for y, row in enumerate(data):
-            if y == 0:
-                for x, tile in enumerate(row):
-                    if tile == -1:
-                        x_coord = x * 32
-                        y_coord = 0
-                        
-                        img_rect = pygame.Rect(0, 0, 32, screenH)
-                        img_rect.x = x_coord
-                        img_rect.y = y_coord
-                        
-                        tile_data = (0, img_rect, (x_coord, y_coord))
-                        #print(tile_data)
-                        #self.fill_slice_list(0, x_coord, tile_data)
-                        
-                        if x == 0:
-                            rtrn_list.append(tile_data)
-            else:
-                break
-        self.world_limit = (x_coord, screenH)
-        #scroll enables
-        if x_coord + 32 > screenW:
-            self.x_scroll_en = True
-        else:
-            self.x_scroll_en = False
-            
-        self.y_scroll_en = False
-        
+   
     def post_process_filter_layer(self, filter_layer, level_size_pixels): #for filter layer that contains one very large tile that gets repeated across the level
         filter_width = filter_layer[0][1].width
         filter_height = filter_layer[0][1].height
@@ -482,12 +456,6 @@ class World():
         self.draw_bg_layers(screen, 4*(scroll_X + correction)//7, 0, self.bg5, player_hitting_wall)
         self.draw_bg_layers(screen, 7*(scroll_X + correction)//9, 0, self.bg4, player_hitting_wall)
         
-        #drawing game world and 1:1 bg by tile
-        # self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg2, player_hitting_wall)#detailed 1:1 bg layer 2
-        # self.draw_filter_layer(screen, self.bg3)
-        # self.draw_bg_layers(screen, (scroll_X), scroll_Y, self.bg1, player_hitting_wall)
-        
-        
         
         #these scroll every tile in a layer
         
@@ -499,27 +467,14 @@ class World():
             tile[1][0] -= scroll_X
             tile[1][1] -= scroll_Y
             
-            # if tile[1][0] > -32 and tile[1][0] < 640 + 32:
-            #     screen.blit(tile[0], tile[1]) # (image, position)
-                
-      
-        
-        # for tile in self.coords:
-        #     tile[1][0] -= scroll_X #the coords file does not have an image
-        #     tile[1][1] -= scroll_Y
-            
-        self.coords[0][1][0] -= scroll_X
-        self.coords[0][1][1] -= scroll_Y
+
+        #scroll the world's rect
+        self.rect.x -= scroll_X
+        self.rect.y -= scroll_Y
             
             
         self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg, player_hitting_wall)#calling this just scrolls the fg layer
         
-        #drawing tile maps instead of by tile
-        # screen.blit(self.world_map_non_parallax_bg, (self.coords[0][1][0], self.coords[0][1][1]))
-        # self.draw_filter_layer(screen, self.bg3)
-        # screen.blit(self.world_map_non_parallax, (self.coords[0][1][0], self.coords[0][1][1]))
-        
-        return (self.coords[0][1][0], self.coords[0][1][1]) #x and y of first tile
             
     
     def draw_foreground(self, screen):

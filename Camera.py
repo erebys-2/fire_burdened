@@ -55,44 +55,44 @@ class Camera():
             
         
     
-    def get_pos_data(self, world_coords):
-        self.x_coord = self.rect.x + 30 - world_coords[0][1].x
-        self.x_coord2 = self.rect.x - 30 - world_coords[0][1].x
+    def get_pos_data(self, world_rect):
+        self.x_coord = self.rect.x + 30 - world_rect.x
+        self.x_coord2 = self.rect.x - 30 - world_rect.x
                     
   
-    def get_shift_dist(self, player_direction, world_limit, screenW):
+    def get_shift_dist(self, player_direction, world_rect, screenW):
         if self.shift_dist > 1:
             self.shift_dist -= 1
         
         if (not self.set_ini_pos #level is not being loaded
             and self.camera_offset >= 8
             and self.curr_direction != player_direction #player changes direction 
-            and self.x_coord > self.half_screen - 48 and self.x_coord2 < world_limit[0] - (self.half_screen - 48) #within scrollable part of level
+            and self.x_coord > self.half_screen - 48 and self.x_coord2 < world_rect.width - (self.half_screen - 48) #within scrollable part of level
             ):
             self.shift_dist = self.max_shift_dist
             self.curr_direction = player_direction
                     
-    def auto_correct(self, player_rect, player_direction, player_x_coord, world_coords, world_tile0_coord, world_limit, screenW, screenH):
+    def auto_correct(self, player_rect, player_direction, player_x_coord, world_rect, screenW, screenH):
         self.scrollx = 0
-        self.get_pos_data(world_coords)
+        self.get_pos_data(world_rect)
         
         #============================================= MAIN AUTOCORRECTING LOGIC ==============================================
         displacement = self.camera_offset * player_direction
         
         #gets how much the autocorrect should adjust given the camera displacement value
         #should set shift_dist = 1 by default if camera disp is small or if there's no level scrolling
-        self.get_shift_dist(player_direction, world_limit, screenW)
+        self.get_shift_dist(player_direction, world_rect, screenW)
         #aligns player to a vertical axis when the player is traversing level rightwards
         if (player_rect.right - self.rect.right > 16 - displacement
               #and player_rect.right - 16 < self.x_coord2 + self.half_screen
-              and self.x_coord2 < world_limit[0] - (self.half_screen + 32) #prevents from over scrolling on the rightmost edge
+              and self.x_coord2 < world_rect.width - (self.half_screen + 32) #prevents from over scrolling on the rightmost edge
               ): 
             player_rect.x -= self.shift_dist
             self.scrollx += self.shift_dist    
         
         #aligns player to a vertical axis screen when the player is traversing level leftwards
         elif (self.rect.x - player_rect.x > 16 + displacement
-              and world_tile0_coord[0] < 0
+              and world_rect.x < 0
               and self.x_coord >= self.half_screen 
               ): #prevents from over scrolling on the leftmost edge
             player_rect.x += self.shift_dist
@@ -103,15 +103,15 @@ class Camera():
         # #when the player is on the left half screen of the level, I think it prevents underscrolling
         elif ((player_rect.x + 32 < self.rect.x #basic check that previous conditionals didn't occur
              and self.x_coord < screenW - 32 #make sure false positives don't occur
-             and world_tile0_coord[0] > 0) #fine adjustment
+             and world_rect.x > 0) #fine adjustment
             ):
-            player_rect.x -= world_tile0_coord[0]
-            self.scrollx += world_tile0_coord[0] 
+            player_rect.x -= world_rect.x
+            self.scrollx += world_rect.x 
  
         #prevents over scroll at the right edge of a level
         elif (  player_rect.x > self.rect.x #basic check that previous conditionals didn't occur
-                and self.x_coord > world_limit[0] - (self.half_screen + 32 ) #make sure false positives don't occur
-                and world_tile0_coord[0] < -(world_limit[0] - 608) #fine adjustment
+                and self.x_coord > world_rect.width - (self.half_screen + 32 ) #make sure false positives don't occur
+                and world_rect.x < -(world_rect.width - 608) #fine adjustment
                 ):
             player_rect.x += 1
             self.scrollx -= 1
@@ -127,9 +127,9 @@ class Camera():
         #Everything is already loaded when this occurs, but it's so fast the player doesn't notice zooming across the level
         #update: made it so that a black box is drawn over the screen and sprite logic is surpressed
         if self.set_ini_pos:
-            self.set_initial_position(player_rect, player_x_coord, world_limit)
+            self.set_initial_position(player_rect, player_x_coord, world_rect)
         
-    def set_initial_position(self, player_rect, player_x_coord, world_limit):
+    def set_initial_position(self, player_rect, player_x_coord, world_rect):
         self.scrollx = 0
         #==================================== SETTING INITIAL POSITION ON LEVEL LOAD ===============================
 
@@ -146,16 +146,16 @@ class Camera():
             dx2 = dx - self.half_screen #adjustment for if the player is on the right edge
 
             #new player coord not on r edge, but somewhere in the middle of the level
-            if not self.on_r_edge and player_rect.x < world_limit[0] - self.half_screen:
+            if not self.on_r_edge and player_rect.x < world_rect.width - self.half_screen:
                 self.scrollx += dx
                 player_rect.x -= dx
                 
             #new player coord on right edge of level
-            elif world_limit[0] - player_rect.x < self.half_screen + 32:
+            elif world_rect.width - player_rect.x < self.half_screen + 32:
                 self.on_r_edge = True
                 temp_x = player_rect.x
-                player_rect.x -= (dx2 + world_limit[0]- player_rect.x - 2)
-                self.scrollx += (dx2 + world_limit[0]- temp_x - 2)
+                player_rect.x -= (dx2 + world_rect.width- player_rect.x - 2)
+                self.scrollx += (dx2 + world_rect.width- temp_x - 2)
                 
             self.set_ini_pos = False
         else:#no logic required if player is being loaded on the left edge

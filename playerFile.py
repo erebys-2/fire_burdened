@@ -703,12 +703,12 @@ class player(pygame.sprite.Sprite):
         return (dx, dy, (lvl_transition_flag, lvl_transition_data, lvl_trans_orientation, lvl_trans_disp))
     
     
-    def update_coords(self, world_coords, dx, dy):
-        self.y_coord = self.rect.y + dy - world_coords[0][1].y
-        self.x_coord = self.rect.x + dx - world_coords[0][1].x
+    def update_coords(self, world_rect, dx, dy):
+        self.y_coord = self.rect.y + dy - world_rect.y
+        self.x_coord = self.rect.x + dx - world_rect.x
         
     
-    def move(self, pause_game, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, half_screen, screenH, the_sprite_group, ccsn_chance):
+    def move(self, pause_game, moveL, moveR, world_solids, world_rect, x_scroll_en, y_scroll_en, half_screen, screenH, the_sprite_group, ccsn_chance):
         #reset mvmt variables
         self.dialogue_trigger_ready = False
         self.collision_rect.x = self.rect.x + self.width
@@ -963,12 +963,12 @@ class player(pygame.sprite.Sprite):
         
         #--------------------------------------------------------------coordinate test
         #USED FOR CAMERA SCROLLING
-        self.update_coords(world_coords, dx, dy)
+        self.update_coords(world_rect, dx, dy)
 
         #---------------------------------------------------------world boundaries------------------------------------------------------------------
         if self.collision_rect.x < -6:
             dx = 1
-        elif self.x_coord > world_limit[0] + 6:
+        elif self.x_coord > world_rect.width + 6:
             dx = -1
         
         #--------------------------------------window boundaries
@@ -1012,9 +1012,9 @@ class player(pygame.sprite.Sprite):
             if x_scroll_en:
                 if self.x_coord < half_screen + self.camera_offset or self.shoot_recoil or self.hurting: 
                     self.rect.x += dx
-                elif self.x_coord >= world_limit[0] - (half_screen + 36 + self.camera_offset) or self.shoot_recoil or self.action == 5:
+                elif self.x_coord >= world_rect.width - (half_screen + 36 + self.camera_offset) or self.shoot_recoil or self.action == 5:
                     self.rect.x += dx
-                elif self.x_coord >= half_screen + self.camera_offset and self.x_coord < world_limit[0] - (half_screen - 16 + self.camera_offset): 
+                elif self.x_coord >= half_screen + self.camera_offset and self.x_coord < world_rect.width - (half_screen - 16 + self.camera_offset): 
                     self.scrollx = dx
                     
                 if self.trail_coords != []:
