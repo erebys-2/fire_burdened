@@ -704,14 +704,8 @@ class player(pygame.sprite.Sprite):
     
     
     def update_coords(self, world_coords, dx, dy):
-        for loaded_tile in [tile for tile in world_coords if tile[1].x > self.rect.x - 64 and tile[1].x < self.rect.right + 64]:
-            if (loaded_tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + dy, 1, 1)):
-                x_coord = loaded_tile[2][0]
-                y_coord = loaded_tile[2][1]
-                if self.x_coord != x_coord or self.y_coord != y_coord:
-                    self.x_coord = x_coord
-                    self.y_coord = y_coord
-                    curr_coord = (self.x_coord, self.y_coord)
+        self.y_coord = self.rect.y + dy - world_coords[0][1].y
+        self.x_coord = self.rect.x + dx - world_coords[0][1].x
         
     
     def move(self, pause_game, moveL, moveR, world_solids, world_coords, world_limit, x_scroll_en, y_scroll_en, half_screen, screenH, the_sprite_group, ccsn_chance):

@@ -367,7 +367,8 @@ class World():
                         #print(tile_data)
                         #self.fill_slice_list(0, x_coord, tile_data)
                         
-                        rtrn_list.append(tile_data)
+                        if x == 0:
+                            rtrn_list.append(tile_data)
             else:
                 break
         self.world_limit = (x_coord, screenH)
@@ -503,9 +504,12 @@ class World():
                 
       
         
-        for tile in self.coords:
-            tile[1][0] -= scroll_X #the coords file does not have an image
-            tile[1][1] -= scroll_Y
+        # for tile in self.coords:
+        #     tile[1][0] -= scroll_X #the coords file does not have an image
+        #     tile[1][1] -= scroll_Y
+            
+        self.coords[0][1][0] -= scroll_X
+        self.coords[0][1][1] -= scroll_Y
             
             
         self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg, player_hitting_wall)#calling this just scrolls the fg layer

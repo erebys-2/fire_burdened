@@ -56,22 +56,10 @@ class Camera():
         
     
     def get_pos_data(self, world_coords):
-        for loaded_tile in [tile for tile in world_coords if tile[1].x >= self.rect.x - 64 and tile[1].right <= self.rect.right + 64]:
-            #print(loaded_tile)
-            if loaded_tile[1].colliderect(self.rect.x + 30, self.rect.y, 1, 1):
-                x_coord = loaded_tile[2][0]
-                if self.x_coord != x_coord:
-                    self.x_coord = x_coord
-            if loaded_tile[1].colliderect(self.rect.x - 30, self.rect.y, 1, 1):
-                x_coord = loaded_tile[2][0]
-                if self.x_coord2 != x_coord:
-                    self.x_coord2 = x_coord
-                    #print(self.x_coord2)
-            # if tile[1].colliderect(player_rect.x, player_rect.y, 1, 1):
-            #     x_coord = tile[2][0]
-            #     if self.Px_coord != x_coord:
-            #         self.Px_coord = x_coord
-            
+        self.x_coord = self.rect.x + 30 - world_coords[0][1].x
+        self.x_coord2 = self.rect.x - 30 - world_coords[0][1].x
+                    
+  
     def get_shift_dist(self, player_direction, world_limit, screenW):
         if self.shift_dist > 1:
             self.shift_dist -= 1

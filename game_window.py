@@ -419,7 +419,7 @@ def main():
 		if world.x_scroll_en and not pause_game:
 			
 			camera.auto_correct(player0.rect, player0.direction, player0.x_coord, 
-                       [tile for tile in world.coords if tile[1][0] > - ts and tile[1][0] < SCREEN_WIDTH], 
+                       world.coords, 
                        world_tile0_coord, world.world_limit, SCREEN_WIDTH, SCREEN_HEIGHT)
 		world_tile0_coord = world.draw(screen, scroll_x, scroll_y, player0.hitting_wall)#this draws the world and scrolls it 
   
