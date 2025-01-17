@@ -28,34 +28,20 @@ class World():
         self.bg5 = []
         self.bg6 = []
         
-        self.level_data_str_tuple = ( #names of the corresponding csv files
-            'coord_data',
-            'fg_data',
-            'fg_1_data',
-            'data',
-            'bg1_data',
-            'bg2_data',
-            'bg2_1_data',
-            'bg3_data',
-            'bg4_data',
-            'bg5_data',
-            'bg6_data'
-        )
-
-        self.detailed_lvl_data_list = [
-            self.coords,
-            self.fg,
-            self.fg_1,
-            self.solids,
-            self.bg1,
-            self.bg2,
-            self.bg2_1,
-            self.bg3,
-            self.bg4,
-            self.bg5,
-            self.bg6
-        ]
-        
+       
+        self.detailed_lvl_data_dict = {
+            'coord_data': self.coords,
+            'fg_data': self.fg,
+            'fg_1_data': self.fg_1,
+            'data': self.solids,
+            'bg1_data': self.bg1,
+            'bg2_data': self.bg2,
+            'bg2_1_data': self.bg2_1,
+            'bg3_data': self.bg3,
+            'bg4_data': self.bg4,
+            'bg5_data': self.bg5,
+            'bg6_data': self.bg6
+        }
         
         self.tileList = []
         self.t_set_index = 0
@@ -181,11 +167,11 @@ class World():
         return level_csv_data #returns 2d array
     
     def get_raw_csv_data(self, level, lvl_size):
-        raw_lvl_data_list = []
-        for level_data_str in self.level_data_str_tuple:
-            raw_lvl_data_list.append(self.read_level_csv_data(level, lvl_size[0], lvl_size[1], level_data_str))
+        raw_lvl_data_dict = {}
+        for level_data_str in self.detailed_lvl_data_dict:
+            raw_lvl_data_dict[level_data_str] = (self.read_level_csv_data(level, lvl_size[0], lvl_size[1], level_data_str))
             
-        return raw_lvl_data_list
+        return raw_lvl_data_dict
         
     
     #called in main menu where either a new game or save file is loaded
@@ -263,14 +249,14 @@ class World():
     
     def process_data(self, level, the_sprite_group, screenW, screenH, level_data, ini_vol):
         #clear old data
-        raw_lvl_data_list = []
-        for lvl_data in self.detailed_lvl_data_list:
-            lvl_data *= 0
+        raw_lvl_data_dict = {}
+        for lvl_data in self.detailed_lvl_data_dict:
+            self.detailed_lvl_data_dict[lvl_data] *= 0
             
         self.rect = pygame.rect.Rect(0,0,1,1)
         
         #populate raw_lvl_data_list with lists of int values from level csv files
-        raw_lvl_data_list = self.get_raw_csv_data(level, level_data[0:2])
+        raw_lvl_data_dict = self.get_raw_csv_data(level, level_data[0:2])
 
         self.enemy0_order_id = 0
         self.ots_id = 0
@@ -284,7 +270,7 @@ class World():
                 self.lvl_completion_dict[level] -= 1 #reset the completion status of the level
         
         #processing interactable layer
-        for y, row in enumerate(raw_lvl_data_list[3]):
+        for y, row in enumerate(raw_lvl_data_dict['data']):
             for x, tile in enumerate(row):
                 #bind the world's rect
                 if y == 0 and x == 0: 
@@ -325,21 +311,23 @@ class World():
         self.y_scroll_en = False
         
         
+        #can clear lists by iterating through dictionary but cannot set lists
+        self.bg1 = self.process_bg(raw_lvl_data_dict['bg1_data'], False)
+        self.bg2 = self.process_bg(raw_lvl_data_dict['bg2_data'], True)
+        self.bg2_1 = self.process_bg(raw_lvl_data_dict['bg2_1_data'], True)
+        self.bg3 = self.process_bg(raw_lvl_data_dict['bg3_data'], False)
+        self.bg4 = self.process_bg(raw_lvl_data_dict['bg4_data'], False)
+        self.bg5 = self.process_bg(raw_lvl_data_dict['bg5_data'], False)
+        self.bg6 = self.process_bg(raw_lvl_data_dict['bg6_data'], False)
         
-        #load bg
-        for i in range(4,len(self.detailed_lvl_data_list)):
-            is_detailed_bg = False
-            if i in (5,6):
-                is_detailed_bg = True
-            self.process_bg(raw_lvl_data_list[i], self.detailed_lvl_data_list[i], the_sprite_group, is_detailed_bg)
             
         #process filter layer
         if self.bg3 != []:
             self.bg3 = self.post_process_filter_layer(self.bg3, level_data[1]*32)
                 
         #load fg and fg_1
-        self.process_bg(raw_lvl_data_list[1], self.detailed_lvl_data_list[1], the_sprite_group, False)
-        self.process_bg(raw_lvl_data_list[2], self.detailed_lvl_data_list[2], the_sprite_group, False)
+        self.fg = self.process_bg(raw_lvl_data_dict['fg_data'], False)
+        self.fg_1 = self.process_bg(raw_lvl_data_dict['fg_1_data'], False)
         
         #create maps
         layer_list = [self.fg_1, self.solids, self.bg1, self.bg3, self.bg2_1, self.bg2]
@@ -370,7 +358,8 @@ class World():
         
         return temp_list
         
-    def process_bg(self, data, rtrn_list, the_sprite_group, is_detailed_bg):   
+    def process_bg(self, data, is_detailed_bg):   
+        rtrn_list = []
         for y, row in enumerate(data):
             for x, tile in enumerate(row):
                 if tile >= 0:
@@ -409,33 +398,23 @@ class World():
                         
                         if tile != 36 and tile != 39 and tile != 31:
                             rtrn_list.append(tile_data)
-
+        return rtrn_list
                                  
-    def draw_bg_layers(self, screen, scroll_X, scroll_Y, data, player_hitting_wall):
-        #currently only handles x scrolling
-        #scroll_amnt = scroll_X
-        #logic for looping bg, maximum sprite size is 480x480
+    def draw_parallax_layers(self, screen, scroll_X, scroll_Y, data, player_hitting_wall):
         for tile in data:
-            if (data in self.detailed_lvl_data_list[len(self.detailed_lvl_data_list)-3:len(self.detailed_lvl_data_list)]
-                ):#parallax layers will always be last 3
-                if tile[1][0] > tile[1].width:
-                    tile[1][0] -= (2 * tile[1].width)
-                elif tile[1][0] < -tile[1].width:
-                    tile[1][0] += (2 * tile[1].width)
-                    
-                if not player_hitting_wall:
-                    #print(player_hitting_wall)
-                    tile[1][0] -= scroll_X
-
-                #tile[1][0] -= scroll_X
-                if tile[1].x <= self.screen_w and tile[1].x > -tile[1].width:
-                    screen.blit(tile[0], tile[1]) # (image, position)
-               
-            else:#non parallax layers
+            #cycling through image
+            if tile[1][0] > tile[1].width:
+                tile[1][0] -= (2 * tile[1].width)
+            elif tile[1][0] < -tile[1].width:
+                tile[1][0] += (2 * tile[1].width)
+                
+            if not player_hitting_wall:#scrolling
                 tile[1][0] -= scroll_X
-                tile[1][1] -= scroll_Y
-                if tile[1].x <= self.screen_w and tile[1].x > -self.screen_w//2 and data != self.fg:
-                    screen.blit(tile[0], tile[1]) # (image, position)
+
+            #drawing
+            if tile[1].x <= self.screen_w and tile[1].x > -tile[1].width:
+                screen.blit(tile[0], tile[1]) # (image, position)
+            
                     
         
     def update_tiles(self, tile, screen, scroll_X, scroll_Y):
@@ -446,15 +425,15 @@ class World():
                     
     def draw(self, screen, scroll_X, scroll_Y, player_hitting_wall): #MOVE sliceS HERE
 
-        
+        #parallax layers
         if scroll_X > 0:
             correction = 1
         else:
             correction = 0
         
-        self.draw_bg_layers(screen, (scroll_X + correction)//3, 0, self.bg6, player_hitting_wall)
-        self.draw_bg_layers(screen, 4*(scroll_X + correction)//7, 0, self.bg5, player_hitting_wall)
-        self.draw_bg_layers(screen, 7*(scroll_X + correction)//9, 0, self.bg4, player_hitting_wall)
+        self.draw_parallax_layers(screen, (scroll_X + correction)//3, 0, self.bg6, player_hitting_wall)
+        self.draw_parallax_layers(screen, 4*(scroll_X + correction)//7, 0, self.bg5, player_hitting_wall)
+        self.draw_parallax_layers(screen, 7*(scroll_X + correction)//9, 0, self.bg4, player_hitting_wall)
         
         
         #these scroll every tile in a layer
@@ -472,9 +451,6 @@ class World():
         self.rect.x -= scroll_X
         self.rect.y -= scroll_Y
             
-            
-        self.draw_bg_layers(screen, scroll_X, scroll_Y, self.fg, player_hitting_wall)#calling this just scrolls the fg layer
-        
             
     
     def draw_foreground(self, screen):

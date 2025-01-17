@@ -114,6 +114,7 @@ def main():
 	reddish =  [170,143,167]
 	jade = [119, 121, 124]
 	grey = [110, 95, 111]
+	dark_grey = [30, 29, 36]
 
 	#dictionaty for gradients
 	gradient_dict = {
@@ -138,7 +139,7 @@ def main():
 		2:[grey, 'none', 15, 45, [(2, ht, 1, 0, null, null)], True, "Barrier's Edge"], #lvl 2
 		3:[grey, 'none', 15, 40, [(2, ht, 1, 199*ts, null, null), (2, ht, 4, 0, null, null)], True, 'Outer City Ruins'],
 		4:[grey, 'none', 15, 200, [(2, ht, 3, 39*ts, null, null), (SCREEN_WIDTH, 2, 5, null, 2, 0)], True, 'Outer City Ruins'],
-		5:[grey, 'none', 15, 20, [(wd, 2, 4, null, std_y_disp, 1)], True, 'Outer City Ruins']
+		5:[dark_grey, 'none', 15, 20, [(wd, 2, 4, null, std_y_disp, 1)], True, 'Outer City Ruins']
 	}
  
 	level_ambiance_dict = {#scale, p_type, frame, density, sprite_group
