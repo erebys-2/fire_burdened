@@ -131,15 +131,16 @@ def main():
 	ht = SCREEN_HEIGHT
 	wd = SCREEN_WIDTH
 	std_y_disp = ht - 3*ts
+
 	
 	level_dict = {
 		#==================================================================Note that tile order priority is row then column=================================================================
-		0:[black, 'none', 15, 30, [], False, ''], #lvl 0
-		1:[grey, 'none', 15, 200, [(2, ht, 2, 44*ts, null, null), (2, ht, 3, 0, null, null)], True, 'Outer City Ruins'], #lvl 1
-		2:[grey, 'none', 15, 45, [(2, ht, 1, 0, null, null)], True, "Barrier's Edge"], #lvl 2
-		3:[grey, 'none', 15, 40, [(2, ht, 1, 199*ts, null, null), (2, ht, 4, 0, null, null)], True, 'Outer City Ruins'],
-		4:[grey, 'none', 15, 200, [(2, ht, 3, 39*ts, null, null), (SCREEN_WIDTH, 2, 5, null, 2, 0)], True, 'Outer City Ruins'],
-		5:[dark_grey, 'none', 15, 20, [(wd, 2, 4, null, std_y_disp, 1)], True, 'Outer City Ruins']
+		0:[black, 'none', [], False, ''], #lvl 0
+		1:[grey, 'none', [(2, ht, 2, 44*ts, null, null), (2, ht, 3, 0, null, null)], True, 'Outer City Ruins'], #lvl 1
+		2:[grey, 'none', [(2, ht, 1, 0, null, null)], True, "Barrier's Edge"], #lvl 2
+		3:[grey, 'none', [(2, ht, 1, 199*ts, null, null), (2, ht, 4, 0, null, null)], True, 'Outer City Ruins'],
+		4:[grey, 'none', [(2, ht, 3, 39*ts, null, null), (SCREEN_WIDTH, 2, 5, null, 2, 0)], True, 'Outer City Ruins'],
+		5:[dark_grey, 'none', [(wd, 2, 4, null, std_y_disp, 1)], True, 'Outer City Ruins']
 	}
  
 	level_ambiance_dict = {#scale, p_type, frame, density, sprite_group
@@ -153,7 +154,7 @@ def main():
 	#populate area name dict
 	area_name_dict = {}
 	for entry in level_dict:
-		area_name_dict[entry] = level_dict[entry][6]
+		area_name_dict[entry] = level_dict[entry][4]
 	area_name_img = pygame.image.load('sprites/pause_bg2.png').convert_alpha()
 	area_name_img = pygame.transform.scale(area_name_img, (SCREEN_WIDTH, SCREEN_HEIGHT//15))
 
@@ -286,7 +287,7 @@ def main():
 	}
 
 	# load level data
-	world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][2:5], vol_lvl)
+	world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][2], vol_lvl)
 
 	#running the game----------------------------------------------------------------------------------------------------------------------
 	#https://www.youtube.com/watch?v=XPHDiibNiCM <- motivational music
@@ -327,7 +328,7 @@ def main():
 		#screen.fill((0, 0, 0)) 
 		temp_move_R = False
 		temp_move_L = False
-		player_enable_master = (level_dict[level][5] and not level_transitioning and not camera.set_ini_pos)
+		player_enable_master = (level_dict[level][3] and not level_transitioning and not camera.set_ini_pos)
 
 		#deleting curser
 		if level == 0 or pause_game or not player0.Alive or inventory_opened or dialogue_enable:#delete mouse when out of the main menu
@@ -368,7 +369,7 @@ def main():
 			level = next_level
 
 			# load level data
-			world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][2:6], vol_lvl)
+			world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][2], vol_lvl)
 			# each tile is set with data
 			
 			if move_L:
@@ -856,7 +857,7 @@ def main():
 			
 			if(event.type == pygame.KEYDOWN):
 				#print(pygame.key.name(event.key))
-				if player0.Alive and level_dict[level][5] and not pause_game and not dialogue_enable:
+				if player0.Alive and level_dict[level][3] and not pause_game and not dialogue_enable:
 					if inventory_opened:
 						inv_directions[0] = (event.key == ctrls_list[3]) #Right
 						inv_directions[1] = (event.key == ctrls_list[1]) #Left
@@ -1096,7 +1097,7 @@ def main():
 		#==================================================================================================================
 			if(event.type == pygame.JOYBUTTONDOWN):
 				#print(pygame.button.name(event.button))
-				if player0.Alive and level_dict[level][5] and not pause_game and not dialogue_enable:
+				if player0.Alive and level_dict[level][3] and not pause_game and not dialogue_enable:
 					if inventory_opened:
 						inv_directions[0] = (event.key == ctrls_list[3]) #Right
 						inv_directions[1] = (event.key == ctrls_list[1]) #Left

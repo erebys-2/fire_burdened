@@ -145,6 +145,7 @@ class Mars(npc):
         if self.is_initial_index:
             if self.current_level == 1 and plot_index == -1:
                 self.current_dialogue_index = 0
+                self.is_initial_index = False
                 
 
         if self.player_collision and self.get_dialogue_flag:

@@ -1,8 +1,8 @@
-Mars# You should start heading east.# 1# 1
+Mars# mars_1st_lvl# -3# 1
 Mars# I'll meet you there.# 1# 0
 Mars# [filler]# 3# 0
 Mars# You're still here huh.# 4# 0
-Mars# Talk about taking your time.# 4# 1
+Mars# Talk about taking your time.# 3# 1
 Mars# [filler]# 6# 1
 Mars# You saw the barrier huh?# 7# 1
 Mars# Unfortunately it's one-way. The only way from here is east.# 1# 1
@@ -15,3 +15,8 @@ Mars# Readings of the local magical intensity have been steadily declining befor
 Mars# We're from lands under the Flame Bearers' rule. You could say they're like a guild or nation we're all born into.# 15# 1
 Mars# Nevertheless, they trusted us with a mission of great importance.# 8# 0
 Mars# The developer needs to code in a shop function here.# 8# 3
+Mars# [open shop here]# 0# 0
+Mars# You should start heading east.# 1# 1
+Mars# You must've hit your head real hard if you forgot about magic.# 20# 3
+Mars# Give me your hands... hmm... Looks like you have some pretty standard abilities. You have good maneuverability and hit heavy, but you're not really suited for close combat.# 0# 0
+Mars# Rolling is really useful! You can evade danger or get a little movement boost by rolling. Rolling into a wall won't hurt you, but if you keep doing it... well you know.# 0# 0

@@ -73,6 +73,9 @@ class World():
         self.static_bg_oversized_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'static_bg_oversized_tiles_dict.txt')), 'int')
         self.special_hitbox_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'special_hitbox_tiles_dict.txt')), 'none')
         self.slightly_oversized_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'slightly_oversized_tiles_dict.txt')), 'float')
+        
+        path2 = 'config_textfiles/level_config/'
+        self.level_sizes_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path2 + 'level_sizes_dict.txt')), 'list')
 
         #load onetime_spawn_dict whenever a save file is selected
         #this will be saved as a textfile, used for items and chests
@@ -187,7 +190,7 @@ class World():
    
     #=======================================  SET HITBOXES FOR SPECIAL TILES =================================
     
-    def set_hitbox_for_special_tile(self, tile, x, y, level_data):
+    def set_hitbox_for_special_tile(self, tile, x, y, lvl_data_trans_list):
         tile_type = self.special_hitbox_tiles_dict[tile]
         
         transition_data = []
@@ -197,13 +200,13 @@ class World():
         #modify the shape of a rect
         if tile_type == 'one_way_pass':#pass thru 1 way
             img_rect = pygame.Rect(0, 0, 32, 16)
-        elif level_data != None and tile_type == 'lvl_transition':#level transition tile
+        elif lvl_data_trans_list != None and tile_type == 'lvl_transition':#level transition tile
             img = self.tileList[0][9]
             
-            # img = pygame.Surface((level_data[2][self.transition_index][0], level_data[2][self.transition_index][1]))
+            # img = pygame.Surface((lvl_data_trans_list[self.transition_index][0], lvl_data_trans_list[self.transition_index][1]))
             # img.fill((255,0,0))        
-            img_rect = pygame.Rect(0, 0, level_data[2][self.transition_index][0], level_data[2][self.transition_index][1])
-            transition_data = list(level_data[2][self.transition_index][2:6]) #passed to the player: next_level, player new x, player new y, bound index
+            img_rect = pygame.Rect(0, 0, lvl_data_trans_list[self.transition_index][0], lvl_data_trans_list[self.transition_index][1])
+            transition_data = list(lvl_data_trans_list[self.transition_index][2:6]) #passed to the player: next_level, player new x, player new y, bound index
             transition_data.append((x*32,y*32))
             #print(transition_data)
             self.transition_index += 1
@@ -218,7 +221,7 @@ class World():
         if tile_type == 'lvl_transition' and y > 0:
             img_rect.y += 30
         
-        if level_data != None and tile == 10:
+        if lvl_data_trans_list != None and tile == 10:
             tile_data = (img, img_rect, tile, transition_data)
         else:
             tile_data = (img, img_rect, tile)
@@ -247,7 +250,7 @@ class World():
 
     #======================================================= loading the level ============================================
     
-    def process_data(self, level, the_sprite_group, screenW, screenH, level_data, ini_vol):
+    def process_data(self, level, the_sprite_group, screenW, screenH, lvl_data_trans_list, ini_vol):
         #clear old data
         raw_lvl_data_dict = {}
         for lvl_data in self.detailed_lvl_data_dict:
@@ -255,8 +258,11 @@ class World():
             
         self.rect = pygame.rect.Rect(0,0,1,1)
         
+        #get level size
+        lvl_size = self.level_sizes_dict[level]
+        
         #populate raw_lvl_data_list with lists of int values from level csv files
-        raw_lvl_data_dict = self.get_raw_csv_data(level, level_data[0:2])
+        raw_lvl_data_dict = self.get_raw_csv_data(level, lvl_size)
 
         self.enemy0_order_id = 0
         self.ots_id = 0
@@ -282,7 +288,7 @@ class World():
                     if tile in self.sprite_group_tiles_dict:
                         self.sp_ini.instantiate_sprites_from_tiles(tile, x, y, the_sprite_group, ini_vol, level, [], self)
                     elif tile in self.special_hitbox_tiles_dict:
-                        tile_data = self.set_hitbox_for_special_tile(tile, x, y, level_data)
+                        tile_data = self.set_hitbox_for_special_tile(tile, x, y, lvl_data_trans_list)
                         self.solids.append(tile_data)
                     else:
                         if tile in self.static_bg_oversized_tiles_dict:
@@ -323,7 +329,7 @@ class World():
             
         #process filter layer
         if self.bg3 != []:
-            self.bg3 = self.post_process_filter_layer(self.bg3, level_data[1]*32)
+            self.bg3 = self.post_process_filter_layer(self.bg3, lvl_size[1]*32)
                 
         #load fg and fg_1
         self.fg = self.process_bg(raw_lvl_data_dict['fg_data'], False)
@@ -331,10 +337,10 @@ class World():
         
         #create maps
         layer_list = [self.fg_1, self.solids, self.bg1, self.bg3, self.bg2_1, self.bg2]
-        self.world_map_non_parallax = self.create_map(level_data[0:2], layer_list).convert_alpha()
+        self.world_map_non_parallax = self.create_map(lvl_size, layer_list).convert_alpha()
         
         layer_list2 = [self.fg]
-        self.world_map_non_parallax_fg = self.create_map(level_data[0:2], layer_list2).convert_alpha() 
+        self.world_map_non_parallax_fg = self.create_map(lvl_size, layer_list2).convert_alpha() 
 
         #add another death counter
         if level not in self.death_counters_dict:

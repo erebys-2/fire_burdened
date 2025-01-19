@@ -12,7 +12,7 @@ SCREEN_HEIGHT = 480
 LOWER_MARGIN = 96
 SIDE_MARGIN = 320
 t1 = textfile_formatter()
-path = 'config_textfiles/for_level_editor/'
+path = 'config_textfiles/level_config/'
 level_sizes_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'level_sizes_dict.txt')), 'list')
 #print(level_sizes_dict)
 
@@ -408,8 +408,8 @@ while run:
         
         print('~~Saved!~~')
         if level not in level_sizes_dict:
-            t1.add_line_to_file(f'{level}: {ROWS}, {MAX_COLS}', 'config_textfiles/for_level_editor/level_sizes_dict.txt')
-            level_sizes_dict = t1.str_list_to_dict(t1.read_text_from_file('config_textfiles/for_level_editor/level_sizes_dict.txt'), 'list') #update dictionary
+            t1.add_line_to_file(f'{level}: {ROWS}, {MAX_COLS}', path + 'level_sizes_dict.txt')
+            level_sizes_dict = t1.str_list_to_dict(t1.read_text_from_file(path + 'level_sizes_dict.txt'), 'list') #update dictionary
         elif overwrite:
             print(f'You will have to edit the text file manually for the level just changed to: {level}: {ROWS}, {MAX_COLS}')
 
