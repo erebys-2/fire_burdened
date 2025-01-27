@@ -1,46 +1,114 @@
 import os
 
 class save_file_handler():
-    def __init__(self) -> None:
-        pass
+    def __init__(self):
+        self.PS_str = 'player_state.txt'
+        self.PID_str = 'plot_index_dict.txt'
+        self.PI_str = 'player_inventory.txt'
+        self.LCD_str = 'lvl_completion_dict.txt'
+        self.OSD_str = 'onetime_spawn_dict.txt'
+        
     
     def save(self, t1, slot, level, plot_index_dict, lvl_completion_dict, onetime_spawn_dict, player):
         txt_file_map = {
-            'level_and_player_coords.txt':'',
-            'plot_index_dict.txt':'',
-            'player_inventory.txt':'',
-            'lvl_completion_dict.txt':'',
-            'onetime_spawn_dict.txt':''
+            self.PS_str:'',
+            self.PID_str:'',
+            self.PI_str:'',
+            self.LCD_str:'',
+            self.OSD_str:''
         }
         
         path = f'save_files/{slot}'
         
-        txt_file_map['level_and_player_coords.txt'] = f'level: {level}\nplayer_x: {player.x_coord}\nplayer_y: {player.rect.y - 8}'
+        txt_file_map[self.PS_str] = f'level: {level}\nplayer_x: {player.x_coord}\nplayer_y: {player.rect.y - 8}'
         
         str2 = ''
         for key_ in plot_index_dict:
             str2 = str2 + f'{key_}: {plot_index_dict[key_]}\n'
         str2 = str2[0:len(str2)-1]
-        txt_file_map['plot_index_dict.txt'] = str2
+        txt_file_map[self.PID_str] = str2
             
         str3 = ''
         for slot in player.inventory_handler.inventory:
             str3 = str3 + f'{slot[0]}, {slot[1]}\n'
         str3 = str3[0:len(str3)-1]
-        txt_file_map['player_inventory.txt'] = str3
+        txt_file_map[self.PI_str] = str3
         
         str4 = ''
         for lvl in lvl_completion_dict:
             str4 = str4 + f'{lvl}: {lvl_completion_dict[lvl]}\n'
         str4 = str4[0:len(str4)-1]
-        txt_file_map['lvl_completion_dict.txt'] = str4
+        txt_file_map[self.LCD_str] = str4
         
-        txt_file_map['onetime_spawn_dict.txt'] = self.format_listlistdict_to_str(onetime_spawn_dict)
+        txt_file_map[self.OSD_str] = self.format_listlistdict_to_str(onetime_spawn_dict)
         
         for entry in txt_file_map:
             t1.overwrite_file(os.path.join(path, entry), txt_file_map[entry])
             
-    def format_listlistdict_to_str(self, input_dict):
+    def load_save(self, t1, slot):
+        saves_path = f'save_files/{slot}'
+        
+        #initial values
+        player_new_inv = [
+            ['a', 1],
+            ['b', 1],
+            ['c', 1],
+            ['d', 1],
+            ['e', 1],
+            ['f', 1],
+            ['g', 1],
+            ['h', 1],
+            ['i', 1],
+            ['a', 1]
+        ]
+        
+        plot_index_dict = {}
+        for npc in os.listdir('sprites/npcs'):
+            plot_index_dict[npc] = -1
+            
+        lvl_completion_dict = {0: 0}
+        onetime_spawn_dict = {}
+        player_new_coords = (32, 128)
+        next_level = 0
+        
+        #fill inventory
+        player_new_inv = t1.str_list_to_list_list(t1.read_text_from_file(os.path.join(saves_path, self.PI_str)))
+        
+        #set lvl completion dict
+        lvl_completion_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(saves_path, self.LCD_str)), 'int')
+        
+        #set onetime_spawn_dict
+        if t1.read_text_from_file(os.path.join(saves_path, self.OSD_str))[0] != 'empty':
+            onetime_spawn_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(saves_path, self.OSD_str)), 'list_list')
+        else:
+            path2 = 'config_textfiles/world_config'
+            onetime_spawn_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path2, 'ini_onetime_spawns.txt')), 'list_list')
+        
+        #set plot index
+        if t1.read_text_from_file(os.path.join(saves_path, self.PID_str))[0] != 'empty': #this way I don't have to keep adding -1 if a player loads from a new save
+            #print(t1.read_text_from_file(os.path.join(saves_path, self.PID_str)))
+            plot_index_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(saves_path, self.PID_str)), 'int')
+        
+        #get level and player location data
+        player_state_data = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(saves_path, self.PS_str)), 'int')
+        player_new_coords = (player_state_data['player_x'], player_state_data['player_y'])
+        
+        #set the new level
+        next_level = player_state_data['level']
+        
+        rtn_dict = {
+            'PNI': player_new_inv,
+            'LCD': lvl_completion_dict,
+            'OSD': onetime_spawn_dict,
+            'PID': plot_index_dict,
+            'PNC': player_new_coords,
+            'NL': next_level
+        }
+        
+        return rtn_dict
+                
+            
+    def format_listlistdict_to_str(self, input_dict):#formats data structure to textfile handler readable string
         str_ = ''
         for list_ in input_dict:
             sub_str = ''
@@ -61,18 +129,18 @@ class save_file_handler():
         path = f'save_files/{slot}'
         
         txt_file_map = {
-            'level_and_player_coords.txt':f'level: 1\nplayer_x: 32\nplayer_y: 128',
-            'plot_index_dict.txt':'empty',
-            'player_inventory.txt':'',
-            'lvl_completion_dict.txt':'0: 0',
-            'onetime_spawn_dict.txt':'empty'
+            self.PS_str:f'level: 1\nplayer_x: 32\nplayer_y: 128',
+            self.PID_str:'empty',
+            self.PI_str:'',
+            self.LCD_str:'0: 0',
+            self.OSD_str:'empty'
         }
             
         str3 = ''
-        for slot in t1.str_list_to_list_list(t1.read_text_from_file(os.path.join(path, 'player_inventory.txt'))):
+        for slot in t1.str_list_to_list_list(t1.read_text_from_file(os.path.join(path, self.PI_str))):
             str3 = str3 + f'empty, 0\n'
         str3 = str3[0:len(str3)-1]
-        txt_file_map['player_inventory.txt'] = str3
+        txt_file_map[self.PI_str] = str3
 
         for entry in txt_file_map:
             t1.overwrite_file(os.path.join(path, entry), txt_file_map[entry])

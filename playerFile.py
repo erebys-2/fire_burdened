@@ -723,7 +723,7 @@ class player(pygame.sprite.Sprite):
         if self.action == 1 and self.frame_index%2 == 0:
             self.particles_by_frame(self.frame_index//2 + 2, the_sprite_group, 3)
         
-        if not self.disp_flag and self.action != 5 and not self.hitting_wall: #self.action < 5:# and self.rolled_into_wall == False:
+        if not self.disp_flag and self.action != 5 and not self.hitting_wall and not self.using_item: #self.action < 5:# and self.rolled_into_wall == False:
             if moveL:
                 dx = -self.speed
                 self.flip = True
@@ -893,12 +893,12 @@ class player(pygame.sprite.Sprite):
         #     self.draw_trail = False
                 
         if self.jump_dampen:
-            if self.squat or (self.squat_done and self.in_air):
-                self.vel_y *= 0.6
-                self.in_air = True
+            if self.squat or (self.squat_done and self.in_air): #very small hold jump
+                self.vel_y *= 0.8
                 
-            elif self.vel_y <= -1: #minimum jump velocity
-                self.vel_y *= 0.4
+            elif self.vel_y <= -1: #minimum jump velocity, longer hold jump
+                self.vel_y *= 0.5
+
             self.in_air = True
             self.squat_done = False
             self.squat = False
@@ -906,8 +906,7 @@ class player(pygame.sprite.Sprite):
             
         if self.action == 3 or self.action == 1 or self.action == 0:
             self.jump_dampen = False
-            #self.in_air = False
-        
+                    
         #land
         
         self.update_landing(the_sprite_group)
@@ -1253,7 +1252,8 @@ class player(pygame.sprite.Sprite):
                 self.frame_index = 5   
                 
             if self.action == 11:
-                self.inventory_handler.discard_item_by_name('Rock')
+                if self.inventory_handler.discard_item_by_name('Rock'):
+                    self.charge_built = 0
                 self.shoot = False
                 self.ini_cost_spent = False
                 #spawn bullet---------------------------------------------------------------------------------------------
@@ -1265,10 +1265,11 @@ class player(pygame.sprite.Sprite):
                 player_bullet = bullet_(x, y, 20, self.direction, self.scale, 'player_basic', self.ini_vol)
                 the_sprite_group.player_bullet_group.add(player_bullet)
                 self.charge_built -= 2
-                
                 i = 0
                 while self.charge_built - 0.35 > 0:
                     i+= 1
+                    if self.inventory_handler.discard_item_by_name('Rock'):
+                        self.charge_built = 0
                     self.charge_built -= 0.35
                     #x+= self.direction * 32
                     if i < 4:

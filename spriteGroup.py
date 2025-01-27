@@ -21,8 +21,8 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 			self.enemy_bullet_group,
 			self.p_int_group,
 			self.p_int_group2,
-			self.textprompt_group,
-			self.item_group
+			self.textprompt_group
+			#self.item_group
 			#self.enemy_bullet_group2
 		]
   

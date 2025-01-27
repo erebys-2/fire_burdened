@@ -57,8 +57,8 @@ def main():
 	#local variables
 	move_L = False
 	move_R = False
-	inv_directions = [False,False,False,False,False]
-
+	inv_directions = [False] * 5
+ 
 	change_once = True
 
 	pause_game = False
@@ -131,7 +131,6 @@ def main():
 	ht = SCREEN_HEIGHT
 	wd = SCREEN_WIDTH
 	std_y_disp = ht - 3*ts
-	#penis
 	
 	level_dict = {
 		#==================================================================Note that tile order priority is row then column=================================================================
@@ -161,8 +160,9 @@ def main():
 	#lists for game_settings
 	vol_lvl = [10,10]
 	ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054, 121, 117]
-	
-	text_speed = 40
+ 
+	default_text_speed = 30
+	text_speed = default_text_speed
 
 
 
@@ -380,7 +380,7 @@ def main():
 				move_R = False
 
 			if ui_manager0.set_player_location:
-				ui_manager0.set_player_location = set_player_coords(ui_manager0.player_new_coords)
+				ui_manager0.set_player_location = set_player_coords(ui_manager0.player_new_coords) #returns signal for completion
 			else:
 				if transition_orientation == 'vertical':
 					player0.rect.x = player_new_x - 32 #set player location
@@ -636,8 +636,8 @@ def main():
 			#this code draws the actual pause menu
 			#need another conditional for pressing esc while in a cut scene
 			ui_tuple0 = ui_manager0.show_pause_menu(screen)
-			pause_game = ui_tuple0[0]
-			if ui_tuple0[1]:
+			pause_game = ui_tuple0[0] #game is paused signal
+			if ui_tuple0[1]:#exit to title signal
 				next_level = 0
 				player0 = player(32, 160, speed, hp, stam, 0, 0, vol_lvl, camera_offset)
 				player_new_x = 32
@@ -653,9 +653,9 @@ def main():
 				player_inv_UI.use_item_btn_output = False
 			elif True in inv_directions:
 				player0.inventory_handler.inventory = player_inv_UI.move_item(inv_directions, inv_toggle, player0.inventory_handler.inventory)
-				inv_directions = [False,False,False,False,False]
+				inv_directions = [False] * 5
 		else:
-			inv_directions = [False,False,False,False,False]
+			inv_directions = [False] * 5
    
 		if player0.finished_use_item_animation:
 			player_inv_UI.use_item_flag = True
@@ -691,7 +691,7 @@ def main():
 		#handling player death and game over screen------------------------------------------------------------------------------------
 		
 		if player0.hits_tanked >= player0.hp or player0.rect.y > 480:#killing the player------------------------------------------------
-			player0.action_history = [-1,-1,-1,-1]
+			player0.action_history = [-1] * 4
 			if player0.Alive:
 				player0.Alive = False
 				#death counters will probably belong to an instance of world amd reset upon new games
@@ -736,7 +736,7 @@ def main():
 			inventory_opened = False
 		else:#important spaghetti code for making dialogue boxes work
 			dialogue_box0.reset_internals()
-			text_speed = 40
+			text_speed = default_text_speed
 			
 		if player0.in_cutscene:#dialogue system will activate as soon as the player collides with a 'cutscene' npc
 			dialogue_enable = True #start signal for dialogue handler
@@ -1019,7 +1019,7 @@ def main():
 							text_speed = 0
 							m_player.play_sound(m_player.sfx[1])
 						else:
-							text_speed = 40
+							text_speed = default_text_speed
 							next_dialogue = True
 							dialogue_box0.type_out = True				
      
@@ -1255,7 +1255,7 @@ def main():
 							text_speed = 0
 							m_player.play_sound(m_player.sfx[1])
 						else:
-							text_speed = 40
+							text_speed = default_text_speed
 							next_dialogue = True
 							dialogue_box0.type_out = True				
      

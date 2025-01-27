@@ -160,6 +160,7 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
         return item_found
     
     def discard_item_by_name(self, item_name):
+        empty = False
         for slot in self.inventory:
             if slot[0] == item_name:
                 slot_index = self.inventory.index(slot)
@@ -168,7 +169,10 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
                     
                 if self.inventory[slot_index][1] == 0:
                     self.inventory[slot_index][0] = 'empty'
+                    empty = True
                 break
+            
+        return empty
     
     def find_available_slot(self, item_id):
         slot_index = 0
