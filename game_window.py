@@ -290,7 +290,6 @@ def main():
 	world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][2], vol_lvl)
 
 	#running the game----------------------------------------------------------------------------------------------------------------------
-	#https://www.youtube.com/watch?v=XPHDiibNiCM <- motivational music
 
 	run = True
 	player_new_x = 32
@@ -379,8 +378,8 @@ def main():
 				temp_move_R = move_R
 				move_R = False
 
-			if ui_manager0.set_player_location:
-				ui_manager0.set_player_location = set_player_coords(ui_manager0.player_new_coords) #returns signal for completion
+			if ui_manager0.set_player_location: #loading in from a save file
+				ui_manager0.set_player_location = set_player_coords(ui_manager0.rtn_dict['PNC']) #returns signal for completion
 			else:
 				if transition_orientation == 'vertical':
 					player0.rect.x = player_new_x - 32 #set player location
@@ -601,7 +600,7 @@ def main():
 
 			#plot index list's csv is read within ui_manager
 			if ui_manager0.saves_menu_enable: #load file
-				ui_output = ui_manager0.show_saves_menu(screen)
+				ui_output_dict = ui_manager0.show_saves_menu(screen)
 
 				if ui_manager0.selected_slot != -1 and selected_slot != ui_manager0.selected_slot:
         			#change slot and reset death counters and lvl copmletion dict across levels if a different slot is selected
@@ -611,18 +610,19 @@ def main():
 					ui_manager0.reset_all_slots = False
 					world.death_counters_dict = {0: 0}
 			elif ui_manager0.saves_menu2_enable: #new game menu
-				ui_output = ui_manager0.show_saves_menu2(screen) #select slot for new game
+				ui_output_dict = ui_manager0.show_saves_menu2(screen) #select slot for new game
 				if ui_manager0.selected_slot != -1:# and selected_slot != ui_manager0.selected_slot:
 					world.death_counters_dict = {0: 0}#slot changes from -1 if a slot is chosen, this will always execute
 					selected_slot = ui_manager0.selected_slot
 			else:
-				ui_output = ui_manager0.show_main_menu(screen)
+				ui_output_dict = ui_manager0.show_main_menu(screen)
 				
-			world.onetime_spawn_dict = ui_output[4]
-			world.lvl_completion_dict = ui_output[3]
-			world.set_plot_index_dict(plot_index_dict = ui_output[2])#world plot index saved here
-			run = ui_output[1]
-			next_level = ui_output[0]
+			world.onetime_spawn_dict = ui_output_dict['OSD']
+			world.lvl_completion_dict = ui_output_dict['LCD']
+			world.set_plot_index_dict(ui_output_dict['PID'])#world plot index saved here
+			run = ui_output_dict['RG']
+			next_level = ui_output_dict['NL']
+			fill_player_inv(ui_manager0.rtn_dict['PNI'])
 	
 			if not run:
 				pygame.time.wait(100)   
@@ -660,10 +660,7 @@ def main():
 		if player0.finished_use_item_animation:
 			player_inv_UI.use_item_flag = True
 			player0.finished_use_item_animation = False
-   
-		if ui_manager0.set_player_inv:
-			ui_manager0.set_player_inv = fill_player_inv(ui_manager0.player_new_inv)
-   
+
 		if inv_toggle_en:
 			player_inv_UI.toggle_inv_slot(300)
    
@@ -977,6 +974,7 @@ def main():
 						ui_manager0.trigger_once = True
 
 						if (pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
+							ui_manager0.rtn_dict = ui_manager0.reset_rtn_dict()
 							next_level = 0
 							player0 = player(32, 160, speed, hp, stam, 0, 0, vol_lvl, camera_offset)
 							player_new_x = 32
@@ -1065,7 +1063,7 @@ def main():
 				#if the the animation for squatting before a jump is just slow enough, it might finish AFTER  the jump key is released
 				#so the code below to limit the jump height will not execute, resulting in a full height jump if the jump key is pressed sufficiently fast enough
 				#switched to continuous signal
-				if event.key == ctrls_list[0]:#variable height jumping
+				if event.key == ctrls_list[0] and not inventory_opened:#variable height jumping
 					player0.jump_dampen = True
 
 				if event.key == ctrls_list[4]:#pygame.K_i
@@ -1301,7 +1299,7 @@ def main():
 				#if the the animation for squatting before a jump is just slow enough, it might finish AFTER  the jump key is released
 				#so the code below to limit the jump height will not execute, resulting in a full height jump if the jump key is pressed sufficiently fast enough
 				#switched to continuous signal
-				if event.button == ctrls_list[0]:#variable height jumping
+				if event.button == ctrls_list[0] and not inventory_opened:#variable height jumping
 					player0.jump_dampen = True
 
 				if event.button == ctrls_list[4]:#pygame.K_i

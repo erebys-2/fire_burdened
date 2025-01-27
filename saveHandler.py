@@ -1,4 +1,5 @@
 import os
+from textfile_handler import textfile_formatter
 
 class save_file_handler():
     def __init__(self):
@@ -8,8 +9,14 @@ class save_file_handler():
         self.LCD_str = 'lvl_completion_dict.txt'
         self.OSD_str = 'onetime_spawn_dict.txt'
         
+        self.t1 = textfile_formatter()
+        
+        self.ini_player_inv = []
+        for inv_slot in self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(f'save_files/initial', self.PI_str))):
+            self.ini_player_inv.append(['empty', 0])
+        
     
-    def save(self, t1, slot, level, plot_index_dict, lvl_completion_dict, onetime_spawn_dict, player):
+    def save(self, slot, level, plot_index_dict, lvl_completion_dict, onetime_spawn_dict, player):
         txt_file_map = {
             self.PS_str:'',
             self.PID_str:'',
@@ -43,24 +50,12 @@ class save_file_handler():
         txt_file_map[self.OSD_str] = self.format_listlistdict_to_str(onetime_spawn_dict)
         
         for entry in txt_file_map:
-            t1.overwrite_file(os.path.join(path, entry), txt_file_map[entry])
+            self.t1.overwrite_file(os.path.join(path, entry), txt_file_map[entry])
             
-    def load_save(self, t1, slot):
+    def load_save(self, slot):
         saves_path = f'save_files/{slot}'
         
         #initial values
-        player_new_inv = [
-            ['a', 1],
-            ['b', 1],
-            ['c', 1],
-            ['d', 1],
-            ['e', 1],
-            ['f', 1],
-            ['g', 1],
-            ['h', 1],
-            ['i', 1],
-            ['a', 1]
-        ]
         
         plot_index_dict = {}
         for npc in os.listdir('sprites/npcs'):
@@ -72,25 +67,25 @@ class save_file_handler():
         next_level = 0
         
         #fill inventory
-        player_new_inv = t1.str_list_to_list_list(t1.read_text_from_file(os.path.join(saves_path, self.PI_str)))
+        player_new_inv = self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(saves_path, self.PI_str)))
         
         #set lvl completion dict
-        lvl_completion_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(saves_path, self.LCD_str)), 'int')
+        lvl_completion_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(saves_path, self.LCD_str)), 'int')
         
         #set onetime_spawn_dict
-        if t1.read_text_from_file(os.path.join(saves_path, self.OSD_str))[0] != 'empty':
-            onetime_spawn_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(saves_path, self.OSD_str)), 'list_list')
+        if self.t1.read_text_from_file(os.path.join(saves_path, self.OSD_str))[0] != 'empty':
+            onetime_spawn_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(saves_path, self.OSD_str)), 'list_list')
         else:
             path2 = 'config_textfiles/world_config'
-            onetime_spawn_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path2, 'ini_onetime_spawns.txt')), 'list_list')
+            onetime_spawn_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path2, 'ini_onetime_spawns.txt')), 'list_list')
         
         #set plot index
-        if t1.read_text_from_file(os.path.join(saves_path, self.PID_str))[0] != 'empty': #this way I don't have to keep adding -1 if a player loads from a new save
-            #print(t1.read_text_from_file(os.path.join(saves_path, self.PID_str)))
-            plot_index_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(saves_path, self.PID_str)), 'int')
+        if self.t1.read_text_from_file(os.path.join(saves_path, self.PID_str))[0] != 'empty': #this way I don't have to keep adding -1 if a player loads from a new save
+            #print(self.t1.read_text_from_file(os.path.join(saves_path, self.PID_str)))
+            plot_index_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(saves_path, self.PID_str)), 'int')
         
         #get level and player location data
-        player_state_data = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(saves_path, self.PS_str)), 'int')
+        player_state_data = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(saves_path, self.PS_str)), 'int')
         player_new_coords = (player_state_data['player_x'], player_state_data['player_y'])
         
         #set the new level
@@ -125,7 +120,7 @@ class save_file_handler():
             str_ = str_ + f'{list_}: {sub_str}\n'
         return str_[0:len(str_)-1]
         
-    def reset_specific_save(self, slot, t1):
+    def reset_specific_save(self, slot):
         path = f'save_files/{slot}'
         
         txt_file_map = {
@@ -137,15 +132,15 @@ class save_file_handler():
         }
             
         str3 = ''
-        for slot in t1.str_list_to_list_list(t1.read_text_from_file(os.path.join(path, self.PI_str))):
+        for slot in self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(path, self.PI_str))):
             str3 = str3 + f'empty, 0\n'
         str3 = str3[0:len(str3)-1]
         txt_file_map[self.PI_str] = str3
 
         for entry in txt_file_map:
-            t1.overwrite_file(os.path.join(path, entry), txt_file_map[entry])
+            self.t1.overwrite_file(os.path.join(path, entry), txt_file_map[entry])
             
         
-    def reset_all_saves(self, t1):
+    def reset_all_saves(self):
         for i in range(4):
-            self.reset_specific_save(i, t1)
+            self.reset_specific_save(i)

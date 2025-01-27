@@ -9,7 +9,7 @@ Mars# Unfortunately it's one-way. The only way from here is east.# 1# 1
 Mars# mars_before_wall# -3# 1
 Mars# Yeah, we're looking for the remains of this place's god to bring back home.# 10# 0
 Mars# Where is the god? Well, we gotta look for it. Rumors say it lays deep within the heart of the city. Unfortunately there's more and more 'locals' the deeper you go.# 11# 1
-Mars# By the way, we'll be splitting up looking around that way we cover more area. I've already checked much of the upper city.# 8# 0
+Mars# By the way, we'll be splitting up looking around that way we cover more area.# 8# 0
 Mars# This is the holy city of Remgrist. Once upon a time it was a utopia blessed by the local god. I guess the people must've done something horrible to recieve a calamity of this scale.# 13# 0
 Mars# Readings of the local magical intensity have been steadily declining before the calamity event, and by now it's almost flat-lined.# 8# 1
 Mars# We're from lands under the Flame Bearers' rule. You could say they're like a guild or nation we're all born into.# 15# 1

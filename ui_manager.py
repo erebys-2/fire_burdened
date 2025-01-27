@@ -59,8 +59,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         
         self.ctrls_list = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]
         self.ctrls_updated = False
-        #run_game = True
-        
+
         self.title_screen = pygame.image.load('sprites/title_screen.png').convert_alpha()
         self.ts_rect = self.title_screen.get_rect()
         self.ts_rect.center = (self.S_W//2, self.S_H//2 +32)
@@ -70,22 +69,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.raise_volume = False
         
         self.set_player_location = False
-        self.player_new_coords = (32, 128)
-        
-        self.set_player_inv = False
-        self.player_new_inv = [
-            ['a', 1],
-            ['b', 1],
-            ['c', 1],
-            ['d', 1],
-            ['e', 1],
-            ['f', 1],
-            ['g', 1],
-            ['h', 1],
-            ['i', 1],
-            ['a', 1]
-        ]
-        
+
         #filler value, selected slot will always be set by clicking a slot before loading a game
         self.selected_slot = -1
         self.reset_all_slots = False
@@ -99,6 +83,26 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         
         self.came_from_death_menu = False
         
+        self.rtn_dict = self.reset_rtn_dict()
+        
+    def reset_rtn_dict(self):
+        rtn_dict = {
+            'RG': True,
+            'PNI': self.save_handler.ini_player_inv,
+            'LCD': {0: 0},
+            'OSD': {},
+            'PID': {},
+            'PNC': (32,128),
+            'NL': 0
+        }  
+        
+        plot_index_dict = {} #populate plot index for each npc
+        for npc in os.listdir('sprites/npcs'):
+            plot_index_dict[npc] = -1
+        rtn_dict['PID'] = plot_index_dict
+        
+        return rtn_dict  
+    
     def read_csv_data(self, data_name):
         temp_list = []
         with open(f'game_settings/{data_name}.csv', newline= '') as csvfile:
@@ -128,17 +132,8 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
 #the last menu will be restored when the current sub menu kills its own enable signal
 #-----------------------------------------------------------main menu----------------------------------------------------------
     def show_main_menu(self, screen):
-        next_level = 0
-        run_game = True
-        #sets plot index list to 0
-        plot_index_dict = {} #populate plot index for each npc
-        for npc in os.listdir('sprites/npcs'):
-            plot_index_dict[npc] = -1
-            
-        lvl_completion_dict = {0: 0}
-        onetime_spawn_dict = {}
         
-        if not self.options_menu_enable and not self.saves_menu_enable and not self.saves_menu2_enable and next_level == 0:
+        if not self.options_menu_enable and not self.saves_menu_enable and not self.saves_menu2_enable and self.rtn_dict['NL'] == 0:
             if self.trigger_once:
                 self.button_list *= 0
 
@@ -147,6 +142,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 self.trigger_once = False
                 
                 self.came_from_death_menu = False
+                self.rtn_dict = self.reset_rtn_dict()
                 
             screen.blit(self.title_screen, self.ts_rect)
             
@@ -160,7 +156,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 self.options_menu_enable = True
             
             if self.do_btn_logic(screen, self.button_list[3], 'Quit', False, 1):
-                run_game = False
+                self.rtn_dict['RG'] = False
 
             
         elif self.options_menu_enable and not self.saves_menu_enable and not self.saves_menu2_enable:
@@ -171,8 +167,8 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             
         elif not self.options_menu_enable and not self.saves_menu_enable and self.saves_menu2_enable:
             self.show_saves_menu2(screen)
-            
-        return (next_level, run_game, plot_index_dict, lvl_completion_dict, onetime_spawn_dict)
+
+        return self.rtn_dict
 
 #-----------------------------------------------------------pause menu---------------------------------------------------------
     def show_pause_menu(self, screen):
@@ -183,9 +179,6 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         screen.blit(self.pause_img, (0,0))
         self.text_manager0.disp_text_box(screen, self.fontlist[2], ('','Game Paused'), (-1,-1,-1), (200,200,200), 
                                          (188, self.S_H//2 - 96,self.S_W,self.S_H), False, False, 'none')
-        
-        #3 buttons just like the start menu
-        #possibly an inventory button too
         
         if not self.options_menu_enable:
             if self.trigger_once:
@@ -203,6 +196,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 self.options_menu_enable = True
             
             if self.do_btn_logic(screen, self.button_list[2], 'Main Menu', True, 1):
+                self.rtn_dict = self.reset_rtn_dict()
                 exit_to_title = True
                 pause_game = False
                 pygame.mixer.unpause()
@@ -262,37 +256,27 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
     def show_saves_menu2(self, screen):
         #doesn't actually load data, it makes the player choose a file that can be autosaved to before a new game is started
         pygame.draw.rect(screen, (0,0,0), (0,0,self.S_W,self.S_H))
-        run_game = True
-        next_level = 0
-        #sets plot index list to 0
-        plot_index_dict = {} #populate plot index for each npc
-        for npc in os.listdir('sprites/npcs'):
-            plot_index_dict[npc] = -1
-            
-        lvl_completion_dict = {0: 0}
-        onetime_spawn_dict = {}
-        
         
         if self.trigger_once: #deploy buttons
             self.button_list *= 0
             for i in range(5):
                 self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +40*i, self.generic_img, 1))
             
+            self.rtn_dict = self.reset_rtn_dict()
             self.trigger_once = False
         
         for i in range(4):
             if self.do_btn_logic(screen, self.button_list[i], f'File {i}', True, 1):
                 #reset specific slot and set global variable
-                self.save_handler.reset_specific_save(i, self.t1)
+                self.save_handler.reset_specific_save(i)
                 self.selected_slot = i
                 
                 #set the new level
-                run_game = True    
-                next_level = 1
+                self.rtn_dict['NL'] = 1
                 
                 #populate onetime_spawn_dict with default values
                 path2 = 'config_textfiles/world_config'
-                onetime_spawn_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path2, 'ini_onetime_spawns.txt')), 'list_list')
+                self.rtn_dict['OSD'] = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path2, 'ini_onetime_spawns.txt')), 'list_list') #onetime_spawn_dict
                 
                 #set flag
                 self.saves_menu2_enable = False
@@ -303,23 +287,13 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         
         self.text_manager0.disp_text_box(screen, self.fontlist[1], ('', '  Choose a file to load.', 'Prior data will be erased.'), (-1,-1,-1), (200,200,200), 
                                          (self.S_W//2 - 100, self.S_H//2 - 128,self.S_W,self.S_H), False, False, 'none')
-        
-     
-        return (next_level, run_game, plot_index_dict, lvl_completion_dict, onetime_spawn_dict)
+
+        return self.rtn_dict
 
             
 #---------------------------------------------------------Save select sub menu-----------------------------------
     def show_saves_menu(self, screen):
         pygame.draw.rect(screen, (0,0,0), (0,0,self.S_W,self.S_H))
-        next_level = 0
-        run_game = True
-        #sets plot index list to 0
-        plot_index_dict = {} #populate plot index for each npc
-        for npc in os.listdir('sprites/npcs'):
-            plot_index_dict[npc] = -1
-        
-        lvl_completion_dict = {0: 0}
-        onetime_spawn_dict = {}
         
         if self.trigger_once: #deploy buttons
             self.button_list *= 0
@@ -330,6 +304,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             if self.selected_slot != -1:
                 self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 - 88, self.generic_img, 1))
             
+            self.rtn_dict = self.reset_rtn_dict()
             self.trigger_once = False
             
         for i in range(4):
@@ -337,20 +312,12 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 #set selected slot
                 self.selected_slot = i
 
-                loaded_data = self.save_handler.load_save(self.t1, self.selected_slot)
-
-                self.player_new_inv = loaded_data['PNI']
-                lvl_completion_dict = loaded_data['LCD']
-                onetime_spawn_dict = loaded_data['OSD']
-                plot_index_dict = loaded_data['PID']
-                self.player_new_coords = loaded_data['PNC']
-                next_level = loaded_data['NL']
+                loaded_data = self.save_handler.load_save(self.selected_slot)
+                for entry in loaded_data:#update rtn dict
+                    self.rtn_dict[entry] = loaded_data[entry]
                 
                 #get out of the sub menu and send control signals
-                self.set_player_inv = True
                 self.set_player_location = True
-                run_game = True    
-                
                 self.saves_menu_enable = False
 
         #back button
@@ -359,36 +326,28 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         
         #reset all button
         if self.do_btn_logic(screen, self.button_list[5], '[Reset All]', False, 1):
-            self.save_handler.reset_all_saves(self.t1)
+            self.save_handler.reset_all_saves()
             self.reset_all_slots = True
             self.selected_slot = -1
         
         #select current slot
         if self.selected_slot != -1 and len(self.button_list) >= 7:
             if self.do_btn_logic(screen, self.button_list[6], f'Last File: {self.selected_slot}', True, 1) or (self.came_from_death_menu and self.toggle_settings_dict['skip_death_screen'] > 0):
-                loaded_data = self.save_handler.load_save(self.t1, self.selected_slot)
+                loaded_data = self.save_handler.load_save(self.selected_slot)
                 
-                self.player_new_inv = loaded_data['PNI']
-                lvl_completion_dict = loaded_data['LCD']
-                onetime_spawn_dict = loaded_data['OSD']
-                plot_index_dict = loaded_data['PID']
-                self.player_new_coords = loaded_data['PNC']
-                next_level = loaded_data['NL']
+                for entry in loaded_data:#update rtn dict
+                    self.rtn_dict[entry] = loaded_data[entry]
                 
                 #get out of the sub menu, set control signals
-                self.set_player_inv = True
                 self.set_player_location = True
-                run_game = True    
-                
                 self.saves_menu_enable = False
                 self.trigger_once = True
 
             if self.came_from_death_menu and self.toggle_settings_dict['skip_death_screen'] > 0:
                 pygame.draw.rect(screen, (0,0,0), pygame.rect.Rect(0,0,self.S_W,self.S_H))
      
-        return (next_level, run_game, plot_index_dict, lvl_completion_dict, onetime_spawn_dict)
+        return self.rtn_dict
 
-            
 #---------------------------------------------------------Controls sub menu---------------------------                
     def show_ctrl_menu(self, screen):
         if self.trigger_once:
@@ -433,19 +392,6 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.text_manager0.disp_text_box(screen, self.fontlist[1], ('','UI buttons ESCAPE and ENTER cannot be re-mapped'), (-1,-1,-1), (200,200,200), 
                                          (128, self.S_H//2 + 128,self.S_W,self.S_H), False, False, 'none')
         
-        ctrls_btn_dict = {
-            0:('','Jump'),
-            1:('','Left'),
-            2:('','Roll'),
-            3:('','Right'),
-            4:('','Melee'),
-            5:('','Shoot'),
-            6:('','Special'),
-            7:('','Sprint'),
-            8:('','Inventory'),
-            9:('','Use Item')
-        }
-        
         ctrs_btn_list = [
             'Jump',
             'Left',
@@ -472,25 +418,17 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 self.ctrls_updated = True
                 self.write_csv_data('ctrls_data', self.ctrls_list)
 
-            #load scheme 1
-            if self.do_btn_logic(screen, self.button_list[21], 'Load Ctrls 1', False, 1):
-                self.ctrls_list = self.read_csv_data('ctrl_scheme_1')
-                for i in range(len(self.disp_str_list)):
-                    self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
-            
-            #save scheme 1
-            if self.do_btn_logic(screen, self.button_list[22], 'Save Ctrls 1', False, 1):
-                self.write_csv_data('ctrl_scheme_1', self.ctrls_list)
-            
-            #load scheme 2
-            if self.do_btn_logic(screen, self.button_list[23], 'Load Ctrls 2', False, 1):
-                self.ctrls_list = self.read_csv_data('ctrl_scheme_2')
-                for i in range(len(self.disp_str_list)):
-                    self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
-            
-            #save scheme 2
-            if self.do_btn_logic(screen, self.button_list[24], 'Save Ctrls 2', False, 1):
-                self.write_csv_data('ctrl_scheme_2', self.ctrls_list)
+            #load/save control schemes
+            for j in range(2):
+                #load scheme
+                if self.do_btn_logic(screen, self.button_list[21 + 2*j], f'Load Ctrls {j+1}', False, 1):
+                    self.ctrls_list = self.read_csv_data(f'ctrl_scheme_{j+1}')
+                    for k in range(len(self.disp_str_list)):
+                        self.disp_str_list[k][1] = pygame.key.name(self.ctrls_list[k])
+                
+                #save scheme
+                if self.do_btn_logic(screen, self.button_list[22 + 2*j], f'Save Ctrls {j+1}', False, 1):
+                    self.write_csv_data(f'ctrl_scheme_{j+1}', self.ctrls_list)
             
             #pressing default button
             if self.do_btn_logic(screen, self.button_list[25], 'Default', False, 1):
@@ -554,7 +492,6 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                     
                     self.disp_str_list[self.btn_selected][1] = str(event.button)
                     self.ctrls_list[self.btn_selected] = event.button
-
                     
                 if(event.type == pygame.QUIT):
                     self.stop = True
@@ -617,7 +554,6 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
    
         if not self.saves_menu_enable:
             if self.trigger_once:
-                run_game = True
                 self.button_list *= 0
 
                 for i in range(2):
@@ -633,6 +569,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 pygame.mixer.stop()
             
             if self.do_btn_logic(screen, self.button_list[1], 'Main Menu', True, 1):
+                self.rtn_dict = self.reset_rtn_dict()
                 exit_to_title = True
                 pygame.mixer.stop()
 
