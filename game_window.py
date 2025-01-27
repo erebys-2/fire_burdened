@@ -623,6 +623,17 @@ def main():
 			run = ui_output_dict['RG']
 			next_level = ui_output_dict['NL']
 			fill_player_inv(ui_manager0.rtn_dict['PNI'])
+			#set player stats
+			for stat in ui_manager0.rtn_dict['PS']:
+				if ui_manager0.rtn_dict['PS'][stat] != -1:
+					if stat == 'hits_tanked':
+						player0.hits_tanked = ui_manager0.rtn_dict['PS'][stat]
+					elif stat == 'st_cap':
+						anmt = ui_manager0.rtn_dict['PS'][stat]
+						player0.stamina_usage_cap = anmt
+						player0.stamina_used = anmt
+					elif stat == 'char':
+						pass
 	
 			if not run:
 				pygame.time.wait(100)   

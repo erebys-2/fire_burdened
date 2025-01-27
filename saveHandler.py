@@ -27,7 +27,7 @@ class save_file_handler():
         
         path = f'save_files/{slot}'
         
-        txt_file_map[self.PS_str] = f'level: {level}\nplayer_x: {player.x_coord}\nplayer_y: {player.rect.y - 8}'
+        txt_file_map[self.PS_str] = f'level: {level}\nplayer_x: {player.x_coord}\nplayer_y: {player.rect.y - 8}\nhits_tanked: {player.hits_tanked}\nst_cap: {player.stamina_usage_cap}\nchar: -1'
         
         str2 = ''
         for key_ in plot_index_dict:
@@ -85,8 +85,18 @@ class save_file_handler():
             plot_index_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(saves_path, self.PID_str)), 'int')
         
         #get level and player location data
-        player_state_data = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(saves_path, self.PS_str)), 'int')
+        player_state_data = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(saves_path, self.PS_str)), 'float')
+        for key in player_state_data:#process non-floats into int
+            if player_state_data[key] == int(player_state_data[key]):
+                player_state_data[key] = int(player_state_data[key])
+        
         player_new_coords = (player_state_data['player_x'], player_state_data['player_y'])
+        
+        #get player stats
+        player_stats = {'hits_tanked': player_state_data['hits_tanked'], 
+                        'st_cap': player_state_data['st_cap'], 
+                        'char': player_state_data['char']
+                        }
         
         #set the new level
         next_level = player_state_data['level']
@@ -97,7 +107,8 @@ class save_file_handler():
             'OSD': onetime_spawn_dict,
             'PID': plot_index_dict,
             'PNC': player_new_coords,
-            'NL': next_level
+            'NL': next_level,
+            'PS': player_stats
         }
         
         return rtn_dict
@@ -124,7 +135,7 @@ class save_file_handler():
         path = f'save_files/{slot}'
         
         txt_file_map = {
-            self.PS_str:f'level: 1\nplayer_x: 32\nplayer_y: 128',
+            self.PS_str:f'level: 1\nplayer_x: 32\nplayer_y: 128\nhits_tanked: -1\nst_cap: -1\nchar: -1',
             self.PID_str:'empty',
             self.PI_str:'',
             self.LCD_str:'0: 0',

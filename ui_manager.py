@@ -44,20 +44,11 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.stop = False
         self.btn_selected = 0
         
-        self.disp_str_list = [
-            ['','empty'],
-            ['','empty'],
-            ['','empty'],
-            ['','empty'],
-            ['','empty'],
-            ['','empty'],
-            ['','empty'],
-            ['','empty'],
-            ['','empty'],
-            ['','empty']
-        ]
+        self.disp_str_list = []
+        for i in range(10):
+            self.disp_str_list.append(['','empty'])
         
-        self.ctrls_list = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]
+        self.ctrls_list = [-1]*10
         self.ctrls_updated = False
 
         self.title_screen = pygame.image.load('sprites/title_screen.png').convert_alpha()
@@ -93,7 +84,8 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             'OSD': {},
             'PID': {},
             'PNC': (32,128),
-            'NL': 0
+            'NL': 0,
+            'PS': [-1]*3
         }  
         
         plot_index_dict = {} #populate plot index for each npc
