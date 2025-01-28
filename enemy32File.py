@@ -150,7 +150,6 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         self.atk_rect_scaled = self.atk_rect
         
     def do_p_int_group_collisions(self, p_int_group, dx, dy):
-       
         for p_int in [p_int for p_int in p_int_group if p_int.rect.x > -160 and p_int.rect.x < 800]:
             if p_int.collision_and_hostility[p_int.id][0]:
                 if (p_int.rect.colliderect(self.rect.x+2, self.rect.y + dy, self.width-4, self.height) and self.action != 2):
@@ -204,7 +203,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             self.vertical_direction = -1
         
         # if player is within left range, or right range
-        if self.inundated == False and self.check_if_in_simulation_range():
+        if self.inundated == False:# and self.check_if_in_simulation_range():
             #enemy id specific behaviors--------------------------------------------------------------------------------------
             if self.id == 'dog':
                 chase_range = 1.5
@@ -360,19 +359,18 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     
                     
             elif self.id == 'walker':
-                if not self.inundated and self.check_if_in_simulation_range():
-                    self.moving = True
-                    dx = self.direction * self.speed
-    
-                    if self.direction == -1:
-                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.half_width, self.half_height)
-                    elif self.direction == 1:
-                        self.atk_rect = pygame.Rect(self.rect.x + self.half_width, self.rect.y + 16, self.half_width, self.half_height)
-                    self.atk_rect_scaled = self.atk_rect
-                else:
-                    self.moving = False
-                    dx = -dx
-                    self.atk1_kill_hitbox()
+                self.moving = True
+                dx = self.direction * self.speed
+
+                if self.direction == -1:
+                    self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.half_width, self.half_height)
+                elif self.direction == 1:
+                    self.atk_rect = pygame.Rect(self.rect.x + self.half_width, self.rect.y + 16, self.half_width, self.half_height)
+                self.atk_rect_scaled = self.atk_rect
+                # else:
+                #     self.moving = False
+                #     dx = -dx
+                #     self.atk1_kill_hitbox()
                     
 
          
@@ -416,7 +414,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         
         #gravity 
         if self.id != 'fly':
-            if self.Alive == True and self.check_if_in_simulation_range():  
+            if self.Alive:# == True and self.check_if_in_simulation_range():  
             
                 g = 0.4
                 self.vel_y += g
@@ -501,7 +499,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 else:
                     dx += self.direction * 2
 
-
+        
         dxdy = self.do_p_int_group_collisions(sp_group_list[8], dx, dy)
         if self.id != 'fly':
             dx = dxdy[0]

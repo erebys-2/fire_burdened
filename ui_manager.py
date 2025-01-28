@@ -33,6 +33,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.vol_menu_enable = False
         self.saves_menu_enable = False
         self.saves_menu2_enable = False
+        self.main_menu_enable = False
         
         self.trigger_once = True
         
@@ -75,6 +76,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.came_from_death_menu = False
         
         self.rtn_dict = self.reset_rtn_dict()
+        self.kbd_new_game = False
         
     def reset_rtn_dict(self):
         rtn_dict = {
@@ -85,7 +87,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             'PID': {},
             'PNC': (32,128),
             'NL': 0,
-            'PS': [-1]*3
+            'PS': {}
         }  
         
         plot_index_dict = {} #populate plot index for each npc
@@ -133,19 +135,24 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                     self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +64 +36*i, self.generic_img, 1))
                 self.trigger_once = False
                 
+                self.main_menu_enable = True
                 self.came_from_death_menu = False
                 self.rtn_dict = self.reset_rtn_dict()
                 
             screen.blit(self.title_screen, self.ts_rect)
             
-            if self.do_btn_logic(screen, self.button_list[0], 'New Game', True, 1):
+            if self.do_btn_logic(screen, self.button_list[0], 'New Game', True, 1) or self.kbd_new_game:
                 self.saves_menu2_enable = True
+                if self.kbd_new_game:
+                    self.trigger_once = True
             
             if self.do_btn_logic(screen, self.button_list[1], 'Load File', True, 1):
                 self.saves_menu_enable = True
+                self.main_menu_enable = False
             
             if self.do_btn_logic(screen, self.button_list[2], 'Options', True, 1):
                 self.options_menu_enable = True
+                self.main_menu_enable = False
             
             if self.do_btn_logic(screen, self.button_list[3], 'Quit', False, 1):
                 self.rtn_dict['RG'] = False
@@ -255,13 +262,20 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +40*i, self.generic_img, 1))
             
             self.rtn_dict = self.reset_rtn_dict()
+            self.kbd_new_game = False
             self.trigger_once = False
         
         for i in range(4):
-            if self.do_btn_logic(screen, self.button_list[i], f'File {i}', True, 1):
+            if self.do_btn_logic(screen, self.button_list[i], f'File {i}', True, 1) or self.kbd_new_game:
                 #reset specific slot and set global variable
-                self.save_handler.reset_specific_save(i)
-                self.selected_slot = i
+                if self.kbd_new_game:
+                    index = 0
+                    self.trigger_once = True
+                else:
+                    index = 1
+                    
+                self.save_handler.reset_specific_save(index)
+                self.selected_slot = index
                 
                 #set the new level
                 self.rtn_dict['NL'] = 1
@@ -272,6 +286,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 
                 #set flag
                 self.saves_menu2_enable = False
+                self.kbd_new_game = False
         
         #back button        
         if self.do_btn_logic(screen, self.button_list[4], 'Main Menu', True, 1):
@@ -559,11 +574,13 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 self.saves_menu_enable = True
                 exit_to_title = True
                 pygame.mixer.stop()
+                self.m_player.play_sound(self.m_player.sfx[1])
             
             if self.do_btn_logic(screen, self.button_list[1], 'Main Menu', True, 1):
                 self.rtn_dict = self.reset_rtn_dict()
                 exit_to_title = True
                 pygame.mixer.stop()
+                self.m_player.play_sound(self.m_player.sfx[1])
 
         if self.toggle_settings_dict['skip_death_screen'] > 0:
             pygame.draw.rect(screen, (0,0,0), pygame.rect.Rect(0,0,self.S_W,self.S_H))

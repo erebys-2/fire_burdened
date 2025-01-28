@@ -174,13 +174,12 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
     def enable(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list):
         if self.enabled:
             self.is_onscreen = self.check_if_onscreen()
-            if self.id == 'spinning_blades':
-                if self.is_onscreen:
+            if self.is_onscreen:
+                if self.id == 'spinning_blades':
                     self.animate(None)
-                    
-            if self.id == 'flame_pillar':
-                self.atk_rect = pygame.Rect(self.rect.x + 16, self.rect.y, self.width - 32, self.height)
-                if self.is_onscreen:
+                        
+                if self.id == 'flame_pillar':
+                    self.atk_rect = pygame.Rect(self.rect.x + 16, self.rect.y, self.width - 32, self.height)
                     if player_rect.colliderect(self.atk_rect):
                         for i in range(random.randrange(2,4)):
                             sp_group_list[5].sprite.add_particle('player_bullet_explosion', 
@@ -194,7 +193,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
 
                     if pygame.time.get_ticks()%10 == 0:
                         sp_group_list[5].sprite.add_particle('player_bullet_explosion', 
-                                                             self.rect.centerx + random.randint(-self.width//2,self.width//2), 
+                                                                self.rect.centerx + random.randint(-self.width//2,self.width//2), 
                                                             self.rect.centery + random.randint(-self.width//2,self.width//2), 
                                                             -self.direction, 2, True, random.randint(0,2))
 
@@ -202,14 +201,13 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                     if self.rect.bottom < -self.rect.height//4:
                         self.rect.bottom = 480 + self.rect.height//4
 
-                    self.animate(None)
-                    
-            elif self.id in ('grass', 'tall_plant'):
-                if self.is_onscreen:
+                        self.animate(None)
+                        
+                elif self.id in ('grass', 'tall_plant'):
                     frame_update = None
                     if (self.action in (0,2) and 
                         (self.do_player_atk_collisions(player_atk_rect) or 
-                         self.do_bullet_collisions((sp_group_list[1], sp_group_list[2])))
+                            self.do_bullet_collisions((sp_group_list[1], sp_group_list[2])))
                         ):
                         #self.m_player.play_sound(self.m_player.sfx[1])
                         self.img_rect.y = self.rect.y
@@ -221,7 +219,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                             sp_group_list[5].sprite.add_particle('grass_cut', self.rect.x + random.randint(-8,8), self.rect.y + random.randint(-16,8), -self.direction, self.scale, True, random.randint(0,2))
                         if random.randint(0,15) == 0:
                             sp_group_list[12].add(Item('Mild Herb', self.rect.centerx + 2*random.randint(-5,5), self.rect.centery + 2*random.randint(-5,5), 1, False))
-                    
+                            
                     if self.action != 1:#not cut down
                         if player_rect.colliderect(self.rect):#squish the plant!!
                             self.action = 2
@@ -234,99 +232,103 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                             self.action = 0
                             self.img_rect.width = self.rect.width
                             self.img_rect.y = self.rect.y
+                    else:#regrow when cut down after 7000 ticks
+                        if pygame.time.get_ticks() - self.update_time2 > 12000:
+                            self.action = 2
+                            self.rect.height = 32
+                            self.img_rect.y = self.rect.y + int(0.4*self.height) + self.scale
+                            self.update_time2 = pygame.time.get_ticks()
                         
                         
                     self.animate(frame_update)
-                else:
-                    self.action = 0
-                    self.rect.height = 32
-                    
-            elif self.id == 'breakable_brick1':
-                #print(self.durability)
-                if self.durability > 0:
-                    if (self.is_onscreen and 
-                        (self.do_player_atk_collisions(player_atk_rect) or 
-                         self.do_bullet_collisions((sp_group_list[1], sp_group_list[2])))
-                        ):
-                        if not self.durability_changed:
-                            self.durability -= 1
-                            self.durability_changed = True
-                            self.image = self.frame_list[self.action][self.breakable_tile_frame_change()]
-                            self.m_player.play_sound(self.m_player.sfx[2])
-                            
-                            
-                            sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx + random.randint(-12,12), self.rect.centery + random.randint(-12,12), -self.direction, 1.2*self.scale, False, random.randrange(0,3))
-                            
-                            for i in range(3):
-                                sp_group_list[5].sprite.add_particle('stone_breaking', self.rect.x + random.randint(-16,16), self.rect.y + random.randint(-16,16), -self.direction, self.scale, True, random.randint(0,2))
+                    # else:
+                    #     self.action = 0
+                    #     self.rect.height = 32
                         
-                        
+                elif self.id == 'breakable_brick1':
+                    #print(self.durability)
+                    if self.durability > 0:
+                        if (
+                            (self.do_player_atk_collisions(player_atk_rect) or 
+                            self.do_bullet_collisions((sp_group_list[1], sp_group_list[2])))
+                            ):
+                            if not self.durability_changed:
+                                self.durability -= 1
+                                self.durability_changed = True
+                                self.image = self.frame_list[self.action][self.breakable_tile_frame_change()]
+                                self.m_player.play_sound(self.m_player.sfx[2])
+                                    
+                                sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx + random.randint(-12,12), self.rect.centery + random.randint(-12,12), -self.direction, 1.2*self.scale, False, random.randrange(0,3))
+                                
+                                for i in range(3):
+                                    sp_group_list[5].sprite.add_particle('stone_breaking', self.rect.x + random.randint(-16,16), self.rect.y + random.randint(-16,16), -self.direction, self.scale, True, random.randint(0,2))
+                        else:
+                            self.durability_changed = False
                     else:
-                        self.durability_changed = False
-                else:
-                    #if random.randint(0,1) == 0:
-                    #for i in range(3):
-                    sp_group_list[12].add(Item('Rock', self.rect.centerx + 2*random.randint(-5,5), self.rect.centery + 2*random.randint(-5,5), 1, False))
-                    self.rect = pygame.Rect(0,0,0,0)
-                    self.kill()
+                        #if random.randint(0,1) == 0:
+                        #for i in range(3):
+                        sp_group_list[12].add(Item('Rock', self.rect.centerx + 2*random.randint(-5,5), self.rect.centery + 2*random.randint(-5,5), 1, False))
+                        self.rect = pygame.Rect(0,0,0,0)
+                        self.kill()
+                        
+
+                elif self.id == 'moving_plat_v':
+                    self.do_tile_y_collisions(world_solids, self.vel_x)
+
+                    if (self.dropping and not self.on_ground):
+                        self.already_falling = True
+                        self.vel_y = 5
+                    elif not self.dropping and self.on_ground:
+                        self.vel_y = -5
+                        
+                    self.rect.y += self.vel_y
                     
+                elif self.id == 'crusher_top':
+                    self.atk_rect = pygame.Rect(self.rect.x + 4, self.rect.bottom - 32, self.width - 8, 32)
+                    if pygame.time.get_ticks() - self.update_time2 > 720:
+                        self.update_time2 = pygame.time.get_ticks()
+                        self.pause = False
+                        
+                    self.do_tile_y_collisions(world_solids, self.vel_y)
                     
-            elif self.id == 'moving_plat_h':
+                    if self.trigger_once:
+                        if self.rect.x < 640 + 128 and self.rect.right >= 0 - 128:
+                            self.m_player.play_sound(self.m_player.sfx[0])
+                            sp_group_list[5].sprite.add_particle('sparks', self.rect.x - (24*self.scale), self.rect.centery - (48*self.scale), -self.direction, self.scale*1.5, True, random.randint(0,2))
+                            #WE NEED SCREENSHAKE AAAAAA
+                            self.do_screenshake = True
+                        self.trigger_once = False
+                    
+                    if ((self.dropping and not self.on_ground 
+                        and (player_rect.x > self.rect.x - 1.25*self.width and player_rect.x < self.rect.x + self.width + 1.25*self.width)
+                        )
+                        or self.already_falling
+                        ):
+                        self.already_falling = True
+                        self.vel_y = 15
+                        self.animate(None)
+                    elif not self.dropping and self.on_ground and not self.pause:
+                        self.vel_y = -5
+                        self.image = self.frame_list[0][0]
+                    # elif self.do_player_atk_collisions(player_atk_rect):
+                    #     self.vel_y = random.randint(-8,0)
+                    else:
+                        self.vel_y = 0
+                        if self.pause:
+                            #self.image = self.frame_list[self.action][random.randint(4,6)]
+                            self.update_action(1)
+                            self.animate(None)
+                        else:
+                            self.image = self.frame_list[0][0]
+            
+                    #self.current_x += self.vel_y
+                    self.rect.y += self.vel_y
+                
+            #p_ints that need to function on/off screen    
+            if self.id == 'moving_plat_h':
                 self.do_tile_x_collisions(world_solids, self.vel_x)
                 self.vel_x = 4*self.direction
-                #print(self.rect.x)
-
-            elif self.id == 'moving_plat_v' and self.is_onscreen:
-                self.do_tile_y_collisions(world_solids, self.vel_x)
-
-                if (self.dropping and not self.on_ground):
-                    self.already_falling = True
-                    self.vel_y = 5
-                elif not self.dropping and self.on_ground:
-                    self.vel_y = -5
-                    
-                self.rect.y += self.vel_y
-                
-            elif self.id == 'crusher_top' and self.is_onscreen:
-                self.atk_rect = pygame.Rect(self.rect.x + 4, self.rect.bottom - 32, self.width - 8, 32)
-                if pygame.time.get_ticks() - self.update_time2 > 720:
-                    self.update_time2 = pygame.time.get_ticks()
-                    self.pause = False
-                    
-                self.do_tile_y_collisions(world_solids, self.vel_y)
-                
-                if self.trigger_once:
-                    if self.rect.x < 640 + 128 and self.rect.right >= 0 - 128:
-                        self.m_player.play_sound(self.m_player.sfx[0])
-                        sp_group_list[5].sprite.add_particle('sparks', self.rect.x - (24*self.scale), self.rect.centery - (48*self.scale), -self.direction, self.scale*1.5, True, random.randint(0,2))
-                        #WE NEED SCREENSHAKE AAAAAA
-                        self.do_screenshake = True
-                    self.trigger_once = False
-                
-                if ((self.dropping and not self.on_ground 
-                    and (player_rect.x > self.rect.x - 1.25*self.width and player_rect.x < self.rect.x + self.width + 1.25*self.width)
-                    )
-                    or self.already_falling
-                    ):
-                    self.already_falling = True
-                    self.vel_y = 15
-                    self.animate(None)
-                elif not self.dropping and self.on_ground and not self.pause:
-                    self.vel_y = -5
-                    self.image = self.frame_list[0][0]
-                # elif self.do_player_atk_collisions(player_atk_rect):
-                #     self.vel_y = random.randint(-8,0)
-                else:
-                    self.vel_y = 0
-                    if self.pause:
-                        #self.image = self.frame_list[self.action][random.randint(4,6)]
-                        self.update_action(1)
-                        self.animate(None)
-                    else:
-                        self.image = self.frame_list[0][0]
-        
-                #self.current_x += self.vel_y
-                self.rect.y += self.vel_y
+            
         else:
             self.mask.clear()
             self.atk_rect = pygame.Rect(0,0,0,0)
@@ -353,7 +355,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         #setting the image
         self.image = self.frame_list[self.action][self.frame_index]
 
-        if pygame.time.get_ticks() - self.update_time > frame_update and self.is_onscreen:
+        if pygame.time.get_ticks() - self.update_time > frame_update:
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1 
 
@@ -374,7 +376,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
 
     
     def draw(self, screen):
-        if self.is_onscreen:
-            screen.blit(pygame.transform.flip(self.image, self.flip, False), self.img_rect)
+        #if self.is_onscreen:
+        screen.blit(pygame.transform.flip(self.image, self.flip, False), self.img_rect)
             #pygame.draw.rect(screen, (255,0,0), self.rect)
         

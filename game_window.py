@@ -1033,10 +1033,14 @@ def main():
 							dialogue_box0.type_out = True				
      
 					if level == 0:#default case, auto saving will overwrite data in file 0
-						m_player.play_sound(m_player.sfx[1])
-						ui_manager0.trigger_once = True
-						next_level = 1
-						selected_slot = 0
+						if ui_manager0.main_menu_enable:
+							m_player.play_sound(m_player.sfx[1])
+							ui_manager0.kbd_new_game = True
+
+						elif ui_manager0.saves_menu2_enable:
+							m_player.play_sound(m_player.sfx[1])
+							ui_manager0.kbd_new_game = True
+
 
 				# #temp bg adjustment
 				# amnt = 1
