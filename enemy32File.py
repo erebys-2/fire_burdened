@@ -195,414 +195,415 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         dy = 0
         moving = False
         
-        if self.vel_y == 0:
-            self.vertical_direction = 0
-        elif self.vel_y < 0:
-            self.vertical_direction = 1
-        elif self.vel_y > 0:
-            self.vertical_direction = -1
-        
-        # if player is within left range, or right range
-        if self.inundated == False:# and self.check_if_in_simulation_range():
-            #enemy id specific behaviors--------------------------------------------------------------------------------------
-            if self.id == 'dog':
-                chase_range = 1.5
-                if player_rect.y > self.rect.y - 2*chase_range*self.height and  player_rect.y < self.rect.y + self.height + 2*chase_range*self.height:
-                    if player_rect.x > self.rect.x - 5*32 and player_rect.x <= self.rect.x:
-                        dx = -self.speed *self.speed_boost
-                        self.direction = -1
-                        moving = True
-                        
-                    elif player_rect.x < self.rect.x + self.width + 5*32 and player_rect.x >= self.rect.x:
-                        dx = self.speed *self.speed_boost
-                        self.direction = 1
-                        moving = True
-                        
-
-
-                if player_rect.centerx > self.rect.x and player_rect.centerx < self.rect.right:
-                    self.direction = 0
-                    
-                
-                if self.action == 1 and not self.inundated: #when the dog is running it has an attack hitbox
-                    
-                    if self.direction == -1:
-                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.half_width + 16, self.height - 32)
-                    elif self.direction == 1:
-                        self.atk_rect = pygame.Rect(self.rect.x + self.half_width - 8, self.rect.y + 16, self.half_width + 16, self.height - 32)
-                    else:
-                        self.atk_rect.centerx = self.rect.centerx
-                    self.atk_rect_scaled = self.atk_rect
-                else:
-                    self.atk1_kill_hitbox()
-                
-                if self.speed_boost != 1:
-                    self.speed_boost = 1
-                    sp_group_list[3].sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, -self.direction, self.scale, True, 1)
-                    self.in_air = True
-                    self.vel_y = -8
-                    
-                    
-            elif self.id == 'shooter':
-                #always face the player
-                
-                if player_rect.centerx >= self.rect.left and player_rect.centerx <= self.rect.right:
-                    self.flip = self.flip
-                    self.direction = self.direction
-                else:
-                    if player_rect.centerx > self.rect.right:
-                        self.direction = 1
-                        self.flip = True
-                    elif player_rect.centerx < self.rect.left:
-                        self.direction = -1
-                        self.flip = False
-
-                
-                #shoot when the player is in range
-                shoot_range = 7
-                if (((player_rect.x > self.rect.x - shoot_range*self.width  - scrollx 
-                    and player_rect.x < self.rect.x + self.width + shoot_range*self.width  - scrollx)
-                    and (self.rect.bottom >= player_rect.y - 8 and self.rect.y < player_rect.bottom + 8))
-                    #or (self.frame_index < 4 and self.shoot == True)
-                    ):
-                    self.shoot = True
-                    #print("hi")
-                
-                
-                #recoil from shooting
-                if self.action == 4 and self.frame_index == 3:
-                    dx = self.direction * -1
-                   
-                if self.inundated == False: #cannot move towards player when inundated
-                    #move if the player gets too close
-                    chase_range = 1.4
-                
-                    if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x <= self.rect.x:
-                        dx = -self.speed
-                        moving = True
-                    elif player_rect.x < self.rect.x + self.width + chase_range*self.width and player_rect.x >= self.rect.x:
-                        dx = self.speed
-                        moving = True
-                    #jump if the player is within this range
-                    jump_range = 1.6
-                    if self.rect.top <= player_rect.top:
-                        if player_rect.x > self.rect.x - (jump_range*self.width) and player_rect.x <= self.rect.x:
-                            self.jump = True
-                        elif player_rect.x < self.rect.x + self.width + (jump_range*self.width) and player_rect.x >= self.rect.x:
-                            self.jump = True
+        if self.check_if_in_simulation_range():
+            if self.vel_y == 0:
+                self.vertical_direction = 0
+            elif self.vel_y < 0:
+                self.vertical_direction = 1
+            elif self.vel_y > 0:
+                self.vertical_direction = -1
+            
+            # if player is within left range, or right range
+            if self.inundated == False:# and self.check_if_in_simulation_range():
+                #enemy id specific behaviors--------------------------------------------------------------------------------------
+                if self.id == 'dog':
+                    chase_range = 1.5
+                    if player_rect.y > self.rect.y - 2*chase_range*self.height and  player_rect.y < self.rect.y + self.height + 2*chase_range*self.height:
+                        if player_rect.x > self.rect.x - 5*32 and player_rect.x <= self.rect.x:
+                            dx = -self.speed *self.speed_boost
+                            self.direction = -1
+                            moving = True
                             
-                    if self.action == 5 and not  self.inundated: #when the shooter is jumping it has an attack hitbox
-                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + self.half_height, self.width, self.half_height)
-                        self.atk_rect_scaled = self.atk_rect.scale_by(0.8)
+                        elif player_rect.x < self.rect.x + self.width + 5*32 and player_rect.x >= self.rect.x:
+                            dx = self.speed *self.speed_boost
+                            self.direction = 1
+                            moving = True
+                            
+
+
+                    if player_rect.centerx > self.rect.x and player_rect.centerx < self.rect.right:
+                        self.direction = 0
+                        
+                    
+                    if self.action == 1 and not self.inundated: #when the dog is running it has an attack hitbox
+                        
+                        if self.direction == -1:
+                            self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.half_width + 16, self.height - 32)
+                        elif self.direction == 1:
+                            self.atk_rect = pygame.Rect(self.rect.x + self.half_width - 8, self.rect.y + 16, self.half_width + 16, self.height - 32)
+                        else:
+                            self.atk_rect.centerx = self.rect.centerx
+                        self.atk_rect_scaled = self.atk_rect
                     else:
                         self.atk1_kill_hitbox()
-
-                
                     
-                jump_cooldown = 720
-                if (self.jump and self.in_air == False and self.on_ground and (pygame.time.get_ticks() - self.update_time2 > jump_cooldown)):
-                    self.update_time2 = pygame.time.get_ticks()
-                    # if self.hit_ground:
-                    #     enemy_bullet = bullet_(self.rect.x - 64, self.rect.y, 0, self.direction, self.scale, 'ground_impact', self.ini_vol)
-                    #     #self.m_player.play_sound(self.m_player.sfx[3])
-                    #     sp_group_list[7].add(enemy_bullet)
-                    #     self.hit_ground = False
-                    sp_group_list[3].sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, -self.direction, self.scale, True, 1)
-                    self.vel_y = -8.5
-                    self.in_air = True
-                    
-                
-            elif self.id == 'fly':
-                #print(self.action)
-                if self.inundated == False: #cannot move towards player when inundated
-                    #move if the player gets too close
-                    chase_range = 3
-                
-                    if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x <= self.rect.x:
-                        dx = -self.speed
-                        moving = True
-                    elif player_rect.x < self.rect.x + self.width + chase_range*self.width and player_rect.x >= self.rect.x:
-                        dx = self.speed
-                        moving = True
+                    if self.speed_boost != 1:
+                        self.speed_boost = 1
+                        sp_group_list[3].sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, -self.direction, self.scale, True, 1)
+                        self.in_air = True
+                        self.vel_y = -8
                         
-                    if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x < self.rect.x + self.width + chase_range*self.width:
-                        if player_rect.y - self.half_height > self.rect.y - 2*chase_range*self.height and player_rect.y - self.half_height <= self.rect.y:
-                            self.vel_y = -self.speed
+                        
+                elif self.id == 'shooter':
+                    #always face the player
+                    
+                    if player_rect.centerx >= self.rect.left and player_rect.centerx <= self.rect.right:
+                        self.flip = self.flip
+                        self.direction = self.direction
+                    else:
+                        if player_rect.centerx > self.rect.right:
+                            self.direction = 1
+                            self.flip = True
+                        elif player_rect.centerx < self.rect.left:
+                            self.direction = -1
+                            self.flip = False
+
+                    
+                    #shoot when the player is in range
+                    shoot_range = 7
+                    if (((player_rect.x > self.rect.x - shoot_range*self.width  - scrollx 
+                        and player_rect.x < self.rect.x + self.width + shoot_range*self.width  - scrollx)
+                        and (self.rect.bottom >= player_rect.y - 8 and self.rect.y < player_rect.bottom + 8))
+                        #or (self.frame_index < 4 and self.shoot == True)
+                        ):
+                        self.shoot = True
+                        #print("hi")
+                    
+                    
+                    #recoil from shooting
+                    if self.action == 4 and self.frame_index == 3:
+                        dx = self.direction * -1
+                    
+                    if self.inundated == False: #cannot move towards player when inundated
+                        #move if the player gets too close
+                        chase_range = 1.4
+                    
+                        if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x <= self.rect.x:
+                            dx = -self.speed
                             moving = True
-                        elif player_rect.y < self.rect.y + self.height + 2*chase_range*self.height and player_rect.y >= self.rect.y:
-                            self.vel_y = self.speed
+                        elif player_rect.x < self.rect.x + self.width + chase_range*self.width and player_rect.x >= self.rect.x:
+                            dx = self.speed
+                            moving = True
+                        #jump if the player is within this range
+                        jump_range = 1.6
+                        if self.rect.top <= player_rect.top:
+                            if player_rect.x > self.rect.x - (jump_range*self.width) and player_rect.x <= self.rect.x:
+                                self.jump = True
+                            elif player_rect.x < self.rect.x + self.width + (jump_range*self.width) and player_rect.x >= self.rect.x:
+                                self.jump = True
+                                
+                        if self.action == 5 and not  self.inundated: #when the shooter is jumping it has an attack hitbox
+                            self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + self.half_height, self.width, self.half_height)
+                            self.atk_rect_scaled = self.atk_rect.scale_by(0.8)
+                        else:
+                            self.atk1_kill_hitbox()
+
+                    
+                        
+                    jump_cooldown = 720
+                    if (self.jump and self.in_air == False and self.on_ground and (pygame.time.get_ticks() - self.update_time2 > jump_cooldown)):
+                        self.update_time2 = pygame.time.get_ticks()
+                        # if self.hit_ground:
+                        #     enemy_bullet = bullet_(self.rect.x - 64, self.rect.y, 0, self.direction, self.scale, 'ground_impact', self.ini_vol)
+                        #     #self.m_player.play_sound(self.m_player.sfx[3])
+                        #     sp_group_list[7].add(enemy_bullet)
+                        #     self.hit_ground = False
+                        sp_group_list[3].sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, -self.direction, self.scale, True, 1)
+                        self.vel_y = -8.5
+                        self.in_air = True
+                        
+                    
+                elif self.id == 'fly':
+                    #print(self.action)
+                    if self.inundated == False: #cannot move towards player when inundated
+                        #move if the player gets too close
+                        chase_range = 3
+                    
+                        if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x <= self.rect.x:
+                            dx = -self.speed
+                            moving = True
+                        elif player_rect.x < self.rect.x + self.width + chase_range*self.width and player_rect.x >= self.rect.x:
+                            dx = self.speed
                             moving = True
                             
-                        #self.vel_y += random.randint(-3,3)
+                        if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x < self.rect.x + self.width + chase_range*self.width:
+                            if player_rect.y - self.half_height > self.rect.y - 2*chase_range*self.height and player_rect.y - self.half_height <= self.rect.y:
+                                self.vel_y = -self.speed
+                                moving = True
+                            elif player_rect.y < self.rect.y + self.height + 2*chase_range*self.height and player_rect.y >= self.rect.y:
+                                self.vel_y = self.speed
+                                moving = True
+                                
+                            #self.vel_y += random.randint(-3,3)
+                        else:
+                            self.vel_y = 0
+                            
+                    if not self.inundated and self.action == 1:
+                        if self.direction == -1:
+                            self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + self.quarter_height, self.half_width, self.half_height)
+                        elif self.direction == 1:
+                            self.atk_rect = pygame.Rect(self.rect.x + self.half_width, self.rect.y + self.quarter_height, self.half_width, self.half_height)
+                        self.atk_rect_scaled = self.atk_rect
                     else:
-                        self.vel_y = 0
+                        self.atk1_kill_hitbox()
                         
-                if not self.inundated and self.action == 1:
+                    if self.action == 0:
+                        self.rect.centery = self.ini_y - 9*math.sin(self.increment)
+
+                        if self.increment > 2*math.pi:
+                            self.rect.centery = self.ini_y
+                            self.increment = 0
+                            
+                        self.increment += math.pi/24
+                    else:
+                        self.ini_y = self.rect.centery
+                        
+                        
+                elif self.id == 'walker':
+                    self.moving = True
+                    dx = self.direction * self.speed
+
                     if self.direction == -1:
-                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + self.quarter_height, self.half_width, self.half_height)
+                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.half_width, self.half_height)
                     elif self.direction == 1:
-                        self.atk_rect = pygame.Rect(self.rect.x + self.half_width, self.rect.y + self.quarter_height, self.half_width, self.half_height)
+                        self.atk_rect = pygame.Rect(self.rect.x + self.half_width, self.rect.y + 16, self.half_width, self.half_height)
                     self.atk_rect_scaled = self.atk_rect
-                else:
-                    self.atk1_kill_hitbox()
-                    
-                if self.action == 0:
-                    self.rect.centery = self.ini_y - 9*math.sin(self.increment)
-
-                    if self.increment > 2*math.pi:
-                        self.rect.centery = self.ini_y
-                        self.increment = 0
+                    # else:
+                    #     self.moving = False
+                    #     dx = -dx
+                    #     self.atk1_kill_hitbox()
                         
-                    self.increment += math.pi/24
-                else:
-                    self.ini_y = self.rect.centery
-                    
-                    
-            elif self.id == 'walker':
-                self.moving = True
-                dx = self.direction * self.speed
 
-                if self.direction == -1:
-                    self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.half_width, self.half_height)
-                elif self.direction == 1:
-                    self.atk_rect = pygame.Rect(self.rect.x + self.half_width, self.rect.y + 16, self.half_width, self.half_height)
-                self.atk_rect_scaled = self.atk_rect
-                # else:
-                #     self.moving = False
-                #     dx = -dx
-                #     self.atk1_kill_hitbox()
-                    
-
-         
-        else:
-            moving = False
-            self.atk1_kill_hitbox()
-        
-        #action tree-------------------------------------------------------------------------------------------------------------
-        if self.hits_tanked < self.hp:#alive
             
-            if self.inundated == True:
-                self.update_action(2)
-                if self.frame_index < 1:
-                    dx = 0
-                    #dy = 0
-                else:
-                    dx += self.direction * self.recoil_slow
-                #dy-= 2
+            else:
+                moving = False
+                self.atk1_kill_hitbox()
+            
+            #action tree-------------------------------------------------------------------------------------------------------------
+            if self.hits_tanked < self.hp:#alive
                 
-            else:
-                # if self.recovering:
-                #     self.update_action(0)
-                if self.shoot == True and (self.idle_counter == 1 or self.idle_bypass == True) and self.direction != 0:#2
-                    if self.frame_index <= 4:
-                        self.shoot = True
-                    self.update_action(4)
-                elif self.jump == True:
-                    self.update_action(5)
-                elif moving == True:
-                    self.update_action(1)
-                    if dx < 0:
-                        self.flip = False
-                    else:
-                        self.flip = True
-                else:
-                    self.update_action(0)
-        else:#dies
-            self.dead = True
-            
- 
-        
-        #gravity 
-        if self.id != 'fly':
-            if self.Alive:# == True and self.check_if_in_simulation_range():  
-            
-                g = 0.4
-                self.vel_y += g
-
-            else:
-                self.vel_y = 0
-        dy += self.vel_y
-        
-        #player collisions------------------------------------------------------------------------------------------------------------------
-        
-        if (player_atk_rect.width != 0
-            and self.rect.colliderect(player_atk_rect)
-            and self.inundated == False
-            ):
-            #pygame.time.wait(8)
-            #the average point in a collision between rects is literally just the average of the coords opposite respective corners of rects
-            x_avg = (self.rect.centerx + player_atk_rect.centerx)/2
-            dx = player_direction * self.recoil
-            y_avg = (self.rect.centery + player_atk_rect.centery)/2
-            
-            sp_group_list[5].sprite.add_particle('player_impact', x_avg + dx/4, y_avg, -self.direction, self.scale*1.05, True, self.rando_frame)
-
-            for i in range(3):
-                sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.3*self.scale, False, random.randrange(0,3))
-
-            self.m_player.play_sound(self.m_player.sfx[1])
-            
-            if self.rando_frame < 2:
-                self.rando_frame += 1
-            else:
-                self.rando_frame = 0
-            
-            if self.id == 'fly':
-                dy += self.vertical_direction * self.recoil//2
-            else:
-                dy += self.vel_y * 2
-
-            self.direction = player_direction
-            
-            self.do_screenshake = True
-            self.inundated = True
-            
-            if player_action ==  10 or player_action == 9:
-                self.dmg_multiplier = 6
-            elif player_action == 16:
-                self.dmg_multiplier = 6
-            elif player_action == 7 or player_action == 8:
-                self.dmg_multiplier = 2
-                
-        elif (player_atk_rect.width == 0 and   
-              player_rect.x > self.rect.x - 64 and player_rect.right < self.rect.right + 64 and
-                (self.rect.colliderect(player_rect.scale_by(0.2)) or (self.rect.x < player_rect.x and self.rect.right > player_rect.right ))
-                and self.id != 'walker'
-            #and not (self.inundated or self.rect.colliderect(player_atk_rect))
-              ):
-            dx = -dx
-            self.direction = 0
-            if self.id == 'shooter':
-                self.jump = True
-            
-        elif player_action == 6 and self.rect.colliderect(player_rect):
-            dx = 0
-        
-        if self.direction == 0 and player_action != 9:
-            if self.flip:
-                self.direction = 1
-            else:
-                self.direction = -1
-        
-        #enemy0 collisions
-        for enemy0 in [enemy0 for enemy0 in sp_group_list[0] 
-                       if enemy0.rect.x > -32 and enemy0.rect.x < 640 and
-                          enemy0.rect.x > self.rect.x - 64 and enemy0.rect.right < self.rect.right + 64 and 
-                          enemy0.rect.y > self.rect.y - 64 and enemy0.rect.bottom < self.rect.bottom + 64 or
-                         (enemy0.rect.bottom > self.rect.bottom and enemy0.rect.y < self.rect.y) or
-                         (enemy0.rect.right > self.rect.bottom and enemy0.rect.x < self.rect.x)
-                       ]:
-            if self.spawn_order_id != enemy0.spawn_order_id and self.rect.colliderect(enemy0.rect):
-
-                if self.spawn_order_id < enemy0.spawn_order_id:
-                    dx += -self.direction * 2
-                else:
-                    dx += self.direction * 2
-
-        
-        dxdy = self.do_p_int_group_collisions(sp_group_list[8], dx, dy)
-        if self.id != 'fly':
-            dx = dxdy[0]
-            dy = dxdy[1]
-        #world collisions
-        
-        
-        if self.check_if_in_simulation_range() and self.id != 'fly':
-            for tile in [tile for tile in world_solids 
-                         if tile[1].x > -224 and tile[1].x < 864 and 
-                            tile[1].bottom < self.rect.bottom + 64 and tile[1].y > self.rect.y - 64 or
-                            (tile[1].bottom > self.rect.bottom and tile[1].y < self.rect.y)
-                            ]:
-                one_way_tiles = (17, 69, 70)
-                if tile[2] not in (2, 60) and tile[2] not in one_way_tiles:
-                    #x tile collisions
-
-                    if tile[1].colliderect(self.rect.x + dx, self.rect.y + self.quarter_height, self.width, self.height*0.6):
+                if self.inundated == True:
+                    self.update_action(2)
+                    if self.frame_index < 1:
                         dx = 0
-                        if self.in_air == False:
-                            if self.id == 'shooter':
-                                self.jump = True
-                            if self.id == 'dog' and self.rect.bottom == tile[1].top + 16 and self.inundated == False:
-                                self.vel_y = -8.5
-                                self.in_air = True
-                        
-                        if self.id == 'walker':
-                            self.flip = not self.flip
-                            dx = -self.direction*8
-                            self.direction = -self.direction
-
+                        #dy = 0
+                    else:
+                        dx += self.direction * self.recoil_slow
+                    #dy-= 2
                     
-                    #make sure to not get pushed into blocks collision by half sprite width       
-                    if tile[1].colliderect(self.rect.x, self.rect.y , self.half_width , self.height*0.8):     
-                        if self.rect.x <= tile[1].right:
-                            dx += 8
-                        self.on_ground = False
-                        self.in_air = True
-                        self.jump = False
+                else:
+                    # if self.recovering:
+                    #     self.update_action(0)
+                    if self.shoot == True and (self.idle_counter == 1 or self.idle_bypass == True) and self.direction != 0:#2
+                        if self.frame_index <= 4:
+                            self.shoot = True
+                        self.update_action(4)
+                    elif self.jump == True:
+                        self.update_action(5)
+                    elif moving == True:
+                        self.update_action(1)
+                        if dx < 0:
+                            self.flip = False
+                        else:
+                            self.flip = True
+                    else:
+                        self.update_action(0)
+            else:#dies
+                self.dead = True
+                
+    
+            
+            #gravity 
+            if self.id != 'fly':
+                if self.Alive:# == True and self.check_if_in_simulation_range():  
+                
+                    g = 0.4
+                    self.vel_y += g
 
-                    elif tile[1].colliderect(self.rect.x + self.half_width, self.rect.y , self.half_width , self.height*0.8):     
-                        if self.rect.right > tile[1].x:
-                            dx += -8
-                        self.on_ground = False
-                        self.in_air = True
-                        self.jump = False    
+                else:
+                    self.vel_y = 0
+            dy += self.vel_y
+            
+            #player collisions------------------------------------------------------------------------------------------------------------------
+            
+            if (player_atk_rect.width != 0
+                and self.rect.colliderect(player_atk_rect)
+                and self.inundated == False
+                ):
+                #pygame.time.wait(8)
+                #the average point in a collision between rects is literally just the average of the coords opposite respective corners of rects
+                x_avg = (self.rect.centerx + player_atk_rect.centerx)/2
+                dx = player_direction * self.recoil
+                y_avg = (self.rect.centery + player_atk_rect.centery)/2
+                
+                sp_group_list[5].sprite.add_particle('player_impact', x_avg + dx/4, y_avg, -self.direction, self.scale*1.05, True, self.rando_frame)
 
-                    #y collisions
-                    if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width , self.height):
-                        if self.vel_y >= 0:
-                            #self.vel_y = 0 
-                            #lower half collision
-                            if tile[1].colliderect(self.rect.x, self.rect.y + (self.half_height), self.width, self.half_height):
-                                if tile[1].bottom > self.rect.bottom:
-                                    dy = tile[1].top - self.rect.bottom #-1
-                                    #print('hi')
-                                    self.on_ground = True
+                for i in range(3):
+                    sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.3*self.scale, False, random.randrange(0,3))
+
+                self.m_player.play_sound(self.m_player.sfx[1])
+                
+                if self.rando_frame < 2:
+                    self.rando_frame += 1
+                else:
+                    self.rando_frame = 0
+                
+                if self.id == 'fly':
+                    dy += self.vertical_direction * self.recoil//2
+                else:
+                    dy += self.vel_y * 2
+
+                self.direction = player_direction
+                
+                self.do_screenshake = True
+                self.inundated = True
+                
+                if player_action ==  10 or player_action == 9:
+                    self.dmg_multiplier = 6
+                elif player_action == 16:
+                    self.dmg_multiplier = 6
+                elif player_action == 7 or player_action == 8:
+                    self.dmg_multiplier = 2
+                    
+            elif (player_atk_rect.width == 0 and   
+                player_rect.x > self.rect.x - 64 and player_rect.right < self.rect.right + 64 and
+                    (self.rect.colliderect(player_rect.scale_by(0.2)) or (self.rect.x < player_rect.x and self.rect.right > player_rect.right ))
+                    and self.id != 'walker'
+                #and not (self.inundated or self.rect.colliderect(player_atk_rect))
+                ):
+                dx = -dx
+                self.direction = 0
+                if self.id == 'shooter':
+                    self.jump = True
+                
+            elif player_action == 6 and self.rect.colliderect(player_rect):
+                dx = 0
+            
+            if self.direction == 0 and player_action != 9:
+                if self.flip:
+                    self.direction = 1
+                else:
+                    self.direction = -1
+            
+            #enemy0 collisions
+            for enemy0 in [enemy0 for enemy0 in sp_group_list[0] 
+                        if enemy0.rect.x > -32 and enemy0.rect.x < 640 and
+                            enemy0.rect.x > self.rect.x - 64 and enemy0.rect.right < self.rect.right + 64 and 
+                            enemy0.rect.y > self.rect.y - 64 and enemy0.rect.bottom < self.rect.bottom + 64 or
+                            (enemy0.rect.bottom > self.rect.bottom and enemy0.rect.y < self.rect.y) or
+                            (enemy0.rect.right > self.rect.bottom and enemy0.rect.x < self.rect.x)
+                        ]:
+                if self.spawn_order_id != enemy0.spawn_order_id and self.rect.colliderect(enemy0.rect):
+
+                    if self.spawn_order_id < enemy0.spawn_order_id:
+                        dx += -self.direction * 2
+                    else:
+                        dx += self.direction * 2
+
+            
+            dxdy = self.do_p_int_group_collisions(sp_group_list[8], dx, dy)
+            if self.id != 'fly':
+                dx = dxdy[0]
+                dy = dxdy[1]
+            #world collisions
+            
+            
+            if self.id != 'fly':
+                for tile in [tile for tile in world_solids 
+                            if tile[1].x > -224 and tile[1].x < 864 and 
+                                tile[1].bottom < self.rect.bottom + 64 and tile[1].y > self.rect.y - 64 or
+                                (tile[1].bottom > self.rect.bottom and tile[1].y < self.rect.y)
+                                ]:
+                    one_way_tiles = (17, 69, 70)
+                    if tile[2] not in (2, 60) and tile[2] not in one_way_tiles:
+                        #x tile collisions
+
+                        if tile[1].colliderect(self.rect.x + dx, self.rect.y + self.quarter_height, self.width, self.height*0.6):
+                            dx = 0
+                            if self.in_air == False:
+                                if self.id == 'shooter':
+                                    self.jump = True
+                                if self.id == 'dog' and self.rect.bottom == tile[1].top + 16 and self.inundated == False:
+                                    self.vel_y = -8.5
+                                    self.in_air = True
+                            
+                            if self.id == 'walker':
+                                self.flip = not self.flip
+                                dx = -self.direction*8
+                                self.direction = -self.direction
+
+                        
+                        #make sure to not get pushed into blocks collision by half sprite width       
+                        if tile[1].colliderect(self.rect.x, self.rect.y , self.half_width , self.height*0.8):     
+                            if self.rect.x <= tile[1].right:
+                                dx += 8
+                            self.on_ground = False
+                            self.in_air = True
+                            self.jump = False
+
+                        elif tile[1].colliderect(self.rect.x + self.half_width, self.rect.y , self.half_width , self.height*0.8):     
+                            if self.rect.right > tile[1].x:
+                                dx += -8
+                            self.on_ground = False
+                            self.in_air = True
+                            self.jump = False    
+
+                        #y collisions
+                        if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width , self.height):
+                            if self.vel_y >= 0:
+                                #self.vel_y = 0 
+                                #lower half collision
+                                if tile[1].colliderect(self.rect.x, self.rect.y + (self.half_height), self.width, self.half_height):
+                                    if tile[1].bottom > self.rect.bottom:
+                                        dy = tile[1].top - self.rect.bottom #-1
+                                        #print('hi')
+                                        self.on_ground = True
+                                    self.in_air = False
+                                    self.vel_y = 0 
+                                    
+                                    if self.action == 5:
+                                        self.hit_ground = True
+
+                            elif self.vel_y < 0:
+                                #upper half collision
+                                if tile[1].colliderect(self.rect.x + self.quarter_width//2, self.rect.y, self.width - self.quarter_width, self.half_height):
+                                    dy = 32
+                                    self.on_ground = False
+                                    self.in_air = True
+                                    #print("hi")
+                                    self.jump = False
+                    elif tile[2] in (2, 60):
+                        if tile[1].colliderect(self.rect.x + self.quarter_width//2, self.rect.y, self.width - self.quarter_width, self.height - 8):
+                            self.dead = True
+                            self.m_player.play_sound(self.m_player.sfx[2])
+                    elif(tile[2] in one_way_tiles):#one way tiles
+                        if tile[1].colliderect(self.rect.x + dx, self.rect.bottom - 16 + dy, self.width, 17):
+                            if self.vel_y >= 0: 
+                                self.vel_y = 0
                                 self.in_air = False
-                                self.vel_y = 0 
+                                self.on_ground = True
                                 
                                 if self.action == 5:
                                     self.hit_ground = True
-
-                        elif self.vel_y < 0:
-                            #upper half collision
-                            if tile[1].colliderect(self.rect.x + self.quarter_width//2, self.rect.y, self.width - self.quarter_width, self.half_height):
-                                dy = 32
-                                self.on_ground = False
+                            elif self.vel_y < 0:
+                                self.vel_y *= 0.6#velocity dampening when passing thru tile
                                 self.in_air = True
-                                #print("hi")
-                                self.jump = False
-                elif tile[2] in (2, 60):
-                    if tile[1].colliderect(self.rect.x + self.quarter_width//2, self.rect.y, self.width - self.quarter_width, self.height - 8):
-                        self.dead = True
-                        self.m_player.play_sound(self.m_player.sfx[2])
-                elif(tile[2] in one_way_tiles):#one way tiles
-                    if tile[1].colliderect(self.rect.x + dx, self.rect.bottom - 16 + dy, self.width, 17):
-                        if self.vel_y >= 0: 
-                            self.vel_y = 0
-                            self.in_air = False
-                            self.on_ground = True
-                            
-                            if self.action == 5:
-                                self.hit_ground = True
-                        elif self.vel_y < 0:
-                            self.vel_y *= 0.6#velocity dampening when passing thru tile
-                            self.in_air = True
-                            self.on_ground = False
+                                self.on_ground = False
 
-                        dy = tile[1].top - self.rect.bottom
-        elif self.id != 'fly':
-            dy = 0
-            dx = 0
-            self.moving = False
-            self.in_air = False
-            self.vel_y = 0
-                    
-        if self.rect.bottom + dy > 480 + self.rect.height:
-            self.Alive = False
-            self.kill()
-        if self.id == 'shooter':
-            if self.in_air == True and self.inundated == False:
-                dx *=0.70
+                            dy = tile[1].top - self.rect.bottom
+            # elif self.id != 'fly':
+            #     dy = 0
+            #     dx = 0
+            #     self.moving = False
+            #     self.in_air = False
+            #     self.vel_y = 0
+                        
+            if self.rect.bottom + dy > 480 + self.rect.height:
+                self.Alive = False
+                self.kill()
+            if self.id == 'shooter':
+                if self.in_air == True and self.inundated == False:
+                    dx *=0.70
                 
         self.atk_rect_scaled.x += (dx - scrollx)
         self.rect.x += (dx - scrollx)

@@ -331,7 +331,6 @@ class inventory_UI(): #handles displaying inventory, item description and counts
         self.size = 0
         self.total_slots = rows*cols + 1
         self.trigger_once = True
-        self.inventory_grid = []
         
         self.fontlist = fontlist
         self.button_list = []
@@ -387,8 +386,8 @@ class inventory_UI(): #handles displaying inventory, item description and counts
             
         return temp_inventory
     
-    def move_item(self, inv_directions, move_enable, inventory):
-        if self.slot != self.total_slots - 1:
+    def move_item(self, inv_directions, move_enable, inventory):#using kbd to move around inventory and manipulate items
+        if self.slot != self.total_slots - 1:#make sure the last slot is never reached
             moveR = inv_directions[0]
             moveL = inv_directions[1]
             moveUp = inv_directions[2]
@@ -433,13 +432,13 @@ class inventory_UI(): #handles displaying inventory, item description and counts
                     self.discard_slot(inventory)
             
             self.slot = new_slot
-        elif True in inv_directions:
+        elif True in inv_directions: #if the last slot is currently selected, default to the first slot
             self.slot = 0
             
         return inventory
         
     
-    def show_selected_item(self, inventory, screen):
+    def show_selected_item(self, inventory, screen):#draws currently selected item over status bar
         blit_coord = (11, 453)
         count_coord = (17, 461)
         if inventory[self.slot][0] != 'empty':
@@ -449,11 +448,11 @@ class inventory_UI(): #handles displaying inventory, item description and counts
                 item_count = ' ' + item_count
             screen.blit(self.fontlist[1].render(item_count, True, (255,255,255)), count_coord)
             
-    def toggle_inv_slot(self, rate):
+    def toggle_inv_slot(self, rate):#hold toggle inv key
         if self.inv_toggle_timer + rate < pygame.time.get_ticks():
             self.toggle_inv_slot_once()
             
-    def toggle_inv_slot_once(self):
+    def toggle_inv_slot_once(self):#press toggle inv key once
         if self.slot < self.total_slots - 1:
             self.slot += 1
         else:
@@ -461,13 +460,11 @@ class inventory_UI(): #handles displaying inventory, item description and counts
         self.inv_toggle_timer = pygame.time.get_ticks()
         
     def press_use_item_btn(self, inventory):
-        #print(self.slot)
         item_can_be_used = False
         if (inventory[self.slot][1] > 0 
             and self.item_details0.get_item_class(inventory[self.slot][0]) != 'Key'
             and inventory[self.slot][0] in self.item_details0.sub_function_dict
             ):#add some additional logic for key items
-            #self.use_item_flag = True#sets internal flag to true
             self.item_to_use = inventory[self.slot][0]
             item_can_be_used = True
 
@@ -509,7 +506,6 @@ class inventory_UI(): #handles displaying inventory, item description and counts
                 for j in range(self.cols):
                     self.button_list.append(Button(32*j + self.inv_disp[0], 32*i + self.inv_disp[1], self.inventory_btn, 1))
                     self.button_list2.append(Button(32*j + 8 + self.inv_disp[0], 32*i + 8 + self.inv_disp[1], self.item_img_dict[inventory[i*self.cols + j][0]], 1))
-                    #self.item_img_dict[inventory[i*self.cols + j][0]]
                     self.size += 1
                     
             #create a final inventory slot that's set out from the rest
@@ -537,8 +533,6 @@ class inventory_UI(): #handles displaying inventory, item description and counts
             pygame.draw.rect(screen, (38,37,41), (self.S_W//2 + 2, self.S_H//2 - 158, 300, 220))
             
             #set up and draw text
-            # print(len(inventory))
-            # print(self.slot)
             item_class = self.item_details0.get_item_class(inventory[self.slot][0])
 
             item_details = ['Slot: ' + inventory[self.slot][0],
@@ -570,7 +564,6 @@ class inventory_UI(): #handles displaying inventory, item description and counts
                     if slot.draw(screen):
                         self.m_player.play_sound(self.m_player.sfx[1])
                         self.slot = self.button_list.index(slot)
-                        #print(self.slot)
                         
                 #draw items in slots
                 for btn in self.button_list2:
@@ -585,7 +578,6 @@ class inventory_UI(): #handles displaying inventory, item description and counts
                 self.use_item_btn_output = False
                 if self.button_list[len(self.button_list)-4].draw(screen):
                     self.m_player.play_sound(self.m_player.sfx[1])
-                    #self.press_use_item_btn(inventory)
                     self.use_item_btn_output = True
 
                 self.button_list[len(self.button_list)-4].show_text(screen, self.fontlist[1], ('','Use Item'))
@@ -695,6 +687,216 @@ class item_details():#helper class for getting and formatting item descriptions 
             
         return f_description
             
+
+class trade_menu_ui():
+    #needs to ...
+    #-be able to select items being traded to get price and current items in inventory to discard if there's no free slots
+    #-display descriptions for items being traded and items in inventory
+    #-updated everytime player inventory is updated (item discarded, bought, spent)
+    #-deny trades if the player's inventory is full
+    def __init__(self, total_slots, fontlist, SCREEN_WIDTH, SCREEN_HEIGHT, ini_vol):
+        m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav', 'woop.wav']
+        self.m_player = music_player(m_player_sfx_list_main, ini_vol)
+
+        self.total_slots = total_slots
+        self.trigger_once = True
+        
+        self.fontlist = fontlist
+        self.button_list = []
+        self.button_list2 = [] #for displaying inventory items
+        
+        self.button_list3 = []
+        self.button_list4 = [] #for displaying inventory items
+        
+        self.btn_list_list = [
+            self.button_list,
+            self.button_list2,
+            self.button_list3,
+            self.button_list4
+        ]
+        
+        self.S_W = SCREEN_WIDTH
+        self.S_H = SCREEN_HEIGHT
+        
+        self.temp_inventory = []
+        
+        self.slot = 0
+        self.selected_group = 0
+        
+        #load ui images
+        self.generic_img = pygame.image.load('sprites/generic_btn.png').convert_alpha()
+        self.invisible_img = pygame.image.load('sprites/invisible_btn.png').convert_alpha()
+        self.inventory_btn = pygame.image.load('sprites/inventory_btn.png').convert_alpha()
+        self.inv_bg = pygame.image.load('sprites/pause_bg.png').convert_alpha()
+        # self.aria_frame_list = []
+        # for i in range (len(os.listdir(f'sprites/misc_art/aria'))):
+        #     self.aria_frame_list.append(pygame.image.load(f'sprites/misc_art/aria/{i}.png').convert_alpha())
+        
+        self.inv_disp = (16,402) #initial position for first slot
+        self.text_manager0 = text_manager()
+     
+        
+        #loading item images into a dictionary
+        item_img_list = []
+        for item in os.listdir(item_sprites_path):
+            item_img_list.append([item[0:len(item)-4], pygame.image.load(os.path.join(item_sprites_path, f'{item}')).convert_alpha()])#-4 to remove '.png'
+            
+        self.item_img_dict = dict(item_img_list)
+        
+        self.item_details0 = item_details()
+        
+    def discard_item(self, inventory):
+        if inventory[self.slot][1] > 0:
+            inventory[self.slot][1] -= 1
+            
+        if inventory[self.slot][1] == 0:
+            inventory[self.slot][0] = 'empty'
+            
+    def discard_slot(self, inventory):
+        inventory[self.slot] = ['empty', 0]
+    
+    def open_trade_ui(self, inventory, wares, screen, ctrl_list):
+        
+        if self.trigger_once:#will be set to true again by either escape or inventory key
+            self.temp_inventory = []
+            
+            #CREATE A DEEP COPY OF INVENTORY
+            #for lists in lists you have to copy each sub list by element as well
+            for slot in inventory:
+                temp_list = []
+                for element in slot:
+                    temp_list.append(element)
+                self.temp_inventory.append(temp_list)
+                
+            #set current item to use
+            self.item_to_use = inventory[self.slot][0]
+
+            #deploy buttons
+            for btn_list in self.btn_list_list:
+                btn_list *= 0
+            
+           
+            for i in range(self.total_slots):
+                #button lists for inventory
+                self.button_list.append(Button(32*i + self.inv_disp[0], self.inv_disp[1], self.inventory_btn, 1))
+                self.button_list2.append(Button(32*i + 8 + self.inv_disp[0], 8 + self.inv_disp[1], self.item_img_dict[inventory[i][0]], 1))
+                
+                #button lists for wares
+                self.button_list3.append(Button(32*i + self.inv_disp[0], self.inv_disp[1] - 48, self.inventory_btn, 1))
+                self.button_list4.append(Button(32*i + 8 + self.inv_disp[0], 8 + self.inv_disp[1] - 48, self.item_img_dict[wares[i][0]], 1))
+                
+            for btn in self.button_list2: #disable hover button highlighting for items
+                btn.img_highlight_en = False
+                
+            for btn in self.button_list4: 
+                btn.img_highlight_en = False
+                            
+            self.button_list.append(Button(self.S_W//2 +88, self.S_H//2 +64 +16, self.generic_img, 1)) #trade button
+            self.button_list.append(Button(self.S_W//2 +88, self.S_H//2 +64 +56, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 +88, self.S_H//2 +64 +96, self.generic_img, 1))
+            
+            self.trigger_once = False
+            
+                    
+        if not self.trigger_once:
+            #draw shaded bg
+            screen.blit(self.inv_bg, (0,0))
+            #screen.blit(self.aria_frame_list[0], (-40,0))
+            
+            #draw item description box
+            pygame.draw.rect(screen, (24,23,25), (self.S_W//2, self.S_H//2 - 160, 304, 224))
+            pygame.draw.rect(screen, (38,37,41), (self.S_W//2 + 2, self.S_H//2 - 158, 300, 220))
+            
+            #set up and draw text
+            if self.selected_group == 0: #get description for the right group
+                item_interface = inventory
+                item_btn_list = self.button_list
+            else:
+                item_interface = wares
+                item_btn_list = self.button_list3
+            
+            item_class = self.item_details0.get_item_class(item_interface[self.slot][0])
+
+            item_details = ['Slot: ' + item_interface[self.slot][0],
+                            'Count: ' + str(item_interface[self.slot][1]),
+                            'Item Class: ' + item_class,
+                            'Cost', #need to make an external cost dictionary
+                            'Description: ',
+                            ' '
+                            ]
+            
+            item_description = self.item_details0.get_formatted_description(item_interface[self.slot][0])#string list
+            for line in item_description:
+                item_details.append(line)#add to the established stringlist
+                
+            self.text_manager0.disp_text_box(screen, self.fontlist[1], item_details,
+                                             (-1,-1,-1), (200,200,200), (self.S_W//2 + 4, self.S_H//2 - 142, 220, 188), False, False, 'none')
+            
+            self.text_manager0.disp_text_box(screen, self.fontlist[1], ('Exit:[' + pygame.key.name(ctrl_list[8]) + '] or [Esc]', ''), 
+                                             (-1,-1,-1), (100,100,100), ((480 - 8*len(pygame.key.name(ctrl_list[8]))), 456, 32, 32), False, False, 'none')
+            
+            self.text_manager0.disp_text_box(screen, self.fontlist[1], ('My Wares',),
+                                             (-1,-1,-1), (200,200,200), (16, 328, 32, 32), False, False, 'none')
+            
+            self.text_manager0.disp_text_box(screen, self.fontlist[1], ('Your Stuff',),
+                                            (-1,-1,-1), (200,200,200), (260, 440, 32, 32), False, False, 'none')
+            
+            #buttons and drawing buttons--------------------------------------------------------------------------------------
+            
+            #highlighting selected inventory slot
+            item_btn_list[self.slot].draw_border(screen)
+            
+            #selecting the current slot
+            for btn_list in enumerate((self.button_list, self.button_list3)):
+                for slot in btn_list[1][0:self.total_slots]:
+                    if slot.draw(screen):
+                        self.m_player.play_sound(self.m_player.sfx[1])
+                        self.slot = btn_list[1].index(slot)
+                        self.selected_group = btn_list[0]
+                    
+            #draw items in slots
+            for btn in self.button_list2:
+                btn.draw(screen)
+                if inventory[self.button_list2.index(btn)][0] != 'empty':
+                    item_count = str(inventory[self.button_list2.index(btn)][1])
+                    if int(item_count) < 10:
+                        item_count = ' ' + item_count
+                    btn.show_text(screen, self.fontlist[1], ('', item_count))
+                    
+            for btn in self.button_list4:
+                btn.draw(screen)
+                # if wares[self.button_list4.index(btn)][0] != 'empty':
+                #     item_price = '$$$' #need to make a dictionary for these and additional logic if we want prices to change
+                #     btn.show_text(screen, self.fontlist[1], ('', item_price))
+            
+            #trade button
+            if self.button_list[len(self.button_list)-3].draw(screen): #need to check for both inventory space and if the cost can be paid
+                self.m_player.play_sound(self.m_player.sfx[1])
+                self.discard_item(inventory)
+
+            self.button_list[len(self.button_list)-3].show_text(screen, self.fontlist[1], ('','Trade'))        
+
+            #discard button
+            if self.button_list[len(self.button_list)-2].draw(screen):
+                self.m_player.play_sound(self.m_player.sfx[1])
+                if self.selected_group == 0:
+                    self.discard_item(inventory)
+
+            self.button_list[len(self.button_list)-2].show_text(screen, self.fontlist[1], ('','Discard'))
+            
+            #discard slot button
+            if self.button_list[len(self.button_list)-1].draw(screen):
+                self.m_player.play_sound(self.m_player.sfx[1])
+                if self.selected_group == 0:
+                    self.discard_slot(inventory)
+
+            self.button_list[len(self.button_list)-1].show_text(screen, self.fontlist[1], ('','Discard Slot'))
+            
+        
+        #test for if the items in inventory changed
+        for i in range(len(inventory)):
+            if inventory[i][0] != self.temp_inventory[i][0]:
+                self.trigger_once = True
 
             
 # item_details0 = item_details()

@@ -17,7 +17,7 @@ from textManager import text_manager, dialogue_box
 from textfile_handler import textfile_formatter
 from ui_manager import ui_manager 
 from spriteGroup import sprite_group 
-from ItemFile import inventory_UI
+from ItemFile import inventory_UI, trade_menu_ui
 from playerChoiceHandler import player_choice_handler
 from particle import particle_2, group_particle2
 import gc
@@ -246,6 +246,9 @@ def main():
 	inv_toggle = False
 	inv_toggle_en = False
 
+	#trade ui stuff
+	trade_ui_en = False
+	trade_ui = trade_menu_ui(10, [font, font_larger, font_massive], SCREEN_WIDTH, SCREEN_HEIGHT, vol_lvl)
 
 	#instantiate player at the start of load
 	stam = 6
@@ -656,6 +659,21 @@ def main():
 		
 		#-----------------------------------------inventory and items
 		#opening inventory
+		if trade_ui_en:
+			wares = [
+				['a', 1], 
+    			['b', 1], 
+				['c', 1],
+				['empty', 0],
+				['empty', 0],
+				['empty', 0],
+				['empty', 0],
+				['empty', 0],
+				['empty', 0],
+				['empty', 0]
+			]
+			trade_ui.open_trade_ui(player0.inventory_handler.inventory, wares, screen, ctrls_list)
+
 		if inventory_opened:
 			player_inv_UI.open_inventory(player0.inventory_handler.inventory, screen, ctrls_list)
 			if player_inv_UI.use_item_btn_output and player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory) and player0.action != 15:
@@ -706,6 +724,8 @@ def main():
 				#increment level death counters
 				if level in world.death_counters_dict:
 					world.death_counters_dict[level] += 1
+			else:
+				player0.hits_tanked = player0.hp
 
 			if inventory_opened:#exit inventory if opened
 				inventory_opened = False
@@ -978,6 +998,8 @@ def main():
 					camera.is_visible = not camera.is_visible
 				if event.key == pygame.K_MINUS:
 					debugger_sprint = True
+				if event.key == pygame.K_t:
+					trade_ui_en = not trade_ui_en
 
 				if (event.key == pygame.K_BACKSPACE or event.key == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable and not ui_manager0.saves_menu_enable: 
 				#escape exits UI ONLY before the options sub menu is shown and any deeper into sub menus
@@ -1036,7 +1058,6 @@ def main():
 						if ui_manager0.main_menu_enable:
 							m_player.play_sound(m_player.sfx[1])
 							ui_manager0.kbd_new_game = True
-
 						elif ui_manager0.saves_menu2_enable:
 							m_player.play_sound(m_player.sfx[1])
 							ui_manager0.kbd_new_game = True
