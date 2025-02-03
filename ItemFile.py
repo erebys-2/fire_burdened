@@ -694,6 +694,10 @@ class trade_menu_ui():
     #-display descriptions for items being traded and items in inventory
     #-updated everytime player inventory is updated (item discarded, bought, spent)
     #-deny trades if the player's inventory is full
+    
+    #LIMITATIONS:
+    #CANNOT HAVE 2 DIFFERENT PRICES FOR THE SAME ITEM
+    #NEED TO UPDATE THE INPUT WARES LIST ACCORDINGLY TO THE BASE PRICES
     def __init__(self, total_slots, fontlist, SCREEN_WIDTH, SCREEN_HEIGHT, ini_vol):
         m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav', 'woop.wav']
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
@@ -732,7 +736,7 @@ class trade_menu_ui():
         # for i in range (len(os.listdir(f'sprites/misc_art/aria'))):
         #     self.aria_frame_list.append(pygame.image.load(f'sprites/misc_art/aria/{i}.png').convert_alpha())
         
-        self.inv_disp = (16,402) #initial position for first slot
+        self.inv_disp = (16,370) #initial position for first slot
         self.text_manager0 = text_manager()
      
         
@@ -745,15 +749,87 @@ class trade_menu_ui():
         
         self.item_details0 = item_details()
         
-    def discard_item(self, inventory):
-        if inventory[self.slot][1] > 0:
-            inventory[self.slot][1] -= 1
+        t = textfile_formatter()
+        path2 = 'config_textfiles/item_config'
+        self.base_prices_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(path2, 'item_base_prices.txt')), 'list_list')
+        
+        self.transaction_msg = ''
+        self.transaction_msg_timer = pygame.time.get_ticks()
+        
+    def trade_item(self, inventory, product):
+        #implement on-spot price changing here
+        #returns signals for why the player cannot afford something, defaults below
+        target_slot = -1
+        too_expensive = 1
+        
+        #check if player has space in inventory, change the slot accordingly
+        #check for stacking
+        target_slot = self.check_for_item2(product)[0]#default value is -1
+        
+        #check for empty space
+        if target_slot == -1:
+            for slot in enumerate(self.temp_inventory):
+                if slot[0] < self.total_slots and slot[1][0] == 'empty':#not the last slot
+                    target_slot = slot[0]
+        
+        #check for item price
+        if target_slot >= 0 and product in self.base_prices_dict:
+            #search for if the player has the items needed
+            can_afford = []
+            for payment_partition in self.base_prices_dict[product]:
+                if payment_partition[0] != 'amount':
+                    can_afford.append(self.check_for_item2(payment_partition[0])[1] >= payment_partition[1]) #player can afford  
+                
+            #charge player and give the player the product
+            if False not in can_afford:
+                too_expensive = -1
+                #charge items
+                for payment_partition in self.base_prices_dict[product]:
+                    if payment_partition[0] != 'amount':
+                        slot = self.check_for_item2(payment_partition[0])[0]
+                        for i in range(payment_partition[1]):
+                            self.discard_item(inventory, slot)
+                #give item 
+                inventory[target_slot][0] = product
+                inventory[target_slot][1] += self.base_prices_dict[product][0][1]#first sublist entry will be the amount given to the player
+                #amount will be by default 0, if adding to an to empty slot, and whatever prior value if stacking
+        else:
+            target_slot = -1
+
+        return (target_slot, too_expensive)
+    
+    def get_transaction_msg(self, transaction_output):
+        if transaction_output[0] == -1 and transaction_output[1] == 1:
+            rtn_str = 'Item Not Available!'
+        elif transaction_output[0] == -1:
+            rtn_str = 'Inventory Full!!'
+        elif transaction_output[1] == 1:
+            rtn_str = 'Insufficient Funds!!'
+        else:
+            rtn_str = 'Transaction Success!'
             
-        if inventory[self.slot][1] == 0:
-            inventory[self.slot][0] = 'empty'
+        return rtn_str
+        
+    def check_for_item2(self, item_name):#returns how many of an item the player has in their inventory, default/item not found is 0
+        count = 0
+        slot_index = -1
+        for slot in enumerate(self.temp_inventory):
+            if slot[1][0] == item_name:
+                slot_index = slot[0]
+                count = slot[1][1]
+                break
+        
+        return (slot_index, count)
+        
+    def discard_item(self, inventory, slot):
+        if inventory[slot][1] > 0:
+            inventory[slot][1] -= 1
             
-    def discard_slot(self, inventory):
-        inventory[self.slot] = ['empty', 0]
+        if inventory[slot][1] == 0:
+            inventory[slot][0] = 'empty'
+            
+    def discard_slot(self, inventory, slot):
+        inventory[slot] = ['empty', 0]
     
     def open_trade_ui(self, inventory, wares, screen, ctrl_list):
         
@@ -811,16 +887,21 @@ class trade_menu_ui():
             if self.selected_group == 0: #get description for the right group
                 item_interface = inventory
                 item_btn_list = self.button_list
+                cost_str = 'N/A'
             else:
                 item_interface = wares
                 item_btn_list = self.button_list3
+                cost_str = 'coming soon'
+                if wares[self.slot][0] == 'empty':
+                    cost_str = 'N/A'
+               
             
             item_class = self.item_details0.get_item_class(item_interface[self.slot][0])
 
             item_details = ['Slot: ' + item_interface[self.slot][0],
                             'Count: ' + str(item_interface[self.slot][1]),
                             'Item Class: ' + item_class,
-                            'Cost', #need to make an external cost dictionary
+                            'Cost: ' + cost_str, #need to make an external cost dictionary
                             'Description: ',
                             ' '
                             ]
@@ -830,16 +911,25 @@ class trade_menu_ui():
                 item_details.append(line)#add to the established stringlist
                 
             self.text_manager0.disp_text_box(screen, self.fontlist[1], item_details,
-                                             (-1,-1,-1), (200,200,200), (self.S_W//2 + 4, self.S_H//2 - 142, 220, 188), False, False, 'none')
+                                             (-1,-1,-1), (200,200,200), (self.S_W//2 + 4, self.S_H//2 - 158, 220, 188), False, False, 'none')
             
-            self.text_manager0.disp_text_box(screen, self.fontlist[1], ('Exit:[' + pygame.key.name(ctrl_list[8]) + '] or [Esc]', ''), 
-                                             (-1,-1,-1), (100,100,100), ((480 - 8*len(pygame.key.name(ctrl_list[8]))), 456, 32, 32), False, False, 'none')
+            self.text_manager0.disp_text_box(screen, self.fontlist[1], ('Exit:[Esc]', ''), 
+                                             (-1,-1,-1), (100,100,100), ((548), 456, 32, 32), False, False, 'none')
             
             self.text_manager0.disp_text_box(screen, self.fontlist[1], ('My Wares',),
-                                             (-1,-1,-1), (200,200,200), (16, 328, 32, 32), False, False, 'none')
+                                             (-1,-1,-1), (200,200,200), (16, 296, 32, 32), False, False, 'none')
             
             self.text_manager0.disp_text_box(screen, self.fontlist[1], ('Your Stuff',),
-                                            (-1,-1,-1), (200,200,200), (260, 440, 32, 32), False, False, 'none')
+                                            (-1,-1,-1), (200,200,200), (16, 410, 32, 32), False, False, 'none')
+            
+            if self.transaction_msg_timer + 2500 > pygame.time.get_ticks():
+                if self.transaction_msg_timer + 2000 > pygame.time.get_ticks():#flicker
+                    self.text_manager0.disp_text_box(screen, self.fontlist[2], (self.transaction_msg,),
+                                                (-1,-1,-1), (200,200,200), (16, 16, 32, 32), False, False, 'none')
+                else:
+                    if pygame.time.get_ticks()%3 == 0:
+                        self.text_manager0.disp_text_box(screen, self.fontlist[2], (self.transaction_msg,),
+                                                (-1,-1,-1), (200,200,200), (16, 16, 32, 32), False, False, 'none')
             
             #buttons and drawing buttons--------------------------------------------------------------------------------------
             
@@ -865,14 +955,19 @@ class trade_menu_ui():
                     
             for btn in self.button_list4:
                 btn.draw(screen)
-                # if wares[self.button_list4.index(btn)][0] != 'empty':
-                #     item_price = '$$$' #need to make a dictionary for these and additional logic if we want prices to change
-                #     btn.show_text(screen, self.fontlist[1], ('', item_price))
+                if wares[self.button_list4.index(btn)][0] != 'empty':
+                    item_count = str(wares[self.button_list4.index(btn)][1])
+                    if int(item_count) < 10:
+                        item_count = ' ' + item_count
+                    btn.show_text(screen, self.fontlist[1], ('', item_count))
             
             #trade button
             if self.button_list[len(self.button_list)-3].draw(screen): #need to check for both inventory space and if the cost can be paid
                 self.m_player.play_sound(self.m_player.sfx[1])
-                self.discard_item(inventory)
+                if self.selected_group == 1:
+                    self.transaction_msg = self.get_transaction_msg(self.trade_item(inventory, wares[self.slot][0]))
+                    #reset timer for drawing transaction_msg
+                    self.transaction_msg_timer = pygame.time.get_ticks()
 
             self.button_list[len(self.button_list)-3].show_text(screen, self.fontlist[1], ('','Trade'))        
 
@@ -880,15 +975,14 @@ class trade_menu_ui():
             if self.button_list[len(self.button_list)-2].draw(screen):
                 self.m_player.play_sound(self.m_player.sfx[1])
                 if self.selected_group == 0:
-                    self.discard_item(inventory)
-
+                    self.discard_item(inventory, self.slot)
             self.button_list[len(self.button_list)-2].show_text(screen, self.fontlist[1], ('','Discard'))
             
             #discard slot button
             if self.button_list[len(self.button_list)-1].draw(screen):
                 self.m_player.play_sound(self.m_player.sfx[1])
                 if self.selected_group == 0:
-                    self.discard_slot(inventory)
+                    self.discard_slot(inventory, self.slot)
 
             self.button_list[len(self.button_list)-1].show_text(screen, self.fontlist[1], ('','Discard Slot'))
             
@@ -897,6 +991,12 @@ class trade_menu_ui():
         for i in range(len(inventory)):
             if inventory[i][0] != self.temp_inventory[i][0]:
                 self.trigger_once = True
+                
+    def close_trade_ui(self):
+        self.temp_inventory *= 0
+        self.trigger_once = True
+        for btn_list in self.btn_list_list:
+            btn_list *= 0
 
             
 # item_details0 = item_details()

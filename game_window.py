@@ -248,7 +248,7 @@ def main():
 
 	#trade ui stuff
 	trade_ui_en = False
-	trade_ui = trade_menu_ui(10, [font, font_larger, font_massive], SCREEN_WIDTH, SCREEN_HEIGHT, vol_lvl)
+	trade_ui = trade_menu_ui(3*3 + 1, [font, font_larger, font_massive], SCREEN_WIDTH, SCREEN_HEIGHT, vol_lvl)
 
 	#instantiate player at the start of load
 	stam = 6
@@ -323,7 +323,7 @@ def main():
 	joysticks = {}
  
 
- 
+	show_cursor_signals = [level == 0, pause_game, not player0.Alive, inventory_opened, dialogue_enable, trade_ui_en]
 
 	while run:
 		clock.tick(FPS)
@@ -333,7 +333,14 @@ def main():
 		player_enable_master = (level_dict[level][3] and not level_transitioning and not camera.set_ini_pos)
 
 		#deleting curser
-		if level == 0 or pause_game or not player0.Alive or inventory_opened or dialogue_enable:#delete mouse when out of the main menu
+		show_cursor_signals = [level == 0, 
+                         		pause_game, 
+                           		not player0.Alive, 
+                             	inventory_opened, 
+                              	dialogue_enable, 
+                               	trade_ui_en
+                                ]#update the list
+		if True in show_cursor_signals:#delete mouse when out of the main menu
 			pygame.mouse.set_visible(1)
 		else:
 			pygame.mouse.set_visible(0)
@@ -538,7 +545,6 @@ def main():
 					last_area_name = area_name_dict[level]
 
 		else:
-			#print(selected_slot)
 			for group in the_sprite_group.sp_group_list:
 				for sprite_ in group:
 					sprite_.force_ini_position(scroll_x)
@@ -1016,7 +1022,7 @@ def main():
 							pygame.mixer.stop()
 							m_player.play_sound(m_player.sfx[1])
 
-						elif not dialogue_enable and not inventory_opened: #pause game, will trigger if player is not in dialogue
+						elif not dialogue_enable and not inventory_opened and not trade_ui_en: #pause game, will trigger if player is not in dialogue
 							pause_game = True
 							pygame.mixer.pause()
 							m_player.play_sound(m_player.sfx[1])
@@ -1031,6 +1037,10 @@ def main():
 						if inventory_opened:#exit inventory if opened
 							inventory_opened = False
 							player_inv_UI.close_inventory()
+
+						if trade_ui_en:
+							trade_ui_en = False
+							trade_ui.close_trade_ui()
 							
 					else:#if on the main menu, the game will exit on button press
 						run = False

@@ -1,0 +1,2 @@
+a: amount# 1; Rock# 1; Cursed Flesh# 2
+b: amount# 2; Cursed Flesh# 1
