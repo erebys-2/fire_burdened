@@ -10,6 +10,7 @@ import random
 
 config_path = 'config_textfiles/item_config'
 item_sprites_path = 'sprites/items'
+max_item_count = 999
 
 #Items exist in 2 spaces: level spaces and inventory spaces
 #This file contains code to support an item existing in the level space and being able to interact with the player.
@@ -179,9 +180,9 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
         stacked = False
         allocated = False
         
-        #first check if there's a slot with a matching item ID (item can stack) and that the max count (99) hasn't been reshced
+        #first check if there's a slot with a matching item ID (item can stack) and that the max count hasn't been reshced
         for slot in self.inventory:
-            if slot[0] == item_id and slot[1] < 99:
+            if slot[0] == item_id and slot[1] < max_item_count:
                 slot_index = self.inventory.index(slot)
                 stacked = True
                 break
@@ -760,20 +761,24 @@ class trade_menu_ui():
         #implement on-spot price changing here
         #returns signals for why the player cannot afford something, defaults below
         target_slot = -1
+        overflow_slot = -1
         too_expensive = 1
+        overflow = 0
+        product_amnt = self.base_prices_dict[product][0][1]
         
         #check if player has space in inventory, change the slot accordingly
         #check for stacking
-        target_slot = self.check_for_item2(product)[0]#default value is -1
+        stackability = self.check_for_item2(product)
+        target_slot = stackability[0]
+        if stackability[1] + product_amnt > max_item_count:
+            overflow = stackability[1] + product_amnt - max_item_count
         
         #check for empty space
         if target_slot == -1:
-            for slot in enumerate(self.temp_inventory):
-                if slot[0] < self.total_slots and slot[1][0] == 'empty':#not the last slot
-                    target_slot = slot[0]
+            target_slot = self.find_empty_slot()
         
         #check for item price
-        if target_slot >= 0 and product in self.base_prices_dict:
+        if product in self.base_prices_dict:
             #search for if the player has the items needed
             can_afford = []
             for payment_partition in self.base_prices_dict[product]:
@@ -781,8 +786,10 @@ class trade_menu_ui():
                     can_afford.append(self.check_for_item2(payment_partition[0])[1] >= payment_partition[1]) #player can afford  
                 
             #charge player and give the player the product
-            if False not in can_afford:
+            if False not in can_afford: 
                 too_expensive = -1
+                
+            if target_slot > -1 and too_expensive < 1:
                 #charge items
                 for payment_partition in self.base_prices_dict[product]:
                     if payment_partition[0] != 'amount':
@@ -791,7 +798,7 @@ class trade_menu_ui():
                             self.discard_item(inventory, slot)
                 #give item 
                 inventory[target_slot][0] = product
-                inventory[target_slot][1] += self.base_prices_dict[product][0][1]#first sublist entry will be the amount given to the player
+                inventory[target_slot][1] += product_amnt - overflow#first sublist entry will be the amount given to the player
                 #amount will be by default 0, if adding to an to empty slot, and whatever prior value if stacking
         else:
             target_slot = -1
@@ -820,6 +827,13 @@ class trade_menu_ui():
                 break
         
         return (slot_index, count)
+    
+    def find_empty_slot(self):
+        rtn_slot = -1
+        for slot in enumerate(self.temp_inventory):
+            if slot[0] < self.total_slots and slot[1][0] == 'empty':#not the last slot
+                rtn_slot = slot[0]
+        return rtn_slot
         
     def discard_item(self, inventory, slot):
         if inventory[slot][1] > 0:
