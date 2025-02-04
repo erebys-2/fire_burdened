@@ -764,7 +764,9 @@ class trade_menu_ui():
         overflow_slot = -1
         too_expensive = 1
         overflow = 0
-        product_amnt = self.base_prices_dict[product][0][1]
+        product_amnt = 0
+        if product in self.base_prices_dict:
+            product_amnt = self.base_prices_dict[product][0][1]
         
         #check if player has space in inventory, change the slot accordingly
         #check for stacking
@@ -772,13 +774,15 @@ class trade_menu_ui():
         target_slot = stackability[0]
         if stackability[1] + product_amnt > max_item_count:
             overflow = stackability[1] + product_amnt - max_item_count
+        if overflow == product_amnt:
+            target_slot = -1
         
         #check for empty space
         if target_slot == -1:
             target_slot = self.find_empty_slot()
         
         #check for item price
-        if product in self.base_prices_dict:
+        if product_amnt > 0:
             #search for if the player has the items needed
             can_afford = []
             for payment_partition in self.base_prices_dict[product]:
