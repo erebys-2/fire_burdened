@@ -757,6 +757,8 @@ class trade_menu_ui():
         self.transaction_msg = ''
         self.transaction_msg_timer = pygame.time.get_ticks()
         
+        self.show_prices = True
+        
     #Disclaimer: won't stack if the get_tot_itm_ct + product_amnt is just bigger than max edge case
     def trade_item(self, inventory, product):
         #implement on-spot price changing here
@@ -925,6 +927,7 @@ class trade_menu_ui():
             self.button_list.append(Button(self.S_W//2 +88, self.S_H//2 +64 +16, self.generic_img, 1)) #trade button
             self.button_list.append(Button(self.S_W//2 +88, self.S_H//2 +64 +56, self.generic_img, 1))
             self.button_list.append(Button(self.S_W//2 +88, self.S_H//2 +64 +96, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 - 8, self.S_H//2 -160 - 28, self.invisible_img, 1))
             
             self.trigger_once = False
             
@@ -942,28 +945,38 @@ class trade_menu_ui():
             if self.selected_group == 0: #get description for the right group
                 item_interface = inventory
                 item_btn_list = self.button_list
-                cost_str = 'N/A'
+                item_count = str(inventory[self.slot][1])
+                cost_str = []
             else:
                 item_interface = wares
                 item_btn_list = self.button_list3
-                cost_str = 'coming soon'
-                if wares[self.slot][0] == 'empty':
-                    cost_str = 'N/A'
+                if wares[self.slot][0] not in self.base_prices_dict:
+                    cost_str = []
+                    item_count = '0'
+                else:
+                    cost_str = []
+                    item_count = str(self.base_prices_dict[wares[self.slot][0]][0][1])
+                    for sublist in self.base_prices_dict[wares[self.slot][0]]:
+                        if sublist[0] == 'amount':
+                            cost_str.append('')
+                            cost_str.append('Price:')
+                        else:
+                            cost_str.append(f'  {sublist[0]}: {str(sublist[1])}')
                
-            
-            item_class = self.item_details0.get_item_class(item_interface[self.slot][0])
-
             item_details = ['Slot: ' + item_interface[self.slot][0],
-                            'Count: ' + str(item_interface[self.slot][1]),
-                            'Item Class: ' + item_class,
-                            'Cost: ' + cost_str, #need to make an external cost dictionary
-                            'Description: ',
-                            ' '
+                            'Count: ' + item_count
                             ]
             
-            item_description = self.item_details0.get_formatted_description(item_interface[self.slot][0])#string list
-            for line in item_description:
-                item_details.append(line)#add to the established stringlist
+            if not self.show_prices or self.selected_group == 0:
+                item_details = item_details + ['Item Class: ' + self.item_details0.get_item_class(item_interface[self.slot][0]),
+                                                'Description: ',
+                                                ' '
+                                                ]
+                item_description = self.item_details0.get_formatted_description(item_interface[self.slot][0])#string list
+                for line in item_description:
+                    item_details.append(line)#add to the established stringlist
+            else:
+                item_details = item_details + cost_str
                 
             self.text_manager0.disp_text_box(screen, self.fontlist[1], item_details,
                                              (-1,-1,-1), (200,200,200), (self.S_W//2 + 4, self.S_H//2 - 158, 220, 188), False, False, 'none')
@@ -980,11 +993,11 @@ class trade_menu_ui():
             if self.transaction_msg_timer + 2500 > pygame.time.get_ticks():
                 if self.transaction_msg_timer + 2000 > pygame.time.get_ticks():#flicker
                     self.text_manager0.disp_text_box(screen, self.fontlist[2], (self.transaction_msg,),
-                                                (-1,-1,-1), (200,200,200), (16, 16, 32, 32), False, False, 'none')
+                                                (-1,-1,-1), (200,200,200), (16, 8, 32, 32), False, False, 'none')
                 else:
                     if pygame.time.get_ticks()%3 == 0:
                         self.text_manager0.disp_text_box(screen, self.fontlist[2], (self.transaction_msg,),
-                                                (-1,-1,-1), (200,200,200), (16, 16, 32, 32), False, False, 'none')
+                                                (-1,-1,-1), (200,200,200), (16, 8, 32, 32), False, False, 'none')
             
             #buttons and drawing buttons--------------------------------------------------------------------------------------
             
@@ -1012,34 +1025,44 @@ class trade_menu_ui():
                 btn.draw(screen)
                 if wares[self.button_list4.index(btn)][0] != 'empty':
                     item_count = str(wares[self.button_list4.index(btn)][1])
-                    if int(item_count) < 10:
-                        item_count = ' ' + item_count
-                    btn.show_text(screen, self.fontlist[1], ('', item_count))
+                    # if int(item_count) < 10:
+                    #     item_count = ' ' + item_count
+                    # btn.show_text(screen, self.fontlist[1], ('', item_count))
             
             #trade button
-            if self.button_list[len(self.button_list)-3].draw(screen): #need to check for both inventory space and if the cost can be paid
+            if self.button_list[len(self.button_list)-4].draw(screen): #need to check for both inventory space and if the cost can be paid
                 self.m_player.play_sound(self.m_player.sfx[1])
                 if self.selected_group == 1:
                     self.transaction_msg = self.get_transaction_msg(self.trade_item(inventory, wares[self.slot][0]))
                     #reset timer for drawing transaction_msg
                     self.transaction_msg_timer = pygame.time.get_ticks()
 
-            self.button_list[len(self.button_list)-3].show_text(screen, self.fontlist[1], ('','Trade'))        
+            self.button_list[len(self.button_list)-4].show_text(screen, self.fontlist[1], ('','Trade'))        
 
             #discard button
-            if self.button_list[len(self.button_list)-2].draw(screen):
+            if self.button_list[len(self.button_list)-3].draw(screen):
                 self.m_player.play_sound(self.m_player.sfx[1])
                 if self.selected_group == 0:
                     self.discard_item(inventory, self.slot)
-            self.button_list[len(self.button_list)-2].show_text(screen, self.fontlist[1], ('','Discard'))
+            self.button_list[len(self.button_list)-3].show_text(screen, self.fontlist[1], ('','Discard'))
             
             #discard slot button
-            if self.button_list[len(self.button_list)-1].draw(screen):
+            if self.button_list[len(self.button_list)-2].draw(screen):
                 self.m_player.play_sound(self.m_player.sfx[1])
                 if self.selected_group == 0:
                     self.discard_slot(inventory, self.slot)
 
-            self.button_list[len(self.button_list)-1].show_text(screen, self.fontlist[1], ('','Discard Slot'))
+            self.button_list[len(self.button_list)-2].show_text(screen, self.fontlist[1], ('','Discard Slot'))
+            
+            if self.selected_group != 0:
+                if self.show_prices:
+                    btn_str = '[Show Description]'
+                else:
+                    btn_str = '[Show Cost]'
+                if self.button_list[len(self.button_list)-1].draw(screen):
+                    self.m_player.play_sound(self.m_player.sfx[1])
+                    self.show_prices = not self.show_prices
+                self.button_list[len(self.button_list)-1].show_text(screen, self.fontlist[1], ('', btn_str))
             
         
         #test for if the items in inventory changed
