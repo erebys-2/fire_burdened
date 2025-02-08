@@ -757,28 +757,23 @@ class trade_menu_ui():
         self.transaction_msg = ''
         self.transaction_msg_timer = pygame.time.get_ticks()
         
+    #Disclaimer: won't stack if the get_tot_itm_ct + product_amnt is just bigger than max edge case
     def trade_item(self, inventory, product):
         #implement on-spot price changing here
         #returns signals for why the player cannot afford something, defaults below
         target_slot = -1
-        overflow_slot = -1
         too_expensive = 1
-        overflow = 0
         product_amnt = 0
         if product in self.base_prices_dict:
             product_amnt = self.base_prices_dict[product][0][1]
         
         #check if player has space in inventory, change the slot accordingly
         #check for stacking
-        stackability = self.check_for_item2(product)
-        target_slot = stackability[0]
-        if stackability[1] + product_amnt > max_item_count:
-            overflow = stackability[1] + product_amnt - max_item_count
-        if overflow == product_amnt:
-            target_slot = -1
-        
-        #check for empty space
-        if target_slot == -1:
+        slot_list_p = self.check_for_item2(product)
+
+        if (len(slot_list_p) * max_item_count) >= (self.get_tot_itm_ct(slot_list_p) + product_amnt):
+            target_slot = -2 #signal to stack
+        else:#check for empty space
             target_slot = self.find_empty_slot()
         
         #check for item price
@@ -787,23 +782,39 @@ class trade_menu_ui():
             can_afford = []
             for payment_partition in self.base_prices_dict[product]:
                 if payment_partition[0] != 'amount':
-                    can_afford.append(self.check_for_item2(payment_partition[0])[1] >= payment_partition[1]) #player can afford  
+                    can_afford.append(self.get_tot_itm_ct(self.check_for_item2(payment_partition[0])) >= payment_partition[1]) #player can afford  
                 
             #charge player and give the player the product
             if False not in can_afford: 
                 too_expensive = -1
                 
-            if target_slot > -1 and too_expensive < 1:
+            if target_slot != -1 and too_expensive != 1:
                 #charge items
                 for payment_partition in self.base_prices_dict[product]:
                     if payment_partition[0] != 'amount':
-                        slot = self.check_for_item2(payment_partition[0])[0]
-                        for i in range(payment_partition[1]):
-                            self.discard_item(inventory, slot)
+                        cost = payment_partition[1]
+                        for slot_pair in self.check_for_item2(payment_partition[0]):
+                            #discard items from slots where the target item was found until cost is met
+                            while inventory[slot_pair[0]][1] > 0 and cost > 0:
+                                self.discard_item(inventory, slot_pair[0])
+                                cost -= 1
+                            if cost == 0:
+                                break
+
                 #give item 
-                inventory[target_slot][0] = product
-                inventory[target_slot][1] += product_amnt - overflow#first sublist entry will be the amount given to the player
-                #amount will be by default 0, if adding to an to empty slot, and whatever prior value if stacking
+                if target_slot != -2:#no stacking
+                    inventory[target_slot][0] = product
+                    inventory[target_slot][1] += product_amnt
+                else:#stacking
+                    amnt_to_give = product_amnt
+                    for slot_pair in [slot_pair for slot_pair in slot_list_p if slot_pair[1] < max_item_count]:#exclude full slots
+                        #fill the first stackable slot until unable or amnt runs out
+                        while inventory[slot_pair[0]][1] < max_item_count and amnt_to_give > 0: 
+                            inventory[slot_pair[0]][1] += 1
+                            amnt_to_give -= 1
+                        if amnt_to_give == 0:#finish
+                            break
+
         else:
             target_slot = -1
 
@@ -824,13 +835,39 @@ class trade_menu_ui():
     def check_for_item2(self, item_name):#returns how many of an item the player has in their inventory, default/item not found is 0
         count = 0
         slot_index = -1
+        
+        slot_candidates = []#fill list of inventory slots with matching item names
         for slot in enumerate(self.temp_inventory):
             if slot[1][0] == item_name:
                 slot_index = slot[0]
                 count = slot[1][1]
-                break
+                slot_candidates.append((slot_index, count))
         
-        return (slot_index, count)
+        return slot_candidates
+    
+    def get_tot_itm_ct(self, slot_list):
+        total_items = 0
+        for slot in slot_list:
+            total_items += slot[1]
+
+        return total_items
+    
+    #bubble sort
+    def sort_list(self, input_list, direction):#this destroys the original list
+        sorted_l = []#create temp list
+        runs = len(input_list)#get number of runs
+        for i in range(runs):
+            target = input_list[0]
+            for i in range(len(input_list)):
+                if direction > 0 and input_list[i][1] < target[1]:
+                    target = input_list[i]
+                elif direction < 0 and input_list[i][1] > target[1]:
+                    target = input_list[i]
+            sorted_l.append(target)
+            input_list.pop(input_list.index(target))#remove the target element from the original list
+            
+        return sorted_l
+        
     
     def find_empty_slot(self):
         rtn_slot = -1
