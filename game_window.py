@@ -567,7 +567,11 @@ def main():
 		#--------------------------------------------------------------------handling drawing text boxes------------------------------------------------------------------
 		#textboxes have a maximum of 240 characters
 		
-		if the_sprite_group.textbox_output[0] != '' and the_sprite_group.textbox_output[1] and the_sprite_group.textbox_output[2] and not the_sprite_group.textbox_output[6][0]:
+		if (the_sprite_group.textbox_output[0] != '' and 
+      		the_sprite_group.textbox_output[1] and 
+        	the_sprite_group.textbox_output[2] and not 
+         	the_sprite_group.textbox_output[6][0]
+          	):
 			#the_sprite_group.textbox_output = (
 			# name, (string)
    			# player_collision, (boolean)
@@ -580,18 +584,23 @@ def main():
 			# )
 			
 			dialogue_box0.draw_text_box(the_sprite_group.textbox_output, font_larger, screen, text_speed, player0.in_cutscene)
-
-		elif the_sprite_group.textbox_output[6][0] and the_sprite_group.textbox_output[2]: #handling player choice
-		
-			dialogue_box0.draw_box_and_portrait(screen, the_sprite_group.textbox_output[4], the_sprite_group.textbox_output[5])
-			p_choice_output = p_choice_handler0.deploy_buttons(the_sprite_group.textbox_output[6][1], screen, player0, level, world)
-			next_dialogue_index = p_choice_output[0]
+		#handling player choice 
+		elif the_sprite_group.textbox_output[6][0] and the_sprite_group.textbox_output[2]: #(p choice flag, dialogue enable)
+			p_choice_key = the_sprite_group.textbox_output[6][1]
+			if p_choice_key[0:5] == 'trade':
+				next_dialogue_index = trade_ui.open_trade_ui(player0.inventory_handler.inventory, p_choice_key, screen, ctrls_list)
+			else:
+				dialogue_box0.draw_box_and_portrait(screen, the_sprite_group.textbox_output[4], the_sprite_group.textbox_output[5])
+				#first input of deploy buttons is the key
+				p_choice_output = p_choice_handler0.deploy_buttons(p_choice_key, screen, player0, level, world)
+				next_dialogue_index = p_choice_output[0]
    
 			if next_dialogue_index != -3:
 				for npc in the_sprite_group.textprompt_group: #look for npc in sprite group what has a player choice open
-					if npc.player_choice_flag:
+					if npc.player_choice_flag:#force close it and move on to the next index
 						npc.force_dialogue_index(next_dialogue_index)
 						p_choice_handler0.trigger_once = True
+						trade_ui.trigger_once = True
 						dialogue_box0.type_out = True
 
 
@@ -666,19 +675,7 @@ def main():
 		#-----------------------------------------inventory and items
 		#opening inventory
 		if trade_ui_en:
-			wares = [
-				['a', 1], 
-    			['b', 1], 
-				['c', 1],
-				['empty', 0],
-				['empty', 0],
-				['empty', 0],
-				['empty', 0],
-				['empty', 0],
-				['empty', 0],
-				['empty', 0]
-			]
-			trade_ui.open_trade_ui(player0.inventory_handler.inventory, wares, screen, ctrls_list)
+			trade_ui.open_trade_ui(player0.inventory_handler.inventory, 'test', screen, ctrls_list)
 
 		if inventory_opened:
 			player_inv_UI.open_inventory(player0.inventory_handler.inventory, screen, ctrls_list)
@@ -1004,8 +1001,8 @@ def main():
 					camera.is_visible = not camera.is_visible
 				if event.key == pygame.K_MINUS:
 					debugger_sprint = True
-				if event.key == pygame.K_t:
-					trade_ui_en = not trade_ui_en
+				# if event.key == pygame.K_t:
+				# 	trade_ui_en = not trade_ui_en
 
 				if (event.key == pygame.K_BACKSPACE or event.key == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable and not ui_manager0.saves_menu_enable: 
 				#escape exits UI ONLY before the options sub menu is shown and any deeper into sub menus

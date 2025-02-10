@@ -14,9 +14,10 @@ Mars# This is the holy city of Remgrist. Once upon a time it was a utopia blesse
 Mars# Readings of the local magical intensity have been steadily declining before the calamity event, and by now it's almost flat-lined.# 8# 1
 Mars# We're from lands under the Flame Bearers' rule. You could say they're like a guild or nation we're all born into.# 15# 1
 Mars# Nevertheless, they trusted us with a mission of great importance.# 8# 0
-Mars# The developer needs to code in a shop function here.# 8# 3
-Mars# [open shop here]# 0# 0
+Mars# The stuff that enemies drop is strongly infused with magic. By itself it's not that useful, but in the right hands its magic can be extracted and repurposed. I can trade you some goods for it.# 17# 3
+Mars# trade_0# -3# 0
 Mars# You should start heading east.# 1# 1
 Mars# You must've hit your head real hard if you forgot about magic.# 20# 3
 Mars# Give me your hands... hmm... Looks like you have some pretty standard abilities. You have good maneuverability and hit heavy, but you're not really suited for close combat.# 0# 0
 Mars# Rolling is really useful! You can evade danger or get a little movement boost by rolling. Rolling into a wall won't hurt you, but if you keep doing it... well you know.# 0# 0
+Mars# Thanks for your business!!# 8# 0

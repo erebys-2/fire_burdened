@@ -43,7 +43,6 @@ class opening_scene(npc):
             # elif level == 1 and plot_index == -1 and current_dialogue_index == 3:
             #     self.update_plot_index(1)
             #     current_dialogue_index = 4
-
                 
             if self.current_dialogue_index == 13:# and self.last_dialogue_index == 2:
                 world.plot_index_dict[self.name] = -4
