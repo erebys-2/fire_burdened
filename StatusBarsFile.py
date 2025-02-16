@@ -34,14 +34,15 @@ class StatusBars():
         self.rect = self.image.get_rect()
         self.rect.topleft = (0,placement_y)
         self.warning = False
-        
+        self.very_charred = False
+       
         
         
     def draw_text(self, text, font, text_col, x, y, screen):
         img = font.render(text, True, text_col)
         screen.blit(img, (x, y))
         
-    def draw2(self, screen, stat_list, key_values):
+    def draw2(self, screen, stat_list, key_values, font):
         
         for i in range(len(stat_list)):
             if stat_list[i] in key_values:
@@ -55,6 +56,26 @@ class StatusBars():
             for rect_ in self.rect_list:
                 if pygame.time.get_ticks()%4 == 0:
                     screen.blit(self.img5, rect_)
+            consecutive_atk = True
+            atk_ct = 4
+        elif self.rect_list_states[0:4] == [0,1,1,1]:
+            consecutive_atk = True
+            atk_ct = 3
+        elif self.rect_list_states[1:4] == [0,1,1]:
+            consecutive_atk = True
+            atk_ct = 2
+        # elif self.rect_list_states[2:4] == [0,1]:
+        #     consecutive_atk = True
+        #     atk_ct = 1
+        else:
+            consecutive_atk = False
+            atk_ct = 0
+            
+        if consecutive_atk:
+            self.draw_text(f'CHAIN x{atk_ct}', 
+                        font, (255,255,255), self.rect.right - 22*self.scale, self.rect.y - 15*self.scale, screen)
+        
+        
         
     def draw(self, screen, stat_data, font, flicker):
         hp_color = (105,31,46)
@@ -77,7 +98,18 @@ class StatusBars():
         charge_rect = (self.rect.x + self.bar_disp, self.rect.y + self.bar_ydisp2, charge_w, self.bar_height)
         
         if self.on == True:
-            pygame.draw.rect(screen, hp_color, hp_rect)
+            if self.very_charred:
+                if pygame.time.get_ticks()%10 == 0:
+                    color = (255,255,255)
+                else:
+                    color = (255,0,86)
+                    # self.draw_text(f'HEAVILY CHARRED', 
+                    #        font, (255,0,86), self.rect.x + self.bar_disp, self.rect.y + 0.5*self.bar_ydisp1, screen)
+                
+            else:
+                color = hp_color
+                
+            pygame.draw.rect(screen, color, hp_rect)
             if stat_data[2] > 0:
                 if pygame.time.get_ticks()%2 == 0:
                     pygame.draw.rect(screen, charge_color, charge_rect)
@@ -94,9 +126,14 @@ class StatusBars():
             self.draw_text(f'HP: {int(100*stat_data[0])}%/ ST: {int(100*stat_data[1])}%', 
                            font, text_color, self.rect.right + 12*self.scale, self.rect.y + 16*self.scale, screen)
             
+            if self.very_charred:
+                self.draw_text(f'HEAVILY CHARRED', 
+                           font, text_color, self.rect.x + 1.2*self.bar_disp, self.rect.y + 0.5*self.bar_ydisp1, screen)
+            
     def float_to_int(self, B):
         if B - int(B) > 0.5:
             B = int(B) + 1
         else:
             B = int(B)
         return B
+    

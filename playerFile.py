@@ -45,6 +45,7 @@ class player(pygame.sprite.Sprite):
         self.atk_show_sprite = False
         self.draw_trail = False
         self.trail_coords = []
+
         
         self.melee_hit = False
         self.inst_stamina = 1.5
@@ -174,6 +175,9 @@ class player(pygame.sprite.Sprite):
         self.atk1_default_stam = self.atk1_stamina_cost
         self.roll_stamina_cost = stamina_ini_cost_dict['roll']
         self.shoot_stamina_cost = stamina_ini_cost_dict['shoot']
+        
+        self.char_level = 0
+        self.char_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'player_char.txt')), 'float')
         
 
         self.inventory_handler = inventory_handler(10)
@@ -1335,17 +1339,24 @@ class player(pygame.sprite.Sprite):
                 self.heavy = False
                 self.atk1_stamina_cost = self.atk1_default_stam
                 self.atk1 = False
+                self.char_level += self.char_dict['melee']
+                print(self.char_level)
             elif self.action == 9 and (new_action == 7 or new_action == 8) and self.atk1:
                 self.crit = True
                 if self.check_if_in_ss_range():
                     self.do_screenshake = True
                     self.screenshake_profile = (16, 6, 3)
                 self.m_player.play_sound(self.m_player.sfx[4])
+                self.char_level += self.char_dict['crit']
             elif self.action != 9 and (new_action == 7 or new_action == 8):
                 self.crit == False
                 self.m_player.play_sound(self.m_player.sfx[1])
+                self.char_level += self.char_dict['melee']
+                print(self.char_level)
             elif new_action == 5:
                 print("oof") #make player hurting sound
+            elif new_action == 11:
+                self.char_level += self.char_dict['shoot']
 
             self.action = new_action
             self.disp_flag = self.disp_states[self.action]
@@ -1360,6 +1371,7 @@ class player(pygame.sprite.Sprite):
                     self.atk1_stamina_cost = self.stamina*2/3
                     if self.atk1:
                         self.heavy = True
+                        self.char_level += 2*self.char_dict['melee']
                 else:
                     self.heavy = False
                     self.atk1_stamina_cost = self.atk1_default_stam

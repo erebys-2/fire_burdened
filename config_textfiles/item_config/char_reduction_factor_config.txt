@@ -1,0 +1,3 @@
+Purified Flesh: 0.33
+Mild Herb: 25
+test: 0

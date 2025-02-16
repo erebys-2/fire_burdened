@@ -37,7 +37,8 @@ class textfile_formatter():
                     if format_mode == 'list':
                         value = tuple(self.format_line_to_list(line[line.index(char)+2: len(line)], ','))
                     elif format_mode == 'true_list':
-                        value = self.format_line_to_list(line[line.index(char)+2: len(line)], ',')
+                        #print(9/0)
+                        value = self.format_line_to_list(line[line.index(char)+2: len(line)], '#')
                     elif format_mode == 'list_list':#used exclusively for player choice stuff
                         value = []
                         temp_value = self.format_line_to_list(line[line.index(char)+2: len(line)], ';')

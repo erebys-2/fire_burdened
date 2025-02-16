@@ -14,7 +14,7 @@ Mars# This is the holy city of Remgrist. Once upon a time it was a utopia blesse
 Mars# Readings of the local magical intensity have been steadily declining before the calamity event, and by now it's almost flat-lined.# 8# 1
 Mars# We're from lands under the Flame Bearers' rule. You could say they're like a guild or nation we're all born into.# 15# 1
 Mars# Nevertheless, they trusted us with a mission of great importance.# 8# 0
-Mars# The stuff that enemies drop is strongly infused with magic. By itself it's not that useful, but in the right hands its magic can be extracted and repurposed. I can trade you some goods for it.# 17# 3
+Mars# The stuff that enemies drop is strongly infused with magic. By itself it's not that useful, but in the right hands its magic can be extracted and repurposed. I can trade you some goods for it.# 17# 0
 Mars# trade_0# -3# 0
 Mars# You should start heading east.# 1# 1
 Mars# You must've hit your head real hard if you forgot about magic.# 20# 3

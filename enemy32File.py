@@ -622,7 +622,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             # #obj_list[0].pop(obj_list[0].index(self))
             # del obj_list[0][obj_list[0].index(self)]
             sp_group_list[12].add(Item('Cursed Flesh', self.rect.centerx + 2*random.randint(-5,5), self.rect.centery + 2*random.randint(-5,5), 1, False))
-            sp_group_list[12].add(Item('test', self.rect.centerx + 2*random.randint(-5,5), self.rect.centery + 2*random.randint(-5,5), 1, False))
+            #sp_group_list[12].add(Item('test', self.rect.centerx + 2*random.randint(-5,5), self.rect.centery + 2*random.randint(-5,5), 1, False))
             self.kill()
         
         #colliding with bullet 

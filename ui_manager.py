@@ -272,7 +272,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                     index = 0
                     self.trigger_once = True
                 else:
-                    index = 1
+                    index = i
                     
                 self.save_handler.reset_specific_save(index)
                 self.selected_slot = index

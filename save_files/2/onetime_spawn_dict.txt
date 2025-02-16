@@ -1,1 +1,1 @@
-empty
+1: item# Talisman of Salted Earth# False

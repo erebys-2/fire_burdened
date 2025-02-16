@@ -1,3 +1,4 @@
 Cursed Flesh: 2
+Purified Flesh: 3
 Mild Herb: 0.2
 test: 9999

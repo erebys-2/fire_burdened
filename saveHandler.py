@@ -27,7 +27,7 @@ class save_file_handler():
         
         path = f'save_files/{slot}'
         
-        txt_file_map[self.PS_str] = f'level: {level}\nplayer_x: {player.x_coord}\nplayer_y: {player.rect.y - 8}\nhits_tanked: {player.hits_tanked}\nst_cap: {player.stamina_usage_cap}\nchar: -1'
+        txt_file_map[self.PS_str] = f'level: {level}\nplayer_x: {player.x_coord}\nplayer_y: {player.rect.y - 8}\nhits_tanked: {player.hits_tanked}\nst_cap: {player.stamina_usage_cap}\nchar: {player.char_level}'
         
         str2 = ''
         for key_ in plot_index_dict:
@@ -130,12 +130,13 @@ class save_file_handler():
             
             str_ = str_ + f'{list_}: {sub_str}\n'
         return str_[0:len(str_)-1]
+    
         
     def reset_specific_save(self, slot):
         path = f'save_files/{slot}'
         
         txt_file_map = {
-            self.PS_str:f'level: 1\nplayer_x: 32\nplayer_y: 128\nhits_tanked: -1\nst_cap: -1\nchar: -1',
+            self.PS_str:f'level: 1\nplayer_x: 32\nplayer_y: 128\nhits_tanked: -1\nst_cap: -1\nchar: 0',
             self.PID_str:'empty',
             self.PI_str:'',
             self.LCD_str:'0: 0',

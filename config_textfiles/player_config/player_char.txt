@@ -1,0 +1,4 @@
+max_char: 750
+melee: 1
+crit: 2
+shoot: 1

@@ -3,4 +3,4 @@ player_x: 691
 player_y: 280
 hits_tanked: 0
 st_cap: 0
-char: -1
+char: 250

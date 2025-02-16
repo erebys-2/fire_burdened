@@ -1,11 +1,11 @@
-new_index, 22
-a, 1
-b, 1
-c, 1
-d, 1
-e, 1
-empty, 0
-empty, 0
-empty, 0
-empty, 0
-empty, 0
+22, 0, 2
+Purified Flesh, double
+a, none
+b, none
+c, none
+d, none
+e, none
+empty, none
+empty, none
+empty, none
+empty, none

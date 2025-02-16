@@ -1,7 +1,8 @@
-empty:  , Slot is empty.
-test: Dev, This is a test item used for debugging.
-test2: Dev, The quick brown fox jumped over the lazy dog. The over quick fox brown lazy jumped the dog.
-Cursed Flesh: Consumable, It smells funny but might be edible. Instantly restores health at the cost of max stamina.
-Rock: Consumable, A smooth rock sits in your hand. It can be infused with magic and shot as a projectile.
-Mild Herb: Consumable, This herb is said to have mild healing properties. It smells and tastes like grass.
-Talisman of Salted Earth: Passive, It is adorned with symbols from your homeland. Killing all enemies in a given area will prevent more from spawning for the next four times you traverse.
+empty:  # Slot is empty.
+test: Dev# This is a test item used for debugging.
+test2: Dev# The quick brown fox jumped over the lazy dog. The over quick fox brown lazy jumped the dog.
+Cursed Flesh: Consumable# It smells funny but might be edible. Instantly restores health at the cost of max stamina.
+Purified Flesh: Consumable# The flesh has been meticulously rended and reshaped into something you'd find in a candy shop from your homeland. Restores health and reduces magic induced charring.
+Rock: Consumable# A smooth rock sits in your hand. It can be infused with magic and shot as a projectile.
+Mild Herb: Consumable# This herb is said to have mild healing properties. It smells and tastes like grass.
+Talisman of Salted Earth: Passive# It is adorned with symbols from your homeland. Killing all enemies in a given area will prevent more from spawning for the next four times you traverse.

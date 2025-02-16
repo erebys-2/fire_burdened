@@ -1,6 +1,6 @@
 level: 1
 player_x: 32
-player_y: 128
-hits_tanked: -1
-st_cap: -1
-char: -1
+player_y: 120
+hits_tanked: 0
+st_cap: 0
+char: 0

@@ -1,2 +1,3 @@
-a: amount# 1; Rock# 1; Cursed Flesh# 2
+a: amount# 1; Rock# 2; Cursed Flesh# 2
 b: amount# 2; Cursed Flesh# 1
+Purified Flesh: amount# 1; Cursed Flesh# 1

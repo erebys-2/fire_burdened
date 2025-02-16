@@ -524,8 +524,9 @@ def main():
 			screen.blit(world.world_map_non_parallax_fg,  (world.rect.x, world.rect.y))
 			the_sprite_group.update_groups_infront_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, world.solids)
 		
+			status_bars.very_charred = player0.char_level/player0.char_dict['max_char'] > 0.9
 			status_bars.draw(screen, player0.get_status_bars(), font, False)
-			status_bars.draw2(screen, player0.action_history, (7,8,16))
+			status_bars.draw2(screen, player0.action_history, (7,8,16), font_larger)
 			player_inv_UI.show_selected_item(player0.inventory_handler.inventory, screen)
    
 			#passive items temp code
@@ -600,7 +601,7 @@ def main():
 					if npc.player_choice_flag:#force close it and move on to the next index
 						npc.force_dialogue_index(next_dialogue_index)
 						p_choice_handler0.trigger_once = True
-						trade_ui.trigger_once = True
+						trade_ui.close_trade_ui()
 						dialogue_box0.type_out = True
 
 
@@ -651,7 +652,7 @@ def main():
 						player0.stamina_usage_cap = anmt
 						player0.stamina_used = anmt
 					elif stat == 'char':
-						pass
+						player0.char_level = ui_manager0.rtn_dict['PS'][stat]
 	
 			if not run:
 				pygame.time.wait(100)   
@@ -678,7 +679,7 @@ def main():
 			trade_ui.open_trade_ui(player0.inventory_handler.inventory, 'test', screen, ctrls_list)
 
 		if inventory_opened:
-			player_inv_UI.open_inventory(player0.inventory_handler.inventory, screen, ctrls_list)
+			player_inv_UI.open_inventory(player0.inventory_handler.inventory, player0.char_level/player0.char_dict['max_char'], screen, ctrls_list)
 			if player_inv_UI.use_item_btn_output and player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory) and player0.action != 15:
 				player0.using_item = player_inv_UI.use_item_btn_output #start use item animation
 				player0.speed = 0
@@ -719,7 +720,7 @@ def main():
 		#-----------------------------------------------------------------------------------------------------------------------------------------------------------
 		#handling player death and game over screen------------------------------------------------------------------------------------
 		
-		if player0.hits_tanked >= player0.hp or player0.rect.y > 480:#killing the player------------------------------------------------
+		if player0.hits_tanked >= player0.hp or player0.rect.y > 480 or player0.char_level >= player0.char_dict['max_char']:#killing the player------------------------------------------------
 			player0.action_history = [-1] * 4
 			if player0.Alive:
 				player0.Alive = False
@@ -975,9 +976,7 @@ def main():
 							player0.using_item = player_inv_UI.use_item_btn_output
 							player_inv_UI.use_item_btn_output = False
 						player0.speed = 0 #set speed to 0, it will be reset to default speed at the end of the animation
-						#insert test inventory:
-						#player0.inventory_handler.load_saved_inventory([['a', 1], ['b', 1], ['c', 1], ['d', 1], ['e', 1], ['f', 1], ['g', 1], ['h', 1], ['i', 1], ['empty', 0]])
-					
+
 					#open inventory
 					if event.key == ctrls_list[8] and not dialogue_enable:
 						if not inv_toggle:
@@ -1019,12 +1018,13 @@ def main():
 							pygame.mixer.stop()
 							m_player.play_sound(m_player.sfx[1])
 
-						elif not dialogue_enable and not inventory_opened and not trade_ui_en: #pause game, will trigger if player is not in dialogue
+						elif not dialogue_enable and not inventory_opened: #pause game, will trigger if player is not in dialogue
 							pause_game = True
 							pygame.mixer.pause()
 							m_player.play_sound(m_player.sfx[1])
 		
 						elif (not player0.in_cutscene and #cannot esc out of cutscene
+								not trade_ui.enabled and
             					(dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list or 
                   				the_sprite_group.textbox_output[6][0])
                  				): #exits dialogue window if an NPC finishes speaking (is this way to avoid bugs)
@@ -1035,9 +1035,12 @@ def main():
 							inventory_opened = False
 							player_inv_UI.close_inventory()
 
-						if trade_ui_en:
-							trade_ui_en = False
-							trade_ui.close_trade_ui()
+						if trade_ui.enabled:
+							trade_ui.exit_to_dialogue()
+
+						# if trade_ui_en:
+						# 	trade_ui_en = False
+						# 	trade_ui.close_trade_ui()
 							
 					else:#if on the main menu, the game will exit on button press
 						run = False
@@ -1222,9 +1225,7 @@ def main():
 							player0.using_item = player_inv_UI.use_item_btn_output
 							player_inv_UI.use_item_btn_output = False
 						player0.speed = 0 #set speed to 0, it will be reset to default speed at the end of the animation
-						#insert test inventory:
-						#player0.inventory_handler.load_saved_inventory([['a', 1], ['b', 1], ['c', 1], ['d', 1], ['e', 1], ['f', 1], ['g', 1], ['h', 1], ['i', 1], ['empty', 0]])
-					
+
 					#open inventory
 					if event.button == ctrls_list[8] and not dialogue_enable:
 						if not inv_toggle:
