@@ -139,8 +139,8 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         self.is_on_screen = (self.rect.x > -self.rect.width and self.rect.x < 640)
         return self.is_on_screen
     
-    def check_if_in_simulation_range(self):
-        return (self.rect.x > - 80 and self.rect.right < 640 + 80)
+    def check_if_in_simulation_range(self, adjustment):
+        return (self.rect.x > - (160 + adjustment) and self.rect.right < 640 + (160 + adjustment))
     
     def atk1_kill_hitbox(self):
         self.atk_rect.x = 0
@@ -195,7 +195,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         dy = 0
         moving = False
         
-        if self.check_if_in_simulation_range():
+        if self.check_if_in_simulation_range(-40):
             if self.vel_y == 0:
                 self.vertical_direction = 0
             elif self.vel_y < 0:
@@ -305,7 +305,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                         self.update_time2 = pygame.time.get_ticks()
                         # if self.hit_ground:
                         #     enemy_bullet = bullet_(self.rect.x - 64, self.rect.y, 0, self.direction, self.scale, 'ground_impact', self.ini_vol)
-                        #     #self.m_player.play_sound(self.m_player.sfx[3])
+                        #     #self.m_player.play_sound (self.m_player.sfx[3])
                         #     sp_group_list[7].add(enemy_bullet)
                         #     self.hit_ground = False
                         sp_group_list[3].sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, -self.direction, self.scale, True, 1)
@@ -441,7 +441,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 for i in range(3):
                     sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.3*self.scale, False, random.randrange(0,3))
 
-                self.m_player.play_sound(self.m_player.sfx[1])
+                self.m_player.play_sound(self.m_player.sfx[1], (self.rect.centerx, self.rect.centery))
                 
                 if self.rando_frame < 2:
                     self.rando_frame += 1
@@ -575,7 +575,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     elif tile[2] in (2, 60):
                         if tile[1].colliderect(self.rect.x + self.quarter_width//2, self.rect.y, self.width - self.quarter_width, self.height - 8):
                             self.dead = True
-                            self.m_player.play_sound(self.m_player.sfx[2])
+                            self.m_player.play_sound(self.m_player.sfx[2], (self.rect.centerx, self.rect.centery))
                     elif(tile[2] in one_way_tiles):#one way tiles
                         if tile[1].colliderect(self.rect.x + dx, self.rect.bottom - 16 + dy, self.width, 17):
                             if self.vel_y >= 0: 
@@ -615,7 +615,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
     def animate(self, sp_group_list):
         
         if self.dead and self.Alive:
-            self.m_player.play_sound(self.m_player.sfx[0])
+            self.m_player.play_sound(self.m_player.sfx[0], (self.rect.centerx, self.rect.centery))
             self.explode(sp_group_list)
             self.Alive = False
             # #print(obj_list[0].index(self))
@@ -676,7 +676,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 x = self.rect.left - 28
             y = self.rect.y + self.height//3 - 4
             enemy_bullet = bullet_(x, y, 8, self.direction, self.scale, '8x8_red', self.ini_vol)
-            self.m_player.play_sound(self.m_player.sfx[3])
+            self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery))
             sp_group_list[1].add(enemy_bullet)
             
             self.shoot_done = True
@@ -692,12 +692,12 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
 
         if pygame.time.get_ticks() - self.update_time > frame_update:
             # if self.action == 5 and self.frame_index == 0:
-            #     self.m_player.play_sound(self.m_player.sfx[4])
-            if self.check_if_onscreen():
+            #     self.m_player.play_sound (self.m_player.sfx[4])
+            if self.check_if_in_simulation_range(0):
                 if self.id == 'walker' and self.action == 0 and self.frame_index == 2:
-                    self.m_player.play_sound(self.m_player.sfx[3])
+                    self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery))
                 elif self.id == 'fly' and self.action == 1 and self.frame_index == 0:
-                    self.m_player.play_sound(self.m_player.sfx[3])
+                    self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery))
             
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
@@ -766,7 +766,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             self.frame_index = 0
             self.update_time = pygame.time.get_ticks()
             if new_action == 2:
-                self.m_player.play_sound(self.m_player.sfx[2])
+                self.m_player.play_sound(self.m_player.sfx[2], (self.rect.centerx, self.rect.centery))
                 self.hits_tanked += self.dmg_multiplier
                 self.dmg_multiplier = 0
                 
@@ -779,9 +779,9 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             elif new_action == 1:
                 if self.id == 'dog' and self.in_air == False:
                     self.speed_boost = 8
-                    self.m_player.play_sound(self.m_player.sfx[3])
+                    self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery))
             # elif new_action == 5:
-            #     self.m_player.play_sound(self.m_player.sfx[4])
+            #     self.m_player.play_sound (self.m_player.sfx[4])
             
                 #print(self.hits_tanked)
             

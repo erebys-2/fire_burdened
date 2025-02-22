@@ -115,7 +115,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
     def do_btn_logic(self, screen, btn, btn_name, update_trig1, font_list_index):
         btn_pressed = btn.draw(screen)
         if btn_pressed:
-            self.m_player.play_sound(self.m_player.sfx[1])
+            self.m_player.play_sound(self.m_player.sfx[1], None)
             self.trigger_once = update_trig1
         btn.show_text(screen, self.fontlist[font_list_index], ('', btn_name))
         
@@ -200,7 +200,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 pause_game = False
                 pygame.mixer.unpause()
                 pygame.mixer.stop()
-                self.m_player.play_sound(self.m_player.sfx[1]) #logic mix up
+                self.m_player.play_sound(self.m_player.sfx[1], None) #logic mix up
         else:
             #trigger options menu
             self.show_options_menu(screen)
@@ -528,7 +528,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             self.raise_volume = True
             self.write_csv_data('vol_data', self.vol_lvl)
             self.m_player.set_vol_all_sounds(self.vol_lvl)
-            self.m_player.play_sound(self.m_player.sfx[1])
+            self.m_player.play_sound(self.m_player.sfx[1], None)
         else:
             self.raise_volume = False
         self.button_list[0].show_text(screen, self.fontlist[1], ('','Louder')) 
@@ -541,7 +541,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             self.lower_volume = True
             self.write_csv_data('vol_data', self.vol_lvl)
             self.m_player.set_vol_all_sounds(self.vol_lvl)
-            self.m_player.play_sound(self.m_player.sfx[1])
+            self.m_player.play_sound(self.m_player.sfx[1], None)
         else:
             self.lower_volume = False
         self.button_list[1].show_text(screen, self.fontlist[1], ('','Quieter')) 
@@ -574,13 +574,13 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 self.saves_menu_enable = True
                 exit_to_title = True
                 pygame.mixer.stop()
-                self.m_player.play_sound(self.m_player.sfx[1])
+                self.m_player.play_sound(self.m_player.sfx[1], None)
             
             if self.do_btn_logic(screen, self.button_list[1], 'Main Menu', True, 1):
                 self.rtn_dict = self.reset_rtn_dict()
                 exit_to_title = True
                 pygame.mixer.stop()
-                self.m_player.play_sound(self.m_player.sfx[1])
+                self.m_player.play_sound(self.m_player.sfx[1], None)
 
         if self.toggle_settings_dict['skip_death_screen'] > 0:
             pygame.draw.rect(screen, (0,0,0), pygame.rect.Rect(0,0,self.S_W,self.S_H))

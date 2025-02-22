@@ -209,7 +209,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                         (self.do_player_atk_collisions(player_atk_rect) or 
                             self.do_bullet_collisions((sp_group_list[1], sp_group_list[2])))
                         ):
-                        #self.m_player.play_sound(self.m_player.sfx[1])
+                        #self.m_player.play_sound(self.m_player.sfx[1], (self.rect.centerx, self.rect.centery))
                         self.img_rect.y = self.rect.y
                         self.img_rect.width = self.rect.width
                         self.frame_index = 0
@@ -256,7 +256,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                                 self.durability -= 1
                                 self.durability_changed = True
                                 self.image = self.frame_list[self.action][self.breakable_tile_frame_change()]
-                                self.m_player.play_sound(self.m_player.sfx[2])
+                                self.m_player.play_sound(self.m_player.sfx[2], (self.rect.centerx, self.rect.centery))
                                     
                                 sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx + random.randint(-12,12), self.rect.centery + random.randint(-12,12), -self.direction, 1.2*self.scale, False, random.randrange(0,3))
                                 
@@ -293,7 +293,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                     
                     if self.trigger_once:
                         if self.rect.x < 640 + 128 and self.rect.right >= 0 - 128:
-                            self.m_player.play_sound(self.m_player.sfx[0])
+                            self.m_player.play_sound(self.m_player.sfx[0], (self.rect.centerx, self.rect.centery))
                             sp_group_list[5].sprite.add_particle('sparks', self.rect.x - (24*self.scale), self.rect.centery - (48*self.scale), -self.direction, self.scale*1.5, True, random.randint(0,2))
                             #WE NEED SCREENSHAKE AAAAAA
                             self.do_screenshake = True

@@ -51,6 +51,7 @@ class music_player():
         self.playing_music = False
         
         #set volumes of sounds at end of constructor
+        self.level = initial_vol[0]
         for sound in self.sfx:
             if initial_vol[0] < 10: 
                 pygame.mixer.Sound.set_volume(sound, initial_vol[0]*0.1)
@@ -60,8 +61,27 @@ class music_player():
         
     #-------------------------------------------------------------adjusting volume------------------------
     def set_vol_all_sounds(self, level):
+        self.level = level
         for sound in self.sfx:
             self.set_sound_vol(sound, level[0])
+            
+    #-------------------------------------------------------------set vol by distance
+    def set_vol_by_dist(self, sound, pos):
+        #print(self.channel_list[0].get_volume())
+        max_dist = 160
+        factor = 1
+        factor2 = 1
+        if pos[0] < 0:#set sound vol level by x coord
+            factor = (1 + pos[0]/max_dist)**3
+        elif pos[0] > 640:
+            factor = (1 - (pos[0]-640)/max_dist)**3
+            
+        if pos[1] < 0:#set sound vol level by y coord
+            factor2 = (1 + pos[1]/max_dist)**3
+        elif pos[1] > 480:
+            factor2 = (1 - (pos[1]-480)/max_dist)**3
+            
+        self.set_sound_vol(sound, int(self.level)*factor*factor2)
             
     #--------------------------------------------------------------------equalizing-----------------------------------------
     def auto_equalize(self): #for setting volume, self.equalization_regime will have to be turned into a parameter passed in from game_window
@@ -98,9 +118,12 @@ class music_player():
             pygame.mixer.music.stop()
         #print(pygame.mixer.music.get_busy())
         
-    def play_sound(self, sound):
+    def play_sound(self, sound, pos):
         #if update_eq, read from the csv file
-        self.auto_equalize()
+        
+        if pos != None:
+            self.set_vol_by_dist(sound, pos)#set sound volumes
+        self.auto_equalize()#set channel volumes
         pygame.mixer.Sound.play(sound)
         
     def stop_sound(self):

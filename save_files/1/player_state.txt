@@ -1,6 +1,6 @@
-level: 3
-player_x: 407
-player_y: 157
-hits_tanked: 3.0
+level: 1
+player_x: 0
+player_y: 152
+hits_tanked: 0
 st_cap: 0
 char: 0

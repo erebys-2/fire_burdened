@@ -219,6 +219,9 @@ def main():
 
 		return (double_tapped, double_tap_time, double_tap_initiated)
 
+	def play_click_sound():
+		m_player.play_sound(m_player.sfx[1], None)
+
 
 	vol_lvl = read_settings_data('vol_data') #read saved eq regime
 	#more instantiations
@@ -1016,12 +1019,12 @@ def main():
 							#player_new_y = 32
 							dialogue_box0.reset_internals()
 							pygame.mixer.stop()
-							m_player.play_sound(m_player.sfx[1])
+							play_click_sound()
 
 						elif not dialogue_enable and not inventory_opened: #pause game, will trigger if player is not in dialogue
 							pause_game = True
 							pygame.mixer.pause()
-							m_player.play_sound(m_player.sfx[1])
+							play_click_sound()
 		
 						elif (not player0.in_cutscene and #cannot esc out of cutscene
 								not trade_ui.enabled and
@@ -1058,7 +1061,7 @@ def main():
 					if dialogue_enable and not the_sprite_group.textbox_output[6][0]:
 						if dialogue_box0.str_list_rebuilt != dialogue_box0.current_str_list:
 							text_speed = 0
-							m_player.play_sound(m_player.sfx[1])
+							play_click_sound()
 						else:
 							text_speed = default_text_speed
 							next_dialogue = True
@@ -1066,10 +1069,10 @@ def main():
      
 					if level == 0:#default case, auto saving will overwrite data in file 0
 						if ui_manager0.main_menu_enable:
-							m_player.play_sound(m_player.sfx[1])
+							play_click_sound()
 							ui_manager0.kbd_new_game = True
 						elif ui_manager0.saves_menu2_enable:
-							m_player.play_sound(m_player.sfx[1])
+							play_click_sound()
 							ui_manager0.kbd_new_game = True
 
 
@@ -1261,12 +1264,12 @@ def main():
 							player_new_y = 32
 							dialogue_box0.reset_internals()
 							pygame.mixer.stop()
-							m_player.play_sound(m_player.sfx[1])
+							play_click_sound()
 
 						elif not dialogue_enable and not inventory_opened: #pause game, will trigger if player is not in dialogue
 							pause_game = True
 							pygame.mixer.pause()
-							m_player.play_sound(m_player.sfx[1])
+							play_click_sound()
 		
 						elif (not player0.in_cutscene and #cannot esc out of cutscene
             					(dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list or 
@@ -1295,14 +1298,14 @@ def main():
 					if dialogue_enable and not the_sprite_group.textbox_output[6][0]:
 						if dialogue_box0.str_list_rebuilt != dialogue_box0.current_str_list:
 							text_speed = 0
-							m_player.play_sound(m_player.sfx[1])
+							play_click_sound()
 						else:
 							text_speed = default_text_speed
 							next_dialogue = True
 							dialogue_box0.type_out = True				
      
 					if level == 0:#default case, auto saving will overwrite data in file 0
-						m_player.play_sound(m_player.sfx[1])
+						play_click_sound()
 						ui_manager0.trigger_once = True
 						next_level = 1
 						selected_slot = 0

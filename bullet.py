@@ -86,7 +86,7 @@ class bullet_(pygame.sprite.Sprite):
                     else:
                         self.rect.centerx = player_atk_rect.x
                     self.explode(sp_group_list)
-                    self.m_player.play_sound(self.m_player.sfx[1])
+                    self.m_player.play_sound(self.m_player.sfx[1], (self.rect.centerx, self.rect.centery))
                     self.direction = -self.direction
                     self.deflected = True
                     self.speed += 16
@@ -157,10 +157,10 @@ class bullet_(pygame.sprite.Sprite):
             x_loc = self.rect.right
         if self.bullet_type == 'player_basic':    
             sp_group_list[5].sprite.add_particle('player_bullet_explosion', x_loc, self.rect.y + self.height//2, -self.direction, self.scale, True, frame)
-            self.m_player.play_sound(self.m_player.sfx[0])
+            self.m_player.play_sound(self.m_player.sfx[0], (self.rect.centerx, self.rect.centery))
         elif self.bullet_type == '8x8_red':
             sp_group_list[5].sprite.add_particle('enemy_bullet_explosion', x_loc, self.rect.y + self.height//2, -self.direction, self.scale, True, frame)
-            self.m_player.play_sound(self.m_player.sfx[0])
+            self.m_player.play_sound(self.m_player.sfx[0], (self.rect.centerx, self.rect.centery))
         #self.kill()
         
     def animate(self):

@@ -212,7 +212,7 @@ class player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.rect.center)
         
         if self.angle % 60 == 0:
-            self.m_player.play_sound(self.m_player.sfx[random.randint(0,(len(self.m_player.sfx)-1))])
+            self.m_player.play_sound(self.m_player.sfx[random.randint(0,(len(self.m_player.sfx)-1))], None)
 
             
     def update_landing(self, the_sprite_group):
@@ -220,7 +220,7 @@ class player(pygame.sprite.Sprite):
         if self.in_air != self.curr_state and not self.disp_flag and self.action != 1 and not self.in_cutscene and self.Alive:
             if not self.in_air:
                 the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 0)
-                self.m_player.play_sound(self.m_player.sfx[2])
+                self.m_player.play_sound(self.m_player.sfx[2], None)
             else:
                 the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 1)
             self.curr_state = self.in_air
@@ -238,7 +238,7 @@ class player(pygame.sprite.Sprite):
                 scale = self.scale * 1.5
                 y -= 16
             the_sprite_group.particle_group.sprite.add_particle('player_mvmt', x + self.direction*scale, y, self.direction, scale, True, particle_index)
-            self.m_player.play_sound(self.m_player.sfx[sound])
+            self.m_player.play_sound(self.m_player.sfx[sound], None)
         self.last_frame = self.frame_index
         
     def atk1_kill_hitbox(self):
@@ -413,7 +413,7 @@ class player(pygame.sprite.Sprite):
                 #print("gotteem")
                 #last param is a boolean for exluding items in the item id list prior, when set to False it will only include those items
                 if self.inventory_handler.pick_up_item(self.collision_rect, the_sprite_group.item_group, ['Cursed Flesh'], True):
-                    self.m_player.play_sound(self.m_player.sfx[8])
+                    self.m_player.play_sound(self.m_player.sfx[8], None)
 
     
     def do_npc_collisions(self, dx, the_sprite_group):
@@ -585,7 +585,7 @@ class player(pygame.sprite.Sprite):
                     self.hitting_wall_timer = pygame.time.get_ticks()
                     if self.frame_index > 0:
                         if self.rolling:#you can die via concussion now
-                            self.m_player.play_sound(self.m_player.sfx[7])
+                            self.m_player.play_sound(self.m_player.sfx[7], None)
                             if self.stamina_used >= 5:
                                 self.hits_tanked += 0.1
                                 if random.randint(1, ccsn_chance) == 1:
@@ -798,7 +798,7 @@ class player(pygame.sprite.Sprite):
                 ): #not (self.rolling) and 
                 if (self.frame_index == 0):#fast initial impulse
                     # if pygame.time.get_ticks() < self.update_time + 20:
-                    #     self.m_player.play_sound(self.m_player.sfx[1])
+                    #     self.m_player.play_sound (self.m_player.sfx[1])
                     if self.crit and self.check_if_in_ss_range():
                         crit_speed =int(self.speed * 1.5)
                         dx = self.direction * 2 * self.speed
@@ -924,7 +924,7 @@ class player(pygame.sprite.Sprite):
                     dx = 0
                 
                 if not self.shoot_recoil:#playing sound
-                    self.m_player.play_sound(self.m_player.sfx[5])
+                    self.m_player.play_sound(self.m_player.sfx[5], None)
                     self.vel_y = 0
                 self.shoot_recoil = True
             else:
@@ -1212,7 +1212,7 @@ class player(pygame.sprite.Sprite):
                                                                         self.rect.centery + random.randrange(-24,24), 
                                                                         -self.direction, 0.3*self.scale, 
                                                                         True, random.randrange(0,3))
-                self.m_player.play_sound(self.m_player.sfx[9])
+                self.m_player.play_sound(self.m_player.sfx[9], None)
                 self.using_item = False
                 self.speed = self.default_speed
                 self.finished_use_item_animation = True
@@ -1346,11 +1346,11 @@ class player(pygame.sprite.Sprite):
                 if self.check_if_in_ss_range():
                     self.do_screenshake = True
                     self.screenshake_profile = (16, 6, 3)
-                self.m_player.play_sound(self.m_player.sfx[4])
+                self.m_player.play_sound(self.m_player.sfx[4], None)
                 self.char_level += self.char_dict['crit']
             elif self.action != 9 and (new_action == 7 or new_action == 8):
                 self.crit == False
-                self.m_player.play_sound(self.m_player.sfx[1])
+                self.m_player.play_sound(self.m_player.sfx[1], None)
                 self.char_level += self.char_dict['melee']
                 print(self.char_level)
             elif new_action == 5:

@@ -70,10 +70,6 @@ class text_manager():
             
             if self.empty_str[self.internal_index] == '\n':
                 self.word_split_indice.append(self.internal_index)
-                
-            #plays sound for letters
-            # if self.empty_str[self.internal_index] != '\n' and self.empty_str[self.internal_index] != ' ': 
-            #     self.m_player.play_sound(self.m_player.sfx[1])
             
             for i in range(len(self.word_split_indice)-1):#separating full words
                 tup = (self.word_split_indice[i]+1, self.word_split_indice[i+1])
@@ -204,7 +200,7 @@ class dialogue_box(text_manager):
                 self.type_out_en = True
 
                 if text_speed > 0 and (self.counter == 0):
-                    self.m_player.play_sound(self.m_player.sfx[0])
+                    self.m_player.play_sound(self.m_player.sfx[0], None)
                     self.counter += 1
                 elif text_speed == 0:
                     self.type_out = False

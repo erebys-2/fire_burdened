@@ -255,11 +255,13 @@ class item_usage_hander():  #helper class with logic for item usage and applying
     #make a signal processing function that will process an item usage request from inventory UI in game_window
     #have it be called in game window
     #possibly have it wrapped in an if statement for if the item usage request is being sent to avoid having to constantly pass the pointer to the player
+    
+    #add sprite group access here via a 2nd use_item function that handles instantiating objects
     def process_use_signal(self, use_item_flag, item_id, player):
         #print(use_item_flag)
         item_was_used = False
-        if use_item_flag: #and some internal variable in player indicating the animation finished
-            item_was_used = self.use_item(item_id, player)
+        if use_item_flag: #and some internal variable in player indicating the animation finished, trigger once signal
+            item_was_used = (self.use_item(item_id, player) or False)#controls whether or not to discard the item
             use_item_flag = False
             
         return (use_item_flag, item_was_used)
@@ -275,11 +277,11 @@ class item_usage_hander():  #helper class with logic for item usage and applying
     #recode this a little bit so that it uses more dictionaries with values that can be initially loaded thru a text file
     
     def use_item(self, item_id, player):
-        if item_id in self.sub_function_dict:
+        if item_id in self.sub_function_dict:#basically check to see if the item has a subfunction
             sub_function_tuple = self.sub_function_dict[item_id]
             item_was_used = True
-        else:
-            sub_function_tuple = ('nothing', 'nothing')
+        else:#do nothing if no subfunction
+            sub_function_tuple = ('nothing',)
             item_was_used = False
         
         for function in sub_function_tuple:
@@ -583,7 +585,7 @@ class inventory_UI(): #handles displaying inventory, item description and counts
                 #selecting the current slot
                 for slot in self.button_list[0:self.size]:
                     if slot.draw(screen):
-                        self.m_player.play_sound(self.m_player.sfx[1])
+                        self.m_player.play_sound(self.m_player.sfx[1], None)
                         self.slot = self.button_list.index(slot)
                         
                 #draw items in slots
@@ -598,21 +600,21 @@ class inventory_UI(): #handles displaying inventory, item description and counts
                 #use button
                 self.use_item_btn_output = False
                 if self.button_list[len(self.button_list)-4].draw(screen):
-                    self.m_player.play_sound(self.m_player.sfx[1])
+                    self.m_player.play_sound(self.m_player.sfx[1], None)
                     self.use_item_btn_output = True
 
                 self.button_list[len(self.button_list)-4].show_text(screen, self.fontlist[1], ('','Use Item'))
                 
                 #discard button
                 if self.button_list[len(self.button_list)-3].draw(screen):
-                    self.m_player.play_sound(self.m_player.sfx[1])
+                    self.m_player.play_sound(self.m_player.sfx[1], None)
                     self.discard_item(inventory)
 
                 self.button_list[len(self.button_list)-3].show_text(screen, self.fontlist[1], ('','Discard'))
                 
                 #discard slot button
                 if self.button_list[len(self.button_list)-2].draw(screen):
-                    self.m_player.play_sound(self.m_player.sfx[1])
+                    self.m_player.play_sound(self.m_player.sfx[1], None)
                     self.discard_slot(inventory)
 
                 self.button_list[len(self.button_list)-2].show_text(screen, self.fontlist[1], ('','Discard Slot'))
@@ -654,7 +656,7 @@ class inventory_UI(): #handles displaying inventory, item description and counts
             
             #help button
             if self.button_list[len(self.button_list)-1].draw(screen):
-                self.m_player.play_sound(self.m_player.sfx[1])
+                self.m_player.play_sound(self.m_player.sfx[1], None)
                 self.help_open = not self.help_open
                 if self.help_open:
                     self.help_btn_str = '[Close Tips]'
@@ -889,7 +891,6 @@ class trade_menu_ui():
         total_items = 0
         for slot in slot_list:
             total_items += slot[1]
-
         return total_items
     
     #bubble sort
@@ -1065,7 +1066,7 @@ class trade_menu_ui():
             for btn_list in enumerate((self.button_list, self.button_list3)):
                 for slot in btn_list[1][0:self.total_slots]:
                     if slot.draw(screen):
-                        self.m_player.play_sound(self.m_player.sfx[1])
+                        self.m_player.play_sound(self.m_player.sfx[1], None)
                         self.slot = btn_list[1].index(slot)
                         self.selected_group = btn_list[0]
                     
@@ -1088,7 +1089,7 @@ class trade_menu_ui():
             
             #trade button
             if self.button_list[len(self.button_list)-5].draw(screen): #need to check for both inventory space and if the cost can be paid
-                self.m_player.play_sound(self.m_player.sfx[1])
+                self.m_player.play_sound(self.m_player.sfx[1], None)
                 if self.selected_group == 1:
                     self.transaction_msg = self.get_transaction_msg(self.trade_item(inventory, self.wares[self.slot][0], self.wares[self.slot][1]))
                     #reset timer for drawing transaction_msg
@@ -1103,14 +1104,14 @@ class trade_menu_ui():
 
             #discard button
             if self.button_list[len(self.button_list)-4].draw(screen):
-                self.m_player.play_sound(self.m_player.sfx[1])
+                self.m_player.play_sound(self.m_player.sfx[1], None)
                 if self.selected_group == 0:
                     self.discard_item(inventory, self.slot)
             self.button_list[len(self.button_list)-4].show_text(screen, self.fontlist[1], ('','Discard'))
             
             #discard slot button
             if self.button_list[len(self.button_list)-3].draw(screen):
-                self.m_player.play_sound(self.m_player.sfx[1])
+                self.m_player.play_sound(self.m_player.sfx[1], None)
                 if self.selected_group == 0:
                     self.discard_slot(inventory, self.slot)
             self.button_list[len(self.button_list)-3].show_text(screen, self.fontlist[1], ('','Discard Slot'))
@@ -1122,13 +1123,12 @@ class trade_menu_ui():
                 else:
                     btn_str = '[Show Cost]'
                 if self.button_list[len(self.button_list)-2].draw(screen):
-                    self.m_player.play_sound(self.m_player.sfx[1])
+                    self.m_player.play_sound(self.m_player.sfx[1], None)
                     self.show_prices = not self.show_prices
                 self.button_list[len(self.button_list)-2].show_text(screen, self.fontlist[1], ('', btn_str))
                 
             #back button
             if self.button_list[len(self.button_list)-1].draw(screen):
-                #self.m_player.play_sound(self.m_player.sfx[1])
                 self.exit_to_dialogue()
             self.button_list[len(self.button_list)-1].show_text(screen, self.fontlist[1], ('','Back'))
             

@@ -1,10 +1,10 @@
-Rock, 28
-test, 14
-Talisman of Salted Earth, 1
-Mild Herb, 1
 empty, 0
 empty, 0
 empty, 0
 empty, 0
 empty, 0
-Cursed Flesh, 14
+empty, 0
+empty, 0
+empty, 0
+empty, 0
+empty, 0
