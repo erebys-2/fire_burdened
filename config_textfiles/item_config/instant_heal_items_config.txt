@@ -1,4 +1,6 @@
 Cursed Flesh: 2
 Purified Flesh: 3
 Mild Herb: 0.2
+Seasoned Herb: 1.5
+Extreme Herb: -1
 test: 9999

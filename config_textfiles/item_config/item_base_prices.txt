@@ -1,3 +1,5 @@
 a: amount# 1; Rock# 2; Cursed Flesh# 2
 b: amount# 2; Cursed Flesh# 1
 Purified Flesh: amount# 1; Cursed Flesh# 1
+Seasoned Herb: amount# 1; Mild Herb# 1; Cursed Flesh# 1
+Extreme Herb: amount# 1; Seasoned Herb# 1; Cursed Flesh# 2

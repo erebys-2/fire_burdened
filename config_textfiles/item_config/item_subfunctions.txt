@@ -2,3 +2,5 @@ Cursed Flesh: heal, reduce_stamina
 Purified Flesh: heal, reduce_char, restore_stamina
 test: heal, restore_stamina, reduce_char
 Mild Herb: heal, reduce_char
+Seasoned Herb: heal, reduce_char
+Extreme Herb: heal, reduce_char

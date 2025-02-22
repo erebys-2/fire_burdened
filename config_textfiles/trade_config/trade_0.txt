@@ -1,11 +1,11 @@
 22, 0, 2
 Purified Flesh, double
+Seasoned Herb, none
+Extreme Herb, none
 a, none
 b, none
 c, none
 d, none
 e, none
-empty, none
-empty, none
 empty, none
 empty, none

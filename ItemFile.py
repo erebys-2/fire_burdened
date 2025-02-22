@@ -1004,9 +1004,11 @@ class trade_menu_ui():
                 item_btn_list = self.button_list
                 item_count = str(inventory[self.slot][1])
                 cost_str = []
+                item_type_str = 'Slot: '
             else:
                 item_interface = self.wares
                 item_btn_list = self.button_list3
+                item_type_str = 'Product: '
                 if self.wares[self.slot][0] not in self.base_prices_dict:
                     cost_str = []
                     item_count = '0'
@@ -1021,7 +1023,7 @@ class trade_menu_ui():
                             cost = self.adjust_cost(sublist[1], self.get_tot_itm_ct(self.check_for_item2(self.wares[self.slot][0], inventory)), self.wares[self.slot][1])
                             cost_str.append(f'  {sublist[0]}: {str(cost)}')
                
-            item_details = ['Slot: ' + item_interface[self.slot][0],
+            item_details = [item_type_str + item_interface[self.slot][0],
                             'Count: ' + item_count
                             ]
             

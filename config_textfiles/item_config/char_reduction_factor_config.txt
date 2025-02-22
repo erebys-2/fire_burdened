@@ -1,3 +1,5 @@
 Purified Flesh: 0.33
 Mild Herb: 25
+Seasoned Herb: 50
+Extreme Herb: 0.5
 test: 0

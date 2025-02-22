@@ -138,7 +138,7 @@ class Mars(npc):
         #     pass
             
         if (self.current_level == 1 and 
-             self.rect.x < -self.rect.width 
+             self.rect.x < -20*self.rect.width 
             ):
             self.enabled = False
         
