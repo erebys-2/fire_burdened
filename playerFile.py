@@ -22,6 +22,7 @@ class player(pygame.sprite.Sprite):
         self.speed = speed
         self.default_speed = self.speed
         self.direction = 1
+        
         self.flip = False
         self.brain_damage = False
 
@@ -651,6 +652,7 @@ class player(pygame.sprite.Sprite):
                             dy = tile[1].bottom  - self.rect.top
 
                 elif  ( not self.in_air
+                        and not self.crit 
                         and self.vel_y > 10 #velocity based coyote jump, default 6
                         and not tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height)
                         ):
@@ -728,14 +730,26 @@ class player(pygame.sprite.Sprite):
             self.particles_by_frame(self.frame_index//2 + 2, the_sprite_group, 3)
         
         if not self.disp_flag and self.action != 5 and not self.hitting_wall and not self.using_item: #self.action < 5:# and self.rolled_into_wall == False:
-            if moveL:
+            if moveL and not moveR:
                 dx = -self.speed
                 self.flip = True
                 self.direction = -1
-            if moveR:
+                self.last_direction = -1
+            elif moveR and not moveL:
                 dx = self.speed
                 self.flip = False
                 self.direction = 1
+                self.last_direction = 1
+            elif moveL and moveR and self.last_direction == -1:
+                dx = self.speed
+                self.flip = False
+                self.direction = 1
+            elif moveL and moveR and self.last_direction == 1:
+                dx = -self.speed
+                self.flip = True
+                self.direction = -1
+            
+                
             if (moveL or moveR) or self.action == 1:
                 self.landing = False
                 
@@ -743,9 +757,9 @@ class player(pygame.sprite.Sprite):
             if self.frame_index < 3:
                 self.hurting = True #perpetuates the action for the entire animation after the collision has ended
 
-        elif self.action == 10: #disables jumping during crit
-            if self.action == 10:
-                self.squat = False
+        # elif self.action == 10: #disables jumping during crit
+        #     if self.action == 10:
+        #         self.squat = False
             
         elif self.action == 9:
             self.squat_done = False
@@ -774,7 +788,7 @@ class player(pygame.sprite.Sprite):
                 or self.roll_count >= self.roll_limit
                 #or self.rolled_into_wall
                 ):
-                if (self.action != 7 and self.action != 8):
+                if (self.action != 7 and self.action != 8 and self.action != 10):
                     self.rolling = False
                     #self.roll_count = self.roll_limit
                 #print(self.action_history)
@@ -793,8 +807,8 @@ class player(pygame.sprite.Sprite):
             #if not break atk1
             if (#self.collision_rect.x >= 0 and self.collision_rect.right <= 640 and
                 not (((moveL and self.direction == 1) or (moveR and self.direction == -1)) and self.frame_index > 2) 
-                and not (self.rolling and self.frame_index > 2) 
-                and not (self.squat and self.frame_index > 2)
+                and not (self.rolling and self.frame_index > 2 + self.crit) 
+                and not (self.squat and self.frame_index > 2 + self.crit)
                 ): #not (self.rolling) and 
                 if (self.frame_index == 0):#fast initial impulse
                     # if pygame.time.get_ticks() < self.update_time + 20:
@@ -860,6 +874,7 @@ class player(pygame.sprite.Sprite):
                 self.heavy = False
                 self.atk1_stamina_cost = self.atk1_default_stam
                 self.draw_trail = False
+                
         else:
             self.atk1_kill_hitbox()
             self.atk1 = False
