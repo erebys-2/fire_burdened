@@ -1,5 +1,4 @@
 import pygame
-import pygame._sdl2 as pg_sdl2
 import os
 os.environ['SDL_VIDEO_CENTERED'] = '1' 
 pygame.init()
@@ -20,8 +19,10 @@ from spriteGroup import sprite_group
 from ItemFile import inventory_UI, trade_menu_ui
 from playerChoiceHandler import player_choice_handler
 from particle import particle_2, group_particle2
-import gc
 import random
+# import moderngl
+# from array import array
+# from shadersHandler import modernGL_handler
 from profilehooks import profile
 
 #@profile
@@ -34,8 +35,10 @@ def main():
 	HALF_SCREEN_W = SCREEN_WIDTH//2
 	SCREEN_HEIGHT = 480
 	standard_size = (SCREEN_WIDTH, SCREEN_HEIGHT)
-	flags = pygame.DOUBLEBUF|pygame.SHOWN #windowed mode
-	#flags = pygame.DOUBLEBUF|pygame.FULLSCREEN #full screen mode
+	flags = pygame.DOUBLEBUF|pygame.SHOWN #|pygame.OPENGL #windowed mode
+
+	# window = pygame.display.set_mode(standard_size, flags, vsync=0)
+	# screen = pygame.Surface(standard_size)
 	screen = pygame.display.set_mode(standard_size, flags, vsync=0)
 
 	icon = pygame.image.load('icon.png')
@@ -164,7 +167,9 @@ def main():
 	default_text_speed = 30
 	text_speed = default_text_speed
 
-
+	#---------------------------------------------------------MODERNGL THINGS---------------------------------------------------
+	#moderngl_handler0 = modernGL_handler()
+	
 
 
 	#methods--------------
@@ -221,7 +226,6 @@ def main():
 
 	def play_click_sound():
 		m_player.play_sound(m_player.sfx[1], None)
-
 
 	vol_lvl = read_settings_data('vol_data') #read saved eq regime
 	#more instantiations
@@ -329,8 +333,8 @@ def main():
 	show_cursor_signals = [level == 0, pause_game, not player0.Alive, inventory_opened, dialogue_enable, trade_ui_en]
 
 	while run:
-		clock.tick(FPS)
-		#screen.fill((0, 0, 0)) 
+		
+		screen.fill((0, 0, 0)) 
 		temp_move_R = False
 		temp_move_L = False
 		player_enable_master = (level_dict[level][3] and not level_transitioning and not camera.set_ini_pos)
@@ -506,8 +510,8 @@ def main():
 
 	
 
-		#updating and drawing all sprites
-		if not level_transitioning:
+		#=================================================================updating and drawing all sprites=====================================
+		if not level_transitioning and not player0.in_cutscene:
 			#dialogue trigger sent here
 			the_sprite_group.pause_game = pause_game or ui_manager0.saves_menu_enable
 			the_sprite_group.scroll_x = scroll_x
@@ -548,10 +552,18 @@ def main():
 					screen.blit(font_larger.render(area_name_dict[level], True, (white)), (coord))
 					last_area_name = area_name_dict[level]
 
-		else:
+		elif level_transitioning:
 			for group in the_sprite_group.sp_group_list:
 				for sprite_ in group:
 					sprite_.force_ini_position(scroll_x)
+     
+		elif player0.in_cutscene:
+			the_sprite_group.pause_game = pause_game or ui_manager0.saves_menu_enable
+			the_sprite_group.scroll_x = scroll_x
+			the_sprite_group.update_bg_sprite_group(screen, player0.hitbox_rect, player0.atk_rect_scaled)
+			the_sprite_group.update_text_prompt_group(screen, dialogue_enable, next_dialogue, player0, world, selected_slot)#player and world
+			the_sprite_group.update_groups_infront_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, world.solids)
+			next_dialogue = False
      
 		if lvl_transition_counter > 0:
 			pygame.draw.rect(screen, (0,0,0), pygame.rect.Rect(0,0,SCREEN_WIDTH,SCREEN_HEIGHT))
@@ -1371,11 +1383,22 @@ def main():
 			screen_l_edge = world.rect.x
 		elif world.rect.x < -world.rect.width + (SCREEN_WIDTH - ts):
 			screen_r_edge = SCREEN_WIDTH - (world.rect.x + world.rect.width)
+
+		# pygame.display.flip()
+  
+		# frame_tex = moderngl_handler0.surf_to_texture(screen)
+		# frame_tex.use(0) #using a texture at index 0
+		# moderngl_handler0.program['tex'] = 0 #write to tex uniform, the number 0, also used to update
+		# moderngl_handler0.render_object.render(mode=moderngl.TRIANGLE_STRIP)
   
 		pygame.display.update(pygame.rect.Rect(screen_l_edge, world.rect.y, SCREEN_WIDTH - screen_r_edge, SCREEN_HEIGHT-2*world.rect.y))
-		pygame.display.set_caption(f"Fire Burdened 0.71 @ {clock.get_fps():.1f} FPS")
+		pygame.display.set_caption(f"Fire Burdened 0.723 @ {clock.get_fps():.1f} FPS")
+  
+		#frame_tex.release()
+		clock.tick(FPS)
 
 	pygame.quit()
+ 
 
 
 

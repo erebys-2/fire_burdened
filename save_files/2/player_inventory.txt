@@ -1,10 +1,10 @@
-Rock, 28
-empty, 0
-Talisman of Salted Earth, 1
 empty, 0
 empty, 0
 empty, 0
 empty, 0
 empty, 0
 empty, 0
-Cursed Flesh, 13
+empty, 0
+empty, 0
+empty, 0
+empty, 0

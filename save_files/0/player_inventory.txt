@@ -1,10 +1,10 @@
-Rock, 998
-test, 24
-Talisman of Salted Earth, 1
-Rock, 1
-Rock, 1
-Rock, 999
-Rock, 641
-Mild Herb, 1
-b, 998
-Cursed Flesh, 20
+empty, 0
+empty, 0
+empty, 0
+empty, 0
+empty, 0
+empty, 0
+empty, 0
+empty, 0
+empty, 0
+empty, 0

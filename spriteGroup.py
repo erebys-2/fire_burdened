@@ -125,7 +125,7 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 		for enemy0 in self.enemy0_group: #[enemy0 for enemy0 in list(self.enemy0_group) if enemy0.rect.x > -32 and enemy0.rect.x < 640]:
 			enemy0.draw(screen)
 			if not self.pause_game:
-				enemy0.animate(self.sp_group_list)
+				enemy0.animate(self.sp_group_list, player_hitbox_rect)
 				enemy0.move(player_hitbox_rect, player_atk_rect_scaled, player_direction, world_solids, self.scroll_x, player_action, self.sp_group_list)
 			if enemy0.Alive == False:
 				self.enemy_death_count += 1

@@ -52,6 +52,9 @@ class music_player():
         
         #set volumes of sounds at end of constructor
         self.level = initial_vol[0]
+        screen_dimensions = pygame.display.get_window_size()
+        self.screen_rect = pygame.rect.Rect(0,0,screen_dimensions[0],screen_dimensions[1])
+        
         for sound in self.sfx:
             if initial_vol[0] < 10: 
                 pygame.mixer.Sound.set_volume(sound, initial_vol[0]*0.1)
@@ -66,20 +69,37 @@ class music_player():
             self.set_sound_vol(sound, level[0])
             
     #-------------------------------------------------------------set vol by distance
+    def set_to_zero(self, factor):
+        if factor < 0:
+            factor = 0
+        return factor
+    
     def set_vol_by_dist(self, sound, pos):
         #print(self.channel_list[0].get_volume())
         max_dist = 160
+        if pos[3] != None:
+            max_dist = pos[3]
+            
         factor = 1
         factor2 = 1
-        if pos[0] < 0:#set sound vol level by x coord
-            factor = (1 + pos[0]/max_dist)**3
-        elif pos[0] > 640:
-            factor = (1 - (pos[0]-640)/max_dist)**3
+        if pos[2] == None:
+            ref_rect = self.screen_rect
+        else:
+            ref_rect = pos[2]
             
-        if pos[1] < 0:#set sound vol level by y coord
-            factor2 = (1 + pos[1]/max_dist)**3
-        elif pos[1] > 480:
-            factor2 = (1 - (pos[1]-480)/max_dist)**3
+        if pos[0] < ref_rect.x:#set sound vol level by x coord
+            factor = (1 + (pos[0] - ref_rect.x)/max_dist)**3
+            factor = self.set_to_zero(factor)
+        elif pos[0] > ref_rect.right:
+            factor = (1 - (pos[0] - ref_rect.right)/max_dist)**3
+            factor = self.set_to_zero(factor)
+            
+        if pos[1] < ref_rect.y:#set sound vol level by y coord
+            factor2 = (1 + (pos[1] - ref_rect.y)/max_dist)**3
+            factor2 = self.set_to_zero(factor2)
+        elif pos[1] > ref_rect.bottom:
+            factor2 = (1 - (pos[1] - ref_rect.bottom)/max_dist)**3
+            factor2 = self.set_to_zero(factor2)
             
         self.set_sound_vol(sound, int(self.level)*factor*factor2)
             

@@ -441,7 +441,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 for i in range(3):
                     sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.3*self.scale, False, random.randrange(0,3))
 
-                self.m_player.play_sound(self.m_player.sfx[1], (self.rect.centerx, self.rect.centery))
+                self.m_player.play_sound(self.m_player.sfx[1], (self.rect.centerx, self.rect.centery, None, None))
                 
                 if self.rando_frame < 2:
                     self.rando_frame += 1
@@ -575,7 +575,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     elif tile[2] in (2, 60):
                         if tile[1].colliderect(self.rect.x + self.quarter_width//2, self.rect.y, self.width - self.quarter_width, self.height - 8):
                             self.dead = True
-                            self.m_player.play_sound(self.m_player.sfx[2], (self.rect.centerx, self.rect.centery))
+                            self.m_player.play_sound(self.m_player.sfx[2], (self.rect.centerx, self.rect.centery, None, None))
                     elif(tile[2] in one_way_tiles):#one way tiles
                         if tile[1].colliderect(self.rect.x + dx, self.rect.bottom - 16 + dy, self.width, 17):
                             if self.vel_y >= 0: 
@@ -612,10 +612,15 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
     def force_ini_position(self, scrollx):
         self.rect.x -= scrollx
     
-    def animate(self, sp_group_list):
+    def animate(self, sp_group_list, player_rect):
         
         if self.dead and self.Alive:
-            self.m_player.play_sound(self.m_player.sfx[0], (self.rect.centerx, self.rect.centery))
+            self.m_player.play_sound(self.m_player.sfx[0], (self.rect.centerx, self.rect.centery, None, None
+                                    #   pygame.rect.Rect(player_rect.x - self.rect.width, 
+                                    #                    player_rect.y - self.rect.width, 
+                                    #                    player_rect.width + 2*self.rect.width, 
+                                    #                    player_rect.height + 2*self.rect.width)
+                                      ))
             self.explode(sp_group_list)
             self.Alive = False
             # #print(obj_list[0].index(self))
@@ -651,7 +656,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 self.hits_tanked += 3
                 self.rect.x += -self.direction * 2
             
-        if self.action == 0:#idle
+        if self.action == 0 and self.id != 'fly':#idle
             frame_update = 140
         elif self.action == 3:
             frame_update = 70
@@ -676,7 +681,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 x = self.rect.left - 28
             y = self.rect.y + self.height//3 - 4
             enemy_bullet = bullet_(x, y, 8, self.direction, self.scale, '8x8_red', self.ini_vol)
-            self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery))
+            self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery, None, None))
             sp_group_list[1].add(enemy_bullet)
             
             self.shoot_done = True
@@ -695,9 +700,15 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             #     self.m_player.play_sound (self.m_player.sfx[4])
             if self.check_if_in_simulation_range(0):
                 if self.id == 'walker' and self.action == 0 and self.frame_index == 2:
-                    self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery))
-                elif self.id == 'fly' and self.action == 1 and self.frame_index == 0:
-                    self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery))
+                    self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery, None, None))
+                elif self.id == 'fly' and self.action != 2 and self.frame_index == 0:
+                    self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery, 
+                                                                    pygame.rect.Rect(player_rect.x - self.width, 
+                                                                                     player_rect.y - self.width, 
+                                                                                     player_rect.width + 2*self.width, 
+                                                                                     player_rect.height + 2*self.width),
+                                                                    6*self.width
+                                                                    ))
             
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
@@ -766,7 +777,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             self.frame_index = 0
             self.update_time = pygame.time.get_ticks()
             if new_action == 2:
-                self.m_player.play_sound(self.m_player.sfx[2], (self.rect.centerx, self.rect.centery))
+                self.m_player.play_sound(self.m_player.sfx[2], (self.rect.centerx, self.rect.centery, None, None))
                 self.hits_tanked += self.dmg_multiplier
                 self.dmg_multiplier = 0
                 
@@ -779,7 +790,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             elif new_action == 1:
                 if self.id == 'dog' and self.in_air == False:
                     self.speed_boost = 8
-                    self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery))
+                    self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery, None, None))
             # elif new_action == 5:
             #     self.m_player.play_sound (self.m_player.sfx[4])
             
