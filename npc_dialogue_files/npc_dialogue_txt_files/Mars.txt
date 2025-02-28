@@ -18,6 +18,6 @@ Mars# The stuff that enemies drop is strongly infused with magic. By itself it's
 Mars# trade_0# -3# 0
 Mars# You should start heading east.# 1# 1
 Mars# You must've hit your head real hard if you forgot about magic.# 20# 3
-Mars# Give me your hands... hmm... Looks like you have some pretty standard abilities. You have good maneuverability and hit heavy, but you're not really suited for close combat.# 0# 0
+Mars# Give me your hands... hmm... From what I can tell, it looks like you have some pretty standard abilities. You have good maneuverability and hit a bit heavy- you're not really suited for in-place combat.# 0# 0
 Mars# Rolling is really useful! You can evade danger or get a little movement boost by rolling. Rolling into a wall won't hurt you, but if you keep doing it... well you know.# 0# 0
 Mars# Thanks for your business!!# 8# 0

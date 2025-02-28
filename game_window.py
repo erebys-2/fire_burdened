@@ -46,11 +46,6 @@ def main():
 
 	pygame.display.set_caption(' ')
 	
- 
-	#controller set up..?
-	# pg_sdl2.INIT_GAMECONTROLLER
-	# pg_sdl2.INIT_EVENTS
-
 
 	#framerate set up------------------------------------
 	clock = pygame.time.Clock()
@@ -75,17 +70,13 @@ def main():
 	player_en = True
 	level = 0
 	next_level = 0
-	rows = 0
-	cols = 0
 	BG_color = [0,0,0]
 	gradient_type = 'none'
 	level_transitioning = False
 	lvl_transition_counter = 0
 
 	ts = 32 #tile size
-	tile_set = 'standard'
 
-	damage = 0
 	scroll_x = 0
 	scroll_y = 0
 
@@ -249,7 +240,6 @@ def main():
 
 	#player inventory manager
 	player_inv_UI = inventory_UI(3, 3, [font, font_larger, font_massive], SCREEN_WIDTH, SCREEN_HEIGHT, vol_lvl)
-	item_picked_up = 'empty'
 	inv_toggle = False
 	inv_toggle_en = False
 
@@ -334,7 +324,7 @@ def main():
 
 	while run:
 		
-		screen.fill((0, 0, 0)) 
+		#screen.fill((0, 0, 0)) 
 		temp_move_R = False
 		temp_move_L = False
 		player_enable_master = (level_dict[level][3] and not level_transitioning and not camera.set_ini_pos)

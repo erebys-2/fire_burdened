@@ -27,7 +27,7 @@ class StatusBars():
         self.img4 = pygame.image.load('sprites/UI/melee_count/1.png')
         self.img5 = pygame.image.load('sprites/UI/melee_count/2.png')
         self.rect_list = []
-        self.rect_list_states = [0,0,0,0]
+        
         for i in range(4):
             self.rect_list.append(pygame.rect.Rect(40 + i*32, placement_y - 18, 16, 16))
         
@@ -43,39 +43,32 @@ class StatusBars():
         screen.blit(img, (x, y))
         
     def draw2(self, screen, stat_list, key_values, font):
+        rect_list_bitstr = ''#set default values
+        len_ = len(stat_list)
+        consecutive_atk = False
+        atk_ct = 0
         
-        for i in range(len(stat_list)):
-            if stat_list[i] in key_values:
-                self.rect_list_states[i] = 1
-                screen.blit(self.img4, self.rect_list[i])
-            else:
-                self.rect_list_states[i] = 0
-                screen.blit(self.img3, self.rect_list[i])
+        for i in range(len_):#convert action history to binary string
+            rect_list_bitstr = str(int(stat_list[len_-1-i] in key_values)) + rect_list_bitstr
         
-        if all(self.rect_list_states):
-            for rect_ in self.rect_list:
+        key = int(rect_list_bitstr, 2)#convert binary string to int
+        for j in range(len_):#checks if the key can be masked to 1, 11, 111, 1111, etc
+            bit_mask = 2**(j+1) - 1
+            if key & bit_mask == bit_mask:
+                atk_ct = j+1
+                consecutive_atk = bit_mask != 1
+        
+        for rect_ in self.rect_list[0:atk_ct]:
+            screen.blit(self.img4, rect_)
+            if atk_ct == len_:
                 if pygame.time.get_ticks()%4 == 0:
                     screen.blit(self.img5, rect_)
-            consecutive_atk = True
-            atk_ct = 4
-        elif self.rect_list_states[0:4] == [0,1,1,1]:
-            consecutive_atk = True
-            atk_ct = 3
-        elif self.rect_list_states[1:4] == [0,1,1]:
-            consecutive_atk = True
-            atk_ct = 2
-        # elif self.rect_list_states[2:4] == [0,1]:
-        #     consecutive_atk = True
-        #     atk_ct = 1
-        else:
-            consecutive_atk = False
-            atk_ct = 0
-            
-        if consecutive_atk:
+
+        if consecutive_atk or rect_list_bitstr[len_-3:len_] == '110':
             self.draw_text(f'CHAIN x{atk_ct}', 
                         font, (255,255,255), self.rect.right - 22*self.scale, self.rect.y - 15*self.scale, screen)
-        
-        
+            
+            
         
     def draw(self, screen, stat_data, font, flicker):
         hp_color = (105,31,46)

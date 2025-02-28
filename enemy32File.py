@@ -701,7 +701,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             if self.check_if_in_simulation_range(0):
                 if self.id == 'walker' and self.action == 0 and self.frame_index == 2:
                     self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery, None, None))
-                elif self.id == 'fly' and self.action != 2 and self.frame_index == 0:
+                elif self.id == 'fly' and self.action != 2 and self.frame_index in (0,2):
                     self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery, 
                                                                     pygame.rect.Rect(player_rect.x - self.width, 
                                                                                      player_rect.y - self.width, 

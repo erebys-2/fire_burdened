@@ -653,7 +653,7 @@ class player(pygame.sprite.Sprite):
 
                 elif  ( not self.in_air
                         and not self.crit 
-                        and self.vel_y > 10 #velocity based coyote jump, default 6
+                        and self.vel_y > 10 #velocity based coyote jump, default 6, bigger number -> more coyote jump
                         and not tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height)
                         ):
                     self.curr_state = True
