@@ -92,6 +92,7 @@ change_once = False
 
 
 path = 'config_textfiles/world_config/'
+path2 = 'config_textfiles/level_config/'
 sprite_group_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'sprite_group_tiles_dict.txt')), 'list')
 static_bg_oversized_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'static_bg_oversized_tiles_dict.txt')), 'int')
 special_hitbox_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'special_hitbox_tiles_dict.txt')), 'none')
@@ -178,11 +179,14 @@ for tile_ in range(0, MAX_COLS):
 
 def draw_grid():
 	#vertical lines
-	for c in range(MAX_COLS + 1):
-		pygame.draw.line(screen, WHITE, (c * TILE_SIZE - scroll, 0), (c * TILE_SIZE - scroll, SCREEN_HEIGHT))
-	#horizontal lines
-	for c in range(ROWS + 1):
-		pygame.draw.line(screen, WHITE, (0, c * TILE_SIZE), (SCREEN_WIDTH, c * TILE_SIZE))
+    for c in range(MAX_COLS + 1):
+        pygame.draw.line(screen, WHITE, (c * TILE_SIZE - scroll, 0), (c * TILE_SIZE - scroll, SCREEN_HEIGHT))
+        screen.blit(font.render(str(c*32), False, (255,255,255)), (c*32 - scroll, 0))
+    #horizontal lines
+    for c in range(ROWS + 1):
+        pygame.draw.line(screen, WHITE, (0, c * TILE_SIZE), (SCREEN_WIDTH, c * TILE_SIZE))
+        screen.blit(font.render(str(c*32), False, (255,255,255)), (0, c*32))
+        
 
 def draw_text(text, font, text_col, x, y):
 	img = font.render(text, True, text_col)
@@ -408,8 +412,8 @@ while run:
         
         print('~~Saved!~~')
         if level not in level_sizes_dict:
-            t1.add_line_to_file(f'{level}: {ROWS}, {MAX_COLS}', path + 'level_sizes_dict.txt')
-            level_sizes_dict = t1.str_list_to_dict(t1.read_text_from_file(path + 'level_sizes_dict.txt'), 'list') #update dictionary
+            t1.add_line_to_file(f'{level}: {ROWS}, {MAX_COLS}', path2 + 'level_sizes_dict.txt')
+            #level_sizes_dict = t1.str_list_to_dict(t1.read_text_from_file(path + 'level_sizes_dict.txt'), 'list') #update dictionary
         elif overwrite:
             print(f'You will have to edit the text file manually for the level just changed to: {level}: {ROWS}, {MAX_COLS}')
 

@@ -261,6 +261,13 @@ class World():
         #get level size
         lvl_size = self.level_sizes_dict[level]
         
+        #bind the world's rect
+        # if y == 0 and x == 0: 
+        #     self.rect.x = x
+        #     self.rect.y = y
+        # self.rect.y = 0
+        # self.rect.x = 0
+        
         #populate raw_lvl_data_list with lists of int values from level csv files
         raw_lvl_data_dict = self.get_raw_csv_data(level, lvl_size)
 
@@ -278,10 +285,10 @@ class World():
         #processing interactable layer
         for y, row in enumerate(raw_lvl_data_dict['data']):
             for x, tile in enumerate(row):
-                #bind the world's rect
-                if y == 0 and x == 0: 
-                    self.rect.x = x
-                    self.rect.y = y
+                # #bind the world's rect
+                # if y == 0 and x == 0: 
+                #     self.rect.x = x
+                #     self.rect.y = y
                 
                 #process tiles into detailed game layer list
                 if tile >= 0:

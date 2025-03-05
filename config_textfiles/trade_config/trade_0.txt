@@ -1,4 +1,4 @@
-22, 0, 2
+23, 0, 2
 Purified Flesh, double
 Seasoned Herb, none
 Extreme Herb, none

@@ -35,6 +35,8 @@ class player(pygame.sprite.Sprite):
         self.jump_dampen = False
         self.double_jump = False
         self.double_jump_en = False
+        self.coyote_vel = 11
+        self.coyote_ratio = 0
 
         self.in_air = False
         self.vel_y = 0
@@ -353,16 +355,13 @@ class player(pygame.sprite.Sprite):
                         #     print(enemy)
                         if enemy[1] == the_sprite_group.enemy_bullet_group:
                             damage += 3
-                            self.hurting = True
                             self.take_damage(damage)
                         if enemy[1] == the_sprite_group.enemy_bullet_group2:
                             damage += 2
-                            self.hurting = True
                             self.take_damage(damage)
                         if enemy[1] == the_sprite_group.p_int_group2:
                             #print(pygame.time.get_ticks())
                             damage += 0.75*self.hp
-                            self.hurting = True
                             self.take_damage(damage)
                     #print(damage)
                 damage = 0
@@ -373,7 +372,6 @@ class player(pygame.sprite.Sprite):
                          ]:
                 if self.hitbox_rect.colliderect(enemy.atk_rect_scaled):
                     damage += 1.5
-                    self.hurting = True
                     self.take_damage(damage) 
                 damage = 0
         
@@ -623,7 +621,6 @@ class player(pygame.sprite.Sprite):
                 if (self.vel_y != 0 and tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height)
                     #and not self.disp_flag
                     ):
-
                     if self.vel_y >= 0 or not dxdy[2]: #making sure gravity doesn't pull player under the tile
                         self.vel_y = 0
                     elif self.vel_y < 0 and dxdy[2]: #prevents player from gliding on ceiling
@@ -634,7 +631,7 @@ class player(pygame.sprite.Sprite):
                     if (self.action == 9): #rolling collisions
                         if (tile[1].y > self.collision_rect.y + self.height -32): #lower collisions
                             dy = tile[1].top  - self.rect.bottom 
-                        elif (tile[1].bottom < self.collision_rect.y + self.height -32): #upper collisions
+                        elif (tile[1].bottom < self.collision_rect.y + self.height): #upper collisions
                             dy = tile[1].bottom  - self.rect.top
                             
                     else: 
@@ -650,21 +647,22 @@ class player(pygame.sprite.Sprite):
                         #upper collisions
                         if self.rect.bottom - tile[1].bottom > self.height//2 and tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height//2):
                             dy = tile[1].bottom  - self.rect.top
-
+                            
                 elif  ( not self.in_air
                         and not self.crit 
-                        and self.vel_y > 10 #velocity based coyote jump, default 6, bigger number -> more coyote jump
-                        and not tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height)
+                        #and self.vel_y > self.coyote_vel #velocity based coyote jump, default 6, bigger number -> more coyote jump
+                        #and not tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height)
                         ):
-                    self.curr_state = True
-                    self.in_air = True
-                    self.squat = False
-                    
+                    if self.vel_y > self.coyote_vel:
+                        self.curr_state = True
+                        self.in_air = True
+                        self.squat = False
                             
             #special tiles
             elif(tile[2] in (2, 60)):#spikes/ other trap tiles
                 if tile[1].colliderect(self.collision_rect.x + self.width//4 + dx, self.collision_rect.y + dy, self.width//2, self.height - 8):
-                    self.hits_tanked = 6
+                    if self.frame_index%4 == 0:
+                        self.take_damage(0.2)
             
             elif(tile[2] in one_way_tiles):#one way tiles
                 if tile[1].colliderect(self.collision_rect.x, self.collision_rect.bottom - 16 + dy, self.width, 18):
@@ -838,7 +836,7 @@ class player(pygame.sprite.Sprite):
                             self.vel_y -= 0.6
                             #self.in_air = True
                         elif self.action == 8 and self.vel_y + 7 <= 28 and self.vel_y > 0 and self.in_air: #25 max 
-                            self.vel_y += 7
+                            self.vel_y *= 1.7
 
                 elif self.frame_index > 1 :# slow forward speed
                     if self.crit and self.check_if_in_ss_range():
@@ -974,7 +972,7 @@ class player(pygame.sprite.Sprite):
         
         
         if self.vel_y <= 25:#25 = terminal velocity
-            self.vel_y += 0.6
+            self.vel_y += 0.55
         if self.shoot and self.frame_index == 2:
             self.vel_y *= 0.8
         dy = self.vel_y
@@ -1000,6 +998,12 @@ class player(pygame.sprite.Sprite):
         #----------------------------------------------------------------------------------------------------------------------------------
         #================================================================TILE COLLISIONS=====================================================================
         #====================================================================================================================================
+        if not self.in_air and self.vel_y > 0.5 and not self.vel_y > self.coyote_vel:
+            self.coyote_ratio = self.vel_y/self.coyote_vel
+        else:
+            self.coyote_ratio = 0
+        
+        
         if self.brain_damage or self.angle != 0:
             dxdy = (0,0)
             lvl_transition_flag_and_data = (False, [])
@@ -1126,6 +1130,9 @@ class player(pygame.sprite.Sprite):
                 self.stamina_used += stamina_increment_unit
                 
     def take_damage(self, damage):
+        if not self.hurting:
+            self.frame_index = 0
+        self.hurting = True
         self.hits_tanked += damage
         if self.hits_tanked >= self.hp:#killing the player------------------------------------------------
             self.hits_tanked = self.hp
@@ -1324,11 +1331,13 @@ class player(pygame.sprite.Sprite):
         
     
     def draw(self, screen):
+        
         if self.atk1:
             color = (255,0,86)
         else:
             color = (255,255,255)
         self.draw_trail_line(screen, color, self.trail_coords)
+        
         if self.shot_charging and self.action < 5:
             self.BP_animate()
             screen.blit(pygame.transform.flip(self.image2, self.flip, False), self.BP_rect)
@@ -1342,6 +1351,16 @@ class player(pygame.sprite.Sprite):
        
         if self.atk_show_sprite: #drawing melee sprite
             self.draw_with_flicker(self.image3, self.atk_rect, screen, self.atk1_stamina_cost > self.atk1_default_stam)
+            
+        if self.vel_y > 1 and self.action == 1 and self.coyote_ratio > 0:# and pygame.time.get_ticks()%2 == 0:
+            num = int(255*(1-self.coyote_ratio))
+            pygame.draw.rect(screen, (num,num,num), 
+                             pygame.rect.Rect(self.collision_rect.x, 
+                                              self.collision_rect.y, 
+                                              self.collision_rect.width*(1-self.coyote_ratio), 
+                                              2)
+                             )
+        
     
     
     def update_action(self, new_action):

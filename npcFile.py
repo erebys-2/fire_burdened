@@ -78,6 +78,13 @@ class npc(pygame.sprite.Sprite):
         self.player_choice_key = '' #key
         
         self.collisions_disabled = False
+        #self.dx = 0
+        self.ini_coord = [x,y]
+        self.speed = 3
+        self.dist = 0
+        self.direction_set = []#action, distance
+        self.frame_rate = 200
+        self.ini_frame_rate = 200
         
         self.t1 = textfile_formatter()
         #plot index, dialogue index to jump to
@@ -188,17 +195,63 @@ class npc(pygame.sprite.Sprite):
         
     
     def display_interaction_prompt(self, dialogue_enable, player_rect, screen):
-        if not self.collisions_disabled:
+        if not self.collisions_disabled and self.action in (0,):
             self.player_collision = self.rect.colliderect(player_rect)
         else:
             self.player_collision = False
         if self.player_collision and self.name != 'invisible_prompt':
             if not dialogue_enable:
                 screen.blit(self.interaction_prompt, (self.rect.x, self.rect.y - 24, 32, 32))
+                
+    def finish_action(self):
+        self.direction_set.pop(0)
+        self.dist = 0
+        self.frame_rate = self.ini_frame_rate
         
-    def scroll_along(self, scrollx):
-        self.rect.x += ( - scrollx)
-        self.img_rect.x += ( - scrollx)
+    def scroll_along(self, world_0_coord, scrollx):
+        dx = 0
+        self.action = 0
+        if self.direction_set != []: #set action and distance as the first tuple in direction set (1,123)
+            self.action = self.direction_set[0][0]
+            self.dist = self.direction_set[0][1]
+            self.frame_rate = self.direction_set[0][2]
+            
+        if self.action == 1:
+            if self.dist != 0:
+                dx = self.move_x(world_0_coord, self.dist, self.speed)
+        
+        self.rect.x += (dx - scrollx)
+        self.img_rect.x += (dx - scrollx)
+        
+    def move_x(self, world_0_coord, dist, speed):
+        curr_coord = self.rect.x - world_0_coord
+        target_coord = dist + self.ini_coord[0]
+        
+        if curr_coord != target_coord:
+            #self.action = 1
+            # print(target_coord)
+            # print(curr_coord)
+            
+            if dist >= 0:
+                self.direction = 1
+            else:
+                self.direction = -1
+                
+            if (curr_coord > target_coord and self.direction > 0) or (curr_coord < target_coord and self.direction < 0):
+                dx = target_coord - curr_coord
+            else:
+                dx = speed * self.direction
+        else:
+            self.ini_coord[0] += self.dist
+            #self.action = 0
+            dx = 0
+            # self.dist = 0
+            # self.direction_set.pop(0)
+            self.finish_action()
+            
+            
+        return dx
+            
 
     def disable(self):
         if self.enabled:
@@ -213,6 +266,8 @@ class npc(pygame.sprite.Sprite):
     #draw and animate methods
     
     def draw(self, screen):
+        self.flip = self.direction < 0
+        
         if self.enabled and self.rect.x > -self.width and self.rect.x < 640 + self.width:
             screen.blit(pygame.transform.flip(self.image, self.flip, False), self.img_rect)
             #pygame.draw.rect(screen, (255,0,0), self.rect)
@@ -220,14 +275,8 @@ class npc(pygame.sprite.Sprite):
     def animate(self, sprite_group):
         self.mask = pygame.mask.from_surface(self.image)
         
-        framerates = (
-            180,
-            100,
-            100,
-            100
-        )
 
-        frame_update = framerates[self.action]
+        frame_update = self.frame_rate
 
         #setting the image
         self.image = self.frame_list[self.action][self.frame_index]

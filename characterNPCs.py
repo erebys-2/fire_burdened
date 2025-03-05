@@ -127,6 +127,7 @@ class Mars(npc):
                 self.current_dialogue_index = 2
                 self.is_initial_index = False
         if self.current_level == 1 and world.get_death_count(2) > 0:
+            self.direction_set = [(1,128,160),(1,-64,160)]
             if self.is_initial_index:
                 self.current_dialogue_index = 5
                 world.set_death_count(2, 0)

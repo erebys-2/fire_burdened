@@ -127,7 +127,7 @@ class text_manager():
             #         dx += 8 #dependent on font size and type, change later maybe
 
             # else:#by line
-            screen.blit(font.render(line, True, text_color), (dx, dy))
+            screen.blit(font.render(line, False, text_color), (dx, dy))
             dy += 17
 
         return True

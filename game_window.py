@@ -357,6 +357,8 @@ def main():
 
 		#----------------------------------------------------------------------level changing-------------------------------------------------
 		if level != next_level:
+			do_screenshake_master = False
+			screenshake_profile = (0,0,0)
 			level_transitioning = True
 			#print(pygame.time.get_ticks())
 			#update world's persistent dictionaries
@@ -431,18 +433,15 @@ def main():
 		world.draw(screen, scroll_x, scroll_y, player0.hitting_wall)#this draws the world and scrolls it 
   
 		#vertical screenshake correction
-		if not do_screenshake_master and world.rect.y != 0:
-			if world.rect.y < 0:
-				correction_y = -1
-			elif world.rect.y > 0:
-				correction_y = 1
-			else:
-				correction_y = 0
-			
-			for data_list in world.detailed_lvl_data_list:
-				for tile in data_list:
+		if world.rect.y != 0 and not do_screenshake_master:
+			correction_y = world.rect.y/abs(world.rect.y)
+			#print(correction_y)
+    
+			world.rect.y -= correction_y
+			for data_list in world.detailed_lvl_data_dict:
+				for tile in world.detailed_lvl_data_dict[data_list]:
 					tile[1][1] -= correction_y
-		
+
 		
 		if not pause_game:
 			
@@ -450,7 +449,7 @@ def main():
 				player0.animate(the_sprite_group)
 				player0.do_entity_collisions(the_sprite_group)
 				player0_lvl_transition_data = player0.move(pause_game, move_L, move_R, world.solids, 
-                                               				world.rect, world.x_scroll_en, world.y_scroll_en, 
+															world.rect, world.x_scroll_en, world.y_scroll_en, 
 															HALF_SCREEN_W, SCREEN_HEIGHT, the_sprite_group, ccsn_chance)
 				use_item_tuple = player0.inventory_handler.item_usage_hander0.process_use_signal(player_inv_UI.use_item_flag, player_inv_UI.item_to_use, player0)
 				player_inv_UI.use_item_flag = use_item_tuple[0] #use_item_flag (internal variable) is set to false
@@ -467,38 +466,40 @@ def main():
 	
 		#---------------------------------------screen shake------------------------------------------------------------------------
 		
+		if not level_transitioning:
+			if do_screenshake_master:
+				ss_output = camera.screen_shake(screenshake_profile, do_screenshake_master)
+				do_screenshake_master = ss_output[0]
+				player0.rect.x += ss_output[1][0]
+				scroll_x += ss_output[1][1]
+				player0.vel_y += ss_output[1][2]*1.02
+				scroll_y = -ss_output[1][3]
 
-		if do_screenshake_master:
-			ss_output = camera.screen_shake(screenshake_profile, do_screenshake_master)
-			do_screenshake_master = ss_output[0]
-			player0.rect.x += ss_output[1][0]
-			scroll_x += ss_output[1][1]
-			player0.vel_y += ss_output[1][2]*1.02
-			scroll_y = -ss_output[1][3]
-
-		if not do_screenshake_master and player0.do_screenshake:
-			screenshake_profile = player0.screenshake_profile #intensity x, intensity y, cycle count
-			player0.do_screenshake = False
-			#if not do_screenshake_master:
-			do_screenshake_master = True
-		if not do_screenshake_master:
-			for p_int in [p_int for p_int in the_sprite_group.p_int_group if p_int.do_screenshake]: #the_sprite_group.p_int_group: 
-				p_int.do_screenshake = False
+			if not do_screenshake_master and player0.do_screenshake:
+				screenshake_profile = player0.screenshake_profile #intensity x, intensity y, cycle count
+				player0.do_screenshake = False
 				#if not do_screenshake_master:
-				do_screenshake_master = True
-				screenshake_profile = (4, 8, 3)
+				do_screenshake_master = True 
+    
+    
+			if not do_screenshake_master:
+				for p_int in [p_int for p_int in the_sprite_group.p_int_group if p_int.do_screenshake]: #the_sprite_group.p_int_group: 
+					p_int.do_screenshake = False
+					#if not do_screenshake_master:
+					do_screenshake_master = True
+					screenshake_profile = (4, 8, 3)
 
-		if not do_screenshake_master:
-			for enemy in [enemy for enemy in the_sprite_group.enemy0_group if enemy.do_screenshake]: #the_sprite_group.enemy0_group:
-				enemy.do_screenshake = False
-				#if not do_screenshake_master:
-				do_screenshake_master = True
-				if player0.sprint:
-					screenshake_profile = (10, 6, 2)
-				else:
-					screenshake_profile = (6, 4, 2)
+			if not do_screenshake_master:
+				for enemy in [enemy for enemy in the_sprite_group.enemy0_group if enemy.do_screenshake]: #the_sprite_group.enemy0_group:
+					enemy.do_screenshake = False
+					#if not do_screenshake_master:
+					do_screenshake_master = True
+					if player0.sprint:
+						screenshake_profile = (10, 6, 2)
+					else:
+						screenshake_profile = (6, 4, 2)
 
-	
+		
 
 		#=================================================================updating and drawing all sprites=====================================
 		if not level_transitioning and not player0.in_cutscene:
@@ -522,7 +523,7 @@ def main():
 			the_sprite_group.update_groups_infront_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, world.solids)
 		
 			status_bars.very_charred = player0.char_level/player0.char_dict['max_char'] > 0.9
-			status_bars.draw(screen, player0.get_status_bars(), font, False)
+			status_bars.draw(screen, player0.get_status_bars(), player0.action, (7,8,9,10,16), font, False)
 			status_bars.draw2(screen, player0.action_history, (7,8,16), font_larger)
 			player_inv_UI.show_selected_item(player0.inventory_handler.inventory, screen)
    
@@ -625,7 +626,6 @@ def main():
 			#plot index list's csv is read within ui_manager
 			if ui_manager0.saves_menu_enable: #load file
 				ui_output_dict = ui_manager0.show_saves_menu(screen)
-
 				if ui_manager0.selected_slot != -1 and selected_slot != ui_manager0.selected_slot:
         			#change slot and reset death counters and lvl copmletion dict across levels if a different slot is selected
 					world.death_counters_dict = {0: 0}
@@ -640,7 +640,8 @@ def main():
 					selected_slot = ui_manager0.selected_slot
 			else:
 				ui_output_dict = ui_manager0.show_main_menu(screen)
-				
+    
+			player0.frame_index = 0			
 			world.onetime_spawn_dict = ui_output_dict['OSD']
 			world.lvl_completion_dict = ui_output_dict['LCD']
 			world.set_plot_index_dict(ui_output_dict['PID'])#world plot index saved here
