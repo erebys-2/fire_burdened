@@ -78,6 +78,8 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.rtn_dict = self.reset_rtn_dict()
         self.kbd_new_game = False
         
+        self.btn_click_counter = []
+        
     def reset_rtn_dict(self):
         rtn_dict = {
             'RG': True,
@@ -255,41 +257,63 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
     def show_saves_menu2(self, screen):
         #doesn't actually load data, it makes the player choose a file that can be autosaved to before a new game is started
         pygame.draw.rect(screen, (0,0,0), (0,0,self.S_W,self.S_H))
-        
+        save_files_ct = 4
         if self.trigger_once: #deploy buttons
             self.button_list *= 0
-            for i in range(5):
+            
+            for i in range(save_files_ct+1):
                 self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +40*i, self.generic_img, 1))
+                if i < save_files_ct and len(self.btn_click_counter) <= save_files_ct:
+                    self.btn_click_counter.append(0)
             
             self.rtn_dict = self.reset_rtn_dict()
-            self.kbd_new_game = False
             self.trigger_once = False
         
-        for i in range(4):
-            if self.do_btn_logic(screen, self.button_list[i], f'Reset File {i}', True, 1) or self.kbd_new_game:
+        for i in range(save_files_ct):
+            file_status = 'Empty'
+            if self.save_handler.check_plot_index(i):
+                file_status = 'Used'
+
+            btn_str = f'File {i}: {file_status}'
+            if self.btn_click_counter[i] > 0:
+                btn_str = 'Reset File?'
+                
+            if self.do_btn_logic(screen, self.button_list[i], btn_str, True, 1) or self.kbd_new_game:
                 #reset specific slot and set global variable
-                if self.kbd_new_game:
+                if self.kbd_new_game and self.btn_click_counter == [0]*save_files_ct:
                     index = 0
+                elif self.kbd_new_game and 1 in self.btn_click_counter:
+                    index = self.btn_click_counter.index(1)
                     self.trigger_once = True
                 else:
                     index = i
-                    
-                self.save_handler.reset_specific_save(index)
-                self.selected_slot = index
-                
-                #set the new level
-                self.rtn_dict['NL'] = 1
-                
-                #populate onetime_spawn_dict with default values
-                path2 = 'config_textfiles/world_config'
-                self.rtn_dict['OSD'] = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path2, 'ini_onetime_spawns.txt')), 'list_list') #onetime_spawn_dict
-                
-                #set flag
-                self.saves_menu2_enable = False
                 self.kbd_new_game = False
+                
+                if self.btn_click_counter[index] > 0:  
+                    self.save_handler.reset_specific_save(index)
+                    self.selected_slot = index
+                    
+                    #set the new level
+                    self.rtn_dict['NL'] = 1
+                    
+                    #populate onetime_spawn_dict with default values
+                    path2 = 'config_textfiles/world_config'
+                    self.rtn_dict['OSD'] = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path2, 'ini_onetime_spawns.txt')), 'list_list') #onetime_spawn_dict
+                    
+                    #set flag
+                    self.saves_menu2_enable = False
+                    self.btn_click_counter = [0]*save_files_ct
+                else:
+                    ini_value = self.btn_click_counter[index]
+                    self.btn_click_counter = [0]*save_files_ct
+                    self.btn_click_counter[index] += ini_value + 1
+                    
+                #print(self.btn_click_counter)
+                    
         
         #back button        
         if self.do_btn_logic(screen, self.button_list[4], 'Main Menu', True, 1):
+            self.btn_click_counter = [0]*save_files_ct
             self.saves_menu2_enable = False
         
         self.text_manager0.disp_text_box(screen, self.fontlist[1], ('', '  Choose a file to load.', 'Prior data will be erased.'), (-1,-1,-1), (200,200,200), 
@@ -315,7 +339,11 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             self.trigger_once = False
             
         for i in range(4):
-            if self.do_btn_logic(screen, self.button_list[i], f'File {i}', True, 1):
+            if self.save_handler.check_plot_index(i):
+                file_status = 'Used'
+            else:
+                file_status = 'Empty'
+            if self.do_btn_logic(screen, self.button_list[i], f'File {i}: {file_status}', True, 1):
                 #set selected slot
                 self.selected_slot = i
 

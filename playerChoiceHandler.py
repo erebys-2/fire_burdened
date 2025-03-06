@@ -82,7 +82,6 @@ class player_choice_handler():
             
         for i in range(len(self.button_list)):#button behvior, the buttons should be aligned with the player_choices list
             if self.button_list[i].draw(screen):
-                #self.m_player.play_sound(self.m_player.sfx[1], None)
                 self.next_index = player_choices[i][1]
                 #self.trigger_once = True
                 if key == 'save_game': # write to save file
@@ -95,8 +94,13 @@ class player_choice_handler():
                     
                 #will need to set level, player new coords, inventory, plot index
                 # make sure bosses are dead/ one time puzzles are trapped/ key items stay collected
+            txt = ''
+            if key == 'save_game':
+                txt = ': Empty'
+                if self.save_handler.check_plot_index(i):
+                    txt = ': Used'
                 
-            self.button_list[i].show_text(screen, self.fontlist[1], ('', player_choices[i][0]))
+            self.button_list[i].show_text(screen, self.fontlist[1], ('', player_choices[i][0] + txt))
             
         #draw text
         self.text_manager0.disp_text_box(screen, self.fontlist[1], self.prompt, (-1,-1,-1),  (200,200,200), (64, 12, 640, 120), False, False, 'none')

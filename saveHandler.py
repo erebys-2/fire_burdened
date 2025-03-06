@@ -52,6 +52,9 @@ class save_file_handler():
         for entry in txt_file_map:
             self.t1.overwrite_file(os.path.join(path, entry), txt_file_map[entry])
             
+    def check_plot_index(self, slot):
+        return self.t1.read_text_from_file(os.path.join(f'save_files/{slot}', self.PID_str))[0] != 'empty'
+            
     def load_save(self, slot):
         saves_path = f'save_files/{slot}'
         
