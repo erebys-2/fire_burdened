@@ -316,6 +316,7 @@ def main():
 	double_tap_initiated = False
  
 	selected_slot = -1
+	screen_blacked = False
  
 	joysticks = {}
  
@@ -420,6 +421,8 @@ def main():
 		elif not camera.set_ini_pos:
 			level_transitioning = False
 		
+			
+		
 
 		#---------------------------------------------------------drawing level and sprites------------------------------------------------------------------
 		#---------------------------------------------------------handling movement and collisions and AI----------------------------------------------------
@@ -461,6 +464,7 @@ def main():
 			scroll_x = player0.scrollx + camera.scrollx
 		else:
 			scroll_x = 0
+			area_name_time = pygame.time.get_ticks()
 		
 			
 	
@@ -525,6 +529,8 @@ def main():
 			status_bars.very_charred = player0.char_level/player0.char_dict['max_char'] > 0.9
 			status_bars.draw(screen, player0.get_status_bars(), player0.action, (7,8,9,10,16), font, False)
 			status_bars.draw2(screen, player0.action_history, (7,8,16), font_larger)
+			if world.plot_index_dict != {} and world.plot_index_dict['opening_scene'] == -4:
+				status_bars.draw_tutorial_cues(screen, player0.rect, player0.direction, ctrls_list, font_larger)
 			player_inv_UI.show_selected_item(player0.inventory_handler.inventory, screen)
    
 			#passive items temp code
@@ -533,6 +539,10 @@ def main():
    
 			#draw area name here
 			if area_name_time + 2500 > pygame.time.get_ticks():
+				if screen_blacked and area_name_time + 40 > pygame.time.get_ticks():
+					pygame.draw.rect(screen, (0,0,0), screen.get_rect())
+				else:
+					screen_blacked = False
 				coord = (SCREEN_WIDTH//2 - 8*len(area_name_dict[level])//2, SCREEN_HEIGHT//2 - 8)
 				coord2 = (0, SCREEN_HEIGHT//2 - 16)
 				if area_name_time + 2000 > pygame.time.get_ticks():
@@ -544,6 +554,7 @@ def main():
 					last_area_name = area_name_dict[level]
 
 		elif level_transitioning:
+			screen_blacked = True
 			for group in the_sprite_group.sp_group_list:
 				for sprite_ in group:
 					sprite_.force_ini_position(scroll_x)
@@ -557,7 +568,7 @@ def main():
 			next_dialogue = False
      
 		if lvl_transition_counter > 0:
-			pygame.draw.rect(screen, (0,0,0), pygame.rect.Rect(0,0,SCREEN_WIDTH,SCREEN_HEIGHT))
+			pygame.draw.rect(screen, (0,0,0), screen.get_rect())
 			if lvl_transition_counter == 1 and last_area_name != area_name_dict[level]:
 				area_name_time = pygame.time.get_ticks() #start area name timer
 				if not player0.in_cutscene:
@@ -570,7 +581,7 @@ def main():
 			for particle_group_data in level_ambiance_dict[level]:
 				if particle_group_data[0] != 0:
 					group_particle_handler.create_particles((0-32,0), (SCREEN_WIDTH+32,SCREEN_HEIGHT), 1, particle_group_data)
-
+     
 		#--------------------------------------------------------------------handling drawing text boxes------------------------------------------------------------------
 		#textboxes have a maximum of 240 characters
 		
@@ -613,8 +624,8 @@ def main():
 
 	
 		#----------black screen while transitioning---------------------------------------------------------
-		if level_transitioning:
-			pygame.draw.rect(screen, (0,0,0), (0,0,SCREEN_WIDTH,SCREEN_HEIGHT))
+		if level_transitioning or camera.set_ini_pos:
+			pygame.draw.rect(screen, (0,0,0), screen.get_rect())
 	
 		#--------------------------------------------------------------MAIN MENU CODE---------------------------------------------------------------------
 		if level == 0 or ui_manager0.saves_menu_enable: 

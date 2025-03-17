@@ -35,7 +35,7 @@ class player(pygame.sprite.Sprite):
         self.jump_dampen = False
         self.double_jump = False
         self.double_jump_en = False
-        self.coyote_vel = 11
+        self.coyote_vel = 12
         self.coyote_ratio = 0
 
         self.in_air = False
@@ -193,9 +193,9 @@ class player(pygame.sprite.Sprite):
     #methods
     
     def update_action_history(self, action):
-        if action != 0 and action != 1 and action != 4: 
+        if action != 0 and action != 1:# and action != 4: 
             self.action_history.append(action)
-            if len(self.action_history) > 4:#pop first element if the list goes over 3
+            if len(self.action_history) > 4:#pop first element if the list goes over 4
                 self.action_history.pop(0)
             #print(self.action_history)
                 
@@ -661,8 +661,9 @@ class player(pygame.sprite.Sprite):
             #special tiles
             elif(tile[2] in (2, 60)):#spikes/ other trap tiles
                 if tile[1].colliderect(self.collision_rect.x + self.width//4 + dx, self.collision_rect.y + dy, self.width//2, self.height - 8):
-                    if self.frame_index%4 == 0:
-                        self.take_damage(0.2)
+                    #if self.frame_index%4 == 0:
+                    self.take_damage(0.2)
+                    self.vel_y = 0
             
             elif(tile[2] in one_way_tiles):#one way tiles
                 if tile[1].colliderect(self.collision_rect.x, self.collision_rect.bottom - 16 + dy, self.width, 18):
@@ -958,6 +959,8 @@ class player(pygame.sprite.Sprite):
         if self.hurting:
             # if not self.hitting_wall and self.frame_index < 2:
             dx -= self.direction * 4
+            if self.vel_y > 10:
+                self.vel_y -= self.vel_y - 10
                
             # elif self.hitting_wall:
             #     dx = 0
@@ -1132,6 +1135,8 @@ class player(pygame.sprite.Sprite):
     def take_damage(self, damage):
         if not self.hurting:
             self.frame_index = 0
+        self.rolling = False
+        
         self.hurting = True
         self.hits_tanked += damage
         if self.hits_tanked >= self.hp:#killing the player------------------------------------------------
@@ -1342,7 +1347,7 @@ class player(pygame.sprite.Sprite):
             self.BP_animate()
             screen.blit(pygame.transform.flip(self.image2, self.flip, False), self.BP_rect)
         
-        # pygame.draw.rect(screen, (0,0,255), self.collision_rect)
+        #pygame.draw.rect(screen, (0,0,255), self.collision_rect)
         # pygame.draw.rect(screen, (255,0,0), self.hitbox_rect)
         # pygame.draw.rect(screen, (0,255,0), self.atk_rect_scaled)
         # pygame.draw.rect(screen, (0,0,255), self.debuggin_rect)

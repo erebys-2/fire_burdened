@@ -35,44 +35,40 @@ class StatusBars():
         self.rect.topleft = (0,placement_y)
         self.warning = False
         self.very_charred = False
+        self.is_exhausted = False
        
+    def draw_tutorial_cues(self, screen, player_rect, player_direction, ctrls_list, font):
+        if self.is_exhausted:
+            txt = f'[{pygame.key.name(ctrls_list[0])}]|[{pygame.key.name(ctrls_list[2])}]'
+            self.draw_text(txt, font, (255,255,255), player_rect.centerx + player_direction*8 - player_rect.width//4, player_rect.y - 32, screen)
         
         
     def draw_text(self, text, font, text_col, x, y, screen):
-        img = font.render(text, True, text_col)
-        screen.blit(img, (x, y))
+        screen.blit(font.render(text, True, text_col), (x, y))
         
     def draw2(self, screen, stat_list, key_values, font):
         rect_list_bitstr = ''#set default values
         len_ = len(stat_list)
-        #consecutive_atk = False
         atk_ct = 0
         
         for i in range(len_):#convert action history to binary string
             rect_list_bitstr = str(int(stat_list[len_-1-i] in key_values)) + rect_list_bitstr
-            screen.blit(self.img4, self.rect_list[i])
-        
-        key = int(rect_list_bitstr, 2)#convert binary string to int
+            screen.blit(self.img4, self.rect_list[i])#draw pink
+        #key = int(rect_list_bitstr, 2)#convert binary string to int
         for j in range(len_):#checks if the key can be masked to 1, 11, 111, 1111, etc
             bit_mask = 2**(j+1) - 1
-            if key & bit_mask == bit_mask:
+            if int(rect_list_bitstr, 2) & bit_mask == bit_mask:
                 atk_ct = j+1
                 #consecutive_atk = bit_mask != 1
         
+        self.is_exhausted = atk_ct == len_
         for rect_ in self.rect_list[0:atk_ct]:
-            screen.blit(self.img3, rect_)
-            if atk_ct == len_:
-                if pygame.time.get_ticks()%4 == 0:
-                    screen.blit(self.img5, rect_)
-                    
-        if atk_ct == len_:
-            self.draw_text(f'EXHAUSTED', 
+            screen.blit(self.img3, rect_)#draw black
+            if self.is_exhausted:
+                self.draw_text(f'EXHAUSTED', 
                          font, (255,255,255), self.rect.right - 22*self.scale, self.rect.y - 15*self.scale, screen)
-
-        # if consecutive_atk or rect_list_bitstr[len_-3:len_] == '110':
-        #     self.draw_text(f'CHAIN x{atk_ct}', 
-        #                 font, (255,255,255), self.rect.right - 22*self.scale, self.rect.y - 15*self.scale, screen)
-            
+                if pygame.time.get_ticks()%4 == 0:
+                    screen.blit(self.img5, rect_)#draw white
             
         
     def draw(self, screen, stat_data, player_action, key_values, font, flicker):

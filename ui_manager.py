@@ -276,7 +276,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
 
             btn_str = f'File {i}: {file_status}'
             if self.btn_click_counter[i] > 0:
-                btn_str = 'Reset File?'
+                btn_str = 'Confirm Reset?'
                 
             if self.do_btn_logic(screen, self.button_list[i], btn_str, True, 1) or self.kbd_new_game:
                 #reset specific slot and set global variable

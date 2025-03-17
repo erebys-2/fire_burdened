@@ -327,16 +327,22 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                             moving = True
                             
                         if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x < self.rect.x + self.width + chase_range*self.width:
-                            if player_rect.y - self.half_height > self.rect.y - 2*chase_range*self.height and player_rect.y - self.half_height <= self.rect.y:
-                                self.vel_y = -self.speed
+                            if player_rect.y - self.height*2 > self.rect.y - 2*chase_range*self.height and player_rect.y - self.half_height <= self.rect.y:
+                                self.vel_y = -self.speed*0.75
                                 moving = True
-                            elif player_rect.y < self.rect.y + self.height + 2*chase_range*self.height and player_rect.y >= self.rect.y:
-                                self.vel_y = self.speed
+                            elif player_rect.y - self.height*2 < self.rect.y + 4*chase_range*self.height and player_rect.y - self.height*2 >= self.rect.y:
+                                self.vel_y = self.speed*2.5
                                 moving = True
+                            if self.vel_y == 0:
+                                if player_rect.y > self.rect.bottom:
+                                    self.vel_y = self.speed
+                                else:
+                                    self.vel_y = -self.speed
+
                                 
-                            #self.vel_y += random.randint(-3,3)
-                        else:
-                            self.vel_y = 0
+                            #self.vel_y *= random.randint(-1,3)
+                        # else:
+                        #     self.vel_y = 0
                             
                     if not self.inundated and self.action == 1:
                         if self.direction == -1:
@@ -348,6 +354,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                         self.atk1_kill_hitbox()
                         
                     if self.action == 0:
+                        self.vel_y = 0
                         self.rect.centery = self.ini_y - 9*math.sin(self.increment)
 
                         if self.increment > 2*math.pi:
