@@ -3,30 +3,47 @@ pygame.init()
 import os
 
 class StatusBars():
-    def __init__(self):
+    def __init__(self, screen_w, screen_h, tile_size):
         self.on = True
         scale = 1.2
         self.scale = scale
+        self.SC_WIDTH = screen_w
+        self.HALF_SC_WIDTH = screen_w//2
+        self.SC_HEIGHT = screen_h
+        self.t_size = tile_size
 
-        placement_y = 480 - int(scale*32)
+        placement_y = 480 - int(scale*self.t_size)
         
-        #load bar template
+        #load assets
         self.bar_length = 128 * scale
         self.bar_height = 8 * scale
         self.bar_disp = 32 * scale
         self.bar_ydisp2 = 20 * scale
         self.bar_ydisp1 = self.bar_ydisp2//5
         
-        self.image = pygame.image.load('sprites/UI/statusbars/0.png')
+        self.image = pygame.image.load('sprites/UI/statusbars/0.png').convert_alpha()
         self.image = pygame.transform.scale(self.image, (int(self.image.get_width() * scale), int(self.image.get_height() * scale)))
         
-        self.image2 = pygame.image.load('sprites/UI/statusbars/1.png')
+        self.image2 = pygame.image.load('sprites/UI/statusbars/1.png').convert_alpha()
         self.image2 = pygame.transform.scale(self.image2, (int(self.image2.get_width() * scale), int(self.image2.get_height() * scale)))
         
-        self.img3 = pygame.image.load('sprites/UI/melee_count/0.png')
-        self.img4 = pygame.image.load('sprites/UI/melee_count/1.png')
-        self.img5 = pygame.image.load('sprites/UI/melee_count/2.png')
+        self.img3 = pygame.image.load('sprites/UI/melee_count/0.png').convert_alpha()
+        self.img4 = pygame.image.load('sprites/UI/melee_count/1.png').convert_alpha()
+        self.img5 = pygame.image.load('sprites/UI/melee_count/2.png').convert_alpha()
         self.rect_list = []
+        
+        self.status_icon_imglist = []
+        self.status_enable_dict = {}
+        path_ = 'sprites/UI/status_icons'
+        for i in range(len(os.listdir(path_))):
+            self.status_icon_imglist.append(pygame.image.load(os.path.join(path_+f'/{i}.png')).convert_alpha())
+            self.status_enable_dict[i] = False
+        self.status_fx_list = []
+        
+        self.direction_img_list = []
+        path_ = 'sprites/UI/directions'
+        for i in range(len(os.listdir(path_))):
+            self.direction_img_list.append(pygame.image.load(os.path.join(path_+f'/{i}.png')).convert_alpha())
         
         for i in range(4):
             self.rect_list.append(pygame.rect.Rect(40 + i*32, placement_y - 18, 16, 16))
@@ -36,12 +53,90 @@ class StatusBars():
         self.warning = False
         self.very_charred = False
         self.is_exhausted = False
+        self.color = (0,0,0)
        
-    def draw_tutorial_cues(self, screen, player_rect, player_direction, ctrls_list, font):
+    def draw_tutorial_cues(self, screen, player, enemies_nearby, ctrls_list, font):
+        txt = ''
+        x_disp = 0
         if self.is_exhausted:
-            txt = f'[{pygame.key.name(ctrls_list[0])}]|[{pygame.key.name(ctrls_list[2])}]'
-            self.draw_text(txt, font, (255,255,255), player_rect.centerx + player_direction*8 - player_rect.width//4, player_rect.y - 32, screen)
+            txt = f'[{pygame.key.name(ctrls_list[0])}] or [{pygame.key.name(ctrls_list[2])}]'
+            x_disp = player.direction*4 - player.rect.width//2
+            if player.action in (1,0):
+                countdown = str(len(player.frame_list[player.action]) - player.frame_index)
+                self.draw_text(f'({countdown})', 
+                         font, (255,255,255), self.rect.right + 48*self.scale, self.rect.y - 15*self.scale, screen)
+                
+        elif not self.is_exhausted and enemies_nearby:
+            txt = f'[{pygame.key.name(ctrls_list[4])}] or [{pygame.key.name(ctrls_list[2])}]'
+            x_disp = player.direction*4 - player.rect.width//2
+            
+        if txt != '':
+            self.draw_text(txt, font, (255,255,255), player.rect.centerx + x_disp, player.rect.y - 32, screen)
+            
+        #should make a txt file for ini player config values
+        if abs(player.vel_y) > 2:
+            p_jump_val = 10
+            numerator = player.vel_y
+            
+            if player.vel_y > p_jump_val:
+                numerator = p_jump_val
+            elif player.vel_y < -p_jump_val:
+                numerator= -p_jump_val
+                
+            vel_y_ratio = numerator/p_jump_val
+   
+
+            if vel_y_ratio < 0:
+                index = 1
+                # if player.atk1:
+                #     index = 3
+            else:
+                index = 0
+                # if player.atk1:
+                #     index = 2
+                    
+            screen.blit(self.direction_img_list[index],#pygame.transform.hsl(self.direction_img_list[index], 0, vel_y_ratio, 1-abs(vel_y_ratio)), 
+                        (player.rect.centerx - self.t_size//2,# - player.direction*self.t_size, 
+                         player.rect.y - self.t_size)
+                         #player.rect.y + self.t_size//4)
+                        )
+            
+    
+    
+    def update_status_list(self, conditions_met, fx_id):
+        check_active = fx_id in self.status_fx_list
+        if conditions_met and not check_active:
+            self.status_fx_list.append(fx_id)
+        elif not conditions_met and check_active:
+            self.status_fx_list.pop(self.status_fx_list.index(fx_id))
         
+    def draw_status_icons(self, screen, player, font):#NOT independent from other draw functions
+        
+        #set conditions met
+        self.status_enable_dict[0] = (player.vel_y > 1 and player.action == 1 and player.coyote_ratio > 0)
+        self.status_enable_dict[1] = self.color == (140,130,80)
+        self.status_enable_dict[2] = self.is_exhausted
+        self.status_enable_dict[3] = self.very_charred
+
+        #update status fx list
+        for status in self.status_enable_dict:
+            self.update_status_list(self.status_enable_dict[status], status)
+            
+        #draw
+        #0+self.t_size*i%3, 2+self.t_size*i//3
+        num_fx = len(self.status_fx_list)
+        for i in range(num_fx):
+            if num_fx != 0:
+                screen.blit(self.status_icon_imglist[self.status_fx_list[i]], (self.HALF_SC_WIDTH+self.t_size*i, self.SC_HEIGHT-self.t_size))
+                
+                if self.status_fx_list[i] == 0:
+                    num = int(255*(1-player.coyote_ratio))
+                    pygame.draw.rect(screen, (num,num,num), 
+                                    pygame.rect.Rect(self.HALF_SC_WIDTH+self.t_size*i,
+                                                    self.SC_HEIGHT-self.t_size, 
+                                                    self.t_size*(1-player.coyote_ratio), 
+                                                    2)
+                                    )
         
     def draw_text(self, text, font, text_col, x, y, screen):
         screen.blit(font.render(text, True, text_col), (x, y))
@@ -97,15 +192,16 @@ class StatusBars():
         if self.on == True:
             if self.very_charred:
                 if pygame.time.get_ticks()%10 == 0:
-                    color = (255,255,255)
+                    self.color = (255,255,255)
                 else:
-                    color = (255,0,86)
-            elif player_action in key_values:
-                color = hp_color2
+                    self.color = (255,0,86)
             else:
-                color = hp_color
+                self.color = hp_color
                 
-            pygame.draw.rect(screen, color, hp_rect)
+            if player_action in key_values:
+                self.color = hp_color2
+                
+            pygame.draw.rect(screen, self.color, hp_rect)
             if stat_data[2] > 0:
                 if pygame.time.get_ticks()%2 == 0:
                     pygame.draw.rect(screen, charge_color, charge_rect)

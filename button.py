@@ -6,9 +6,9 @@ class Button():
 	def __init__(self, x, y, image, scale):
 		width = image.get_width()
 		height = image.get_height()
-		self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
-		self.image2 = pygame.transform.hsl(image, 0, -0.5, -0.2)
-		self.image3 = pygame.transform.hsl(image, 0, -0.5, 0.1)
+		self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale))).convert_alpha()
+		self.image2 = pygame.transform.hsl(image, 0, -0.5, -0.2).convert_alpha()
+		self.image3 = pygame.transform.hsl(image, 0, -0.5, 0.1).convert_alpha()
 		self.rect = self.image.get_rect()
 		self.rect.topleft = (x, y)
 

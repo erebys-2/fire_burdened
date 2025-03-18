@@ -83,7 +83,8 @@ def main():
 	world = World(SCREEN_WIDTH, SCREEN_HEIGHT)
 
 	#instantiate status bars
-	status_bars = StatusBars()
+	status_bars = StatusBars(SCREEN_WIDTH, SCREEN_HEIGHT, ts)
+
 
 	#define font
 	font = pygame.font.SysFont('SimSun', 12)
@@ -529,8 +530,9 @@ def main():
 			status_bars.very_charred = player0.char_level/player0.char_dict['max_char'] > 0.9
 			status_bars.draw(screen, player0.get_status_bars(), player0.action, (7,8,9,10,16), font, False)
 			status_bars.draw2(screen, player0.action_history, (7,8,16), font_larger)
+			status_bars.draw_status_icons(screen, player0, font)
 			if world.plot_index_dict != {} and world.plot_index_dict['opening_scene'] == -4:
-				status_bars.draw_tutorial_cues(screen, player0.rect, player0.direction, ctrls_list, font_larger)
+				status_bars.draw_tutorial_cues(screen, player0, player0.do_extended_hitbox_collisions(the_sprite_group), ctrls_list, font_larger)
 			player_inv_UI.show_selected_item(player0.inventory_handler.inventory, screen)
    
 			#passive items temp code
@@ -543,6 +545,7 @@ def main():
 					pygame.draw.rect(screen, (0,0,0), screen.get_rect())
 				else:
 					screen_blacked = False
+				
 				coord = (SCREEN_WIDTH//2 - 8*len(area_name_dict[level])//2, SCREEN_HEIGHT//2 - 8)
 				coord2 = (0, SCREEN_HEIGHT//2 - 16)
 				if area_name_time + 2000 > pygame.time.get_ticks():
@@ -1160,11 +1163,11 @@ def main():
 				#print(pygame.button.name(event.button))
 				if player0.Alive and level_dict[level][3] and not pause_game and not dialogue_enable:
 					if inventory_opened:
-						inv_directions[0] = (event.key == ctrls_list[3]) #Right
-						inv_directions[1] = (event.key == ctrls_list[1]) #Left
-						inv_directions[2] = (event.key == ctrls_list[0]) #Up
-						inv_directions[3] = (event.key == ctrls_list[2]) #Down
-						inv_directions[4] = (event.key == ctrls_list[4]) #discard
+						inv_directions[0] = (event.button == ctrls_list[3]) #Right
+						inv_directions[1] = (event.button == ctrls_list[1]) #Left
+						inv_directions[2] = (event.button == ctrls_list[0]) #Up
+						inv_directions[3] = (event.button == ctrls_list[2]) #Down
+						inv_directions[4] = (event.button == ctrls_list[4]) #discard
 					else:
 						
 						if event.button == ctrls_list[1]: #pygame.K_a

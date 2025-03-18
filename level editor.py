@@ -515,8 +515,8 @@ while run:
             if event.key == pygame.K_d:
                 scroll_right = True
             if event.key == pygame.K_q:
-                if scroll_speed != 8:
-                    scroll_speed = 8
+                if scroll_speed != 12:
+                    scroll_speed = 12
                 else:
                     scroll_speed = 1
             if event.key == pygame.K_x:

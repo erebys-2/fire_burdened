@@ -150,23 +150,23 @@ class player(pygame.sprite.Sprite):
         self.play_sound_once_en = True
 
         self.disp_states = ( #actions/states when the player has a larger and or displaced hitbox
-            False, #idle
-            False, #run
-            False, #jump
-            False, #land
-            False, #squat
-            False, #hurt
-            True, #die
-            True, #atk1
-            True, #atk1_2
-            False, #roll
-            True, #atk1_3
-            False, #shoot
+            False, #idle 0
+            False, #run 1
+            False, #jump 2 
+            False, #land 3
+            False, #squat 4
+            False, #hurt 5
+            True, #die 6
+            True, #atk1 7
+            True, #atk1_2 8
+            False, #roll 9
+            True, #atk1_3 10
+            False, #shoot 11
             False, #
             False, #
-            False, #turn_around
-            False,  #use_item
-            True #atk1_4
+            False, #turn_around 14
+            False,  #use_item 15
+            True #atk1_4 16
         )
         
         t = textfile_formatter()
@@ -374,6 +374,21 @@ class player(pygame.sprite.Sprite):
                     damage += 1.5
                     self.take_damage(damage) 
                 damage = 0
+                
+    def do_extended_hitbox_collisions(self, the_sprite_group):
+        flag = False
+        if self.action not in (5,6,7,8,9,10,14):
+            for enemy in [enemy for enemy in the_sprite_group.enemy0_group 
+                            if enemy.is_on_screen and enemy.atk_rect_scaled.width != 0
+                            ]:
+                    if enemy.atk_rect_scaled.colliderect(self.rect.x - 1.5*self.width, 
+                                                        self.rect.y - 1.5*self.width, 
+                                                        self.rect.width + 3*self.width, 
+                                                        self.rect.height + 3*self.width
+                                                        ):
+                        flag = True
+        
+        return flag
         
     def do_instant_st_regen(self, amnt):
         if amnt == 0:
@@ -660,10 +675,11 @@ class player(pygame.sprite.Sprite):
                             
             #special tiles
             elif(tile[2] in (2, 60)):#spikes/ other trap tiles
-                if tile[1].colliderect(self.collision_rect.x + self.width//4 + dx, self.collision_rect.y + dy, self.width//2, self.height - 8):
+                if tile[1].colliderect(self.collision_rect.x + 3*self.width//8 + dx, self.collision_rect.y + dy, self.width//4, self.height - self.width//4):
                     #if self.frame_index%4 == 0:
                     self.take_damage(0.2)
                     self.vel_y = 0
+                    
             
             elif(tile[2] in one_way_tiles):#one way tiles
                 if tile[1].colliderect(self.collision_rect.x, self.collision_rect.bottom - 16 + dy, self.width, 18):
@@ -1357,14 +1373,14 @@ class player(pygame.sprite.Sprite):
         if self.atk_show_sprite: #drawing melee sprite
             self.draw_with_flicker(self.image3, self.atk_rect, screen, self.atk1_stamina_cost > self.atk1_default_stam)
             
-        if self.vel_y > 1 and self.action == 1 and self.coyote_ratio > 0:# and pygame.time.get_ticks()%2 == 0:
-            num = int(255*(1-self.coyote_ratio))
-            pygame.draw.rect(screen, (num,num,num), 
-                             pygame.rect.Rect(self.collision_rect.x, 
-                                              self.collision_rect.y, 
-                                              self.collision_rect.width*(1-self.coyote_ratio), 
-                                              2)
-                             )
+        # if self.vel_y > 1 and self.action == 1 and self.coyote_ratio > 0:# and pygame.time.get_ticks()%2 == 0:
+        #     num = int(255*(1-self.coyote_ratio))
+        #     pygame.draw.rect(screen, (num,num,num), 
+        #                      pygame.rect.Rect(self.collision_rect.x, 
+        #                                       self.collision_rect.y, 
+        #                                       self.collision_rect.width*(1-self.coyote_ratio), 
+        #                                       2)
+        #                      )
         
     
     

@@ -331,7 +331,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                                 self.vel_y = -self.speed*0.75
                                 moving = True
                             elif player_rect.y - self.height*2 < self.rect.y + 4*chase_range*self.height and player_rect.y - self.height*2 >= self.rect.y:
-                                self.vel_y = self.speed*2.5
+                                self.vel_y = self.speed*2
                                 moving = True
                             if self.vel_y == 0:
                                 if player_rect.y > self.rect.bottom:
