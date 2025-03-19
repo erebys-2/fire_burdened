@@ -90,6 +90,8 @@ tile_list = []
 tile_types = ['standard', 'bg_oversized']
 change_once = False 
 
+eraser_mode = False
+
 
 path = 'config_textfiles/world_config/'
 path2 = 'config_textfiles/level_config/'
@@ -332,7 +334,7 @@ def editing_lvl_data(data):
             print("cannot place sprite group tile in non-game layer")
         elif data[y][x] != current_tile:
             data[y][x] = current_tile
-    if pygame.mouse.get_pressed()[2] == 1:
+    if pygame.mouse.get_pressed()[2] == 1 or (pygame.mouse.get_pressed()[0] == 1 and eraser_mode):
         data[y][x] = -1
 
 description = 'game layer'
@@ -505,6 +507,9 @@ while run:
         if(event.type == pygame.KEYDOWN):
             if event.key == pygame.K_ESCAPE:
                 run = False
+                
+            if event.key == pygame.K_LSHIFT:
+                eraser_mode = not eraser_mode
 
             if event.key == pygame.K_w:
                 level += 1

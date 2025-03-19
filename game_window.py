@@ -532,7 +532,7 @@ def main():
 			status_bars.draw2(screen, player0.action_history, (7,8,16), font_larger)
 			status_bars.draw_status_icons(screen, player0, font)
 			if world.plot_index_dict != {} and world.plot_index_dict['opening_scene'] == -4:
-				status_bars.draw_tutorial_cues(screen, player0, player0.do_extended_hitbox_collisions(the_sprite_group), ctrls_list, font_larger)
+				status_bars.draw_tutorial_cues(screen, player0, player0.do_extended_hitbox_collisions(the_sprite_group), ui_manager0.controller_connected, ctrls_list, font_larger)
 			player_inv_UI.show_selected_item(player0.inventory_handler.inventory, screen)
    
 			#passive items temp code
