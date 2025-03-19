@@ -381,14 +381,28 @@ class player(pygame.sprite.Sprite):
             for enemy in [enemy for enemy in the_sprite_group.enemy0_group 
                             if enemy.is_on_screen and enemy.atk_rect_scaled.width != 0
                             ]:
-                    if enemy.atk_rect_scaled.colliderect(self.rect.x - 1.5*self.width, 
+                    flag = enemy.atk_rect_scaled.colliderect(self.rect.x - 1.5*self.width, 
                                                         self.rect.y - 1.5*self.width, 
                                                         self.rect.width + 3*self.width, 
                                                         self.rect.height + 3*self.width
-                                                        ):
-                        flag = True
+                                                        )
+        return flag
+    
+    def check_for_breakable2(self, the_sprite_group):
+        flag = False
+        for p_int in [p_int for p_int in the_sprite_group.p_int_group 
+                            if p_int.is_onscreen and p_int.id == 'breakable_brick2'
+                            ]:
+            flag = (((self.rect.x < p_int.rect.x and self.direction > 0) or 
+                    (self.rect.x > p_int.rect.x and self.direction < 0)) and
+                     p_int.rect.colliderect(self.rect.x - 2*self.width, 
+                                            self.rect.y, 
+                                            self.rect.width + 4*self.width, 
+                                            self.rect.height
+                                            ))
         
         return flag
+                    
         
     def do_instant_st_regen(self, amnt):
         if amnt == 0:
@@ -472,7 +486,7 @@ class player(pygame.sprite.Sprite):
         hitting_wall = self.hitting_wall
         hitting_wall_timer = self.hitting_wall_timer
         
-        for p_int in [p_int for p_int in platform_sprite_group if p_int.rect.x > -32 and p_int.rect.x < 640]:
+        for p_int in [p_int for p_int in platform_sprite_group if p_int.rect.x > -320 and p_int.rect.x < 960]:
             if p_int.collision_and_hostility[p_int.id][0]:
                 #self.atk1_grinding(p_int.rect, the_sprite_group)
                 #y collisions

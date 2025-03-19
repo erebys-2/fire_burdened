@@ -56,7 +56,7 @@ class StatusBars():
         self.color = (0,0,0)
         
        
-    def draw_tutorial_cues(self, screen, player, enemies_nearby, controller_en, ctrls_list, font):
+    def draw_tutorial_cues(self, screen, player, enemies_nearby, p_int_nearby, controller_en, ctrls_list, font):
         #draw player action cues
         txt = ''
         x_disp = 0
@@ -78,6 +78,14 @@ class StatusBars():
                 x_disp = player.direction*4 - player.rect.width//2
             else:
                 txt = '[Melee] or [Roll]'
+                x_disp = player.direction*4 - player.rect.width//2
+                
+        elif p_int_nearby:
+            if not controller_en:
+                txt = f'[{pygame.key.name(ctrls_list[2])}] >> [{pygame.key.name(ctrls_list[4])}]'
+                x_disp = player.direction*4 - player.rect.width//2
+            else:
+                txt = '[Roll] >> [Melee]'
                 x_disp = player.direction*4 - player.rect.width//2
             
         if txt != '':

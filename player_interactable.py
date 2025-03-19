@@ -7,7 +7,7 @@ from ItemFile import Item
 
 class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that can interact with the player/have hitboxes
     #constructor
-    def __init__(self, x, y, scale, direction, id, ini_vol, enabled, moveable, is_moving_plat):
+    def __init__(self, x, y, scale, direction, id, ini_vol, enabled):
         pygame.sprite.Sprite.__init__(self)
         self.direction = direction
         if id == 'tall_plant':
@@ -16,8 +16,8 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                 self.direction = -1
             
         self.enabled = enabled
-        self.moveable = moveable
-        self.is_moving_plat = is_moving_plat
+        self.is_moving_plat = id in ('moving_plat_h', 'moving_plat_v', 'crusher_top')
+
         self.angle = 0
         self.initial_y = y
         self.initial_x = x
@@ -91,6 +91,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
             'grass':(False, False),
             'tall_plant':(False, False),
             'breakable_brick1':(True, False),
+            'breakable_brick2':(True, False),
             'flame_pillar':(False, True)
         }
         
@@ -245,7 +246,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                     #     self.action = 0
                     #     self.rect.height = 32
                         
-                elif self.id == 'breakable_brick1':
+                elif self.id == 'breakable_brick1' or (self.id == 'breakable_brick2' and player_action == 10):
                     #print(self.durability)
                     if self.durability > 0:
                         if (

@@ -62,30 +62,13 @@ class sprite_instantiator():
                     world.enemy0_order_id += 1
                     
             elif sprite_category == 'p_int':
-                if sprite_id == 'crusher_top':
-                    p_int = player_interactable_(x * 32, y * 32, 1, 1, 'crusher_top', ini_vol, True, False, True)
-                    the_sprite_group.p_int_group.add(p_int)
-                elif sprite_id == 'spinning_blades':
-                    p_int2 = player_interactable_(x * 32, y * 32, 2, 1, 'spinning_blades', ini_vol, True, False, False)
-                    the_sprite_group.p_int_group2.add(p_int2)
-                elif sprite_id == 'moving_plat_h':
-                    p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_h', ini_vol, True, False, True)
-                    the_sprite_group.p_int_group.add(p_int)
-                elif sprite_id == 'moving_plat_v':
-                    p_int = player_interactable_(x * 32, y * 32, 1, 1, 'moving_plat_v', ini_vol, True, False, True)
-                    the_sprite_group.p_int_group.add(p_int)
-                elif sprite_id == 'grass':
-                    p_int = player_interactable_(x * 32, y * 32, 1, 1, 'grass', ini_vol, True, False, False)
-                    the_sprite_group.p_int_group.add(p_int)
-                elif sprite_id == 'tall_plant':
-                    p_int = player_interactable_(x * 32, y * 32, 1, 1, 'tall_plant', ini_vol, True, False, False)
-                    the_sprite_group.p_int_group.add(p_int)
-                elif sprite_id == 'breakable_brick1':
-                    p_int = player_interactable_(x * 32, y * 32, 1, 1, 'breakable_brick1', ini_vol, True, False, False)
-                    the_sprite_group.p_int_group.add(p_int)
-                elif sprite_id == 'flame_pillar':
-                    p_int = player_interactable_(x * 32, y * 32, 1, 1, 'flame_pillar', ini_vol, True, False, False)
-                    the_sprite_group.p_int_group.add(p_int)
+                if sprite_id == 'spinning_blades':
+                     p_int2 = player_interactable_(x * 32, y * 32, 2, 1, 'spinning_blades', ini_vol, True)
+                     the_sprite_group.p_int_group2.add(p_int2)
+                else:
+                    the_sprite_group.p_int_group.add(player_interactable_(x * 32, y * 32, 1, 1, sprite_id, ini_vol, True))
+                
+               
                 
             #bg type sprites
             elif sprite_category == 'bg_sprite':
