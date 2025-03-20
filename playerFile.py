@@ -119,10 +119,10 @@ class player(pygame.sprite.Sprite):
         #print(os.listdir(f'sprites/player'))
         for animation in animation_types:
             temp_list = []
-            frames = len(os.listdir(f'sprites/player/{animation}'))
+            frames = len(os.listdir(f'assets/sprites/player/{animation}'))
 
             for i in range(frames):
-                img = pygame.image.load(f'sprites/player/{animation}/{i}.png').convert_alpha()
+                img = pygame.image.load(f'assets/sprites/player/{animation}/{i}.png').convert_alpha()
                 img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
                 temp_list.append(img)
             self.frame_list.append(temp_list)
@@ -145,7 +145,7 @@ class player(pygame.sprite.Sprite):
         self.atk_rect = pygame.Rect(-32, -32, 0,0)#self.rect.x, self.rect.y, self.rect.height, 2*self.rect.width
         self.atk_rect_scaled = pygame.Rect(-32, -32, 0,0)
         
-        self.m_player = music_player(['hat.wav', 'hat2.wav', 'step.wav', 'step2.wav', 'slash.wav', 'shoot.wav', 'slash2.wav', 'boonk.wav', 'woop.wav', 'woop2.wav'], ini_vol)
+        self.m_player = music_player(['hat.mp3', 'hat2.mp3', 'step.mp3', 'step2.mp3', 'slash.mp3', 'shoot.mp3', 'slash2.mp3', 'boonk.mp3', 'woop.mp3', 'woop2.mp3'], ini_vol)
         self.ini_vol = ini_vol
         self.play_sound_once_en = True
 
@@ -170,7 +170,7 @@ class player(pygame.sprite.Sprite):
         )
         
         t = textfile_formatter()
-        config_path = 'config_textfiles/player_config'
+        config_path = 'assets/config_textfiles/player_config'
         stamina_ini_cost_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'player_stamina_base_costs_config.txt')), 'float')
         self.action_history = [-1,-1,-1,-1]
         

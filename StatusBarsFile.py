@@ -21,27 +21,27 @@ class StatusBars():
         self.bar_ydisp2 = 20 * scale
         self.bar_ydisp1 = self.bar_ydisp2//5
         
-        self.image = pygame.image.load('sprites/UI/statusbars/0.png').convert_alpha()
+        self.image = pygame.image.load('assets/sprites/UI/statusbars/0.png').convert_alpha()
         self.image = pygame.transform.scale(self.image, (int(self.image.get_width() * scale), int(self.image.get_height() * scale)))
         
-        self.image2 = pygame.image.load('sprites/UI/statusbars/1.png').convert_alpha()
+        self.image2 = pygame.image.load('assets/sprites/UI/statusbars/1.png').convert_alpha()
         self.image2 = pygame.transform.scale(self.image2, (int(self.image2.get_width() * scale), int(self.image2.get_height() * scale)))
         
-        self.img3 = pygame.image.load('sprites/UI/melee_count/0.png').convert_alpha()
-        self.img4 = pygame.image.load('sprites/UI/melee_count/1.png').convert_alpha()
-        self.img5 = pygame.image.load('sprites/UI/melee_count/2.png').convert_alpha()
+        self.img3 = pygame.image.load('assets/sprites/UI/melee_count/0.png').convert_alpha()
+        self.img4 = pygame.image.load('assets/sprites/UI/melee_count/1.png').convert_alpha()
+        self.img5 = pygame.image.load('assets/sprites/UI/melee_count/2.png').convert_alpha()
         self.rect_list = []
         
         self.status_icon_imglist = []
         self.status_enable_list = []
-        path_ = 'sprites/UI/status_icons'
+        path_ = 'assets/sprites/UI/status_icons'
         for i in range(len(os.listdir(path_))):
             self.status_icon_imglist.append(pygame.image.load(os.path.join(path_+f'/{i}.png')).convert_alpha())
             self.status_enable_list.append(False)
 
         self.arrow_y_disp = -999
         self.direction_img_list = []
-        path_ = 'sprites/UI/directions'
+        path_ = 'assets/sprites/UI/directions'
         for i in range(len(os.listdir(path_))):
             self.direction_img_list.append(pygame.image.load(os.path.join(path_+f'/{i}.png')).convert_alpha())
         
@@ -66,7 +66,7 @@ class StatusBars():
                 x_disp = player.direction*4 - player.rect.width//2
             else:
                 txt = '[Jump] or [Roll]'
-                x_disp = player.direction*4 - player.rect.width//2
+                x_disp = player.direction*4 - player.rect.width*0.75
             if player.action in (1,0):#draw exhaustion count down
                 countdown = str(len(player.frame_list[player.action]) - player.frame_index)
                 self.draw_text(f'({countdown})', 
@@ -78,7 +78,7 @@ class StatusBars():
                 x_disp = player.direction*4 - player.rect.width//2
             else:
                 txt = '[Melee] or [Roll]'
-                x_disp = player.direction*4 - player.rect.width//2
+                x_disp = player.direction*4 - player.rect.width*0.75
                 
         elif p_int_nearby:
             if not controller_en:
@@ -86,7 +86,7 @@ class StatusBars():
                 x_disp = player.direction*4 - player.rect.width//2
             else:
                 txt = '[Roll] >> [Melee]'
-                x_disp = player.direction*4 - player.rect.width//2
+                x_disp = player.direction*4 - player.rect.width*0.75
             
         if txt != '':
             self.draw_text(txt, font, (255,255,255), player.rect.centerx + x_disp, player.rect.y - 32, screen)

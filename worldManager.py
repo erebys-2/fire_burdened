@@ -58,23 +58,23 @@ class World():
         
         for tile_set in tile_set_types:
             temp_list = []
-            tile_count = len(os.listdir(f'sprites/tileset/{tile_set}'))
+            tile_count = len(os.listdir(f'assets/sprites/tileset/{tile_set}'))
 
             for i in range(tile_count):
-                tile_img = pygame.image.load(f'sprites/tileset/{tile_set}/{i}.png').convert_alpha()
+                tile_img = pygame.image.load(f'assets/sprites/tileset/{tile_set}/{i}.png').convert_alpha()
                 temp_list.append(tile_img)
             self.tileList.append(temp_list)
             
         self.t1 = textfile_formatter()
         
         #create dicitonary from special tiles text file
-        path = 'config_textfiles/world_config/'
+        path = 'assets/config_textfiles/world_config/'
         self.sprite_group_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'sprite_group_tiles_dict.txt')), 'list')
         self.static_bg_oversized_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'static_bg_oversized_tiles_dict.txt')), 'int')
         self.special_hitbox_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'special_hitbox_tiles_dict.txt')), 'none')
         self.slightly_oversized_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'slightly_oversized_tiles_dict.txt')), 'float')
         
-        path2 = 'config_textfiles/level_config/'
+        path2 = 'assets/config_textfiles/level_config/'
         self.level_sizes_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path2 + 'level_sizes_dict.txt')), 'list')
 
         #load onetime_spawn_dict whenever a save file is selected
@@ -90,7 +90,7 @@ class World():
         
         self.plot_index_dict = {}
         self.npc_current_dialogue_list = []
-        for npc in range(len(os.listdir('sprites/npcs'))):
+        for npc in range(len(os.listdir('assets/sprites/npcs'))):
             self.npc_current_dialogue_list.append(0)
         
         self.lvl_slice_lists = []
@@ -161,7 +161,7 @@ class World():
             level_csv_data.append(r)
 
         #change list with values from CSV file
-        with open(f'level_files/level{level}_{csv_data_name}.csv', newline= '') as csvfile:
+        with open(f'assets/level_files/level{level}_{csv_data_name}.csv', newline= '') as csvfile:
             reader = csv.reader(csvfile, delimiter= ',') 
             for x, current_row in enumerate(reader):
                 for y, tile in enumerate(current_row):

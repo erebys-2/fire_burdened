@@ -44,12 +44,12 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         else:
             scale2 = 1
             
-        for animation in os.listdir(f'sprites/player_interactable/{self.id}'):#order matters for these, I don't want to keep adding to dictionaries 
+        for animation in os.listdir(f'assets/sprites/player_interactable/{self.id}'):#order matters for these, I don't want to keep adding to dictionaries 
             temp_list = []
-            frames = len(os.listdir(f'sprites/player_interactable/{self.id}/{animation}'))
+            frames = len(os.listdir(f'assets/sprites/player_interactable/{self.id}/{animation}'))
         
             for i in range(frames):
-                img = pygame.image.load(f'sprites/player_interactable/{self.id}/{animation}/{i}.png').convert_alpha()
+                img = pygame.image.load(f'assets/sprites/player_interactable/{self.id}/{animation}/{i}.png').convert_alpha()
                 img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale * scale2)))
                 temp_list.append(img)
             self.frame_list.append(temp_list)
@@ -72,7 +72,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         self.width = self.image.get_width()
         self.height = self.image.get_height()
         
-        self.m_player = music_player(['mc_anvil.wav', 'step2soft.wav', 'pop3.wav'], ini_vol)
+        self.m_player = music_player(['mc_anvil.mp3', 'step2soft.mp3', 'pop3.mp3'], ini_vol)
         self.ini_vol = ini_vol
         
         self.dropping = False

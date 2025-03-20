@@ -1,0 +1,13 @@
+How to play:
+options> controls
+
+esc/enter key for dialogue, mouse for clicking buttons (no controller support for this)
+
+Controller support:
+-load controls 1, reset buttons or try playing
+(it doesn't recognize button numbers at first)
+
+Notes:
+-do not the move the exe file out, it needs the assets folder
+-see README.txt for more info
+

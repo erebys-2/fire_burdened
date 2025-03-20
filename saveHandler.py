@@ -12,7 +12,7 @@ class save_file_handler():
         self.t1 = textfile_formatter()
         
         self.ini_player_inv = []
-        for inv_slot in self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(f'save_files/initial', self.PI_str))):
+        for inv_slot in self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(f'assets/save_files/initial/', self.PI_str))):
             self.ini_player_inv.append(['empty', 0])
         
     
@@ -25,7 +25,7 @@ class save_file_handler():
             self.OSD_str:''
         }
         
-        path = f'save_files/{slot}'
+        path = f'assets/save_files/{slot}/'
         
         txt_file_map[self.PS_str] = f'level: {level}\nplayer_x: {player.x_coord}\nplayer_y: {player.rect.y - 8}\nhits_tanked: {player.hits_tanked}\nst_cap: {player.stamina_usage_cap}\nchar: {player.char_level}'
         
@@ -53,15 +53,15 @@ class save_file_handler():
             self.t1.overwrite_file(os.path.join(path, entry), txt_file_map[entry])
             
     def check_plot_index(self, slot):
-        return self.t1.read_text_from_file(os.path.join(f'save_files/{slot}', self.PID_str))[0] != 'empty'
+        return self.t1.read_text_from_file(os.path.join(f'assets/save_files/{slot}/', self.PID_str))[0] != 'empty'
             
     def load_save(self, slot):
-        saves_path = f'save_files/{slot}'
+        saves_path = f'assets/save_files/{slot}/'
         
         #initial values
         
         plot_index_dict = {}
-        for npc in os.listdir('sprites/npcs'):
+        for npc in os.listdir('assets/sprites/npcs'):
             plot_index_dict[npc] = -1
             
         lvl_completion_dict = {0: 0}
@@ -79,7 +79,7 @@ class save_file_handler():
         if self.t1.read_text_from_file(os.path.join(saves_path, self.OSD_str))[0] != 'empty':
             onetime_spawn_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(saves_path, self.OSD_str)), 'list_list')
         else:
-            path2 = 'config_textfiles/world_config'
+            path2 = 'assets/config_textfiles/world_config/'
             onetime_spawn_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path2, 'ini_onetime_spawns.txt')), 'list_list')
         
         #set plot index
@@ -136,7 +136,7 @@ class save_file_handler():
     
         
     def reset_specific_save(self, slot):
-        path = f'save_files/{slot}'
+        path = f'assets/save_files/{slot}/'
         
         txt_file_map = {
             self.PS_str:f'level: 1\nplayer_x: 32\nplayer_y: 128\nhits_tanked: -1\nst_cap: -1\nchar: 0',

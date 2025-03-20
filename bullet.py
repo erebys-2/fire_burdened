@@ -5,7 +5,7 @@ class bullet_(pygame.sprite.Sprite):
     def __init__(self, x, y, speed, direction, scale, type, ini_vol):
         pygame.sprite.Sprite.__init__(self)
         
-        self.m_player = music_player(['pop.wav', 'hit.wav'], ini_vol)
+        self.m_player = music_player(['pop.mp3', 'hit.mp3'], ini_vol)
         self.Active = True
         self.scale = scale
         
@@ -36,10 +36,10 @@ class bullet_(pygame.sprite.Sprite):
             
         for animation in self.animation_types:
             temp_list = []
-            frames = len(os.listdir(f'sprites/bullet/{self.bullet_type}/{animation}'))
+            frames = len(os.listdir(f'assets/sprites/bullet/{self.bullet_type}/{animation}'))
 
             for i in range(frames):
-                img = pygame.image.load(f'sprites/bullet/{self.bullet_type}/{animation}/{i}.png').convert_alpha()
+                img = pygame.image.load(f'assets/sprites/bullet/{self.bullet_type}/{animation}/{i}.png').convert_alpha()
                 img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
                 temp_list.append(img)
             self.frame_list.append(temp_list)

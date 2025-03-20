@@ -41,7 +41,7 @@ def main():
 	# screen = pygame.Surface(standard_size)
 	screen = pygame.display.set_mode(standard_size, flags, vsync=0)
 
-	icon = pygame.image.load('icon.png')
+	icon = pygame.image.load('assets/icon.png')
 	pygame.display.set_icon(icon)
 
 	pygame.display.set_caption(' ')
@@ -149,7 +149,7 @@ def main():
 	area_name_dict = {}
 	for entry in level_dict:
 		area_name_dict[entry] = level_dict[entry][4]
-	area_name_img = pygame.image.load('sprites/pause_bg2.png').convert_alpha()
+	area_name_img = pygame.image.load('assets/sprites/pause_bg2.png').convert_alpha()
 	area_name_img = pygame.transform.scale(area_name_img, (SCREEN_WIDTH, SCREEN_HEIGHT//15))
 
 	#lists for game_settings
@@ -181,7 +181,7 @@ def main():
 	#reading settings data
 	def read_settings_data(data):
 		temp_list = []
-		with open(f'game_settings/{data}.csv', newline= '') as csvfile:
+		with open(f'assets/game_settings/{data}.csv', newline= '') as csvfile:
 			reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
 			for row in reader:
 				for entry in row:
@@ -226,7 +226,7 @@ def main():
 	dialogue_box0 = dialogue_box(vol_lvl)
 
 	#music player instance-------------------------------------------------------------------------------------------
-	m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav']
+	m_player_sfx_list_main = ['roblox_oof.mp3', 'hat.mp3']
 	m_player = music_player(m_player_sfx_list_main, vol_lvl)
 
 	#particle group handler
@@ -262,7 +262,7 @@ def main():
 	#load initial level-------------------------------------------------------------------------------------------------
 	
 	#load img dict for particles
-	particle_path = 'sprites/particle'
+	particle_path = 'assets/sprites/particle'
 	particle_img_dict = {}
 	for subdir in os.listdir(particle_path):
 		temp_list = []
@@ -465,7 +465,7 @@ def main():
 			scroll_x = player0.scrollx + camera.scrollx
 		else:
 			scroll_x = 0
-			area_name_time = pygame.time.get_ticks()
+			#area_name_time = pygame.time.get_ticks()
 		
 			
 	
@@ -1015,7 +1015,7 @@ def main():
 				#===============================================================UI Related Keys=============================================================
 
 				# if event.key == pygame.K_m:
-				# 	m_player.play_song('newsong18.wav')
+				# 	m_player.play_song('newsong18.mp3')
 				if event.key == pygame.K_c:
 					camera.is_visible = not camera.is_visible
 				if event.key == pygame.K_MINUS:
@@ -1259,73 +1259,73 @@ def main():
 		
 					#debugging flight button
 					#if you fly over the camera object the level breaks
-					if event.button == pygame.K_0:
-						player0.squat_done = True
+					# if event.button == pygame.K_0:
+					# 	player0.squat_done = True
 
 				#===============================================================UI Related Keys=============================================================
 
-				# if event.button == pygame.K_m:
-				# 	m_player.play_song('newsong18.wav')
-				if event.button == pygame.K_c:
-					camera.is_visible = not camera.is_visible
+				# # if event.button == pygame.K_m:
+				# # 	m_player.play_song('newsong18.mp3')
+				# if event.button == pygame.K_c:
+				# 	camera.is_visible = not camera.is_visible
 			
-				if (event.button == pygame.K_BACKSPACE or event.button == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable and not ui_manager0.saves_menu_enable: 
-				#escape exits UI ONLY before the options sub menu is shown and any deeper into sub menus
-					if level != 0:
-						ui_manager0.trigger_once = True
+				# if (event.button == pygame.K_BACKSPACE or event.button == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable and not ui_manager0.saves_menu_enable: 
+				# #escape exits UI ONLY before the options sub menu is shown and any deeper into sub menus
+				# 	if level != 0:
+				# 		ui_manager0.trigger_once = True
 
-						if (pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
-							next_level = 0
-							player0 = player(32, 160, speed, hp, stam, 0, 0, vol_lvl, camera_offset)
-							player_new_x = 32
-							player_new_y = 32
-							dialogue_box0.reset_internals()
-							pygame.mixer.stop()
-							play_click_sound()
+				# 		if (pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
+				# 			next_level = 0
+				# 			player0 = player(32, 160, speed, hp, stam, 0, 0, vol_lvl, camera_offset)
+				# 			player_new_x = 32
+				# 			player_new_y = 32
+				# 			dialogue_box0.reset_internals()
+				# 			pygame.mixer.stop()
+				# 			play_click_sound()
 
-						elif not dialogue_enable and not inventory_opened: #pause game, will trigger if player is not in dialogue
-							pause_game = True
-							pygame.mixer.pause()
-							play_click_sound()
+				# 		elif not dialogue_enable and not inventory_opened: #pause game, will trigger if player is not in dialogue
+				# 			pause_game = True
+				# 			pygame.mixer.pause()
+				# 			play_click_sound()
 		
-						elif (not player0.in_cutscene and #cannot esc out of cutscene
-            					(dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list or 
-                  				the_sprite_group.textbox_output[6][0])
-                 				): #exits dialogue window if an NPC finishes speaking (is this way to avoid bugs)
-							dialogue_enable = False
-							p_choice_handler0.disable()
+				# 		elif (not player0.in_cutscene and #cannot esc out of cutscene
+            	# 				(dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list or 
+                #   				the_sprite_group.textbox_output[6][0])
+                #  				): #exits dialogue window if an NPC finishes speaking (is this way to avoid bugs)
+				# 			dialogue_enable = False
+				# 			p_choice_handler0.disable()
 
-						if inventory_opened:#exit inventory if opened
-							inventory_opened = False
-							player_inv_UI.close_inventory()
+				# 		if inventory_opened:#exit inventory if opened
+				# 			inventory_opened = False
+				# 			player_inv_UI.close_inventory()
 							
-					else:#if on the main menu, the game will exit on button press
-						run = False
+				# 	else:#if on the main menu, the game will exit on button press
+				# 		run = False
 				
 		
-				if event.button == pygame.K_RETURN:
-					if pause_game and not ui_manager0.options_menu_enable:
-						ui_manager0.trigger_once = True
-						dialogue_trigger_ready = False
-						pause_game = False
-						pygame.mixer.unpause()
+				# if event.button == pygame.K_RETURN:
+				# 	if pause_game and not ui_manager0.options_menu_enable:
+				# 		ui_manager0.trigger_once = True
+				# 		dialogue_trigger_ready = False
+				# 		pause_game = False
+				# 		pygame.mixer.unpause()
 					
-					if dialogue_trigger_ready or player0.in_cutscene:
-						dialogue_enable = True
-					if dialogue_enable and not the_sprite_group.textbox_output[6][0]:
-						if dialogue_box0.str_list_rebuilt != dialogue_box0.current_str_list:
-							text_speed = 0
-							play_click_sound()
-						else:
-							text_speed = default_text_speed
-							next_dialogue = True
-							dialogue_box0.type_out = True				
+				# 	if dialogue_trigger_ready or player0.in_cutscene:
+				# 		dialogue_enable = True
+				# 	if dialogue_enable and not the_sprite_group.textbox_output[6][0]:
+				# 		if dialogue_box0.str_list_rebuilt != dialogue_box0.current_str_list:
+				# 			text_speed = 0
+				# 			play_click_sound()
+				# 		else:
+				# 			text_speed = default_text_speed
+				# 			next_dialogue = True
+				# 			dialogue_box0.type_out = True				
      
-					if level == 0:#default case, auto saving will overwrite data in file 0
-						play_click_sound()
-						ui_manager0.trigger_once = True
-						next_level = 1
-						selected_slot = 0
+				# 	if level == 0:#default case, auto saving will overwrite data in file 0
+				# 		play_click_sound()
+				# 		ui_manager0.trigger_once = True
+				# 		next_level = 1
+				# 		selected_slot = 0
 
 				# #temp bg adjustment
 				# amnt = 1
@@ -1380,6 +1380,8 @@ def main():
 				if event.button == ctrls_list[7]: #pygame.K_RALT
 					player0.speed = normal_speed
 					player0.sprint = False
+					inv_toggle = False
+					inv_toggle_en = False
 
 		#code to prevent drawing empty space beyond the level
 		screen_l_edge = 0

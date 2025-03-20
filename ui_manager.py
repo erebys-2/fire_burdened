@@ -10,15 +10,15 @@ import csv
 class ui_manager(): #Helper class for displaying and operating non-game UI (menus and sub menus)
     
     def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, fontlist, ini_vol, fs_size):
-        m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav']
+        m_player_sfx_list_main = ['roblox_oof.mp3', 'hat.mp3']
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
         self.t1 = textfile_formatter()
         self.text_manager0 = text_manager()
         self.save_handler = save_file_handler()
         
-        self.generic_img = pygame.image.load('sprites/generic_btn.png').convert_alpha()
-        self.invisible_img = pygame.image.load('sprites/invisible_btn.png').convert_alpha()
-        self.pause_img = pygame.image.load('sprites/pause_bg.png').convert_alpha()
+        self.generic_img = pygame.image.load('assets/sprites/generic_btn.png').convert_alpha()
+        self.invisible_img = pygame.image.load('assets/sprites/invisible_btn.png').convert_alpha()
+        self.pause_img = pygame.image.load('assets/sprites/pause_bg.png').convert_alpha()
         
         self.S_W = SCREEN_WIDTH
         self.S_H = SCREEN_HEIGHT
@@ -52,7 +52,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.ctrls_list = [-1]*10
         self.ctrls_updated = False
 
-        self.title_screen = pygame.image.load('sprites/title_screen.png').convert_alpha()
+        self.title_screen = pygame.image.load('assets/sprites/title_screen.png').convert_alpha()
         self.ts_rect = self.title_screen.get_rect()
         self.ts_rect.center = (self.S_W//2, self.S_H//2 +32)
         
@@ -70,7 +70,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.help_open = False
         self.help_btn_str = '[Open Tips]'
         
-        path = 'game_settings'
+        path = 'assets/game_settings'
         self.toggle_settings_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'toggle_settings.txt')), 'int')
         
         self.came_from_death_menu = False
@@ -93,7 +93,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         }  
         
         plot_index_dict = {} #populate plot index for each npc
-        for npc in os.listdir('sprites/npcs'):
+        for npc in os.listdir('assets/sprites/npcs'):
             plot_index_dict[npc] = -1
         rtn_dict['PID'] = plot_index_dict
         
@@ -101,7 +101,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
     
     def read_csv_data(self, data_name):
         temp_list = []
-        with open(f'game_settings/{data_name}.csv', newline= '') as csvfile:
+        with open(f'assets/game_settings/{data_name}.csv', newline= '') as csvfile:
             reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
             for row in reader:
                 for entry in row:
@@ -110,7 +110,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         return temp_list
         
     def write_csv_data(self, data_name, data):
-        with open(f'game_settings/{data_name}.csv', 'w', newline='') as csvfile:
+        with open(f'assets/game_settings/{data_name}.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter = ',')
             writer.writerow(data)
             
@@ -240,7 +240,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 for key_ in self.toggle_settings_dict:
                     str2 = str2 + f'{key_}: {self.toggle_settings_dict[key_]}\n'
                 str2 = str2[0:len(str2)-1]
-                self.t1.overwrite_file('game_settings/toggle_settings.txt', str2)
+                self.t1.overwrite_file('assets/game_settings/toggle_settings.txt', str2)
             self.text_manager0.disp_text_box(screen, self.fontlist[1], (f'[{str(self.toggle_settings_dict['skip_death_screen'] > 0)}]',''),
                                     (-1,-1,-1), (200,200,200), (self.button_list[3].rect.right + 10, self.button_list[3].rect.y + 8, 0, 0), False, False, 'none')
                 
@@ -297,7 +297,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                     self.rtn_dict['NL'] = 1
                     
                     #populate onetime_spawn_dict with default values
-                    path2 = 'config_textfiles/world_config'
+                    path2 = 'assets/config_textfiles/world_config/'
                     self.rtn_dict['OSD'] = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path2, 'ini_onetime_spawns.txt')), 'list_list') #onetime_spawn_dict
                     
                     #set flag

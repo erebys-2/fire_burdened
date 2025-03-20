@@ -31,7 +31,7 @@ class music_player():
         
         self.sfx = []
         for sound in sfx_list:
-            sfx = pygame.mixer.Sound(f'sfx/{sound}')
+            sfx = pygame.mixer.Sound(f'assets/sfx/{sound}')
             self.sfx.append(sfx)
         
         self.channel_count = 8
@@ -132,7 +132,7 @@ class music_player():
 
     def play_song(self, file_name):
         if not pygame.mixer.music.get_busy():
-            pygame.mixer.music.load(f'music/{file_name}')
+            pygame.mixer.music.load(f'assets/music/{file_name}')
             pygame.mixer.music.play()
         else:
             pygame.mixer.music.stop()

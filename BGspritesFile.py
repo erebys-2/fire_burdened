@@ -13,10 +13,10 @@ class animated_bg_sprite(pygame.sprite.Sprite):
         self.frame_index = 0
         self.update_time = pygame.time.get_ticks()
         
-        frames = len(os.listdir(f'sprites/bg_sprites/{self.name}'))
+        frames = len(os.listdir(f'assets/sprites/bg_sprites/{self.name}'))
 
         for i in range(frames):
-            img = pygame.image.load(f'sprites/bg_sprites/{self.name}/{i}.png').convert_alpha()
+            img = pygame.image.load(f'assets/sprites/bg_sprites/{self.name}/{i}.png').convert_alpha()
             img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
             self.frame_list.append(img)
 

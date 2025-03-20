@@ -12,7 +12,7 @@ SCREEN_HEIGHT = 480
 LOWER_MARGIN = 96
 SIDE_MARGIN = 320
 t1 = textfile_formatter()
-path = 'config_textfiles/level_config/'
+path = 'assets/config_textfiles/level_config/'
 level_sizes_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'level_sizes_dict.txt')), 'list')
 #print(level_sizes_dict)
 
@@ -93,8 +93,8 @@ change_once = False
 eraser_mode = False
 
 
-path = 'config_textfiles/world_config/'
-path2 = 'config_textfiles/level_config/'
+path = 'assets/config_textfiles/world_config/'
+path2 = 'assets/config_textfiles/level_config/'
 sprite_group_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'sprite_group_tiles_dict.txt')), 'list')
 static_bg_oversized_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'static_bg_oversized_tiles_dict.txt')), 'int')
 special_hitbox_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'special_hitbox_tiles_dict.txt')), 'none')
@@ -103,17 +103,17 @@ special_hitbox_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.j
 
 for tile_set in tile_types:
     temp_list = []
-    tile_count = len(os.listdir(f'sprites/tileset/{tile_set}'))
+    tile_count = len(os.listdir(f'assets/sprites/tileset/{tile_set}'))
 
     for i in range(tile_count):
-        img = pygame.image.load(f'sprites/tileset/{tile_set}/{i}.png').convert_alpha()
+        img = pygame.image.load(f'assets/sprites/tileset/{tile_set}/{i}.png').convert_alpha()
         temp_list.append(img)
     tile_list.append(temp_list)
 
 tile = tile_list[t_set_index][tile_index]
 
-save_img = pygame.image.load('sprites/save_btn.png').convert_alpha()
-load_img = pygame.image.load('sprites/load_btn.png').convert_alpha()
+save_img = pygame.image.load('assets/sprites/save_btn.png').convert_alpha()
+load_img = pygame.image.load('assets/sprites/load_btn.png').convert_alpha()
 
 '''
 good bg colors
@@ -315,14 +315,14 @@ for i in range(len(tile_list[t_set_index])):
 
 #-------Reading and writing level data for loading---------------------------------------
 def read_level_data(level, data_, data_str):
-	with open(f'level_files/level{level}_{data_str}.csv', newline= '') as csvfile:
+	with open(f'assets/level_files/level{level}_{data_str}.csv', newline= '') as csvfile:
 		reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
 		for x, current_row in enumerate(reader):
 			for y, tile in enumerate(current_row):
 				data_[x][y] = int(tile)
 
 def write_level_data(level, data_, data_str):
-    with open(f'level_files/level{level}_{data_str}.csv', 'w', newline='') as csvfile:
+    with open(f'assets/level_files/level{level}_{data_str}.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter = ',')
             for row in data_:
                 writer.writerow(row)

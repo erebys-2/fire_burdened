@@ -9,7 +9,7 @@ class particle_2(pygame.sprite.Sprite):
         self.Active = True
  
         if particle_img_dict == None:
-            particle_path = 'sprites/particle'
+            particle_path = 'assets/sprites/particle'
             self.particle_img_dict = {}
             for subdir in os.listdir(particle_path):
                 temp_list = []

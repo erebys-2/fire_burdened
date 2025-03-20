@@ -8,8 +8,8 @@ from music_player import music_player
 from textfile_handler import textfile_formatter
 import random
 
-config_path = 'config_textfiles/item_config'
-item_sprites_path = 'sprites/items'
+config_path = 'assets/config_textfiles/item_config/'
+item_sprites_path = 'assets/sprites/items/'
 max_item_count = 999
 
 #Items exist in 2 spaces: level spaces and inventory spaces
@@ -338,7 +338,7 @@ class item_usage_hander():  #helper class with logic for item usage and applying
                 
 class inventory_UI(): #handles displaying inventory, item description and counts, and slot selection
     def __init__(self, rows, cols, fontlist, SCREEN_WIDTH, SCREEN_HEIGHT, ini_vol):
-        m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav', 'woop.wav']
+        m_player_sfx_list_main = ['roblox_oof.mp3', 'hat.mp3', 'woop.mp3']
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
 
         self.rows = rows
@@ -364,13 +364,13 @@ class inventory_UI(): #handles displaying inventory, item description and counts
         self.slot = 0
         self.inv_toggle_timer = pygame.time.get_ticks()
         
-        self.generic_img = pygame.image.load('sprites/generic_btn.png').convert_alpha()
-        self.invisible_img = pygame.image.load('sprites/invisible_btn.png').convert_alpha()
-        self.inventory_btn = pygame.image.load('sprites/inventory_btn.png').convert_alpha()
-        self.inv_bg = pygame.image.load('sprites/pause_bg.png').convert_alpha()
+        self.generic_img = pygame.image.load('assets/sprites/generic_btn.png').convert_alpha()
+        self.invisible_img = pygame.image.load('assets/sprites/invisible_btn.png').convert_alpha()
+        self.inventory_btn = pygame.image.load('assets/sprites/inventory_btn.png').convert_alpha()
+        self.inv_bg = pygame.image.load('assets/sprites/pause_bg.png').convert_alpha()
         self.aria_frame_list = []
-        for i in range (len(os.listdir(f'sprites/misc_art/aria'))):
-            self.aria_frame_list.append(pygame.image.load(f'sprites/misc_art/aria/{i}.png').convert_alpha())
+        for i in range (len(os.listdir(f'assets/sprites/misc_art/aria'))):
+            self.aria_frame_list.append(pygame.image.load(f'assets/sprites/misc_art/aria/{i}.png').convert_alpha())
         
         self.inv_disp = (160,128) #inventory displacement for displaying slot
         self.isolated_slot_pos = (192, self.inv_disp[1] + self.rows*32 + 32)
@@ -718,7 +718,7 @@ class trade_menu_ui():
     #LIMITATIONS:
     #CANNOT HAVE 2 DIFFERENT PRICES FOR THE SAME ITEM
     def __init__(self, total_slots, fontlist, SCREEN_WIDTH, SCREEN_HEIGHT, ini_vol):
-        m_player_sfx_list_main = ['roblox_oof.wav', 'hat.wav', 'woop.wav']
+        m_player_sfx_list_main = ['roblox_oof.mp3', 'hat.mp3', 'woop.mp3']
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
 
         self.total_slots = total_slots
@@ -746,16 +746,16 @@ class trade_menu_ui():
         self.selected_group = 0
         
         #load ui images
-        self.generic_img = pygame.image.load('sprites/generic_btn.png').convert_alpha()
-        self.invisible_img = pygame.image.load('sprites/invisible_btn.png').convert_alpha()
-        self.inventory_btn = pygame.image.load('sprites/inventory_btn.png').convert_alpha()
-        self.inv_bg = pygame.image.load('sprites/pause_bg.png').convert_alpha()
+        self.generic_img = pygame.image.load('assets/sprites/generic_btn.png').convert_alpha()
+        self.invisible_img = pygame.image.load('assets/sprites/invisible_btn.png').convert_alpha()
+        self.inventory_btn = pygame.image.load('assets/sprites/inventory_btn.png').convert_alpha()
+        self.inv_bg = pygame.image.load('assets/sprites/pause_bg.png').convert_alpha()
         
         self.frame_index = 0
         self.frame_list = []
         self.all_frame_list = []
-        for i in range (len(os.listdir(f'sprites/misc_art/trade'))):
-            self.all_frame_list.append(pygame.image.load(f'sprites/misc_art/trade/{i}.png').convert_alpha())
+        for i in range (len(os.listdir(f'assets/sprites/misc_art/trade'))):
+            self.all_frame_list.append(pygame.image.load(f'assets/sprites/misc_art/trade/{i}.png').convert_alpha())
         
         self.inv_disp = (16,370) #initial position for first slot
         self.text_manager0 = text_manager()
@@ -771,7 +771,7 @@ class trade_menu_ui():
         self.item_details0 = item_details()
         
         self.t = textfile_formatter()
-        path2 = 'config_textfiles/item_config'
+        path2 = 'assets/config_textfiles/item_config'
         self.base_prices_dict = self.t.str_list_to_dict(self.t.read_text_from_file(os.path.join(path2, 'item_base_prices.txt')), 'list_list')
         
         self.transaction_msg = ''
@@ -938,7 +938,7 @@ class trade_menu_ui():
             self.enabled = True
             #set wares
             if trade_key != 'test':
-                path2 = 'config_textfiles/trade_config'
+                path2 = 'assets/config_textfiles/trade_config'
                 trade_data = self.t.str_list_to_list_list(self.t.read_text_from_file(os.path.join(path2, trade_key + '.txt')))
                 #first sublist in trade data is reserved for ordered non-item data:
                 #[exit index, start frame, end frame]

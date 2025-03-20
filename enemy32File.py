@@ -70,37 +70,37 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             self.hp = 6
             self.recoil = 58
             self.recoil_slow = 2
-            sfx_list = ['bassdrop2.wav', 'hit.wav', 'dog_hurt.wav', 'woof.wav', 'step2soft.wav']
+            sfx_list = ['bassdrop2.mp3', 'hit.mp3', 'dog_hurt.mp3', 'woof.mp3', 'step2soft.mp3']
         elif id == 'shooter':   
             animation_types = ['idle', 'move', 'hurt', 'die', 'shoot', 'jump'] 
             self.hp = 8
             self.recoil = 58
             self.recoil_slow = 2
-            sfx_list = ['bassdrop2.wav', 'hit.wav', 'roblox2.wav', 'shoot.wav', 'step2soft.wav']
-            #, '', 'bite.wav', 'bee.wav'
+            sfx_list = ['bassdrop2.mp3', 'hit.mp3', 'roblox2.mp3', 'shoot.mp3', 'step2soft.mp3']
+            #, '', 'bite.mp3', 'bee.mp3'
         elif id == 'fly':
             animation_types = ['idle', 'move', 'hurt', 'die']
             self.hp = 4
             self.recoil = 43
             self.recoil_slow = 3
-            sfx_list = ['bassdrop2.wav', 'hit.wav', 'bee_hurt.wav', 'bee.wav', 'step2soft.wav']
+            sfx_list = ['bassdrop2.mp3', 'hit.mp3', 'bee_hurt.mp3', 'bee.mp3', 'step2soft.mp3']
         elif id == 'walker':
             animation_types = ['idle', 'move', 'hurt']
             self.action = 1
             self.hp = 6
             self.recoil = 54
             self.recoil_slow = 2
-            sfx_list = ['bassdrop2.wav', 'hit.wav', 'cough.wav', 'bite.wav', 'step2soft.wav']
+            sfx_list = ['bassdrop2.mp3', 'hit.mp3', 'cough.mp3', 'bite.mp3', 'step2soft.mp3']
             
         self.m_player = music_player(sfx_list, ini_vol)
         self.ini_vol = ini_vol
 
         for animation in animation_types:
             temp_list = []
-            frames = len(os.listdir(f'sprites/enemies/{self.id}/{animation}'))
+            frames = len(os.listdir(f'assets/sprites/enemies/{self.id}/{animation}'))
 
             for i in range(frames):
-                img = pygame.image.load(f'sprites/enemies/{self.id}/{animation}/{i}.png').convert_alpha()
+                img = pygame.image.load(f'assets/sprites/enemies/{self.id}/{animation}/{i}.png').convert_alpha()
                 
                 if animation == 'hurt' and i < 2:
                     img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * 0.9 * scale)))

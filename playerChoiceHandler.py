@@ -17,7 +17,7 @@ class player_choice_handler():
         self.prompt = ('','')
         
         self.t1 = textfile_formatter()
-        path = 'npc_dialogue_files/player_choice_config/'
+        path = 'assets/npc_dialogue_files/player_choice_config/'
         self.player_choice_dict = {}
         player_choice_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'choice_selection_dict.txt')), 'list_list')
         for entry in player_choice_dict:
@@ -28,9 +28,9 @@ class player_choice_handler():
 
         self.trigger_once = True
         self.button_list = []
-        self.btn_img = pygame.image.load('sprites/dialogue_btn.png').convert_alpha()
-        self.bg_img = pygame.image.load('sprites/pause_bg.png').convert_alpha()
-        self.prompt_box_bg = pygame.image.load('sprites/dialogue_box.png').convert_alpha()
+        self.btn_img = pygame.image.load('assets/sprites/dialogue_btn.png').convert_alpha()
+        self.bg_img = pygame.image.load('assets/sprites/pause_bg.png').convert_alpha()
+        self.prompt_box_bg = pygame.image.load('assets/sprites/dialogue_box.png').convert_alpha()
         
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
         self.text_manager0 = text_manager()
