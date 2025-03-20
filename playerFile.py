@@ -360,7 +360,6 @@ class player(pygame.sprite.Sprite):
                             damage += 2
                             self.take_damage(damage)
                         if enemy[1] == the_sprite_group.p_int_group2:
-                            #print(pygame.time.get_ticks())
                             damage += 0.75*self.hp
                             self.take_damage(damage)
                     #print(damage)
@@ -382,9 +381,9 @@ class player(pygame.sprite.Sprite):
                             if enemy.is_on_screen and enemy.atk_rect_scaled.width != 0
                             ]:
                     flag = enemy.atk_rect_scaled.colliderect(self.rect.x - 1.5*self.width, 
-                                                        self.rect.y - 1.5*self.width, 
+                                                        self.rect.y - 2*self.width, 
                                                         self.rect.width + 3*self.width, 
-                                                        self.rect.height + 3*self.width
+                                                        self.rect.height + 4*self.width
                                                         )
         return flag
     
@@ -438,7 +437,6 @@ class player(pygame.sprite.Sprite):
     def check_item_pickup(self, the_sprite_group):#player side confirmation an item is picked up
         for item in the_sprite_group.item_group:
             if (self.hitbox_rect.colliderect(item.rect)):
-                #print("gotteem")
                 #last param is a boolean for exluding items in the item id list prior, when set to False it will only include those items
                 if self.inventory_handler.pick_up_item(self.collision_rect, the_sprite_group.item_group, ['Cursed Flesh'], True):
                     self.m_player.play_sound(self.m_player.sfx[8], None)
@@ -477,10 +475,7 @@ class player(pygame.sprite.Sprite):
                 if obj.is_cutscene:#selects cutscenes out of not collided npcs
                     self.in_cutscene = False
                     
-        #     #print(obj.name)
-        # else:
-        #     self.dialogue_trigger_ready = False
-                
+
     def do_platform_sprite_collisions(self, dx, dy, platform_sprite_group):
         in_air = self.in_air
         hitting_wall = self.hitting_wall
@@ -534,7 +529,6 @@ class player(pygame.sprite.Sprite):
                     and self.disp_flag #and self.action == 67
                     and p_int.rect.colliderect(self.collision_rect.x + self.direction*self.width//2 + dx, self.collision_rect.y+2, self.width, self.height - 2)
                     ):
-                    #print()
                     dx = -16*self.direction
             
                     hitting_wall = True
@@ -820,7 +814,6 @@ class player(pygame.sprite.Sprite):
                 if (self.action != 7 and self.action != 8 and self.action != 10):
                     self.rolling = False
                     #self.roll_count = self.roll_limit
-                #print(self.action_history)
                 if self.squat and self.action_history[2] != 9 and self.action_history[0] != 7:
                     the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 1)
                     self.squat_done = True
@@ -1409,7 +1402,7 @@ class player(pygame.sprite.Sprite):
                 self.atk1_stamina_cost = self.atk1_default_stam
                 self.atk1 = False
                 self.char_level += self.char_dict['melee']
-                print(self.char_level)
+                #print(self.char_level)
             elif self.action == 9 and (new_action == 7 or new_action == 8) and self.atk1:
                 self.crit = True
                 if self.check_if_in_ss_range():
@@ -1421,7 +1414,7 @@ class player(pygame.sprite.Sprite):
                 self.crit == False
                 self.m_player.play_sound(self.m_player.sfx[1], None)
                 self.char_level += self.char_dict['melee']
-                print(self.char_level)
+                #print(self.char_level)
             elif new_action == 5:
                 print("oof") #make player hurting sound
             elif new_action == 11:

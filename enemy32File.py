@@ -233,6 +233,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                             self.atk_rect = pygame.Rect(self.rect.x + self.half_width - 8, self.rect.y + 16, self.half_width + 16, self.height - 32)
                         else:
                             self.atk_rect.centerx = self.rect.centerx
+                            self.atk_rect.centery = self.rect.centery
                         self.atk_rect_scaled = self.atk_rect
                     else:
                         self.atk1_kill_hitbox()
@@ -322,17 +323,17 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                         if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x <= self.rect.x:
                             dx = -self.speed
                             moving = True
-                            self.direction = 1
+                            self.direction = -1
                         elif player_rect.x < self.rect.x + self.width + chase_range*self.width and player_rect.x >= self.rect.x:
                             dx = self.speed
                             moving = True
-                            self.direction = -1
+                            self.direction = 1
                             
                         if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x < self.rect.x + self.width + chase_range*self.width:
-                            if player_rect.y - self.height*2 > self.rect.y - 2*chase_range*self.height and player_rect.y - self.half_height <= self.rect.y:
+                            if player_rect.y - self.height*2.5 > self.rect.y - 2*chase_range*self.height and player_rect.y - self.half_height <= self.rect.y:
                                 self.vel_y = -self.speed*0.75
                                 moving = True
-                            elif player_rect.y - self.height*2 < self.rect.y + 4*chase_range*self.height and player_rect.y - self.height*2 >= self.rect.y:
+                            elif player_rect.y - self.height*2.5 < self.rect.y + 4*chase_range*self.height and player_rect.y - self.height*2.5 >= self.rect.y:
                                 self.vel_y = self.speed*2
                                 moving = True
                             if self.vel_y == 0:
