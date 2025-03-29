@@ -104,8 +104,8 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 for i in range(frames):
                     img = pygame.image.load(f'assets/sprites/enemies/{self.id}/{animation}/{i}.png').convert_alpha()
                     
-                    if animation == 'hurt' and i < 2:
-                        img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * 1.2 * scale)))
+                    if animation == '2' and i < 2:
+                        img = pygame.transform.scale(img, (int(img.get_width() * 0.5 * scale), int(img.get_height() * 1.2 * scale)))
                     else:
                         img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
                     
@@ -345,7 +345,8 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                                 else:
                                     self.vel_y = -self.speed
 
-                                
+                        if self.action == 1 and self.vel_y == 0:
+                            self.vel_y += 1
                             #self.vel_y *= random.randint(-1,3)
                         # else:
                         #     self.vel_y = 0

@@ -28,6 +28,9 @@ from profilehooks import profile
 #@profile
 
 def main():
+	print('starting game')
+	icon = pygame.image.load('assets/icon.png')
+	pygame.display.set_icon(icon)
 	monitor_size = [pygame.display.Info().current_w, pygame.display.Info().current_h]
 
 	#setting the screen-----------------------------------------------------------
@@ -41,8 +44,7 @@ def main():
 	# screen = pygame.Surface(standard_size)
 	screen = pygame.display.set_mode(standard_size, flags, vsync=0)
 
-	icon = pygame.image.load('assets/icon.png')
-	pygame.display.set_icon(icon)
+	
 
 	pygame.display.set_caption(' ')
 	
@@ -264,13 +266,6 @@ def main():
 	#load img dict for particles
 	particle_path = 'assets/sprites/particle'
 	particle_img_dict = world.sp_ini.load_img_dict(particle_path)
-	# particle_img_dict = {}
-	# for subdir in os.listdir(particle_path):
-	# 	temp_list = []
-	# 	for i in range(len(os.listdir(f'{particle_path}/{subdir}'))):
-	# 		loaded_img = pygame.image.load(f'{particle_path}/{subdir}/{i}.png').convert_alpha()
-	# 		temp_list.append(loaded_img)
-	# 	particle_img_dict[subdir] = temp_list
 	
 	#add particle_2 objects into particle sprite groups
 	particle_2_ = particle_2(particle_img_dict)
@@ -324,6 +319,7 @@ def main():
  
 
 	show_cursor_signals = [level == 0, pause_game, not player0.Alive, inventory_opened, dialogue_enable, trade_ui_en]
+	print('game is running')
 
 	while run:
 		

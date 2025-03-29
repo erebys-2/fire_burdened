@@ -15,6 +15,7 @@ import csv
 
 class World():
     def __init__(self, screen_w, screen_h):
+        print('loading world')
         self.rect = pygame.rect.Rect(0,0,1,1)
         self.coords = []
         self.fg = []
@@ -55,7 +56,6 @@ class World():
         #self.ref_pt = pygame.Rect((0,0),(32,32))
 
         #load tiles/images
-        
         for tile_set in tile_set_types:
             temp_list = []
             tile_count = len(os.listdir(f'assets/sprites/tileset/{tile_set}'))
@@ -64,6 +64,7 @@ class World():
                 tile_img = pygame.image.load(f'assets/sprites/tileset/{tile_set}/{i}.png').convert_alpha()
                 temp_list.append(tile_img)
             self.tileList.append(temp_list)
+        
             
         self.t1 = textfile_formatter()
         
@@ -122,6 +123,7 @@ class World():
         self.death_counters_dict = {} #player deaths per level
         self.lvl_completion_dict = {0:0} #if all enemies are killed in a level
         self.lvl_completed = False
+        print('world loaded!')
             
     # Rabbid76's game map method, modified, from https://stackoverflow.com/questions/66781952/
     def create_map(self, size, level_tile_lists): #apply to all 1:1 layers

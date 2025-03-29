@@ -16,6 +16,7 @@ from music_player import music_player
 
 class sprite_instantiator():
     def __init__(self):
+        print('loading sprite instantiator')
         base_path = 'assets/sprites/'
         self.bg_sprite_img_dict = self.load_img_dict(os.path.join(base_path, 'bg_sprites'))
         self.enemy_img_dict = self.load_img_dict2(os.path.join(base_path, 'enemies'), 2)
@@ -33,6 +34,7 @@ class sprite_instantiator():
         self.ini_vol = 0
         self.m_player = music_player(None, self.ini_vol)
         self.m_player.sfx = self.master_sfx_list
+        print('sprite instantiator loaded!')
         
     
     def load_img_dict2(self, asset_path, scale):
@@ -45,8 +47,8 @@ class sprite_instantiator():
                 for i in range(len(os.listdir(f'{subdir_path}/{subdir2}'))):
                     loaded_img = pygame.image.load(f'{subdir_path}/{subdir2}/{i}.png').convert_alpha()
                     
-                    if f'{subdir2}' == 'hurt' and i < 2:#enemy spaghetti code :(
-                        loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * 1.2 * scale), int(loaded_img.get_height() * 0.8 * scale)))
+                    if asset_path == 'assets/sprites/enemies' and f'{subdir2}' == '2' and i < 2:#enemy spaghetti code :(
+                        loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * 0.8 * scale), int(loaded_img.get_height() * 1.1 * scale)))
                     else:
                         loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * scale), int(loaded_img.get_height() * scale)))
                     
