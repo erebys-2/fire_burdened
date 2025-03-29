@@ -535,8 +535,8 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         
     def show_vol_menu(self, screen):
         #kinda cursed rn, need to code a slider eventually
-        self.vol_lvl = self.read_csv_data('vol_data')
-        string = f'    {10*self.vol_lvl[0]}%'
+        self.vol_lvl = self.read_csv_data('vol_data')[0]
+        string = f'    {10*self.vol_lvl}%'
         self.text_manager0.disp_text_box(screen, self.fontlist[1], ('','Volume Level', string), (-1,-1,-1), (200,200,200), 
                                     (272, self.S_H//2 - 64,self.S_W,self.S_H), False, False, 'none')
 
@@ -550,11 +550,11 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         #not using do_btn_logic since this will play the btn click sound after the volume is adjusted
         if self.button_list[0].draw(screen):
             
-            if self.vol_lvl[0] < 10:
-                self.vol_lvl[0] += 1
+            if self.vol_lvl < 10:
+                self.vol_lvl += 1
             
             self.raise_volume = True
-            self.write_csv_data('vol_data', self.vol_lvl)
+            self.write_csv_data('vol_data', (self.vol_lvl, 10))
             self.m_player.set_vol_all_sounds(self.vol_lvl)
             self.m_player.play_sound(self.m_player.sfx[1], None)
         else:
@@ -563,11 +563,11 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             
         if self.button_list[1].draw(screen):
             
-            if self.vol_lvl[0] > 0:
-                self.vol_lvl[0] -= 1
+            if self.vol_lvl > 0:
+                self.vol_lvl -= 1
                 
             self.lower_volume = True
-            self.write_csv_data('vol_data', self.vol_lvl)
+            self.write_csv_data('vol_data', (self.vol_lvl, 10))
             self.m_player.set_vol_all_sounds(self.vol_lvl)
             self.m_player.play_sound(self.m_player.sfx[1], None)
         else:

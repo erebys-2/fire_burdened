@@ -1,4 +1,5 @@
-
+import pygame
+import os
 from enemy32File import enemy_32wide
 from BGspritesFile import tree, fountain, lamp
 from player_interactable import player_interactable_
@@ -6,6 +7,7 @@ from characterNPCs import Test, Test2, Mars
 from objectNPCs import save_pt, read_only_obj
 from cutsceneNPCs import opening_scene
 from ItemFile import Item
+from music_player import music_player
 
 #Helper class for world, for instantiating special tiles in game layer as sprites.
 #During level loading, when world.process_data is called, this reads data from 
@@ -14,9 +16,68 @@ from ItemFile import Item
 
 class sprite_instantiator():
     def __init__(self):
-        pass
+        base_path = 'assets/sprites/'
+        self.bg_sprite_img_dict = self.load_img_dict(os.path.join(base_path, 'bg_sprites'))
+        self.enemy_img_dict = self.load_img_dict2(os.path.join(base_path, 'enemies'), 2)
+        self.p_int_img_dict = self.load_img_dict2(os.path.join(base_path, 'player_interactable'), 1)
+        
+        sfx_path = 'assets/sfx'
+        self.master_sfx_list = []
+        self.sfx_index_dict = {}
+        i = 0
+        for sound in os.listdir(sfx_path):
+            self.sfx_index_dict[sound] = i
+            self.master_sfx_list.append(pygame.mixer.Sound(f'{sfx_path}/{sound}'))
+            i += 1
+            
+        self.ini_vol = 0
+        self.m_player = music_player(None, self.ini_vol)
+        self.m_player.sfx = self.master_sfx_list
+        
+    
+    def load_img_dict2(self, asset_path, scale):
+        img_dict = {}
+        for subdir in os.listdir(asset_path):
+            frame_list = []
+            subdir_path = f'{asset_path}/{subdir}'
+            for subdir2 in os.listdir(subdir_path):
+                temp_list = []
+                for i in range(len(os.listdir(f'{subdir_path}/{subdir2}'))):
+                    loaded_img = pygame.image.load(f'{subdir_path}/{subdir2}/{i}.png').convert_alpha()
+                    
+                    if f'{subdir2}' == 'hurt' and i < 2:#enemy spaghetti code :(
+                        loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * 1.2 * scale), int(loaded_img.get_height() * 0.8 * scale)))
+                    else:
+                        loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * scale), int(loaded_img.get_height() * scale)))
+                    
+                    temp_list.append(loaded_img)
+                frame_list.append(temp_list)
+            img_dict[subdir] = frame_list
+            
+        return img_dict
+    
+    def load_img_dict(self, asset_path):#2 layer deep
+        img_dict = {}
+        for subdir in os.listdir(asset_path):
+            temp_list = []
+            for i in range(len(os.listdir(f'{asset_path}/{subdir}'))):
+                loaded_img = pygame.image.load(f'{asset_path}/{subdir}/{i}.png').convert_alpha()
+                temp_list.append(loaded_img)
+            img_dict[subdir] = temp_list
+            
+        return img_dict
+    
+    def get_sfx_list(self, str_list):
+        sfx_list = []
+        for str_ in str_list:
+            sfx_list.append(self.master_sfx_list[self.sfx_index_dict[str_]])
+            
+        return sfx_list
 
     def instantiate_sprites_from_tiles(self, tile, x, y, the_sprite_group, ini_vol, level, player_inventory, world):
+        if self.ini_vol != ini_vol:
+            self.m_player.set_vol_all_sounds(ini_vol)
+            self.ini_vol = ini_vol
         
         if tile == 74:
             #Note that tile order priority is row then column
@@ -45,42 +106,44 @@ class sprite_instantiator():
             #enemies and player interactables/obstacles
             if not world.lvl_completed and sprite_category == 'enemy':
                 if sprite_id == 'dog':
-                    enemy0 = enemy_32wide(x * 32, y * 32, 3, 2, 'dog', world.enemy0_order_id, ini_vol)
+                    enemy0 = enemy_32wide(x * 32, y * 32, 3, 2, 'dog', world.enemy0_order_id, ini_vol, self.enemy_img_dict[sprite_id], 
+                                          self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'dog_hurt.mp3', 'woof.mp3', 'step2soft.mp3']))
                     the_sprite_group.enemy0_group.add(enemy0)
                     world.enemy0_order_id += 1#for enemy-enemy collisions/ anti stacking
                 elif sprite_id == 'shooter':
-                    enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'shooter', world.enemy0_order_id, ini_vol)
+                    enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'shooter', world.enemy0_order_id, ini_vol, self.enemy_img_dict[sprite_id],
+                                          self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'roblox2.mp3', 'shoot.mp3', 'step2soft.mp3']))
                     the_sprite_group.enemy0_group.add(enemy0)
                     world.enemy0_order_id += 1
                 elif sprite_id == 'fly':
-                    enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'fly', world.enemy0_order_id, ini_vol)
+                    enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'fly', world.enemy0_order_id, ini_vol, self.enemy_img_dict[sprite_id],
+                                          self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'bee_hurt.mp3', 'bee.mp3', 'step2soft.mp3']))
                     the_sprite_group.enemy0_group.add(enemy0)
                     world.enemy0_order_id += 1
                 elif sprite_id == 'walker':
-                    enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'walker', world.enemy0_order_id, ini_vol)
+                    enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'walker', world.enemy0_order_id, ini_vol, self.enemy_img_dict[sprite_id],
+                                          self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'cough.mp3', 'bite.mp3', 'step2soft.mp3']))
                     the_sprite_group.enemy0_group.add(enemy0)
                     world.enemy0_order_id += 1
                     
             elif sprite_category == 'p_int':
+                sfx_list_ext = self.get_sfx_list(['mc_anvil.mp3', 'step2soft.mp3', 'pop3.mp3'])
                 if sprite_id == 'spinning_blades':
-                     p_int2 = player_interactable_(x * 32, y * 32, 2, 1, 'spinning_blades', ini_vol, True)
-                     the_sprite_group.p_int_group2.add(p_int2)
+                    the_sprite_group.p_int_group2.add(player_interactable_(x * 32, y * 32, 2, 1, 'spinning_blades', ini_vol, True, None, sfx_list_ext))
                 else:
-                    the_sprite_group.p_int_group.add(player_interactable_(x * 32, y * 32, 1, 1, sprite_id, ini_vol, True))
+                    the_sprite_group.p_int_group.add(player_interactable_(x * 32, y * 32, 1, 1, sprite_id, ini_vol, True, self.p_int_img_dict[sprite_id], sfx_list_ext))
                 
                
                 
             #bg type sprites
-            elif sprite_category == 'bg_sprite':
+            elif sprite_category == 'bg_sprite': #always scaled at 1
                 if sprite_id == 'lamp':
-                    bg_sprite = lamp(x*32, y*32, 1, False, 'lamp')
-                    the_sprite_group.bg_sprite_group.add(bg_sprite)
+                    bg_sprite = lamp(x*32, y*32, False, 'lamp', self.bg_sprite_img_dict[sprite_id])
                 elif sprite_id == 'tree':
-                    bg_sprite = tree(x*32, y*32, 1, False, 'tree')
-                    the_sprite_group.bg_sprite_group.add(bg_sprite)
+                    bg_sprite = tree(x*32, y*32, False, 'tree', self.bg_sprite_img_dict[sprite_id])
                 elif sprite_id == 'fountain':        
-                    bg_sprite = fountain(x*32, y*32, 1, False, 'fountain')
-                    the_sprite_group.bg_sprite_group.add(bg_sprite)
+                    bg_sprite = fountain(x*32, y*32, False, 'fountain', self.bg_sprite_img_dict[sprite_id])
+                the_sprite_group.bg_sprite_group.add(bg_sprite)
             
             #npcs
             elif sprite_category == 'npc':

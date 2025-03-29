@@ -1,5 +1,5 @@
 import pygame
-pygame.init()
+#pygame.init()
 import os
 #music player class used for both playing music and sfx
 #There will be one instance for each level/ location
@@ -30,9 +30,10 @@ class music_player():
         #and https://www.youtube.com/watch?v=xdkY6yhEccA
         
         self.sfx = []
-        for sound in sfx_list:
-            sfx = pygame.mixer.Sound(f'assets/sfx/{sound}')
-            self.sfx.append(sfx)
+        if sfx_list != None:
+            for sound in sfx_list:
+                sfx = pygame.mixer.Sound(f'assets/sfx/{sound}')
+                self.sfx.append(sfx)
         
         self.channel_count = 8
         self.channel_list = []
@@ -51,22 +52,24 @@ class music_player():
         self.playing_music = False
         
         #set volumes of sounds at end of constructor
-        self.level = initial_vol[0]
+        self.level = initial_vol
         screen_dimensions = pygame.display.get_window_size()
         self.screen_rect = pygame.rect.Rect(0,0,screen_dimensions[0],screen_dimensions[1])
         
-        for sound in self.sfx:
-            if initial_vol[0] < 10: 
-                pygame.mixer.Sound.set_volume(sound, initial_vol[0]*0.1)
-            elif initial_vol[0] == 10:
-                pygame.mixer.Sound.set_volume(sound, 0.9921875)
-        
+        if self.sfx != []:
+            for sound in self.sfx:
+                if initial_vol < 10: 
+                    pygame.mixer.Sound.set_volume(sound, initial_vol*0.1)
+                elif initial_vol == 10:
+                    pygame.mixer.Sound.set_volume(sound, 0.9921875)
+            
         
     #-------------------------------------------------------------adjusting volume------------------------
     def set_vol_all_sounds(self, level):
-        self.level = level
-        for sound in self.sfx:
-            self.set_sound_vol(sound, level[0])
+        if level != self.level:
+            self.level = level
+            for sound in self.sfx:
+                self.set_sound_vol(sound, level)
             
     #-------------------------------------------------------------set vol by distance
     def set_to_zero(self, factor):

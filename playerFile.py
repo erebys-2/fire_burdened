@@ -1120,7 +1120,7 @@ class player(pygame.sprite.Sprite):
         if (self.shot_charging == False):
             rate = 80
  
-            if self.speed > self.default_speed and not self.rolling:
+            if self.speed > self.default_speed or self.action == 16 and not self.rolling:
                 stamina_increment_unit = -0.16
             elif self.rolling and self.stamina_used + self.roll_stam_rate <= self.stamina:
                 stamina_increment_unit = self.roll_stam_rate
@@ -1439,6 +1439,7 @@ class player(pygame.sprite.Sprite):
                     self.atk1_stamina_cost = self.atk1_default_stam
                 if self.stamina_used + self.atk1_stamina_cost >= self.stamina:
                     self.stamina_used = self.stamina
+                    
                 else:
                     self.stamina_used += self.atk1_stamina_cost
                 self.ini_stamina += self.atk1_stamina_cost

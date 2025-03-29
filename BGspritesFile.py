@@ -2,7 +2,7 @@ import pygame
 import os
 
 class animated_bg_sprite(pygame.sprite.Sprite):
-    def __init__(self, x, y, scale, flip, name):
+    def __init__(self, x, y, flip, name, frame_list):
         pygame.sprite.Sprite.__init__(self)
         
         #load the BG frames by name
@@ -13,12 +13,14 @@ class animated_bg_sprite(pygame.sprite.Sprite):
         self.frame_index = 0
         self.update_time = pygame.time.get_ticks()
         
-        frames = len(os.listdir(f'assets/sprites/bg_sprites/{self.name}'))
-
-        for i in range(frames):
-            img = pygame.image.load(f'assets/sprites/bg_sprites/{self.name}/{i}.png').convert_alpha()
-            img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-            self.frame_list.append(img)
+        if frame_list == None:
+            frames = len(os.listdir(f'assets/sprites/bg_sprites/{self.name}'))
+            for i in range(frames):
+                img = pygame.image.load(f'assets/sprites/bg_sprites/{self.name}/{i}.png').convert_alpha()
+                #img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
+                self.frame_list.append(img)
+        else:
+            self.frame_list = frame_list
 
         self.image = self.frame_list[self.frame_index]
         self.rect = self.image.get_rect()
@@ -48,8 +50,8 @@ class animated_bg_sprite(pygame.sprite.Sprite):
             
             
 class tree(animated_bg_sprite):
-    def __init__(self, x, y, scale, flip, name):
-        super().__init__(x, y, scale, flip, name)
+    def __init__(self, x, y, flip, name, frame_list):
+        super().__init__(x, y, flip, name, frame_list)
         
         self.frame_rate = 300
     
@@ -58,8 +60,8 @@ class tree(animated_bg_sprite):
         self.rect.x -= scrollx
         
 class fountain(animated_bg_sprite):
-    def __init__(self, x, y, scale, flip, name):
-        super().__init__(x, y, scale, flip, name)
+    def __init__(self, x, y, flip, name, frame_list):
+        super().__init__(x, y, flip, name, frame_list)
         
         self.frame_rate = 300
         
@@ -67,8 +69,8 @@ class fountain(animated_bg_sprite):
         self.rect.x -= scrollx
         
 class lamp(animated_bg_sprite):
-    def __init__(self, x, y, scale, flip, name):
-        super().__init__(x, y, scale, flip, name)
+    def __init__(self, x, y, flip, name, frame_list):
+        super().__init__(x, y, flip, name, frame_list)
         
         self.frame_rate = 300
         

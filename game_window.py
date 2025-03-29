@@ -80,7 +80,7 @@ def main():
 	scroll_x = 0
 	scroll_y = 0
 
-	world = World(SCREEN_WIDTH, SCREEN_HEIGHT)
+	world = World(SCREEN_WIDTH, SCREEN_HEIGHT)#also instantiates sp_ini
 
 	#instantiate status bars
 	status_bars = StatusBars(SCREEN_WIDTH, SCREEN_HEIGHT, ts)
@@ -219,7 +219,7 @@ def main():
 	def play_click_sound():
 		m_player.play_sound(m_player.sfx[1], None)
 
-	vol_lvl = read_settings_data('vol_data') #read saved eq regime
+	vol_lvl = read_settings_data('vol_data')[0] #read saved eq regime
 	#more instantiations
 
 	#dialogue box handler
@@ -263,13 +263,14 @@ def main():
 	
 	#load img dict for particles
 	particle_path = 'assets/sprites/particle'
-	particle_img_dict = {}
-	for subdir in os.listdir(particle_path):
-		temp_list = []
-		for i in range(len(os.listdir(f'{particle_path}/{subdir}'))):
-			loaded_img = pygame.image.load(f'{particle_path}/{subdir}/{i}.png').convert_alpha()
-			temp_list.append(loaded_img)
-		particle_img_dict[subdir] = temp_list
+	particle_img_dict = world.sp_ini.load_img_dict(particle_path)
+	# particle_img_dict = {}
+	# for subdir in os.listdir(particle_path):
+	# 	temp_list = []
+	# 	for i in range(len(os.listdir(f'{particle_path}/{subdir}'))):
+	# 		loaded_img = pygame.image.load(f'{particle_path}/{subdir}/{i}.png').convert_alpha()
+	# 		temp_list.append(loaded_img)
+	# 	particle_img_dict[subdir] = temp_list
 	
 	#add particle_2 objects into particle sprite groups
 	particle_2_ = particle_2(particle_img_dict)
@@ -439,8 +440,7 @@ def main():
 		#vertical screenshake correction
 		if world.rect.y != 0 and not do_screenshake_master:
 			correction_y = world.rect.y/abs(world.rect.y)
-			#print(correction_y)
-    
+
 			world.rect.y -= correction_y
 			for data_list in world.detailed_lvl_data_dict:
 				for tile in world.detailed_lvl_data_dict[data_list]:
@@ -726,13 +726,14 @@ def main():
 		if update_vol: #updates all m_players' sounds with new volume setting
 		#objects already instantiated have their volumes updated here
 		#new objects take vol_lvl as their ini_vol parameter so their volumes match the setting upon instantiation
-			vol_lvl = read_settings_data('vol_data')
+			vol_lvl = read_settings_data('vol_data')[0]
 			dialogue_box0.m_player.set_vol_all_sounds(vol_lvl)
 			m_player.set_vol_all_sounds(vol_lvl)
 			the_sprite_group.update_vol_lvl(vol_lvl)
 			player0.m_player.set_vol_all_sounds(vol_lvl)
 			player_inv_UI.m_player.set_vol_all_sounds(vol_lvl)
 			p_choice_handler0.m_player.set_vol_all_sounds(vol_lvl)
+			world.sp_ini.m_player.set_vol_all_sounds(vol_lvl)
 	
 		update_vol = ui_manager0.raise_volume or ui_manager0.lower_volume #2 different signals from ui_manager or'd together
 	
