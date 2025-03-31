@@ -46,12 +46,13 @@ class sprite_instantiator():
                 temp_list = []
                 for i in range(len(os.listdir(f'{subdir_path}/{subdir2}'))):
                     loaded_img = pygame.image.load(f'{subdir_path}/{subdir2}/{i}.png').convert_alpha()
-                    
-                    if asset_path == 'assets/sprites/enemies' and f'{subdir2}' == '2' and i < 2:#enemy spaghetti code :(
-                        loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * 0.8 * scale), int(loaded_img.get_height() * 1.1 * scale)))
-                    else:
-                        loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * scale), int(loaded_img.get_height() * scale)))
-                    
+                    loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * scale), int(loaded_img.get_height() * scale)))
+                    if asset_path == 'assets/sprites/enemies' and f'{subdir2}' == '2':#enemy spaghetti code :(
+                        if i < 2:
+                            loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * 0.8), int(loaded_img.get_height() * 1.1)))
+                        elif i == 2:
+                            loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * 1.1), int(loaded_img.get_height() * 0.9)))
+
                     temp_list.append(loaded_img)
                 frame_list.append(temp_list)
             img_dict[subdir] = frame_list

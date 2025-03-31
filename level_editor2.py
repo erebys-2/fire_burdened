@@ -1,7 +1,6 @@
 import pygame
 import os
 import button
-import pickle
 import csv
 from textfile_handler import textfile_formatter
 
@@ -18,17 +17,53 @@ def main():
     path = 'assets/config_textfiles/level_config/'
     level_sizes_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'level_sizes_dict.txt')), 'list')
     #print(level_sizes_dict)
-
+    
+    layer_desc_dict = {
+        0:'true foreground',
+        1:'foreground',
+        2:'game layer',
+        3:'game layer filler',
+        4:'filter',
+        5:'detailed bg1',
+        6:'detailed bg2',
+        7:'parallax fast',
+        8:'parallax med',
+        9:'parallax slow'
+    }
+    
+    layer_name_dict = {
+        0:'coord_data',
+        1:'fg_data',
+        2:'fg_1_data',
+        3:'data',
+        4:'bg1_data',
+        5:'bg3_data',
+        6:'bg2_data',
+        7:'bg2_1_data',
+        8:'bg4_data',
+        9:'bg5_data',
+        10: 'bg6_data'
+    }
+    
+    world_layer_index = [key for key in layer_name_dict if layer_name_dict[key] == 'data'][0]-1
+    filter_layer_index = [key for key in layer_name_dict if layer_name_dict[key] == 'bg3_data'][0]-1
+    
+    layer_list = []
+    
+    
+    path = 'assets/config_textfiles/world_config/'
+    path2 = 'assets/config_textfiles/level_config/'
+    sprite_group_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'sprite_group_tiles_dict.txt')), 'list')
+    static_bg_oversized_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'static_bg_oversized_tiles_dict.txt')), 'int')
+    special_hitbox_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'special_hitbox_tiles_dict.txt')), 'none')
+    
     #should be user entered for later
     print('\nstandard level is 15 rows, 200 cols ')
-    # print('layer 1 is the game layer, layer 2-3 is detailed BG')
-    # print('layer 0 is FG. layer 4 is for gradient filter. layers 5+ is scrolling BG')
 
     #level is selected
     print('level input will either be loaded or a new level creation will be prompted')
     input_level = int(input('enter level: '))
-    load_level_flag = False
-    direct_load = False
+  
     if input_level < 0:
         levels_must_be_greater_than_0 = 0/0
 
@@ -38,19 +73,27 @@ def main():
         ROWS = int(row_str)
         MAX_COLS = int(col_str)
         level = input_level
+        direct_load = False
+
     else:
         ROWS = level_sizes_dict[input_level][0]
         MAX_COLS = level_sizes_dict[input_level][1]
         row_str = str(ROWS)
         col_str = str(MAX_COLS)
-        load_level_flag = True
         level = input_level
         direct_load = True
+
+    #create surfaces
+    tile_id_map_dict = {}
+    map_dict = {}
+    for i in range(len(layer_name_dict)-1):
+        map_dict[i] = pygame.Surface((MAX_COLS * 32, ROWS * 32), pygame.SRCALPHA).fill(pygame.Color(0,0,0,0))
+        tile_id_map_dict[i] = pygame.Surface((MAX_COLS * 32, ROWS * 32), pygame.SRCALPHA).fill(pygame.Color(0,0,0,0))
+        
 
     #the standard size of a tile should be 32
     #background art might have to have a separate editor- it is a bridge we will cross later
     TILE_SIZE = 32
-
 
     isolate_layer = False
 
@@ -71,19 +114,7 @@ def main():
 
     #set bg rect
     canvas_rect = pygame.Rect((0,0), (SCREEN_WIDTH,480))
-    layer = 2
-    layer_desc_dict = {
-        0:'true foreground',
-        1:'foreground',
-        2:'game layer',
-        3:'game layer filler',
-        4:'filter',
-        5:'detailed bg1',
-        6:'detailed bg2',
-        7:'parallax fast',
-        8:'parallax med',
-        9:'parallax slow'
-    }
+    curr_layer = world_layer_index
 
     #level = 0
     t_set_index = 0
@@ -94,13 +125,6 @@ def main():
     change_once = False 
 
     eraser_mode = False
-
-
-    path = 'assets/config_textfiles/world_config/'
-    path2 = 'assets/config_textfiles/level_config/'
-    sprite_group_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'sprite_group_tiles_dict.txt')), 'list')
-    static_bg_oversized_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'static_bg_oversized_tiles_dict.txt')), 'int')
-    special_hitbox_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'special_hitbox_tiles_dict.txt')), 'none')
 
     #load tiles
 
@@ -113,7 +137,6 @@ def main():
             temp_list.append(img)
         tile_list.append(temp_list)
 
-    tile = tile_list[t_set_index][tile_index]
 
     save_img = pygame.image.load('assets/sprites/save_btn.png').convert_alpha()
     load_img = pygame.image.load('assets/sprites/load_btn.png').convert_alpha()
@@ -137,56 +160,44 @@ def main():
     #define font
     font = pygame.font.SysFont('SimSun', 12)
     font2 = pygame.font.SysFont('SimSun', 16)
+    
+     #button stuff
+    save_button = button.Button(SCREEN_WIDTH // 3 + 150, SCREEN_HEIGHT + LOWER_MARGIN - 50, save_img, 1)
+    load_button = button.Button(SCREEN_WIDTH // 3 + 235, SCREEN_HEIGHT + LOWER_MARGIN - 50, load_img, 1)
+                        
+
+    #populate buttons
+    button_list = []
+    button_col = 0
+    button_row = 0
+    temp_dist = 0
+    
+    
+    for i in range(len(tile_list[t_set_index])):
+        if i == 15 or i == 16 or i  == 18:#these are the half tiles
+            temp_dist = 20
+        else:
+            temp_dist = 4
+        tile_button = button.Button(640 + (40 * button_col) + 4, (40 * button_row) + temp_dist, tile_list[t_set_index][i], 1)
+        button_list.append(tile_button)
+        button_col += 1
+        if button_col == 16:
+            button_row += 1
+            button_col = 0
+            
+    description = 'game layer'
+    overwrite = False
+    reload_map = False
 
     #create empty tile list(s)
 
-    def empty_list_gen(data):
+    def empty_list_gen():
+        rtn_list = []
         for row in range(ROWS):
             row = [-1] * MAX_COLS
-            data.append(row)
-
-    world_data = []#interactable
-    coord_data = []#blank, cannot edit
-    #bg1_data = world_data.copy() #bruh this shit is wack
-
-    fg_data = []#
-    fg_1_data = []
-    bg1_data = []#
-    bg2_data = []#filtered bg
-    bg2_1_data = []
-    filter_data = []#filter
-    bg4_data = []#scrolling 
-    bg5_data = []#scrolling
-    bg6_data = []#scrolling 
-
-    layer_list = [
-        world_data,
-        coord_data,
-        fg_data,
-        fg_1_data,
-        bg1_data,
-        bg2_data,
-        bg2_1_data,
-        filter_data,
-        bg4_data,
-        bg5_data,
-        bg6_data
-    ]
-    
-    tile_id_map_dict = {}
-    map_dict = {}
-    for i in range(len(layer_list)-1):
-        map_dict[i] = pygame.Surface((MAX_COLS * 32, ROWS * 32), pygame.SRCALPHA).fill(pygame.Color(0,0,0,0))
-        tile_id_map_dict[i] = pygame.Surface((MAX_COLS * 32, ROWS * 32), pygame.SRCALPHA).fill(pygame.Color(0,0,0,0))
-    
-
-    for layer_ in layer_list:
-        empty_list_gen(layer_)  
-        
-    #create ground
-    for tile_ in range(0, MAX_COLS):
-        world_data[ROWS - 1][tile_] = 17
-
+            rtn_list.append(row)
+            
+        return rtn_list
     #other methods--------------
 
     def check_onscreen(x):
@@ -201,27 +212,15 @@ def main():
         for c in range(ROWS + 1):
             pygame.draw.line(screen, WHITE, (0, c * TILE_SIZE), (SCREEN_WIDTH, c * TILE_SIZE))
             screen.blit(font.render(str(c*32), False, (255,255,255)), (0, c*32))
-            
 
     def draw_text(surface, text, font, text_col, x, y):
         img = font.render(text, True, text_col)
         surface.blit(img, (x, y))
 
-    def dark_filter_imgs(img, tile, ref_layer, dark_layers):
-        if tile not in (8, 57, 58) and ref_layer in dark_layers:
-            img = pygame.transform.hsl(img, -0.75, -0.75, -0.75)
-        
-        return img
-    
-    #def create_map():
-    #    game_map = pygame.Surface((MAX_COLS * 32, ROWS * 32), pygame.SRCALPHA)
-        
-
-    def draw_bg(data, layer, ref_layer):
+    def draw_bg(data, layer_index):
         map_ = pygame.Surface((MAX_COLS * 32, ROWS * 32), pygame.SRCALPHA)
         tile_id_map = pygame.Surface((MAX_COLS * 32, ROWS * 32), pygame.SRCALPHA)
-        #dark_layers = (5,6)
-        
+
         for y, row in enumerate(data):#world data and bg data should have the same amount of data
             for x, tile_ in enumerate(row):
                 if tile_ >= 0:
@@ -230,39 +229,30 @@ def main():
                     
                     if tile_ in sprite_group_tiles_dict and sprite_group_tiles_dict[tile_][3] != -1:
                         img = tile_list[1][sprite_group_tiles_dict[tile_][3]]
-                        #img = dark_filter_imgs(img, tile, ref_layer, dark_layers)
                         if tile_ != 46:
                             scale = 1
                         else:
                             scale = 2
                         img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-                        #screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)))
-                        
+
                     elif tile_ in static_bg_oversized_tiles_dict:
                         img = tile_list[1][static_bg_oversized_tiles_dict[tile_]]
-                        #img = dark_filter_imgs(img, tile, ref_layer, dark_layers)
                         if tile_ != 46:
                             scale = 1
                         else:
                             scale = 2
                         img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-                        #screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)))
-                        
-                    elif tile_ in (15,16,18,2,60):#these don't quite work??
-                        #blit(source, dest, area=None, special_flags=0) -> Rect
+    
+                    elif tile_ in (15,16,18,2,60):
                         img = tile_list[t_set_index][tile_]
-                        #img = dark_filter_imgs(img, tile, ref_layer, dark_layers)
                         y_disp = 16
-                        #screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)+ 16))
-                        
+
                     else: 
                         img = tile_list[t_set_index][tile_]
-                        #img = dark_filter_imgs(img, tile, ref_layer, dark_layers)
-                        #screen.blit(img, (x * TILE_SIZE - scroll, y * TILE_SIZE))
                     #draw sprite text
                     
-                    if ref_layer == 4:
-                        for i in range((MAX_COLS*32)//img.get_width()):
+                    if layer_index == filter_layer_index:
+                        for i in range((MAX_COLS*32)//img.get_width() + 1):
                             map_.blit(img, (i * img.get_width(), (y * TILE_SIZE)+y_disp))
                     else:
                         map_.blit(img, (x * TILE_SIZE, (y * TILE_SIZE)+y_disp))
@@ -271,11 +261,11 @@ def main():
                     
         return (map_, tile_id_map)
 
-    def draw_world(static_bg_oversized_tiles_dict, sprite_group_tiles_dict, layer, ref_layer):
+    def draw_world(data, static_bg_oversized_tiles_dict, sprite_group_tiles_dict):
         map_ = pygame.Surface((MAX_COLS * 32, ROWS * 32), pygame.SRCALPHA)
         tile_id_map = pygame.Surface((MAX_COLS * 32, ROWS * 32), pygame.SRCALPHA)
 
-        for y, row in enumerate(world_data):#world data and bg data should have the same amount of data
+        for y, row in enumerate(data):#world data and bg data should have the same amount of data
             for x, tile in enumerate(row):
                 if tile >= 0:
                     y_disp = 0
@@ -286,8 +276,7 @@ def main():
                         else:
                             scale = 2
                         img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-                        #screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)))
-                        
+
                     elif tile in static_bg_oversized_tiles_dict:
                         img = tile_list[1][static_bg_oversized_tiles_dict[tile]]
                         if tile != 46:
@@ -295,53 +284,31 @@ def main():
                         else:
                             scale = 2
                         img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-                        #screen.blit(img, (x * TILE_SIZE - scroll, (y * TILE_SIZE)))
-                        
+
                     elif tile in (15,16,18,2,60):
                         y_disp = 16
                         img = tile_list[t_set_index][tile]
-                        #screen.blit(tile_list[t_set_index][tile], (x * TILE_SIZE - scroll, (y * TILE_SIZE)+ 16))
-    
                     else: 
                         img = tile_list[t_set_index][tile]
-                        #screen.blit(tile_list[t_set_index][tile], (x * TILE_SIZE - scroll, y * TILE_SIZE))
-                    
+                 
                     map_.blit(img, (x * TILE_SIZE, (y * TILE_SIZE) + y_disp))
                     draw_text(tile_id_map, str(tile), font2, WHITE, x*32 + 8, y*32 + 8)
         return (map_, tile_id_map)
 
-    #button stuff
-    save_button = button.Button(SCREEN_WIDTH // 3 + 150, SCREEN_HEIGHT + LOWER_MARGIN - 50, save_img, 1)
-    load_button = button.Button(SCREEN_WIDTH // 3 + 235, SCREEN_HEIGHT + LOWER_MARGIN - 50, load_img, 1)
-                        
-
-    #populate buttons
-    button_list = []
-    button_col = 0
-    button_row = 0
-    temp_dist = 0
-    for i in range(len(tile_list[t_set_index])):
-        if i == 15 or i == 16 or i  == 18:#these are the half tiles
-            temp_dist = 20
-        else:
-            temp_dist = 4
-        tile_button = button.Button(640 + (40 * button_col) + 4, (40 * button_row) + temp_dist, tile_list[t_set_index][i], 1)
-        button_list.append(tile_button)
-        button_col += 1
-        if button_col == 16:
-            button_row += 1
-            button_col = 0
-            
-
-
+   
 
     #-------Reading and writing level data for loading---------------------------------------
-    def read_level_data(level, data_, data_str):
+    def read_level_data(level, data_str):
+        rtn_list = []
         with open(f'assets/level_files/level{level}_{data_str}.csv', newline= '') as csvfile:
             reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
             for x, current_row in enumerate(reader):
+                row_list = []
                 for y, tile in enumerate(current_row):
-                    data_[x][y] = int(tile)
+                    row_list.append(int(tile))
+                rtn_list.append(row_list)
+
+        return rtn_list
 
     def write_level_data(level, data_, data_str):
         with open(f'assets/level_files/level{level}_{data_str}.csv', 'w', newline='') as csvfile:
@@ -349,52 +316,76 @@ def main():
                 for row in data_:
                     writer.writerow(row)
                     
-    def editing_lvl_data(data):
+    def editing_lvl_data(data, data_index, world_layer_index, eraser_mode):
         reload_map = False
+        rtn_data = data
         if pygame.mouse.get_pressed()[0] == 1:
-            if current_tile in sprite_group_tiles_dict and data != world_data:
+            if current_tile in sprite_group_tiles_dict and data_index != world_layer_index:
                 print("cannot place sprite group tile in non-game layer")
-            elif data[y][x] != current_tile:
-                data[y][x] = current_tile
+            elif rtn_data[y][x] != current_tile:
+                rtn_data[y][x] = current_tile
                 reload_map = True
         if pygame.mouse.get_pressed()[2] == 1 or (pygame.mouse.get_pressed()[0] == 1 and eraser_mode):
-            data[y][x] = -1
+            rtn_data[y][x] = -1
             reload_map = True
             
-        return reload_map
+        return (rtn_data, reload_map)
+    
+    def extend_lvl(extension, layer_list):
+        rtn_layer_list = []#3d list of lists
+        for layer in layer_list:#layer is 2d
+            templist = []
+            for i in range(ROWS):
+                if extension > 0:
+                    templist.append(layer[i] + [-1]*extension)
+                else:
+                    templist.append(layer[i][:MAX_COLS+extension])
+            rtn_layer_list.append(templist)
 
-    description = 'game layer'
-    overwrite = False
-    reload_map = False
+        return rtn_layer_list
 
     #running the editor----------------------------------------------------
-    if load_level_flag:
-        read_level_data(level, world_data, 'data')
-        read_level_data(level, coord_data, 'coord_data')
-        read_level_data(level, bg1_data, 'bg1_data')
-        read_level_data(level, bg2_data, 'bg2_data')
-        read_level_data(level, bg2_1_data, 'bg2_1_data')
-        read_level_data(level, filter_data, 'bg3_data')
-        read_level_data(level, bg4_data, 'bg4_data')
-        read_level_data(level, bg5_data, 'bg5_data')
-        read_level_data(level, bg6_data, 'bg6_data')
-        read_level_data(level, fg_data, 'fg_data')
-        read_level_data(level, fg_1_data, 'fg_1_data')
+    
+        #creating a new level
+    def create_new_lvl(layer_name_dict):
+        rtn_list = []
+        rtn_map_dict = {}
+        rtn_TIM_dict = {}
+        for layer in layer_name_dict:
+            rtn_list.append(empty_list_gen())
         
-        (map_dict[9], tile_id_map_dict[9]) = draw_bg(bg6_data, layer, 9)
-        (map_dict[8], tile_id_map_dict[8]) = draw_bg(bg5_data, layer, 8)
-        (map_dict[7], tile_id_map_dict[7]) = draw_bg(bg4_data, layer, 7)
-        (map_dict[6], tile_id_map_dict[6]) = draw_bg(bg2_data, layer, 6)
-        (map_dict[5], tile_id_map_dict[5]) = draw_bg(bg2_1_data, layer, 5)
-        (map_dict[4], tile_id_map_dict[4]) = draw_bg(filter_data, layer, 4)
-        (map_dict[3], tile_id_map_dict[3]) = draw_bg(bg1_data, layer, 3)
-        (map_dict[2], tile_id_map_dict[2]) = draw_world(static_bg_oversized_tiles_dict, sprite_group_tiles_dict, layer, 2)
-        (map_dict[1], tile_id_map_dict[1]) = draw_bg(fg_1_data, layer, 1)
-        (map_dict[0], tile_id_map_dict[0]) = draw_bg(fg_data, layer, 0)
-        
-        print('~~loaded!~~')   
-        load_level_flag = False
+            #create ground
+            if layer_name_dict[layer] == 'data':
+                rtn_list[layer][ROWS - 1] = [17]*MAX_COLS
+                
+            if layer != 0:#skip coord layer for creating maps
+                if layer != world_layer_index:
+                    (rtn_map_dict[layer-1], rtn_TIM_dict[layer-1]) = draw_bg(rtn_list[layer], layer-1)
+                else:
+                    (rtn_map_dict[layer-1], rtn_TIM_dict[layer-1]) = draw_world(rtn_list[layer], static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
+                    
+        return rtn_list
 
+    
+    def load_lvl(level, layer_name_dict, world_layer_index, static_bg_oversized_tiles_dict, sprite_group_tiles_dict):
+        rtn_list = []
+        rtn_map_dict = {}
+        rtn_TIM_dict = {}
+        for layer in layer_name_dict:#load layers from csvs
+            rtn_list.append(read_level_data(level, layer_name_dict[layer]))
+            if layer != 0:#skip coord layer for creating maps
+                if layer-1 != world_layer_index:
+                    (rtn_map_dict[layer-1], rtn_TIM_dict[layer-1]) = draw_bg(rtn_list[layer], layer-1)
+                else:
+                    (rtn_map_dict[layer-1], rtn_TIM_dict[layer-1]) = draw_world(rtn_list[layer], static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
+
+        print('~~loaded!~~')   
+        return (rtn_list, rtn_map_dict, rtn_TIM_dict)
+    
+    if direct_load:
+        (layer_list, map_dict, tile_id_map_dict) = load_lvl(level, layer_name_dict, world_layer_index, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
+    else:
+        (layer_list, map_dict, tile_id_map_dict) = create_new_lvl(layer_name_dict)
         
     run = True
     while run:
@@ -414,35 +405,24 @@ def main():
             
         #====================================================================drawing=================================================================
         if isolate_layer:
-            screen.blit(map_dict[layer], (-scroll,0))#only draw map of current layer
+            screen.blit(map_dict[curr_layer], (-scroll,0))#only draw map of current layer
         else:
             for i in range(len(map_dict)):#draw all data maps
                 screen.blit(map_dict[len(map_dict)-1-i], (-scroll,0))
-            
+ 
         #draw tile ids of current data map
-        screen.blit(tile_id_map_dict[layer], (-scroll,0))#only draw text of current layer
+        screen.blit(tile_id_map_dict[curr_layer], (-scroll,0))#only draw text of current layer
         
-        if reload_map:#reload map
-            if layer == 9:
-                (map_dict[layer], tile_id_map_dict[layer]) = draw_bg(bg6_data, layer, 9)
-            elif layer == 8:
-                (map_dict[layer], tile_id_map_dict[layer]) = draw_bg(bg5_data, layer, 8)
-            elif layer == 7:
-                (map_dict[layer], tile_id_map_dict[layer]) = draw_bg(bg4_data, layer, 7)
-            elif layer == 6:
-                (map_dict[layer], tile_id_map_dict[layer]) = draw_bg(bg2_data, layer, 6)
-            elif layer == 5:
-                (map_dict[layer], tile_id_map_dict[layer]) = draw_bg(bg2_1_data, layer, 5)
-            elif layer == 4:
-                (map_dict[layer], tile_id_map_dict[layer]) = draw_bg(filter_data, layer, 4)
-            elif layer == 3:
-                (map_dict[layer], tile_id_map_dict[layer]) = draw_bg(bg1_data, layer, 3)
-            elif layer == 2:
-                (map_dict[layer], tile_id_map_dict[layer]) = draw_world(static_bg_oversized_tiles_dict, sprite_group_tiles_dict, layer, 2)
-            elif layer == 1:
-                (map_dict[layer], tile_id_map_dict[layer]) = draw_bg(fg_1_data, layer, 1)
-            elif layer == 0:
-                (map_dict[layer], tile_id_map_dict[layer]) = draw_bg(fg_data, layer, 0)
+        #==================================================================================================================================
+           
+        
+        if reload_map:#reload maps
+            for i in range(len(layer_list[1:])):
+                if i == world_layer_index:
+                    (map_dict[i], tile_id_map_dict[i]) = draw_world(layer_list[1:][i], static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
+                else:
+                    (map_dict[i], tile_id_map_dict[i]) = draw_bg(layer_list[1:][i], i)
+            
             reload_map = False
 
         
@@ -452,7 +432,7 @@ def main():
         #drawing text and stuff
         draw_text(screen, f'Level: {level}, Layer: {description}', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 90)
         draw_text(screen, 'Press W or S to change level, A or D to scroll, Q to adjust scroll speed', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 75)
-        draw_text(screen, f'Current dimensions: row x col = {row_str} x {col_str}', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 60)
+        draw_text(screen, f'Current dimensions: row x col = {row_str} x {col_str}, use "[" and "]" to change lvl size', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 60)
         draw_text(screen, f'Restart editor to load a level with different dimensions.', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 45)
         draw_text(screen, f'Press X to show grid, L and K to change layer, I to isolate layer', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 30)
 
@@ -461,45 +441,32 @@ def main():
         #save and load data
         if save_button.draw(screen):
             #save level data
-            write_level_data(level, world_data, 'data')
-            write_level_data(level, coord_data, 'coord_data')
-            write_level_data(level, bg1_data, 'bg1_data')
-            write_level_data(level, bg2_data, 'bg2_data')
-            write_level_data(level, bg2_1_data, 'bg2_1_data')
-            write_level_data(level, filter_data, 'bg3_data')
-            write_level_data(level, bg4_data, 'bg4_data')
-            write_level_data(level, bg5_data, 'bg5_data')
-            write_level_data(level, bg6_data, 'bg6_data')
-            write_level_data(level, fg_1_data, 'fg_1_data')
-            write_level_data(level, fg_data, 'fg_data')
+            for layer in layer_name_dict:
+                write_level_data(level, layer_list[layer], layer_name_dict[layer])
             
             print('~~Saved!~~')
             if level not in level_sizes_dict:
                 t1.add_line_to_file(f'{level}: {ROWS}, {MAX_COLS}', path2 + 'level_sizes_dict.txt')
-                #level_sizes_dict = t1.str_list_to_dict(t1.read_text_from_file(path + 'level_sizes_dict.txt'), 'list') #update dictionary
-            elif overwrite:
-                print(f'You will have to edit the text file manually for the level you just changed to: {level}: {ROWS}, {MAX_COLS}')
+            #elif overwrite:
+            str_list = list(t1.read_text_from_file((path2 + 'level_sizes_dict.txt')))
+            str_list[level] = f'{level}: {ROWS}, {MAX_COLS}'
+            output_str = ''
+            for str_ in str_list:
+                output_str = output_str + str_ + '\n'
+            output_str = output_str[0:len(output_str)-1]
+            t1.overwrite_file((path2 + 'level_sizes_dict.txt'), output_str)
 
         if load_button.draw(screen):
-            if not direct_load:
-                #load in level data
-                #reset scroll back to the start of the level
+            if level in level_sizes_dict:
+                input_level = level
                 scroll = 0
-                read_level_data(level, world_data, 'data')
-                read_level_data(level, coord_data, 'coord_data')
-                read_level_data(level, bg1_data, 'bg1_data')
-                read_level_data(level, bg2_data, 'bg2_data')
-                read_level_data(level, bg2_1_data, 'bg2_1_data')
-                read_level_data(level, filter_data, 'bg3_data')
-                read_level_data(level, bg4_data, 'bg4_data')
-                read_level_data(level, bg5_data, 'bg5_data')
-                read_level_data(level, bg6_data, 'bg6_data')
-                read_level_data(level, fg_data, 'fg_data')
-                read_level_data(level, fg_1_data, 'fg_1_data')
-                
-                print('~~loaded!~~')
+                ROWS = level_sizes_dict[input_level][0]
+                MAX_COLS = level_sizes_dict[input_level][1]
+                row_str = str(ROWS)
+                col_str = str(MAX_COLS)
+                (layer_list, map_dict, tile_id_map_dict) = load_lvl(level, layer_name_dict, world_layer_index, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
             else:
-                print('can not load if level was directly loaded')         
+                print('Level does not exist')
 
         #-------------------------------------------------------------------------------------------------------------------------------
 
@@ -526,6 +493,10 @@ def main():
         if scroll_right == True and scroll < (MAX_COLS * TILE_SIZE) - 640:
             scroll += 5 * scroll_speed
 
+        if scroll > (MAX_COLS * TILE_SIZE) - 640:
+            scroll -= 1
+        elif scroll < 0:
+            scroll += 1
         #adding new tiles to the screen (using the program)
         #get mouse position
         pos = pygame.mouse.get_pos()
@@ -533,32 +504,18 @@ def main():
         y = pos[1] // TILE_SIZE
 
         #check that the coordinates are within the tile area
+        rtn_data = []
         if pos[0] < 640 and pos[1] < SCREEN_HEIGHT:
             #update tile value 
             #THIS IS ACTUALLY CHANGING THE TILE VALUES-------------------------------------------------------------------------------
-            if layer == 2:
-                reload_map = editing_lvl_data(world_data)
-            elif layer == 3:
-                reload_map = editing_lvl_data(bg1_data)
-            elif layer == 4:
-                reload_map = editing_lvl_data(filter_data)
-            elif layer == 5:
-                reload_map = editing_lvl_data(bg2_1_data)
-            elif layer == 6:
-                reload_map = editing_lvl_data(bg2_data)
-            elif layer == 7:
-                reload_map = editing_lvl_data(bg4_data)
-            elif layer == 8:
-                reload_map = editing_lvl_data(bg5_data)
-            elif layer == 9:
-                reload_map = editing_lvl_data(bg6_data)
-            elif layer == 1:
-                reload_map = editing_lvl_data(fg_1_data)
-            elif layer == 0:
-                reload_map = editing_lvl_data(fg_data)
-
-
-
+            for i in range(len(layer_list[1:])):
+                if curr_layer == i:
+                    (rtn_data, reload_map) = editing_lvl_data(layer_list[1:][i], i, world_layer_index, eraser_mode)
+                    if reload_map:
+                        layer_list[1:][i] = rtn_data#set the layer to the new values
+                        break
+            
+            
         for event in pygame.event.get():
             #quit game
             if(event.type == pygame.QUIT):
@@ -588,23 +545,32 @@ def main():
                 if event.key == pygame.K_x:
                     grid_on = not grid_on
                 if event.key == pygame.K_l and change_once == False:
-                    layer += 1
+                    curr_layer += 1
                     change_once = True
-                    if layer > len(layer_list) - 2:
-                        layer = 0
-                    description = layer_desc_dict[layer]
+                    if curr_layer > len(layer_list) - 2:
+                        curr_layer = 0
+                    description = layer_desc_dict[curr_layer]
                     
                 if event.key == pygame.K_k and change_once == False:
-                    layer -= 1
+                    curr_layer -= 1
                     change_once = True
-                    if layer < 0:
-                        layer = len(layer_list) - 2
-                    description = layer_desc_dict[layer]
+                    if curr_layer < 0:
+                        curr_layer = len(layer_list) - 2
+                    description = layer_desc_dict[curr_layer]
                     
                     #print(f'Current layer is: {layer}, {description}')
                     
                 if event.key == pygame.K_i:
                     isolate_layer = not isolate_layer
+                    
+                if event.key == pygame.K_LEFTBRACKET:
+                    layer_list = extend_lvl(-1, layer_list)
+                    MAX_COLS -= 1
+                    reload_map = True
+                elif event.key == pygame.K_RIGHTBRACKET:
+                    layer_list = extend_lvl(1, layer_list)
+                    MAX_COLS += 1
+                    reload_map = True
                     
 
             if(event.type == pygame.KEYUP):
@@ -617,7 +583,7 @@ def main():
                 if event.key == pygame.K_k:
                     change_once = False
 
-        pygame.display.set_caption(f"editor window @ {clock.get_fps():.1f} FPS")
+        pygame.display.set_caption(f"editor window v2.0 @ {clock.get_fps():.1f} FPS")
         pygame.display.update()
 
     pygame.quit()

@@ -773,7 +773,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
     def draw(self, p_screen):
         #self.animate()
         if self.check_if_onscreen():
-            if not self.inundated:
+            if not self.action == 2 and self.frame_index > 0:
                 p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
             else:
                 if pygame.time.get_ticks()%5 != 0:

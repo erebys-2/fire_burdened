@@ -4,7 +4,7 @@ a = Analysis(
     ['game_window.py'],
     pathex=[],
     binaries=[],
-    datas=[('README.txt', '.'), ('TLDR.txt', '.')],
+    datas=[('.\\README.txt', 'instructions'), ('.\\TLDR.txt', 'instructions')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

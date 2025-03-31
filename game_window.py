@@ -1013,6 +1013,11 @@ def main():
 
 				# if event.key == pygame.K_m:
 				# 	m_player.play_song('newsong18.mp3')
+    
+				if event.key == pygame.K_BACKSLASH and pygame.display.is_fullscreen():
+					pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+					ui_manager0.in_fullscreen = False
+
 				if event.key == pygame.K_c:
 					camera.is_visible = not camera.is_visible
 				if event.key == pygame.K_MINUS:
