@@ -180,6 +180,8 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         screen.blit(self.pause_img, (0,0))
         self.text_manager0.disp_text_box(screen, self.fontlist[2], ('','Game Paused'), (-1,-1,-1), (200,200,200), 
                                          (188, self.S_H//2 - 96,self.S_W,self.S_H), False, False, 'none')
+        self.text_manager0.disp_text_box(screen, self.fontlist[1], ('[Shift] + [ESC] to Exit',), (-1,-1,-1), (200,200,200), 
+                                         (5, 5,self.S_W,self.S_H), False, False, 'none')
         
         if not self.options_menu_enable:
             if self.trigger_once:

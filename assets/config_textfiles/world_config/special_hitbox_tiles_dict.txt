@@ -5,3 +5,5 @@
 18: lower_half
 2: lower_half
 60: lower_half
+69: one_way_pass
+70: one_way_pass

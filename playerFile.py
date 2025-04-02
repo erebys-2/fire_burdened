@@ -37,6 +37,7 @@ class player(pygame.sprite.Sprite):
         self.double_jump_en = False
         self.coyote_vel = 12
         self.coyote_ratio = 0
+        self.hold_jump = False
 
         self.in_air = False
         self.vel_y = 0
@@ -172,7 +173,8 @@ class player(pygame.sprite.Sprite):
         t = textfile_formatter()
         config_path = 'assets/config_textfiles/player_config'
         stamina_ini_cost_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'player_stamina_base_costs_config.txt')), 'float')
-        self.action_history = [-1,-1,-1,-1]
+        self.len_action_history = 4
+        self.action_history = [-1]*self.len_action_history
         
         self.atk1_stamina_cost = stamina_ini_cost_dict['atk1']
         self.atk1_default_stam = self.atk1_stamina_cost
@@ -691,15 +693,16 @@ class player(pygame.sprite.Sprite):
             
             elif(tile[2] in one_way_tiles):#one way tiles
                 if tile[1].colliderect(self.collision_rect.x, self.collision_rect.bottom - 16 + dy, self.width, 18):
-                    if self.vel_y >= 0: 
-                        self.vel_y = 0
-                        self.in_air = False
-                    elif self.vel_y < 0:
-                        self.vel_y *= 0.8#velocity dampening when passing thru tile
-                        self.in_air = True
-
-                    dy = tile[1].top - self.collision_rect.bottom
-                    self.rolled_into_wall = False
+                    if tile[1].top - self.rect.bottom >= -16:
+                        if self.vel_y >= 0: 
+                            self.vel_y = 0
+                            self.in_air = False
+                        elif self.vel_y < 0:
+                            self.vel_y *= 0.6#velocity dampening when passing thru tile
+                            self.in_air = True
+                        
+                        dy = tile[1].top - self.collision_rect.bottom
+                        self.rolled_into_wall = False
                            
             elif(tile[2] == 10):#level transition tiles
                     
@@ -858,7 +861,7 @@ class player(pygame.sprite.Sprite):
                         
                         if self.action == 7:
                             self.vel_y -= 0.6
-                            #self.in_air = True
+                            
                         elif self.action == 8 and self.vel_y + 7 <= 28 and self.vel_y > 0 and self.in_air: #25 max 
                             self.vel_y *= 1.7
 
@@ -1286,11 +1289,11 @@ class player(pygame.sprite.Sprite):
                 
                 #self.squat = False #this line will cancel jumps that have been inputted before the atk
                 
-                if self.action == 7:
-                    self.atk1_alternate = False
-                elif self.action == 8:
-                    self.atk1_alternate = True
-                elif self.action == 10:
+                # if self.action == 7:
+                #     self.atk1_alternate = False
+                # elif self.action == 8:
+                #     self.atk1_alternate = True
+                if self.action == 10:
                     self.crit = False
                 self.landing = False
                 self.atk1 = False

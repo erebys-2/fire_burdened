@@ -260,6 +260,7 @@ def main():
 	#good news is that the player's coordinates can go off screen and currently the camera's auto scroll will eventually correct it
 	normal_speed = player0.speed
 	debugger_sprint = False
+	shift = False
 
 	#load initial level-------------------------------------------------------------------------------------------------
 	
@@ -830,10 +831,12 @@ def main():
 				elif player0.atk1:
 					
 					if change_once:
-						if player0.vel_y < -0.1:
+						if player0.vel_y < -0.1 or (player0.hold_jump and player0.vel_y < 1 and player0.in_air and player0.action_history[player0.len_action_history-1] in [2,4]):
 							player0.atk1_alternate = True
-						elif player0.vel_y > 0.1:
+						elif player0.vel_y > 0 and player0.in_air:
 							player0.atk1_alternate = False
+						else:
+							player0.atk1_alternate = not player0.atk1_alternate
 						change_once = False
 
 					if player0.crit:
@@ -908,11 +911,13 @@ def main():
 				#print(pygame.key.name(event.key))
 				if player0.Alive and level_dict[level][3] and not pause_game and not dialogue_enable:
 					if inventory_opened:
-						inv_directions[0] = (event.key == ctrls_list[3]) #Right
-						inv_directions[1] = (event.key == ctrls_list[1]) #Left
-						inv_directions[2] = (event.key == ctrls_list[0]) #Up
-						inv_directions[3] = (event.key == ctrls_list[2]) #Down
+						inv_directions[0] = (event.key == pygame.K_RIGHT) #Right
+						inv_directions[1] = (event.key == pygame.K_LEFT) #Left
+						inv_directions[2] = (event.key == pygame.K_UP) #Up
+						inv_directions[3] = (event.key == pygame.K_DOWN) #Down
 						inv_directions[4] = (event.key == ctrls_list[4]) #discard
+						move_L = False
+						move_R = False
 					else:
 						if event.key == ctrls_list[1]: #pygame.K_a
 							move_L = True
@@ -938,18 +943,19 @@ def main():
 						# 	player0.atk1 = (event.key == ctrls_list[4])
 						if event.key == ctrls_list[0]: #pygame.K_w 
 							player0.landing = False
-
-							if not player0.in_air: #player is on ground
-								player0.squat = True
-							elif player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:# and not player0.double_jump_en:
+							player0.hold_jump = True
+							if player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:
 								hold_jump_update = pygame.time.get_ticks()
 								player0.squat = True 
+								
+							elif not player0.in_air:
+								player0.squat = True
         
 							# if player0.in_air and player0.double_jump_en: #and some other signal
 							# 	player0.double_jump = True
 							# 	print("double jump here " + str(pygame.time.get_ticks()))
        
-							if player0.rolling and player0.in_air == False:
+							if player0.rolling and not player0.in_air:
 								player0.roll_count = player0.roll_limit
 								player0.squat = True
 
@@ -1022,6 +1028,8 @@ def main():
 					camera.is_visible = not camera.is_visible
 				if event.key == pygame.K_MINUS:
 					debugger_sprint = True
+				if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
+					shift = True
 				# if event.key == pygame.K_t:
 				# 	trade_ui_en = not trade_ui_en
 
@@ -1030,7 +1038,7 @@ def main():
 					if level != 0:
 						ui_manager0.trigger_once = True
 
-						if (pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
+						if not player0.Alive or (shift and pause_game):#(pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
 							ui_manager0.rtn_dict = ui_manager0.reset_rtn_dict()
 							next_level = 0
 							player0 = player(32, 160, speed, hp, stam, 0, 0, vol_lvl, camera_offset)
@@ -1041,7 +1049,7 @@ def main():
 							play_click_sound()
 
 						elif not dialogue_enable and not inventory_opened: #pause game, will trigger if player is not in dialogue
-							pause_game = True
+							pause_game = not pause_game
 							pygame.mixer.pause()
 							play_click_sound()
 		
@@ -1133,6 +1141,7 @@ def main():
 				#switched to continuous signal
 				if event.key == ctrls_list[0] and not inventory_opened:#variable height jumping
 					player0.jump_dampen = True
+					player0.hold_jump = False
 
 				if event.key == ctrls_list[4]:#pygame.K_i
 					status_bars.warning = False
@@ -1153,6 +1162,9 @@ def main():
 
 				if event.key == pygame.K_MINUS:
 					debugger_sprint = False
+     
+				if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
+					shift = False
 
 				if event.key == ctrls_list[8]:
 					inv_toggle_en = False
@@ -1195,7 +1207,7 @@ def main():
 						# 	change_once = False
 						# 	player0.atk1 = (event.button == ctrls_list[4])
 						if event.button == ctrls_list[0]: #pygame.K_w 
-							
+							player0.hold_jump = True
 							player0.landing = False
 
 							if not player0.in_air: #player is on ground
@@ -1367,6 +1379,7 @@ def main():
 				#switched to continuous signal
 				if event.button == ctrls_list[0] and not inventory_opened:#variable height jumping
 					player0.jump_dampen = True
+					player0.hold_jump = True
 
 				if event.button == ctrls_list[4]:#pygame.K_i
 					status_bars.warning = False

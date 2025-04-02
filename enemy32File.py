@@ -199,9 +199,9 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         moving = False
         
         if self.check_if_in_simulation_range(-40):
-            if self.vel_y == 0:
-                self.vertical_direction = 0
-            elif self.vel_y < 0:
+            # if self.vel_y == 0:
+            #     self.vertical_direction = 0
+            if self.vel_y <= 0:
                 self.vertical_direction = 1
             elif self.vel_y > 0:
                 self.vertical_direction = -1
@@ -344,12 +344,6 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                                     self.vel_y = self.speed
                                 else:
                                     self.vel_y = -self.speed
-
-                        if self.action == 1 and self.vel_y == 0:
-                            self.vel_y += 1
-                            #self.vel_y *= random.randint(-1,3)
-                        # else:
-                        #     self.vel_y = 0
                             
                     if not self.inundated and self.action == 1:
                         if self.direction == -1:
@@ -357,10 +351,13 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                         elif self.direction == 1:
                             self.atk_rect = pygame.Rect(self.rect.x + self.half_width - self.quarter_height//2, self.rect.y + self.quarter_height, self.half_width, self.half_height)
                         self.atk_rect_scaled = self.atk_rect
+                        
+                        if self.vel_y == 0:
+                            self.vel_y += 1
                     else:
                         self.atk1_kill_hitbox()
                         
-                    if self.action == 0:
+                    if self.action == 0 and not moving:
                         self.vel_y = 0
                         self.rect.centery = self.ini_y - 9*math.sin(self.increment)
 
@@ -515,8 +512,8 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                         dx += self.direction * 2
 
             
-            dxdy = self.do_p_int_group_collisions(sp_group_list[8], dx, dy)
             if self.id != 'fly':
+                dxdy = self.do_p_int_group_collisions(sp_group_list[8], dx, dy)
                 dx = dxdy[0]
                 dy = dxdy[1]
             #world collisions
@@ -773,11 +770,11 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
     def draw(self, p_screen):
         #self.animate()
         if self.check_if_onscreen():
-            if not self.action == 2 and self.frame_index > 0:
-                p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
-            else:
+            if self.inundated and self.frame_index < 1:
                 if pygame.time.get_ticks()%5 != 0:
                     p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+            else:
+                p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
         #pygame.draw.rect(p_screen, (255,0,0), self.atk_rect_scaled)
     
     def update_action(self, new_action):
