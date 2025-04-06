@@ -1,4 +1,5 @@
 import os
+import datetime
 from textfile_handler import textfile_formatter
 
 class save_file_handler():
@@ -54,6 +55,10 @@ class save_file_handler():
             
     def check_plot_index(self, slot):
         return self.t1.read_text_from_file(os.path.join(f'assets/save_files/{slot}/', self.PID_str))[0] != 'empty'
+    
+    def get_save_time(self, slot):
+        date_str = str(datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(f'assets/save_files/{slot}/', self.PID_str))))
+        return date_str[:len(date_str)-7]
             
     def load_save(self, slot):
         saves_path = f'assets/save_files/{slot}/'

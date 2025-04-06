@@ -231,9 +231,9 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     if self.action == 1 and not self.inundated: #when the dog is running it has an attack hitbox
                         
                         if self.direction == -1:
-                            self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.half_width + 16, self.height - 32)
+                            self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.half_width, self.height - 32)
                         elif self.direction == 1:
-                            self.atk_rect = pygame.Rect(self.rect.x + self.half_width - 8, self.rect.y + 16, self.half_width + 16, self.height - 32)
+                            self.atk_rect = pygame.Rect(self.rect.x + self.half_width - 8, self.rect.y + 16, self.half_width, self.height - 32)
                         else:
                             self.atk_rect.centerx = self.rect.centerx
                             self.atk_rect.centery = self.rect.centery
@@ -375,9 +375,9 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     dx = self.direction * self.speed
 
                     if self.direction == -1:
-                        self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.half_width, self.half_height)
+                        self.atk_rect = pygame.Rect(self.rect.x + 4, self.rect.y + 16, self.half_width - 8, self.half_height)
                     elif self.direction == 1:
-                        self.atk_rect = pygame.Rect(self.rect.x + self.half_width, self.rect.y + 16, self.half_width, self.half_height)
+                        self.atk_rect = pygame.Rect(self.rect.x + self.half_width, self.rect.y + 16, self.half_width - 8, self.half_height)
                     self.atk_rect_scaled = self.atk_rect
                     # else:
                     #     self.moving = False

@@ -17,6 +17,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.save_handler = save_file_handler()
         
         self.generic_img = pygame.image.load('assets/sprites/generic_btn.png').convert_alpha()
+        self.generic_img2 = pygame.image.load('assets/sprites/generic_btn2.png').convert_alpha()
         self.invisible_img = pygame.image.load('assets/sprites/invisible_btn.png').convert_alpha()
         self.pause_img = pygame.image.load('assets/sprites/pause_bg.png').convert_alpha()
         
@@ -264,7 +265,12 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             self.button_list *= 0
             
             for i in range(save_files_ct+1):
-                self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +40*i, self.generic_img, 1))
+                if i < 4:
+                    img = self.generic_img2
+                else:
+                    img = self.generic_img
+                self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +40*i, img, 1))
+                self.button_list[i].rect.centerx = self.S_W//2#center buttons
                 if i < save_files_ct and len(self.btn_click_counter) <= save_files_ct:
                     self.btn_click_counter.append(0)
             
@@ -274,7 +280,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         for i in range(save_files_ct):
             file_status = 'Empty'
             if self.save_handler.check_plot_index(i):
-                file_status = 'Used'
+                file_status = self.save_handler.get_save_time(i)#'Used'
 
             btn_str = f'File {i}: {file_status}'
             if self.btn_click_counter[i] > 0:
@@ -331,7 +337,12 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         if self.trigger_once: #deploy buttons
             self.button_list *= 0
             for i in range(5):
-                self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +40*i, self.generic_img, 1))
+                if i < 4:
+                    img = self.generic_img2
+                else:
+                    img = self.generic_img
+                self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +40*i, img, 1))
+                self.button_list[i].rect.centerx = self.S_W//2#center buttons
             self.button_list.append(Button(self.S_W - 112, self.S_H - 32, self.invisible_img, 1))
             
             if self.selected_slot != -1:
@@ -342,7 +353,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             
         for i in range(4):
             if self.save_handler.check_plot_index(i):
-                file_status = 'Used'
+                file_status = self.save_handler.get_save_time(i)#'Used'
             else:
                 file_status = 'Empty'
             if self.do_btn_logic(screen, self.button_list[i], f'File {i}: {file_status}', True, 1):
@@ -418,6 +429,8 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             
             self.button_list.append(Button(self.S_W//2 + 64, self.S_H /2 -186 + 192, self.generic_img, 1))
             
+            self.button_list.append(Button(self.S_W//2 + 64, self.S_H /2 -186 + 256, self.generic_img, 1))
+            
             #tips button
             self.button_list.append(Button(0, 448, self.invisible_img, 1))
             
@@ -472,6 +485,11 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 self.ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054, 121, 117]
                 for i in range(len(self.disp_str_list)):
                     self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
+                    
+            if self.do_btn_logic(screen, self.button_list[26], 'Default2', False, 1):
+                self.ctrls_list = [1073741906, 1073741904, 1073741905, 1073741903, 101, 119, 113, 1073742049, 121, 117]#https://www.ascii-code.com/
+                for i in range(len(self.disp_str_list)):
+                    self.disp_str_list[i][1] = pygame.key.name(self.ctrls_list[i])
             
         else:
             pygame.draw.rect(screen, (0,0,0), (0, 0, self.S_W, self.S_H))
@@ -509,7 +527,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             
         
         #pressing tips button
-        if self.do_btn_logic(screen, self.button_list[26], self.help_btn_str, False, 1):
+        if self.do_btn_logic(screen, self.button_list[27], self.help_btn_str, False, 1):
             self.help_open = not self.help_open
             if self.help_open:
                 self.help_btn_str = '[Close Tips]'

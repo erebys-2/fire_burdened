@@ -105,8 +105,9 @@ class player(pygame.sprite.Sprite):
         self.update_time3 = pygame.time.get_ticks()#stamina regen
         self.particle_update = pygame.time.get_ticks()#crit particles
         self.BP_update_time = pygame.time.get_ticks()#charging particles
-        #self.coyote_jump_update_time = pygame.time.get_ticks()
+
         self.hitting_wall_timer = pygame.time.get_ticks()
+        self.coyote_time = pygame.time.get_ticks()
         
         self.angle = 0
         
@@ -175,6 +176,7 @@ class player(pygame.sprite.Sprite):
         stamina_ini_cost_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'player_stamina_base_costs_config.txt')), 'float')
         self.len_action_history = 4
         self.action_history = [-1]*self.len_action_history
+        self.recovery_counter = 1
         
         self.atk1_stamina_cost = stamina_ini_cost_dict['atk1']
         self.atk1_default_stam = self.atk1_stamina_cost
@@ -498,17 +500,19 @@ class player(pygame.sprite.Sprite):
                             dy -= self.collision_rect.bottom - p_int.rect.top
                     elif self.collision_rect.top <= p_int.rect.bottom and self.collision_rect.top >= p_int.rect.y + 32 and p_int.vel_y > 0:
                         dy = p_int.vel_y
+                        in_air = False
                         self.vel_y = 0.5
                     elif (self.collision_rect.top <= p_int.rect.bottom 
                           and self.collision_rect.bottom > p_int.rect.bottom 
                           and p_int.vel_y == 0
                           and not p_int.is_moving_plat):
                         #works for the most part but screenshake can still cause the player to phase through
+                        in_air = False
                         self.vel_y = 0
                         dy = -dy
                         dy += p_int.rect.bottom - self.collision_rect.top
                     else:
-                        self.in_air = True
+                        in_air = True
                         
 
                 #x collisions
@@ -519,9 +523,9 @@ class player(pygame.sprite.Sprite):
                     hitting_wall_timer = pygame.time.get_ticks()
                     
                     if p_int.vel_y == 0:
-                        if (dx > 0 and self.direction > 0) or (dx < 0 and self.direction < 0):
+                        if (dx > 1 and self.direction > 0) or (dx < -1 and self.direction < 0):
                             dx = -self.direction + p_int.vel_x
-                        else:
+                        elif (dx < -1 and self.direction > 0) or (dx > 1 and self.direction < 0):
                             dx = self.direction + p_int.vel_x
                             
                     else:
@@ -544,8 +548,8 @@ class player(pygame.sprite.Sprite):
                     hitting_wall = True
                     hitting_wall_timer = pygame.time.get_ticks()
                 
-                if not (p_int.rect.colliderect(self.collision_rect.x, self.collision_rect.y + dy, self.width, self.height)):
-                    self.in_air = True
+                # if not (p_int.rect.colliderect(self.collision_rect.x, self.collision_rect.y + dy, self.width, self.height)):
+                #     in_air = True
                 
                     
             #taking damage from crushing traps
@@ -668,20 +672,19 @@ class player(pygame.sprite.Sprite):
                             dy = tile[1].top - self.rect.bottom #-1
                             self.rolled_into_wall = False
                             self.in_air = False
+                            self.coyote_time = pygame.time.get_ticks()
                             
                         #upper collisions
                         if self.rect.bottom - tile[1].bottom > self.height//2 and tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height//2):
                             dy = tile[1].bottom  - self.rect.top
                             
-                elif  ( not self.in_air
-                        and not self.crit 
-                        #and self.vel_y > self.coyote_vel #velocity based coyote jump, default 6, bigger number -> more coyote jump
-                        #and not tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height)
-                        ):
-                    if self.vel_y > self.coyote_vel:
-                        self.curr_state = True
-                        self.in_air = True
-                        self.squat = False
+                # elif  ( not self.in_air
+                #         and not self.crit 
+                #         ):
+                #     if self.vel_y > self.coyote_vel:
+                #         self.curr_state = True
+                #         self.in_air = True
+                #         self.squat = False
                             
             #special tiles
             elif(tile[2] in (2, 60)):#spikes/ other trap tiles
@@ -697,6 +700,7 @@ class player(pygame.sprite.Sprite):
                         if self.vel_y >= 0: 
                             self.vel_y = 0
                             self.in_air = False
+                            self.coyote_time = pygame.time.get_ticks()
                         elif self.vel_y < 0:
                             self.vel_y *= 0.6#velocity dampening when passing thru tile
                             self.in_air = True
@@ -809,9 +813,12 @@ class player(pygame.sprite.Sprite):
             if (#(moveL and self.direction == 1) or (moveR and self.direction == -1) #BREAK ROLLING
                #or 
                 self.squat
-                or self.stamina_used + self.roll_stam_rate > self.stamina
-                or (self.atk1)# and ((self.action == 7 or self.action ==8) and self.frame_index < 2))
                 or self.roll_count >= self.roll_limit
+                or self.stamina_used + self.roll_stam_rate > self.stamina
+                or (self.atk1 and self.check_atk1_history() != 4)
+                # and (self.check_atk1_history() != 4 or
+                # ( self.atk1
+                # ))
                 #or self.rolled_into_wall
                 ):
                 if (self.action != 7 and self.action != 8 and self.action != 10):
@@ -831,6 +838,7 @@ class player(pygame.sprite.Sprite):
             self.curr_state = self.in_air
             #if not break atk1
             if (#self.collision_rect.x >= 0 and self.collision_rect.right <= 640 and
+                #not (self.rolling)
                 not (((moveL and self.direction == 1) or (moveR and self.direction == -1)) and self.frame_index > 2) 
                 and not (self.rolling and self.frame_index > 2 + self.crit) 
                 and not (self.squat and self.frame_index > 2 + self.crit)
@@ -1000,10 +1008,19 @@ class player(pygame.sprite.Sprite):
         #gravity
         
         
-        if self.vel_y <= 25:#25 = terminal velocity
-            self.vel_y += 0.55
+        
         if self.shoot and self.frame_index == 2:
             self.vel_y *= 0.8
+        if self.vel_y <= 25:#25 = terminal velocity
+            self.vel_y += 0.55    
+        
+        if not self.in_air:
+            if self.vel_y > self.coyote_vel:
+                self.curr_state = True
+                self.in_air = True
+                self.squat = False
+        
+            
         dy = self.vel_y
         
         #--------------------------------------------------------------coordinate test
@@ -1255,7 +1272,10 @@ class player(pygame.sprite.Sprite):
             if self.action != 5 and self.action != 6:
                 self.frame_index = 0
             if self.action == 1 or self.action == 0:
-                self.update_action_history(-1)
+                self.recovery_counter -= 1
+                if self.recovery_counter <= 0:
+                    self.recovery_counter = 1
+                    self.update_action_history(-1)
                 self.atk1_stamina_cost = self.atk1_default_stam
             
             if self.action == 15:
@@ -1272,6 +1292,7 @@ class player(pygame.sprite.Sprite):
  
             
             if self.action == 16:
+                self.recovery_counter *= 2
                 self.atk1 = False
                 self.heavy = False
     
@@ -1438,6 +1459,7 @@ class player(pygame.sprite.Sprite):
                         self.heavy = True
                         self.char_level += 2*self.char_dict['melee']
                 else:
+                    self.recovery_counter = 1
                     self.heavy = False
                     self.atk1_stamina_cost = self.atk1_default_stam
                 if self.stamina_used + self.atk1_stamina_cost >= self.stamina:
@@ -1447,7 +1469,7 @@ class player(pygame.sprite.Sprite):
                     self.stamina_used += self.atk1_stamina_cost
                 self.ini_stamina += self.atk1_stamina_cost
                 
-            if new_action == 9:
+            if new_action == 9 and self.check_atk1_history() != 4:
                 self.stamina_used += self.roll_stam_rate
                 self.ini_stamina += self.roll_stam_rate
         

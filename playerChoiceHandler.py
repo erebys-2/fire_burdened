@@ -98,7 +98,7 @@ class player_choice_handler():
             if key == 'save_game':
                 txt = ': Empty'
                 if self.save_handler.check_plot_index(i):
-                    txt = ': Used'
+                    txt = f': {self.save_handler.get_save_time(i)}'
                 
             self.button_list[i].show_text(screen, self.fontlist[1], ('', player_choices[i][0] + txt))
             

@@ -29,8 +29,10 @@ class StatusBars():
         
         self.img3 = pygame.image.load('assets/sprites/UI/melee_count/0.png').convert_alpha()
         self.img4 = pygame.image.load('assets/sprites/UI/melee_count/1.png').convert_alpha()
+        self.img4_1 = pygame.transform.scale(self.img4, (int(self.img4.get_width() * scale**3), int(self.img4.get_height() * scale**3)))
         self.img5 = pygame.image.load('assets/sprites/UI/melee_count/2.png').convert_alpha()
         self.rect_list = []
+        self.rect_list2 = []
         
         self.status_icon_imglist = []
         self.status_enable_list = []
@@ -43,10 +45,12 @@ class StatusBars():
         self.direction_img_list = []
         path_ = 'assets/sprites/UI/directions'
         for i in range(len(os.listdir(path_))):
-            self.direction_img_list.append(pygame.image.load(os.path.join(path_+f'/{i}.png')).convert_alpha())
+            arrow_img = pygame.image.load(os.path.join(path_+f'/{i}.png')).convert_alpha()
+            self.direction_img_list.append(pygame.transform.scale(arrow_img, (int(arrow_img.get_width() * scale), int(arrow_img.get_height() * scale))))
         
         for i in range(4):
             self.rect_list.append(pygame.rect.Rect(40 + i*32, placement_y - 18, 16, 16))
+            self.rect_list2.append(pygame.rect.Rect(36 + i*32, placement_y - 18*scale, 16, 16))
         
         self.rect = self.image.get_rect()
         self.rect.topleft = (0,placement_y)
@@ -54,6 +58,8 @@ class StatusBars():
         self.very_charred = False
         self.is_exhausted = False
         self.color = (0,0,0)
+        self.full_recover = True
+        self.full_recover_time = pygame.time.get_ticks()
         
        
     def draw_tutorial_cues(self, screen, player, enemies_nearby, p_int_nearby, controller_en, ctrls_list, font):
@@ -63,30 +69,27 @@ class StatusBars():
         if self.is_exhausted:#draw exhaustion action cues
             if not controller_en:
                 txt = f'[{pygame.key.name(ctrls_list[0])}] or [{pygame.key.name(ctrls_list[2])}]'
-                x_disp = player.direction*4 - player.rect.width//2
+                x_disp = player.direction*3 - player.rect.width*0.6
             else:
                 txt = '[Jump] or [Roll]'
-                x_disp = player.direction*4 - player.rect.width*0.75
-            if player.action in (1,0):#draw exhaustion count down
-                countdown = str(len(player.frame_list[player.action]) - player.frame_index)
-                self.draw_text(f'({countdown})', 
-                         font, (255,255,255), self.rect.right + 48*self.scale, self.rect.y - 15*self.scale, screen)
+                x_disp = player.direction*3 - player.rect.width*0.75
+            
                 
         elif not self.is_exhausted and enemies_nearby:#draw attack/ evade cues
             if not controller_en:
                 txt = f'[{pygame.key.name(ctrls_list[4])}] or [{pygame.key.name(ctrls_list[2])}]'
-                x_disp = player.direction*4 - player.rect.width//2
+                x_disp = player.direction*3 - player.rect.width*0.6
             else:
                 txt = '[Melee] or [Roll]'
-                x_disp = player.direction*4 - player.rect.width*0.75
+                x_disp = player.direction*3 - player.rect.width*0.75
                 
         elif p_int_nearby:
             if not controller_en:
                 txt = f'[{pygame.key.name(ctrls_list[2])}] >> [{pygame.key.name(ctrls_list[4])}]'
-                x_disp = player.direction*4 - player.rect.width//2
+                x_disp = player.direction*3 - player.rect.width*0.6
             else:
                 txt = '[Roll] >> [Melee]'
-                x_disp = player.direction*4 - player.rect.width*0.75
+                x_disp = player.direction*3 - player.rect.width*0.75
             
         if txt != '':
             self.draw_text(txt, font, (255,255,255), player.rect.centerx + x_disp, player.rect.y - 32, screen)
@@ -103,21 +106,26 @@ class StatusBars():
             vel_y_ratio = numerator/p_jump_val
 
             index = 0#set img index
-            if vel_y_ratio < 0:
+            if vel_y_ratio < 0 or (player.in_air and player.hold_jump and player.vel_y < 0.5):
                 index = 1
             
             if self.arrow_y_disp != player.rect.y:#set y disp
                 self.arrow_y_disp += 0.85*p_jump_val*vel_y_ratio
                 
             screen.blit(self.direction_img_list[index],#pygame.transform.hsl(self.direction_img_list[index], 0, vel_y_ratio, 1-abs(vel_y_ratio)), 
-                        (player.rect.centerx - self.t_size//2,# - player.direction*self.t_size, 
-                         self.arrow_y_disp - self.t_size)#player.rect.y + self.t_size//4)
+                        (player.rect.centerx - self.scale*(self.t_size//2),# - player.direction*self.t_size, 
+                         self.arrow_y_disp - self.t_size*self.scale)#player.rect.y + self.t_size//4)
                         )
         else:
             self.arrow_y_disp = player.rect.y
             
         
     def draw_status_icons(self, screen, player, font):#NOT independent from other draw functions
+        #draw exhaustion count down
+        if self.is_exhausted:
+            countdown = str(player.recovery_counter)
+            self.draw_text(f'({countdown})', 
+                        font, (255,255,255), self.rect.right + 48*self.scale, self.rect.y - 15*self.scale, screen)
         
         #set conditions met
         self.status_enable_list[0] = (player.vel_y > 1 and player.action == 1 and player.coyote_ratio > 0)
@@ -157,17 +165,27 @@ class StatusBars():
             bit_mask = 2**(j+1) - 1
             if int(rect_list_bitstr, 2) & bit_mask == bit_mask:
                 atk_ct = j+1
+
+                self.full_recover = False
+                self.full_recover_time = pygame.time.get_ticks()
                 #consecutive_atk = bit_mask != 1
         
         self.is_exhausted = atk_ct == len_
-        for rect_ in self.rect_list[0:atk_ct]:
+        for rect_ in self.rect_list[:atk_ct]:
             screen.blit(self.img3, rect_)#draw black
             if self.is_exhausted:
                 self.draw_text(f'EXHAUSTED', 
                          font, (255,255,255), self.rect.right - 22*self.scale, self.rect.y - 15*self.scale, screen)
                 if pygame.time.get_ticks()%4 == 0:
                     screen.blit(self.img5, rect_)#draw white
-            
+                    
+        if atk_ct == 0 and not self.full_recover:
+            if pygame.time.get_ticks() > self.full_recover_time + 120:
+                self.full_recover = True
+            for i in range(len_):
+                screen.blit(self.img4_1, self.rect_list2[i])
+            # self.draw_text(f'ATK READY', 
+            #             font, (255,255,255), self.rect.right - 22*self.scale, self.rect.y - 15*self.scale, screen)
         
     def draw(self, screen, stat_data, player_action, key_values, font, flicker):
         hp_color = (105,31,46)

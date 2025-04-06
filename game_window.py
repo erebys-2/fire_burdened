@@ -91,6 +91,7 @@ def main():
 	#define font
 	font = pygame.font.SysFont('SimSun', 12)
 	font_larger = pygame.font.SysFont('SimSun', 16)
+	font_largerer = pygame.font.SysFont('SimSun', 24)
 	font_massive = pygame.font.SysFont('SimSun', 48)
 
 	#camera instance
@@ -134,7 +135,7 @@ def main():
 		0:[black, 'none', [], False, ''], #lvl 0
 		1:[grey, 'none', [(2, ht, 2, 44*ts, null, null), (2, ht, 3, 0, null, null)], True, 'Outer City Ruins'], #lvl 1
 		2:[grey, 'none', [(2, ht, 1, 0, null, null)], True, "Barrier's Edge"], #lvl 2
-		3:[grey, 'none', [(2, ht, 1, 199*ts, null, null), (2, ht, 4, 0, null, null)], True, 'Outer City Ruins'],
+		3:[grey, 'none', [(2, ht, 1, 214*ts, null, null), (2, ht, 4, 0, null, null)], True, 'Outer City Ruins'],
 		4:[grey, 'none', [(2, ht, 3, 39*ts, null, null), (SCREEN_WIDTH, 2, 5, null, 2, 0)], True, 'Outer City Ruins'],
 		5:[dark_grey, 'none', [(wd, 2, 4, null, std_y_disp, 1)], True, 'Outer City Ruins']
 	}
@@ -527,9 +528,9 @@ def main():
 			status_bars.very_charred = player0.char_level/player0.char_dict['max_char'] > 0.9
 			status_bars.draw(screen, player0.get_status_bars(), player0.action, (7,8,9,10,16), font, False)
 			status_bars.draw2(screen, player0.action_history, (7,8,16), font_larger)
-			status_bars.draw_status_icons(screen, player0, font)
+			status_bars.draw_status_icons(screen, player0, font_larger)
 			if world.plot_index_dict != {} and world.plot_index_dict['opening_scene'] == -4:
-				status_bars.draw_tutorial_cues(screen, player0, player0.do_extended_hitbox_collisions(the_sprite_group), player0.check_for_breakable2(the_sprite_group), ui_manager0.controller_connected, ctrls_list, font_larger)
+				status_bars.draw_tutorial_cues(screen, player0, player0.do_extended_hitbox_collisions(the_sprite_group), player0.check_for_breakable2(the_sprite_group), ui_manager0.controller_connected, ctrls_list, font_largerer)
 			player_inv_UI.show_selected_item(player0.inventory_handler.inventory, screen)
    
 			#passive items temp code
@@ -831,7 +832,7 @@ def main():
 				elif player0.atk1:
 					
 					if change_once:
-						if player0.vel_y < -0.1 or (player0.hold_jump and player0.vel_y < 1 and player0.in_air and player0.action_history[player0.len_action_history-1] in [2,4]):
+						if player0.vel_y < -0.1 or (player0.hold_jump and player0.vel_y < 2 and player0.in_air and player0.action_history[player0.len_action_history-1] in [2,4]):
 							player0.atk1_alternate = True
 						elif player0.vel_y > 0 and player0.in_air:
 							player0.atk1_alternate = False
@@ -974,7 +975,7 @@ def main():
 							status_bars.warning = True
 			
 
-						if event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost <= player0.stamina: #pygame.K_s
+						if event.key == ctrls_list[2] and (player0.check_atk1_history() == 4 or player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost <= player0.stamina): #pygame.K_s
 							player0.squat = False
 							player0.rolling = True
 
@@ -1024,7 +1025,7 @@ def main():
 					pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 					ui_manager0.in_fullscreen = False
 
-				if event.key == pygame.K_c:
+				if event.key == pygame.K_c and shift:
 					camera.is_visible = not camera.is_visible
 				if event.key == pygame.K_MINUS:
 					debugger_sprint = True

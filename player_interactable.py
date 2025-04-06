@@ -258,11 +258,12 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                 elif self.id == 'breakable_brick1' or (self.id == 'breakable_brick2' and player_action == 10):
                     #print(self.durability)
                     if self.durability > 0:
-                        if (
+                        if (player_action != 16 and
                             (self.do_player_atk_collisions(player_atk_rect) or 
                             self.do_bullet_collisions((sp_group_list[1], sp_group_list[2])))
                             ):
                             if not self.durability_changed:
+                                #if player_action != 16:
                                 self.durability -= 1
                                 self.durability_changed = True
                                 self.image = self.frame_list[self.action][self.breakable_tile_frame_change()]

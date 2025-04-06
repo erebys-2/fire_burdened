@@ -125,6 +125,13 @@ def main():
     change_once = False 
 
     eraser_mode = False
+    insert_mode = False
+    select_mode = False
+    insert_pos = 0
+    shift = False
+    ctrl = False
+    ini_scroll = 0
+    copied_chunk = []
 
     #load tiles
 
@@ -186,7 +193,7 @@ def main():
             button_col = 0
             
     description = 'game layer'
-    overwrite = False
+
     reload_map = False
     reload_all_maps = False
 
@@ -324,15 +331,36 @@ def main():
     def extend_lvl(extension, layer_list):
         rtn_layer_list = []#3d list of lists
         for layer in layer_list:#layer is 2d
-            templist = []
+            new_layer = []
             for i in range(ROWS):
                 if extension > 0:
-                    templist.append(layer[i] + [-1]*extension)
+                    data_list = layer[i] + [-1]*extension
                 else:
-                    templist.append(layer[i][:MAX_COLS+extension])
-            rtn_layer_list.append(templist)
+                    data_list = layer[i][:MAX_COLS+extension]
+                new_layer.append(data_list)
+            rtn_layer_list.append(new_layer)
 
         return rtn_layer_list
+    
+    def copy_chunk(start_pos, end_pos, layer_list):
+        temp_chunk = []#3d list of lists
+        for layer in layer_list:
+            temp_layer = []
+            for i in range(ROWS):
+                temp_layer.append(layer[i][start_pos:end_pos])
+            temp_chunk.append(temp_layer)
+        print("chunk copied!")
+        return temp_chunk        
+    
+    def paste_chunk(pos, chunk, layer_list):
+        tiles_added = len(chunk[0][0])
+        for k in range(len(layer_list)):
+            for i in range(ROWS):
+                for j in range(tiles_added):
+                    layer_list[k][i].insert(pos, chunk[k][i][tiles_added -1 -j])
+        print("chunk pasted!")
+        return tiles_added
+    
 
     #running the editor----------------------------------------------------
     
@@ -386,11 +414,9 @@ def main():
             
         #check overwrite
         if level != input_level and level in level_sizes_dict:
-            overwrite = True
             pygame.draw.rect(screen, (255,0,0), (0, SCREEN_HEIGHT, SCREEN_WIDTH, LOWER_MARGIN))
             draw_text(screen, f'YOU ARE IN OVERWRITE MODE. SAVING WILL OVERWRITE ANOTHER LEVEL.', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 15)   
-        else:
-            overwrite = False     
+           
             
             
         #====================================================================drawing=================================================================
@@ -402,6 +428,8 @@ def main():
  
         #draw tile ids of current data map
         screen.blit(tile_id_map_dict[curr_layer], (-scroll,0))#only draw text of current layer
+        
+        
         
         #==================================================================================================================================
            
@@ -421,14 +449,20 @@ def main():
                     (map_dict[i], tile_id_map_dict[i]) = draw_bg(layer_list[1:][i], i, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
             reload_all_maps = False
         
-        if grid_on == True:
+        if grid_on:
             draw_grid()
-        
+            
+        #draw insertion box
+        if insert_mode:
+            pygame.draw.line(screen, (255, 254, 171), (insert_pos-scroll,0), (insert_pos-scroll,SCREEN_HEIGHT), 3)
+        elif select_mode:
+            pygame.draw.rect(screen, (255, 120, 120), pygame.rect.Rect(insert_pos-scroll, 0, 32*((scroll-ini_scroll)//32)+3, SCREEN_HEIGHT), 3)
+
         #drawing text and stuff
         draw_text(screen, f'Level: {level}, Layer: {description}', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 90)
         draw_text(screen, 'Press W or S to change level, A or D to scroll, Q to adjust scroll speed', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 75)
-        draw_text(screen, f'Current dimensions: row x col = {row_str} x {col_str}, use "[" and "]" to change lvl size', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 60)
-        draw_text(screen, f'Restart editor to load a level with different dimensions.', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 45)
+        draw_text(screen, f'{row_str} x {col_str}, ([,]) to change lvl size, select_mode (ctrl + click): {select_mode}', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 60)
+        draw_text(screen, f'Eraser mode (E): {eraser_mode}, insert_mode (shift + click): {insert_mode}', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 45)
         draw_text(screen, f'Press X to show grid, L and K to change layer, I to isolate layer', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 30)
 
         #update to accomodate multiple csv files
@@ -442,7 +476,7 @@ def main():
             print('~~Saved!~~')
             if level not in level_sizes_dict:
                 t1.add_line_to_file(f'{level}: {ROWS}, {MAX_COLS}', path2 + 'level_sizes_dict.txt')
-            #elif overwrite:
+    
             str_list = list(t1.read_text_from_file((path2 + 'level_sizes_dict.txt')))
             str_list[level] = f'{level}: {ROWS}, {MAX_COLS}'
             output_str = ''
@@ -504,11 +538,24 @@ def main():
             #update tile value 
             #THIS IS ACTUALLY CHANGING THE TILE VALUES-------------------------------------------------------------------------------
             for i in range(len(layer_list[1:])):
-                if curr_layer == i:
+                if not shift and not ctrl and curr_layer == i:
                     (rtn_data, reload_map) = editing_lvl_data(x, y, current_tile, layer_list[1:][i], i, world_layer_index, eraser_mode)
                     if reload_map:
                         layer_list[1:][i] = rtn_data#set the layer to the new values
                         break
+                    
+            if pygame.mouse.get_pressed()[0] == 1 and shift:
+                insert_pos = x*32
+                insert_mode = True
+                select_mode = False
+            if pygame.mouse.get_pressed()[0] == 1 and ctrl:
+                insert_pos = x*32
+                ini_scroll = scroll
+                insert_mode = False
+                select_mode = True
+            elif pygame.mouse.get_pressed()[2] == 1:
+                insert_mode = False
+                select_mode = False
             
         for event in pygame.event.get():
             #quit game
@@ -520,7 +567,7 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     run = False
                     
-                if event.key == pygame.K_LSHIFT:
+                if event.key == pygame.K_e:
                     eraser_mode = not eraser_mode
 
                 if event.key == pygame.K_w:
@@ -558,16 +605,44 @@ def main():
                     isolate_layer = not isolate_layer
                     
                 if event.key == pygame.K_LEFTBRACKET:
-                    layer_list = extend_lvl(-1, layer_list)
+                    if insert_mode:
+                        for layer in layer_list:
+                            for i in range(ROWS):
+                                layer[i].pop(insert_pos//32)
+                    else:
+                        layer_list = extend_lvl(-1, layer_list)
                     MAX_COLS -= 1
                     reload_all_maps = True
                     if scroll > ((MAX_COLS) * TILE_SIZE) - 640:
                         scroll -= TILE_SIZE
+                    row_str = str(ROWS)
+                    col_str = str(MAX_COLS)
                 elif event.key == pygame.K_RIGHTBRACKET:
-                    layer_list = extend_lvl(1, layer_list)
+                    if insert_mode:
+                        for layer in layer_list:
+                            for i in range(ROWS):
+                                layer[i].insert(insert_pos//32, -1)
+                    else:
+                        layer_list = extend_lvl(1, layer_list)
                     MAX_COLS += 1
                     reload_all_maps = True
+                    row_str = str(ROWS)
+                    col_str = str(MAX_COLS)
                     
+                if event.key == pygame.K_c and select_mode:
+                    copied_chunk = copy_chunk(insert_pos//32, insert_pos//32 + ((scroll-ini_scroll)//32), layer_list)
+                if event.key == pygame.K_v and (select_mode or insert_mode):
+                    tiles_added = 0
+                    tiles_added = paste_chunk(insert_pos//32, copied_chunk, layer_list)
+                    reload_all_maps = tiles_added != 0
+                    MAX_COLS += tiles_added
+                    col_str = str(MAX_COLS)
+                    
+                if event.key == pygame.K_LSHIFT:
+                    shift = True
+                    
+                if event.key == pygame.K_LCTRL:
+                    ctrl = True
 
             if(event.type == pygame.KEYUP):
                 if event.key == pygame.K_a:
@@ -578,6 +653,11 @@ def main():
                     change_once = False
                 if event.key == pygame.K_k:
                     change_once = False
+                    
+                if event.key == pygame.K_LSHIFT:
+                    shift = False
+                if event.key == pygame.K_LCTRL:
+                    ctrl = False
 
         pygame.display.set_caption(f"editor window v2.0 @ {clock.get_fps():.1f} FPS")
         pygame.display.update()
