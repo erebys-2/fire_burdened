@@ -95,6 +95,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         self.m_player = music_player(None, ini_vol)
         self.m_player.sfx = sfx_list_ext
         self.ini_vol = ini_vol
+        self.heavy_recoil = False
 
         if frame_list == None:
             for animation in animation_types:
@@ -447,12 +448,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 dx = player_direction * self.recoil
                 y_avg = (self.rect.centery + player_atk_rect.centery)/2
                 
-                sp_group_list[5].sprite.add_particle('player_impact', x_avg + dx/4, y_avg, -self.direction, self.scale*1.05, True, self.rando_frame)
-
-                for i in range(3):
-                    sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.3*self.scale, False, random.randrange(0,3))
-
-                self.m_player.play_sound(self.m_player.sfx[1], (self.rect.centerx, self.rect.centery, None, None))
+                
                 
                 if self.rando_frame < 2:
                     self.rando_frame += 1
@@ -471,10 +467,26 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 
                 if player_action ==  10 or player_action == 9:
                     self.dmg_multiplier = 6
+                    self.heavy_recoil = True
                 elif player_action == 16:
-                    self.dmg_multiplier = 6
+                    self.dmg_multiplier = 4
+                    self.heavy_recoil = True
                 elif player_action == 7 or player_action == 8:
                     self.dmg_multiplier = 2
+                    self.heavy_recoil = False
+                    
+                sp_group_list[5].sprite.add_particle('player_impact', x_avg + dx/4, y_avg, -self.direction, self.scale*1.05, True, self.rando_frame)
+                particle_ct = 3
+                sfx_index = 1
+                if self.heavy_recoil:
+                    particle_ct = 15
+                    sfx_index = 5
+                    self.heavy_recoil = False
+                
+                for i in range(particle_ct):
+                    sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.3*self.scale, False, random.randrange(0,3))
+
+                self.m_player.play_sound(self.m_player.sfx[sfx_index], (self.rect.centerx, self.rect.centery, None, None))
                     
             elif (player_atk_rect.width == 0 and   
                 player_rect.x > self.rect.x - 64 and player_rect.right < self.rect.right + 64 and

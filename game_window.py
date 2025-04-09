@@ -135,7 +135,7 @@ def main():
 		0:[black, 'none', [], False, ''], #lvl 0
 		1:[grey, 'none', [(2, ht, 2, 44*ts, null, null), (2, ht, 3, 0, null, null)], True, 'Outer City Ruins'], #lvl 1
 		2:[grey, 'none', [(2, ht, 1, 0, null, null)], True, "Barrier's Edge"], #lvl 2
-		3:[grey, 'none', [(2, ht, 1, 214*ts, null, null), (2, ht, 4, 0, null, null)], True, 'Outer City Ruins'],
+		3:[grey, 'none', [(2, ht, 1, 278*ts, null, null), (2, ht, 4, 0, null, null)], True, 'Outer City Ruins'],
 		4:[grey, 'none', [(2, ht, 3, 39*ts, null, null), (SCREEN_WIDTH, 2, 5, null, 2, 0)], True, 'Outer City Ruins'],
 		5:[dark_grey, 'none', [(wd, 2, 4, null, std_y_disp, 1)], True, 'Outer City Ruins']
 	}
@@ -960,13 +960,13 @@ def main():
 								player0.roll_count = player0.roll_limit
 								player0.squat = True
 
-						if event.key == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and event.key != ctrls_list[0] and not player0.using_item: #pygame.K_i, pygame.K_w
+						if event.key == ctrls_list[4] and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and event.key != ctrls_list[0] and not player0.using_item: #pygame.K_i, pygame.K_w
 							#player0.atk1_stamina_cost is not getting updated during heavy attack
 							change_once = True
 							player0.atk1 = True # (event.key == ctrls_list[4])
 							player0.melee_hit = False
 
-						elif event.key == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
+						elif event.key == ctrls_list[4] and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
 							status_bars.warning = True
 						
 						if event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina and not player0.using_item and player0.inventory_handler.check_for_item('Rock'): #pygame.K_o

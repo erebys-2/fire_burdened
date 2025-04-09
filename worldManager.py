@@ -163,7 +163,7 @@ class World():
             level_csv_data.append(r)
 
         #change list with values from CSV file
-        with open(f'assets/level_files/level{level}_{csv_data_name}.csv', newline= '') as csvfile:
+        with open(f'assets/level_files/level{level}/level{level}_{csv_data_name}.csv', newline= '') as csvfile:
             reader = csv.reader(csvfile, delimiter= ',') 
             for x, current_row in enumerate(reader):
                 for y, tile in enumerate(current_row):

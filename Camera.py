@@ -4,17 +4,17 @@ class Camera():
     #rudimentary camera, but it works
     #can possibly implement screenshake here
     def __init__(self, screenW, screenH, camera_offset):
-        
+        self.ts = 32
         self.scrollx = 0
         self.half_screen = screenW//2
-        self.x_coord = self.half_screen - 32
-        self.x_coord2 = self.half_screen + 32
+        self.x_coord = self.half_screen - self.ts
+        self.x_coord2 = self.half_screen + self.ts
         self.on_r_edge = False
         self.Px_coord = 0
         self.set_ini_pos = True
 
         self.rect = pygame.Rect(0, 0, 64, screenH)
-        self.rect.centerx = self.half_screen #- 32
+        self.rect.centerx = self.half_screen #- self.ts
         self.rect.centery = screenH//2
 
         self.camera_offset = camera_offset
@@ -60,9 +60,12 @@ class Camera():
         self.x_coord2 = self.rect.x - 30 - world_rect.x
                     
   
-    def get_shift_dist(self, player_direction, world_rect, screenW):
+    def get_shift_dist(self, player_direction, player_rect, world_rect, screenW):
         if self.shift_dist > 1:
             self.shift_dist -= 1
+            
+        # if not self.rect.colliderect(player_rect) and world_rect.x < -screenW and world_rect.x > -world_rect.width + screenW:
+        #     self.shift_dist = abs(player_rect.centerx - self.rect.centerx)//8
         
         if (not self.set_ini_pos #level is not being loaded
             and self.camera_offset >= 8
@@ -81,11 +84,11 @@ class Camera():
         
         #gets how much the autocorrect should adjust given the camera displacement value
         #should set shift_dist = 1 by default if camera disp is small or if there's no level scrolling
-        self.get_shift_dist(player_direction, world_rect, screenW)
+        self.get_shift_dist(player_direction, player_rect, world_rect, screenW)
         #aligns player to a vertical axis when the player is traversing level rightwards
         if (player_rect.right - self.rect.right > 16 - displacement
               #and player_rect.right - 16 < self.x_coord2 + self.half_screen
-              and self.x_coord2 < world_rect.width - (self.half_screen + 32) #prevents from over scrolling on the rightmost edge
+              and self.x_coord2 < world_rect.width - (self.half_screen + self.ts) #prevents from over scrolling on the rightmost edge
               ): 
             player_rect.x -= self.shift_dist
             self.scrollx += self.shift_dist    
@@ -101,8 +104,8 @@ class Camera():
         #========================================= OVERSCROLL CORRECTION AT LEVEL EDGES ====================================    
             
         # #when the player is on the left half screen of the level, I think it prevents underscrolling
-        elif ((player_rect.x + 32 < self.rect.x #basic check that previous conditionals didn't occur
-             and self.x_coord < screenW - 32 #make sure false positives don't occur
+        elif ((player_rect.x + self.ts < self.rect.x #basic check that previous conditionals didn't occur
+             and self.x_coord < screenW - self.ts #make sure false positives don't occur
              and world_rect.x > 0) #fine adjustment
             ):
             player_rect.x -= world_rect.x
@@ -110,7 +113,7 @@ class Camera():
  
         #prevents over scroll at the right edge of a level
         elif (  player_rect.x > self.rect.x #basic check that previous conditionals didn't occur
-                and self.x_coord > world_rect.width - (self.half_screen + 32 ) #make sure false positives don't occur
+                and self.x_coord > world_rect.width - (self.half_screen + self.ts ) #make sure false positives don't occur
                 and world_rect.x < -(world_rect.width - 608) #fine adjustment
                 ):
             player_rect.x += 1
@@ -134,7 +137,7 @@ class Camera():
         #==================================== SETTING INITIAL POSITION ON LEVEL LOAD ===============================
 
         #During a level transition player_rect.x is set to a real coordinate, NOT relative to the screen
-        #The camera doesn't move during level transition, its self.rect.x will always be set to relative to the screen at its center line 320 pixels
+        #The camera doesn't move during level transition, its self.rect.x will always be set to relative to the screen at its center line self.ts0 pixels
         #so if player's new position is out of the camera's range, the camera will need to be moved-  
         #basically if the NEW location of the player is beyond the first half screen 
         
@@ -151,7 +154,7 @@ class Camera():
                 player_rect.x -= dx
                 
             #new player coord on right edge of level
-            elif world_rect.width - player_rect.x < self.half_screen + 32:
+            elif world_rect.width - player_rect.x < self.half_screen + self.ts:
                 self.on_r_edge = True
                 temp_x = player_rect.x
                 player_rect.x -= (dx2 + world_rect.width- player_rect.x - 2)

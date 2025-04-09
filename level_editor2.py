@@ -293,7 +293,7 @@ def main():
     #-------Reading and writing level data for loading---------------------------------------
     def read_level_data(level, data_str):
         rtn_list = []
-        with open(f'assets/level_files/level{level}_{data_str}.csv', newline= '') as csvfile:
+        with open(f'assets/level_files/level{level}/level{level}_{data_str}.csv', newline= '') as csvfile:
             reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
             for x, current_row in enumerate(reader):
                 row_list = []
@@ -303,11 +303,13 @@ def main():
 
         return rtn_list
 
-    def write_level_data(level, data_, data_str):
-        with open(f'assets/level_files/level{level}_{data_str}.csv', 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile, delimiter = ',')
-                for row in data_:
-                    writer.writerow(row)
+    def write_level_data(level, level_sizes_dict, data_, data_str):
+        if f'level{level}' not in os.listdir('assets/level_files'):
+            os.mkdir(f'assets/level_files/level{level}')
+        with open(f'assets/level_files/level{level}/level{level}_{data_str}.csv', 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile, delimiter = ',')
+            for row in data_:
+                writer.writerow(row)
                     
     def editing_lvl_data(x, y, current_tile, data, data_index, world_layer_index, eraser_mode):
         reload_map = False
@@ -382,7 +384,7 @@ def main():
                 else:
                     (rtn_map_dict[layer-1], rtn_TIM_dict[layer-1]) = draw_world(rtn_list[layer], static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
                     
-        return rtn_list
+        return (rtn_list, rtn_map_dict, rtn_TIM_dict)
 
     
     def load_lvl(level, layer_name_dict, world_layer_index, static_bg_oversized_tiles_dict, sprite_group_tiles_dict):
@@ -396,7 +398,7 @@ def main():
                     (rtn_map_dict[layer-1], rtn_TIM_dict[layer-1]) = draw_bg(rtn_list[layer], layer-1, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
                 else:
                     (rtn_map_dict[layer-1], rtn_TIM_dict[layer-1]) = draw_world(rtn_list[layer], static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
-
+        
         print('~~loaded!~~')   
         return (rtn_list, rtn_map_dict, rtn_TIM_dict)
     
@@ -471,7 +473,7 @@ def main():
         if save_button.draw(screen):
             #save level data
             for layer in layer_name_dict:
-                write_level_data(level, layer_list[layer], layer_name_dict[layer])
+                write_level_data(level, level_sizes_dict, layer_list[layer], layer_name_dict[layer])
             
             print('~~Saved!~~')
             if level not in level_sizes_dict:

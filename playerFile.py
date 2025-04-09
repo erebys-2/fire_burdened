@@ -359,13 +359,13 @@ class player(pygame.sprite.Sprite):
                         #     print(enemy)
                         if enemy[1] == the_sprite_group.enemy_bullet_group:
                             damage += 3
-                            self.take_damage(damage)
+                            self.take_damage(damage, 826)
                         if enemy[1] == the_sprite_group.enemy_bullet_group2:
                             damage += 2
-                            self.take_damage(damage)
+                            self.take_damage(damage, 836)
                         if enemy[1] == the_sprite_group.p_int_group2:
                             damage += 0.75*self.hp
-                            self.take_damage(damage)
+                            self.take_damage(damage, 836)
                     #print(damage)
                 damage = 0
 
@@ -375,7 +375,7 @@ class player(pygame.sprite.Sprite):
                          ]:
                 if self.hitbox_rect.colliderect(enemy.atk_rect_scaled):
                     damage += 1.5
-                    self.take_damage(damage) 
+                    self.take_damage(damage, 836) 
                 damage = 0
                 
     def do_extended_hitbox_collisions(self, the_sprite_group):
@@ -688,11 +688,11 @@ class player(pygame.sprite.Sprite):
                             
             #special tiles
             elif(tile[2] in (2, 60)):#spikes/ other trap tiles
-                if tile[1].colliderect(self.collision_rect.x + 3*self.width//8 + dx, self.collision_rect.y + dy, self.width//4, self.height - self.width//4):
+                if not self.i_frames_en and tile[1].colliderect(self.collision_rect.x + 3*self.width//8 + dx, self.collision_rect.y + dy, self.width//4, self.height - self.width//4):
                     #if self.frame_index%4 == 0:
-                    self.take_damage(0.2)
+                    self.take_damage(0.2, 80)
                     self.vel_y = 0
-                    
+                    self.in_air = False
             
             elif(tile[2] in one_way_tiles):#one way tiles
                 if tile[1].colliderect(self.collision_rect.x, self.collision_rect.bottom - 16 + dy, self.width, 18):
@@ -838,10 +838,9 @@ class player(pygame.sprite.Sprite):
             self.curr_state = self.in_air
             #if not break atk1
             if (#self.collision_rect.x >= 0 and self.collision_rect.right <= 640 and
-                #not (self.rolling)
                 not (((moveL and self.direction == 1) or (moveR and self.direction == -1)) and self.frame_index > 2) 
-                and not (self.rolling and self.frame_index > 2 + self.crit) 
-                and not (self.squat and self.frame_index > 2 + self.crit)
+                and not (self.rolling and self.frame_index > 2 + self.crit - 2*self.heavy) 
+                and not (self.squat and self.frame_index > 2 + self.crit - 2*self.heavy)
                 ): #not (self.rolling) and 
                 if (self.frame_index == 0):#fast initial impulse
                     # if pygame.time.get_ticks() < self.update_time + 20:
@@ -871,7 +870,7 @@ class player(pygame.sprite.Sprite):
                             self.vel_y -= 0.6
                             
                         elif self.action == 8 and self.vel_y + 7 <= 28 and self.vel_y > 0 and self.in_air: #25 max 
-                            self.vel_y *= 1.7
+                            self.vel_y *= 1.5
 
                 elif self.frame_index > 1 :# slow forward speed
                     if self.crit and self.check_if_in_ss_range():
@@ -1175,10 +1174,12 @@ class player(pygame.sprite.Sprite):
                 self.update_time3 = pygame.time.get_ticks()
                 self.stamina_used += stamina_increment_unit
                 
-    def take_damage(self, damage):
+    def take_damage(self, damage, i_frames_time):
         if not self.hurting:
             self.frame_index = 0
         self.rolling = False
+        
+        self.i_frames_time = i_frames_time
         
         self.hurting = True
         self.hits_tanked += damage
@@ -1300,7 +1301,7 @@ class player(pygame.sprite.Sprite):
                 self.hurting = False
                 self.i_frames_en = True #triggers i_frames for next tick
                 self.update_time2 = pygame.time.get_ticks()
-                self.i_frames_time = 836
+                #self.i_frames_time = 836
 
             if self.action == 4:
                 self.squat_done = True #squatting finished when it loops frames
@@ -1428,14 +1429,19 @@ class player(pygame.sprite.Sprite):
                 self.char_level += self.char_dict['melee']
                 #print(self.char_level)
             elif self.action == 9 and (new_action == 7 or new_action == 8) and self.atk1:
-                self.crit = True
-                if self.check_if_in_ss_range():
-                    self.do_screenshake = True
-                    self.screenshake_profile = (16, 6, 3)
-                self.m_player.play_sound(self.m_player.sfx[4], None)
-                self.char_level += self.char_dict['crit']
+                self.heavy = False
+                if self.check_atk1_history() != 3:
+                    self.crit = True
+                    if self.check_if_in_ss_range():
+                        self.do_screenshake = True
+                        self.screenshake_profile = (16, 6, 3)
+                    self.m_player.play_sound(self.m_player.sfx[4], None)
+                    self.char_level += self.char_dict['crit']
+                else:
+                    self.atk1 = False
+                    self.atk1_kill_hitbox()
             elif self.action != 9 and (new_action == 7 or new_action == 8):
-                self.crit == False
+                self.crit = False
                 self.m_player.play_sound(self.m_player.sfx[1], None)
                 self.char_level += self.char_dict['melee']
                 #print(self.char_level)
@@ -1443,6 +1449,12 @@ class player(pygame.sprite.Sprite):
                 print("oof") #make player hurting sound
             elif new_action == 11:
                 self.char_level += self.char_dict['shoot']
+            # else:
+            #     self.crit = False
+            #     self.heavy = False
+            #     self.atk1_stamina_cost = self.atk1_default_stam
+            #     self.atk1 = False
+            #     self.atk1_kill_hitbox
 
             self.action = new_action
             self.disp_flag = self.disp_states[self.action]
