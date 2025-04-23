@@ -152,13 +152,13 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
         self.inventory = inventory
         
     def check_for_item(self, item_name):
-        item_found = False
-        for slot in self.inventory:
-            if slot[0] == item_name:
-                item_found = True
-                break
+        # item_found = False
+        # for slot in self.inventory:
+        #     if slot[0] == item_name:
+        #         item_found = True
+        #         break
         
-        return item_found
+        return item_name in [x[0] for x in self.inventory]#item_found
     
     def discard_item_by_name(self, item_name):
         empty = False
@@ -337,7 +337,7 @@ class item_usage_hander():  #helper class with logic for item usage and applying
 #this is so for general menu navigating the mechanical signal of a click doesn't carry on when the next set of buttons is loaded in        
                 
 class inventory_UI(): #handles displaying inventory, item description and counts, and slot selection
-    def __init__(self, rows, cols, fontlist, SCREEN_WIDTH, SCREEN_HEIGHT, ini_vol):
+    def __init__(self, rows, cols, fontlist, SCREEN_WIDTH, SCREEN_HEIGHT, ts, ini_vol):
         m_player_sfx_list_main = ['roblox_oof.mp3', 'hat.mp3', 'woop.mp3']
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
 
@@ -374,7 +374,7 @@ class inventory_UI(): #handles displaying inventory, item description and counts
         
         self.inv_disp = (160,128) #inventory displacement for displaying slot
         self.isolated_slot_pos = (192, self.inv_disp[1] + self.rows*32 + 32)
-        self.text_manager0 = text_manager()
+        self.text_manager0 = text_manager(SCREEN_WIDTH, SCREEN_HEIGHT, ts)
      
         
         #load all items into a list
@@ -558,6 +558,11 @@ class inventory_UI(): #handles displaying inventory, item description and counts
             pygame.draw.rect(screen, (0,0,0), (self.S_W//2 + 3, self.S_H//2 - 204, 298, 26))
             pygame.draw.rect(screen, (255,0,86), (self.S_W//2 + 3, self.S_H//2 - 204, 298*charring, 26))
             
+            #draw 2nd textbox
+            status_str = [f'Sprint Unlocked: {'Worn Knee Socks' in [x[0] for x in inventory]}',]
+            self.text_manager0.disp_text_box(screen, self.fontlist[1], status_str, 
+                                             (-1,-1,-1), (200,200,200), (self.S_W//2 + 64 + 16, self.S_H//2 +64 +24,0,0), False, False, 'none')
+            
             #set up and draw text
             item_class = self.item_details0.get_item_class(inventory[self.slot][0])
 
@@ -717,7 +722,7 @@ class item_details():#helper class for getting and formatting item descriptions 
 class trade_menu_ui():
     #LIMITATIONS:
     #CANNOT HAVE 2 DIFFERENT PRICES FOR THE SAME ITEM
-    def __init__(self, total_slots, fontlist, SCREEN_WIDTH, SCREEN_HEIGHT, ini_vol):
+    def __init__(self, total_slots, fontlist, SCREEN_WIDTH, SCREEN_HEIGHT, ts, ini_vol):
         m_player_sfx_list_main = ['roblox_oof.mp3', 'hat.mp3', 'woop.mp3']
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
 
@@ -758,7 +763,7 @@ class trade_menu_ui():
             self.all_frame_list.append(pygame.image.load(f'assets/sprites/misc_art/trade/{i}.png').convert_alpha())
         
         self.inv_disp = (16,370) #initial position for first slot
-        self.text_manager0 = text_manager()
+        self.text_manager0 = text_manager(SCREEN_WIDTH, SCREEN_HEIGHT, ts)
      
         
         #loading item images into a dictionary
@@ -880,17 +885,17 @@ class trade_menu_ui():
         return rtn_str
         
     def check_for_item2(self, item_name, inventory):#returns how many of an item the player has in their inventory, default/item not found is 0
-        count = 0
-        slot_index = -1
+        # count = 0
+        # slot_index = -1
         
-        slot_candidates = []#fill list of inventory slots with matching item names
-        for slot in enumerate(inventory):
-            if slot[1][0] == item_name:
-                slot_index = slot[0]
-                count = slot[1][1]
-                slot_candidates.append((slot_index, count))
+        #slot_candidates = []#fill list of inventory slots with matching item names
+        # for slot in enumerate(inventory):
+        #     if slot[1][0] == item_name:
+        #         slot_index = slot[0]
+        #         count = slot[1][1]
+        #         slot_candidates.append((slot_index, count))
         
-        return slot_candidates
+        return [(slot[0], slot[1][1]) for slot in enumerate(inventory) if slot[1][0] == item_name]#slot_candidates
     
     def get_tot_itm_ct(self, slot_list):
         total_items = 0

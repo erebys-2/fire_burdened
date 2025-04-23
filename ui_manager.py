@@ -9,11 +9,11 @@ import csv
 
 class ui_manager(): #Helper class for displaying and operating non-game UI (menus and sub menus)
     
-    def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, fontlist, ini_vol, fs_size):
+    def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, ts, fontlist, ini_vol, fs_size):
         m_player_sfx_list_main = ['roblox_oof.mp3', 'hat.mp3']
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
         self.t1 = textfile_formatter()
-        self.text_manager0 = text_manager()
+        self.text_manager0 = text_manager(SCREEN_WIDTH, SCREEN_HEIGHT, ts)
         self.save_handler = save_file_handler()
         
         self.generic_img = pygame.image.load('assets/sprites/generic_btn.png').convert_alpha()
@@ -23,6 +23,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         
         self.S_W = SCREEN_WIDTH
         self.S_H = SCREEN_HEIGHT
+        self.ts = ts
         
         self.std_size = (SCREEN_WIDTH, SCREEN_HEIGHT)
         self.fs_size = fs_size
@@ -55,7 +56,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
 
         self.title_screen = pygame.image.load('assets/sprites/title_screen.png').convert_alpha()
         self.ts_rect = self.title_screen.get_rect()
-        self.ts_rect.center = (self.S_W//2, self.S_H//2 +32)
+        self.ts_rect.center = (self.S_W//2, self.S_H//2 +self.ts)
         
         self.vol_lvl = ini_vol
         self.lower_volume = False
@@ -88,7 +89,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             'LCD': {0: 0},
             'OSD': {},
             'PID': {},
-            'PNC': (32,128),
+            'PNC': (self.ts,128),
             'NL': 0,
             'PS': {}
         }  
@@ -343,7 +344,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                     img = self.generic_img
                 self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -48 +40*i, img, 1))
                 self.button_list[i].rect.centerx = self.S_W//2#center buttons
-            self.button_list.append(Button(self.S_W - 112, self.S_H - 32, self.invisible_img, 1))
+            self.button_list.append(Button(self.S_W - 112, self.S_H - self.ts, self.invisible_img, 1))
             
             if self.selected_slot != -1:
                 self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 - 88, self.generic_img, 1))
@@ -412,35 +413,35 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                     self.disp_str_list[i][1] = str(self.ctrls_list[i])
             #load buttons
             for i in range(10):
-                self.button_list.append(Button(self.S_W//2 -192, self.S_H//2 -186 + 32*i, self.generic_img, 1))
+                self.button_list.append(Button(self.S_W//2 -192, self.S_H//2 -186 + self.ts*i, self.generic_img, 1))
             
             for i in range(10): #done for formatting (these are dummy buttons)
-                self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -186 + 32*i, self.generic_img, 1))
+                self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 -186 + self.ts*i, self.generic_img, 1))
                 
             #save button
-            self.button_list.append(Button(self.S_W//2 - 64, self.S_H /2 +172, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 - 64, self.S_H//2 +172, self.generic_img, 1))
             
             #save and load control scheme buttons
-            self.button_list.append(Button(self.S_W//2 + 64, self.S_H /2 -186, self.generic_img, 1))
-            self.button_list.append(Button(self.S_W//2 + 64, self.S_H /2 -186 + 32, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 + 64, self.S_H//2 -186, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 + 64, self.S_H /2 -186 + self.ts, self.generic_img, 1))
             
-            self.button_list.append(Button(self.S_W//2 + 64, self.S_H /2 -186 + 96, self.generic_img, 1))
-            self.button_list.append(Button(self.S_W//2 + 64, self.S_H /2 -186 + 128, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 + 64, self.S_H//2 -186 + 96, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 + 64, self.S_H//2 -186 + 128, self.generic_img, 1))
             
-            self.button_list.append(Button(self.S_W//2 + 64, self.S_H /2 -186 + 192, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 + 64, self.S_H//2 -186 + 192, self.generic_img, 1))
             
-            self.button_list.append(Button(self.S_W//2 + 64, self.S_H /2 -186 + 256, self.generic_img, 1))
+            self.button_list.append(Button(self.S_W//2 + 64, self.S_H//2 -186 + 256, self.generic_img, 1))
             
             #tips button
-            self.button_list.append(Button(0, 448, self.invisible_img, 1))
+            self.button_list.append(Button(0, self.S_H - self.ts, self.invisible_img, 1))
             
             self.trigger_once = False
         
         
         self.text_manager0.disp_text_box(screen, self.fontlist[1], ('','Click a button to re-map then press the desired key'), (-1,-1,-1), (200,200,200), 
-                                         (112, self.S_H//2 - 232,self.S_W,self.S_H), False, False, 'none')
+                                         (112, self.S_H//2 - 232, self.S_W, self.S_H), False, False, 'none')
         self.text_manager0.disp_text_box(screen, self.fontlist[1], ('','UI buttons ESCAPE and ENTER cannot be re-mapped'), (-1,-1,-1), (200,200,200), 
-                                         (128, self.S_H//2 + 128,self.S_W,self.S_H), False, False, 'none')
+                                         (128, self.S_H//2 + 128, self.S_W, self.S_H), False, False, 'none')
         
         ctrs_btn_list = [
             'Jump',
@@ -523,7 +524,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             )
             
             self.text_manager0.disp_text_box(screen, self.fontlist[0], ctrl_tips,
-                                        (-1,-1,-1), (200,200,200), (32, 32, 630, 480), False, False, 'none')
+                                        (-1,-1,-1), (200,200,200), (self.ts, self.ts, 630, 480), False, False, 'none')
             
         
         #pressing tips button
@@ -605,14 +606,14 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         #drawing pause text
         screen.blit(self.pause_img, (0,0))
         self.text_manager0.disp_text_box(screen, self.fontlist[1], ('','You Died'), (-1,-1,-1), (200,200,200), 
-                                         (288, self.S_H//2 - 32,self.S_W,self.S_H), False, False, 'none')
+                                         (288, self.S_H//2 - self.ts,self.S_W,self.S_H), False, False, 'none')
    
         if not self.saves_menu_enable:
             if self.trigger_once:
                 self.button_list *= 0
 
                 for i in range(2):
-                    self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +32 +36*i, self.generic_img, 1))
+                    self.button_list.append(Button(self.S_W//2 -64, self.S_H//2 +self.ts +36*i, self.generic_img, 1))
                 self.trigger_once = False
                 
                 self.came_from_death_menu = True

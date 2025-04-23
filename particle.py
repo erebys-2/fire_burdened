@@ -55,7 +55,7 @@ class particle_2(pygame.sprite.Sprite):
         
         #shift x,y if centered
         if base_name in ('player_bullet_explosion', 'enemy_bullet_explosion', 'player_impact', 'player_mvmt', 'player_crit', 'bloom',
-                    'player_atk1_trail', 'sparkle_white'
+                    'player_atk1_trail', 'sparkle_white', 'extra_dmg', 'worm_death'
                     ):#centered particles
             x -= (self.particle_img_dict[base_name][0].get_width()//2)*scale
             y -= (self.particle_img_dict[base_name][0].get_height()//2)*scale
@@ -106,7 +106,7 @@ class particle_2(pygame.sprite.Sprite):
             if particle0[11] == 'shooter_death':
                 particle0[2] -= 0.75*(1/(particle0[6]+1))
                 
-            if particle0[11] in ('dog_death', 'fly_death', 'walker_death'):
+            if particle0[11] in ('dog_death', 'fly_death', 'walker_death', 'worm_death'):
                 particle0[2] -= (1/(particle0[6]+1))
                 
             elif particle0[11] == 'player_down_strike':

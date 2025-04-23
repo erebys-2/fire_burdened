@@ -345,7 +345,7 @@ class World():
         self.fg_1 = self.process_bg(raw_lvl_data_dict['fg_1_data'], False)
         
         #create maps
-        layer_list = [self.fg_1, self.solids, self.bg1, self.bg3, self.bg2_1, self.bg2]
+        layer_list = [self.fg_1, self.solids, self.bg1, self.bg3, self.bg2, self.bg2_1]
         self.world_map_non_parallax = self.create_map(lvl_size, layer_list).convert_alpha()
         
         layer_list2 = [self.fg]

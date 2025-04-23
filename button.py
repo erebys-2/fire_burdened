@@ -20,7 +20,7 @@ class Button():
 		self.highlight = False
 		self.action = False
   
-		self.text_manager0 = text_manager()
+		self.text_manager0 = text_manager(0,0,32*scale)
   
 		self.highligh_rect = self.rect.scale_by(1.2)
   

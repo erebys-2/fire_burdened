@@ -4,7 +4,7 @@ from music_player import music_player #type: ignore
 #methods regarding text boxes live here
 
 class text_manager():
-    def __init__(self):#constructor
+    def __init__(self, SW, SH, TS):#constructor
         self.combined_str = ' '
         self.current_str_list = []
         self.run_once = False
@@ -21,6 +21,10 @@ class text_manager():
         self.text_delay = pygame.time.get_ticks()
         self.type_out_en = True
         self.type_out = True
+        
+        self.SW = SW
+        self.SH = SH
+        self.ts = TS
         
     #reset internal variables
     def reset_internals(self):
@@ -100,7 +104,7 @@ class text_manager():
 
         #text positioning
         if alignment == 'centered': #not actually centered LMAO
-            x = screen.get_width()//2 -64
+            x = self.SH - 2*self.ts
         else:
             x = box[0]
         y = box[1]
@@ -134,8 +138,8 @@ class text_manager():
 
 
 class dialogue_box(text_manager):
-    def __init__(self, ini_vol):
-        super().__init__()
+    def __init__(self, ini_vol, SW, SH, TS):
+        super().__init__(SW, SH, TS)
         self.obj_directory_names  = tuple(os.listdir('assets/sprites/npcs')) #inverse plot index dict
         self.img_master_list = []
         
@@ -155,8 +159,8 @@ class dialogue_box(text_manager):
                 
             self.img_master_list.append(temp_list)
             
-        self.dialogue_box_rect = (0, 360, 640, 120)
-        self.character_art_rect = (0, 0, 640, 480)
+        self.dialogue_box_rect = (0, 0.75*self.SH, self.SW, self.SH//4)
+        self.character_art_rect = (0, 0, self.SW, self.SH)
         self.counter = 0
         
         self.dialogue_box_bg = pygame.image.load('assets/sprites/dialogue_box.png').convert_alpha()
@@ -180,12 +184,12 @@ class dialogue_box(text_manager):
    
         self.draw_box_and_portrait(screen, image_index, name_index)
         
-        self.disp_text_box(screen, font, (disp_name, ' '), (-1,-1,-1),  (200,200,200), (16, 372, 112, 120), False, False, 'none')
+        self.disp_text_box(screen, font, (disp_name, ' '), (-1,-1,-1),  (200,200,200), (self.ts//2, 0.775*self.SH, 0.175*self.SW, self.SH//4), False, False, 'none')
         if in_cutscene:
-            self.disp_text_box(screen, font, ('Next:[Enter]', ''), (-1,-1,-1),  (120,120,120), (532, 456, 32, 32), False, False, 'none')
+            self.disp_text_box(screen, font, ('Next:[Enter]', ''), (-1,-1,-1),  (120,120,120), (0.8328125*self.SW, 0.95*self.SH, self.ts, self.ts), False, False, 'none')
         else:
-            self.disp_text_box(screen, font, ('Next:[Enter]  Exit:[Escape]', ''), (-1,-1,-1),  (120,120,120), (420, 456, 32, 32), False, False, 'none')
-        self.disp_text_box(screen, font, list(message), (-1,-1,-1),  (200,200,200), (128, 372, 640, 120), self.type_out, self.type_out_en, 'none')
+            self.disp_text_box(screen, font, ('Next:[Enter]  Exit:[Escape]', ''), (-1,-1,-1),  (120,120,120), (0.875*self.SH, 0.95*self.SH, self.ts, self.ts), False, False, 'none')
+        self.disp_text_box(screen, font, list(message), (-1,-1,-1),  (200,200,200), (self.SW//4 - self.ts, 0.775*self.SH, self.SW, self.SH//4), self.type_out, self.type_out_en, 'none')
         self.type_out_handler(self.type_out, text_speed)
         
         if message == ' ':

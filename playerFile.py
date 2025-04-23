@@ -40,9 +40,11 @@ class player(pygame.sprite.Sprite):
         self.hold_jump = False
 
         self.in_air = False
+        
         self.vel_y = 0
         self.landing = False
         self.curr_state = self.in_air #for particles ...again
+        self.jump_counter = 0
 
         self.atk1_alternate = False
         self.atk1 = False
@@ -83,6 +85,9 @@ class player(pygame.sprite.Sprite):
         self.roll_stam_rate = 0.22
         self.hitting_wall = False
         
+        self.wall_slide = False
+        self.hitting_wall2 = False
+        
         self.using_item = False
         self.finished_use_item_animation = False
         
@@ -117,7 +122,7 @@ class player(pygame.sprite.Sprite):
         animation_types = ('idle', 'run', 'jump', 'land', 'squat', 'hurt', 
                            'die', 'atk1', 'atk1_2', 'roll', 'atk1_3', 'shoot',
                            'charging', 'atk1_2_particle', 'turn_around', 'use_item',
-                           'atk1_4')
+                           'atk1_4', 'wall_slide')
         #print(os.listdir(f'sprites/player'))
         for animation in animation_types:
             temp_list = []
@@ -168,7 +173,8 @@ class player(pygame.sprite.Sprite):
             False, #
             False, #turn_around 14
             False,  #use_item 15
-            True #atk1_4 16
+            True, #atk1_4 16
+            False #wall slide 17
         )
         
         t = textfile_formatter()
@@ -224,14 +230,15 @@ class player(pygame.sprite.Sprite):
             
     def update_landing(self, the_sprite_group):
         
-        if self.in_air != self.curr_state and not self.disp_flag and self.action != 1 and not self.in_cutscene and self.Alive:
-            if not self.in_air:
-                the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 0)
-                self.m_player.play_sound(self.m_player.sfx[2], None)
-            else:
-                the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 1)
-            self.curr_state = self.in_air
-            
+        if not self.wall_slide:
+            if self.in_air != self.curr_state and not self.disp_flag and self.action != 1 and not self.in_cutscene and self.Alive:
+                if not self.in_air:
+                    the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 0)
+                    self.m_player.play_sound(self.m_player.sfx[2], None)
+                else:
+                    the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 1)
+                self.curr_state = self.in_air
+                
     def particles_by_frame(self, particle_index, the_sprite_group, sound):
         if self.frame_index != self.last_frame:
             if not self.disp_flag: 
@@ -374,7 +381,10 @@ class player(pygame.sprite.Sprite):
                           if enemy.is_on_screen and enemy.atk_rect_scaled.width != 0
                          ]:
                 if self.hitbox_rect.colliderect(enemy.atk_rect_scaled):
-                    damage += 1.5
+                    if enemy.id == 'worm':
+                        damage += 2
+                    else:
+                        damage += 1.5
                     self.take_damage(damage, 836) 
                 damage = 0
                 
@@ -493,14 +503,18 @@ class player(pygame.sprite.Sprite):
                     ):
                     if self.collision_rect.bottom >= p_int.rect.top and self.collision_rect.bottom <= p_int.rect.y + 32:# and p_int.vel_y < 0:
                         in_air = False
+                        self.coyote_time = pygame.time.get_ticks()
+                        
                         self.vel_y = 0.5
                         dy = p_int.vel_y
-                        dx += p_int.vel_x
+                        #dx += p_int.vel_x
                         if self.collision_rect.bottom != p_int.rect.top and (p_int.is_moving_plat or not hitting_wall):
                             dy -= self.collision_rect.bottom - p_int.rect.top
                     elif self.collision_rect.top <= p_int.rect.bottom and self.collision_rect.top >= p_int.rect.y + 32 and p_int.vel_y > 0:
                         dy = p_int.vel_y
                         in_air = False
+                        self.coyote_time = pygame.time.get_ticks()
+                        
                         self.vel_y = 0.5
                     elif (self.collision_rect.top <= p_int.rect.bottom 
                           and self.collision_rect.bottom > p_int.rect.bottom 
@@ -508,12 +522,13 @@ class player(pygame.sprite.Sprite):
                           and not p_int.is_moving_plat):
                         #works for the most part but screenshake can still cause the player to phase through
                         in_air = False
+                        self.coyote_time = pygame.time.get_ticks()
+                        
                         self.vel_y = 0
                         dy = -dy
                         dy += p_int.rect.bottom - self.collision_rect.top
                     else:
                         in_air = True
-                        
 
                 #x collisions
                 if (not self.disp_flag  
@@ -547,9 +562,7 @@ class player(pygame.sprite.Sprite):
                     
                     hitting_wall = True
                     hitting_wall_timer = pygame.time.get_ticks()
-                
-                # if not (p_int.rect.colliderect(self.collision_rect.x, self.collision_rect.y + dy, self.width, self.height)):
-                #     in_air = True
+        
                 
                     
             #taking damage from crushing traps
@@ -595,30 +608,34 @@ class player(pygame.sprite.Sprite):
         for tile in [tile for tile in world_solids 
                      if (tile[1].x > self.collision_rect.x - 64 and tile[1].right < self.collision_rect.right + 64 and 
                         tile[1].y > self.collision_rect.y - 64 and tile[1].bottom < self.collision_rect.bottom + 64 or
-                        (tile[1].bottom > self.collision_rect.bottom and tile[1].y < self.collision_rect.y))
+                        (tile[1].bottom < self.collision_rect.bottom + self.height and tile[1].y < self.collision_rect.y))
                         or tile[2] == 10
                      ]:
             #x collisions
             if (tile[2] not in (10, 2, 60) and tile[2] not in one_way_tiles):
                 self.atk1_grinding(tile[1], the_sprite_group)
-                    
+                
+                
                 #dx collisions, tile walls
                 
                 #hitting wall while rolling
                 if self.action == 9 and tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//4 - 2):
-                    dx = 0 #-1 * self.direction 
-                    #dy = dy//2
+                    dx = -1 * self.direction 
+                    dy /= 2
+                    #self.rolled_into_wall = False
                     self.rolled_into_wall = True
                     self.hitting_wall = True
                     self.hitting_wall_timer = pygame.time.get_ticks()
-                    if self.frame_index > 0:
-                        if self.rolling:#you can die via concussion now
-                            self.m_player.play_sound(self.m_player.sfx[7], None)
-                            if self.stamina_used >= 5:
-                                self.hits_tanked += 0.1
-                                if random.randint(1, ccsn_chance) == 1:
-                                    self.brain_damage = True
-                        self.rolling = False
+                    if not self.in_air:
+                        
+                        if self.frame_index > 0:
+                            if self.rolling:#you can die via concussion now
+                                self.m_player.play_sound(self.m_player.sfx[7], None)
+                                if self.stamina_used >= 5:
+                                    self.hits_tanked += 0.1
+                                    if random.randint(1, ccsn_chance) == 1:
+                                        self.brain_damage = True
+                            self.rolling = False
                     #self.debuggin_rect  = (self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//4 - 2)
                 
                 #displaced hitbox x collisions
@@ -634,15 +651,16 @@ class player(pygame.sprite.Sprite):
                 #wall collisions while NOT rolling
                 elif (self.action != 9 #this line is important for consistency
                     and not self.disp_flag
-                    and tile[1].colliderect(self.collision_rect.x + 1 + dx, self.collision_rect.y, self.width - 2, self.height - 16) 
+                    and tile[1].colliderect(self.collision_rect.x + 2 + dx, self.collision_rect.y, self.width - 4, self.height - 16) 
                     ):
                     self.hitting_wall = True
                     self.hitting_wall_timer = pygame.time.get_ticks()
                     
                     if abs(self.direction + dx) < abs(dx):
                         dx = self.direction
-                    else:
+                    elif abs(self.direction + dx) > abs(dx):
                         dx = -self.direction
+                        
 
                         
                 #dy collision stuff, sinking through tiles etc
@@ -678,13 +696,17 @@ class player(pygame.sprite.Sprite):
                         if self.rect.bottom - tile[1].bottom > self.height//2 and tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height//2):
                             dy = tile[1].bottom  - self.rect.top
                             
-                # elif  ( not self.in_air
-                #         and not self.crit 
-                #         ):
-                #     if self.vel_y > self.coyote_vel:
-                #         self.curr_state = True
-                #         self.in_air = True
-                #         self.squat = False
+                #  #wall_slide collisions doesn't work     
+                # if self.direction > 0:
+                #     ws_disp = self.width
+                # else:
+                #     ws_disp = -2
+                # #if tile[1].y < self.collision_rect.centery:
+                # self.hitting_wall2 = tile[1].colliderect(self.collision_rect.x + ws_disp, self.collision_rect.y + dy, 2, self.height)
+                # # if self.hitting_wall2:
+                # #     dx = 0
+                
+
                             
             #special tiles
             elif(tile[2] in (2, 60)):#spikes/ other trap tiles
@@ -693,6 +715,8 @@ class player(pygame.sprite.Sprite):
                     self.take_damage(0.2, 80)
                     self.vel_y = 0
                     self.in_air = False
+                    self.coyote_time = pygame.time.get_ticks()
+                    
             
             elif(tile[2] in one_way_tiles):#one way tiles
                 if tile[1].colliderect(self.collision_rect.x, self.collision_rect.bottom - 16 + dy, self.width, 18):
@@ -700,6 +724,7 @@ class player(pygame.sprite.Sprite):
                         if self.vel_y >= 0: 
                             self.vel_y = 0
                             self.in_air = False
+                            
                             self.coyote_time = pygame.time.get_ticks()
                         elif self.vel_y < 0:
                             self.vel_y *= 0.6#velocity dampening when passing thru tile
@@ -735,6 +760,8 @@ class player(pygame.sprite.Sprite):
         if self.rect.y + self.rect.height//2 + dy > 480:
             dy -= self.rect.bottom - (480)
             self.in_air = False
+            self.coyote_time = pygame.time.get_ticks()
+            
  
         return (dx, dy, (lvl_transition_flag, lvl_transition_data, lvl_trans_orientation, lvl_trans_disp))
     
@@ -746,6 +773,7 @@ class player(pygame.sprite.Sprite):
     
     def move(self, pause_game, moveL, moveR, world_solids, world_rect, x_scroll_en, y_scroll_en, half_screen, screenH, the_sprite_group, ccsn_chance):
         #reset mvmt variables
+        
         self.dialogue_trigger_ready = False
         self.collision_rect.x = self.rect.x + self.width
         self.collision_rect.y = self.rect.y
@@ -819,15 +847,17 @@ class player(pygame.sprite.Sprite):
                 # and (self.check_atk1_history() != 4 or
                 # ( self.atk1
                 # ))
-                #or self.rolled_into_wall
+                or self.rolled_into_wall #stops rolling if player rolls into wall
                 ):
                 if (self.action != 7 and self.action != 8 and self.action != 10):
                     self.rolling = False
                     #self.roll_count = self.roll_limit
-                if self.squat and self.action_history[2] != 9 and self.action_history[0] != 7:
+                #self.reset_jump()
+                if self.squat and (self.rolled_into_wall or self.jump_counter < 2):#(self.action_history[2] != 9 and self.action_history[0] != 7)):
                     the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 1)
                     self.squat_done = True
                     self.vel_y += 2
+        
                 
         #------------------------------------------------------------------------------------------------------------------------------------------------------
         #atk1------------------------------------------------------------------------------------------------------------------------------------
@@ -850,9 +880,7 @@ class player(pygame.sprite.Sprite):
                         dx = self.direction * 2 * self.speed
                         self.rect.x += self.direction * crit_speed
                         
-                        # if self.in_air and self.vel_y + 5 <= 15:
-                        #     self.vel_y += 5
-                        # else:
+ 
                         self.vel_y = 15
                     elif self.heavy:
                         dx = self.direction * self.speed
@@ -874,9 +902,7 @@ class player(pygame.sprite.Sprite):
 
                 elif self.frame_index > 1 :# slow forward speed
                     if self.crit and self.check_if_in_ss_range():
-                        # dx = self.direction * 2
-                        # if self.in_air:
-                        #     dx += self.direction
+
                         if not self.in_air:
                             dx = self.direction * 2
                         else:
@@ -919,30 +945,35 @@ class player(pygame.sprite.Sprite):
         #==========================================================================================================================================
         
         #jump
-        
-        if (not self.in_air) or self.squat_done:
-            if self.squat_done and not(self.atk1):
-                self.double_jump_en = True
-                self.squat_done = False
-                self.vel_y = -9.5
-                self.in_air = True
-                
+        if self.squat_done and not(self.atk1):
+            self.double_jump_en = True
+            self.squat_done = False
+            self.vel_y = -9.5
+            self.in_air = True
+            self.jump_counter += 1
+
         elif self.in_air and not (moveL or moveR):
             if self.action != 8 and self.action != 10 and self.action != 1 and self.action != 5:
                 self.landing = True
             else:
                 self.landing = False
-                
-        # if self.double_jump:
-        #     self.vel_y -= 9.5
-        #     self.double_jump_en = False
-        #     self.double_jump = False
         
-        # if self.action == 2:
-        #     self.draw_trail = True
-        # elif self.action != 2 and not self.atk1:
-        #     self.draw_trail = False
+        elif not self.in_air:
+            self.jump_counter = 0
+            if self.vel_y > self.coyote_vel: #(self.coyote_time + 200 < pygame.time.get_ticks()):
+                self.curr_state = True
+                self.in_air = True
+                self.squat = False
+            # # else:
+            # #     self.vel_y = 0
+            if self.coyote_time + 100 > pygame.time.get_ticks():
+                self.vel_y = 0
+            # else:
+            #     self.curr_state = True
+            #     self.in_air = True
+            #     self.squat = False
                 
+
         if self.jump_dampen:
             if self.squat or (self.squat_done and self.in_air): #very small hold jump
                 self.vel_y *= 0.8
@@ -1013,11 +1044,12 @@ class player(pygame.sprite.Sprite):
         if self.vel_y <= 25:#25 = terminal velocity
             self.vel_y += 0.55    
         
-        if not self.in_air:
-            if self.vel_y > self.coyote_vel:
-                self.curr_state = True
-                self.in_air = True
-                self.squat = False
+        
+        # if not self.in_air:
+        #     if self.vel_y > self.coyote_vel:
+        #         self.curr_state = True
+        #         self.in_air = True
+        #         self.squat = False
         
             
         dy = self.vel_y
@@ -1063,6 +1095,24 @@ class player(pygame.sprite.Sprite):
             dx = 0
             dy = 0
             self.vel_y = 0
+            
+        #wall_slide
+        if self.hitting_wall2:# and self.vel_y >= -5:# and not (self.last_direction < 0 and moveL) and not (self.last_direction > 0 and moveR):
+            
+            self.wall_slide = True
+            self.in_air = False
+            # if not self.disp_flag:
+            #     dx = 0
+            if not self.squat_done:
+                self.vel_y = 0
+            # if self.squat:
+            #     self.vel_y -= 2
+            #     self.squat_done = True
+            # self.jump = False
+        else:
+            #self.hitting_wall2 = False
+            self.wall_slide = False
+            
 
         #update pos------------------------------------------------------------------------------------------------------------------------
 
@@ -1211,6 +1261,13 @@ class player(pygame.sprite.Sprite):
             #     self.frame_updateBP -= 15
             if self.frame_updateBP >= int(self.stamina_used * 20):
                 self.frame_updateBP -= int(self.charge_built * 10)
+                
+    # def reset_jump(self):
+    #     if -1 in self.action_history:
+    #         if self.action_history[2] == 9:
+    #             self.action_history[2] = -1
+    #         if self.action_history[0] == 7:
+    #             self.action_history[0] = -1
     
     
     def animate(self, the_sprite_group):
@@ -1233,7 +1290,8 @@ class player(pygame.sprite.Sprite):
             145, #idk
             145, #idk
             120, #use item
-            130 #heavy
+            130, #heavy
+            200 #wall slide
         )
         #everything speeds up when pressing alt/sprint except shooting at the cost of slower stamina regen
         adjustment = 0
@@ -1399,6 +1457,11 @@ class player(pygame.sprite.Sprite):
         # pygame.draw.rect(screen, (255,0,0), self.hitbox_rect)
         # pygame.draw.rect(screen, (0,255,0), self.atk_rect_scaled)
         # pygame.draw.rect(screen, (0,0,255), self.debuggin_rect)
+        # if self.direction > 0:
+        #     ws_disp = self.width
+        # else:
+        #     ws_disp = -2
+        # pygame.draw.rect(screen, (255,0,0), pygame.rect.Rect(self.collision_rect.x + ws_disp, self.collision_rect.y, 2, self.height))
         
         self.draw_with_flicker(self.image, self.rect, screen, self.i_frames_en)#drawing sprite
        
@@ -1419,6 +1482,7 @@ class player(pygame.sprite.Sprite):
     def update_action(self, new_action):
         #check if action has changed
         if new_action != self.action:
+            do_not_crit = self.check_atk1_history() == 4
             if self.action != 5:
                 self.update_action_history(self.action)#updated with the last action
             if (self.action == 7 or self.action == 8) and (self.rolling or self.action == 9):
@@ -1430,16 +1494,16 @@ class player(pygame.sprite.Sprite):
                 #print(self.char_level)
             elif self.action == 9 and (new_action == 7 or new_action == 8) and self.atk1:
                 self.heavy = False
-                if self.check_atk1_history() != 3:
+                if do_not_crit:
+                    self.atk1 = False
+                    self.atk1_kill_hitbox()
+                else:
                     self.crit = True
                     if self.check_if_in_ss_range():
                         self.do_screenshake = True
                         self.screenshake_profile = (16, 6, 3)
                     self.m_player.play_sound(self.m_player.sfx[4], None)
                     self.char_level += self.char_dict['crit']
-                else:
-                    self.atk1 = False
-                    self.atk1_kill_hitbox()
             elif self.action != 9 and (new_action == 7 or new_action == 8):
                 self.crit = False
                 self.m_player.play_sound(self.m_player.sfx[1], None)

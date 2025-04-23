@@ -21,3 +21,4 @@
 62: npc, read_only_obj, object, -1
 74: one_time, none, none, -1
 82: p_int, breakable_brick2, none, -1
+83: enemy, worm, none, -1

@@ -11,11 +11,12 @@ Aria# *pspspspspss*# 8# 2
 ???# Meet me at the eastern wall.# 11# 6
 ???# I promise to tell you the real mission if you can make it there.# 12# 6
 Mars# Oh yeah, one more thing. You can call me Mars.# 13# 6
- #  # 13# 6
+[AUTOSAVE]# Progress saved in current file.# 14# 11
 Mars# You actu- I mean, of course you made it.# 15# 9
 Mars# I always knew you could. <3# 16# 7
 Mars# Wait what do you mean 'did you place those purple guys there'??# 17# 8
 Mars# Those were the... locals. Yeah, locals that lived here. At some point they used to be human until a great calamity befell them, and transformed them into abominations.# 18# 7
 Mars# Indeed, it was a calamity brought forth by the wrath of a dying god!# 19# 10
 Mars# The Flame Bearers' association sent us here pick up the valuable bits of said god, that's presumably dead by now.# 20# 7
- #  # 20# 6
+[AUTOSAVE]# Progress saved in current file.# 21# 11
+ #  # 21# 11

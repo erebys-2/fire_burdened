@@ -1,6 +1,7 @@
 import pygame
 import os
 from enemy32File import enemy_32wide
+from articulated_enemy import ms_enemy
 from BGspritesFile import tree, fountain, lamp
 from player_interactable import player_interactable_
 from characterNPCs import Test, Test2, Mars
@@ -20,6 +21,7 @@ class sprite_instantiator():
         base_path = 'assets/sprites/'
         self.bg_sprite_img_dict = self.load_img_dict(os.path.join(base_path, 'bg_sprites'))
         self.enemy_img_dict = self.load_img_dict2(os.path.join(base_path, 'enemies'), 2)
+        self.enemy_img_dict_x1 = self.load_img_dict2(os.path.join(base_path, 'enemies'), 1)
         self.p_int_img_dict = self.load_img_dict2(os.path.join(base_path, 'player_interactable'), 1)
         
         sfx_path = 'assets/sfx'
@@ -47,11 +49,18 @@ class sprite_instantiator():
                 for i in range(len(os.listdir(f'{subdir_path}/{subdir2}'))):
                     loaded_img = pygame.image.load(f'{subdir_path}/{subdir2}/{i}.png').convert_alpha()
                     loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * scale), int(loaded_img.get_height() * scale)))
-                    if asset_path == 'assets/sprites/enemies' and f'{subdir2}' == '2':#enemy spaghetti code :(
+                    if asset_path == 'assets/sprites/enemies' and f'{subdir2}' == '2' and subdir != 'worm':#enemy spaghetti code :(
                         if i < 2:
                             loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * 0.8), int(loaded_img.get_height() * 1.1)))
                         elif i == 2:
                             loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * 1.1), int(loaded_img.get_height() * 0.9)))
+                    elif asset_path == 'assets/sprites/enemies' and subdir == 'worm':#and int(subdir2) in (0,3)
+                        if int(subdir2) in (0,3):
+                            scale2 = 1.5
+                        else:
+                            scale2 = 1.2
+                        loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * scale2), int(loaded_img.get_height() * scale2)))
+                            
 
                     temp_list.append(loaded_img)
                 frame_list.append(temp_list)
@@ -126,6 +135,11 @@ class sprite_instantiator():
                 elif sprite_id == 'walker':
                     enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'walker', world.enemy0_order_id, ini_vol, self.enemy_img_dict[sprite_id],
                                           self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'cough.mp3', 'bite.mp3', 'step2soft.mp3', 'hit2.mp3']))
+                    the_sprite_group.enemy0_group.add(enemy0)
+                    world.enemy0_order_id += 1
+                elif sprite_id == 'worm':
+                    enemy0 = ms_enemy(x * 32, y * 32, 2, 2, 'worm', world.enemy0_order_id, ini_vol, self.enemy_img_dict_x1[sprite_id],
+                                          self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'cough.mp3', 'dog_hurt.mp3', 'boonk.mp3', 'hit2.mp3', 'woof.mp3', 'mc_anvil.mp3', 'glass_break.mp3']))
                     the_sprite_group.enemy0_group.add(enemy0)
                     world.enemy0_order_id += 1
                     

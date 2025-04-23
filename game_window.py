@@ -135,8 +135,8 @@ def main():
 		0:[black, 'none', [], False, ''], #lvl 0
 		1:[grey, 'none', [(2, ht, 2, 44*ts, null, null), (2, ht, 3, 0, null, null)], True, 'Outer City Ruins'], #lvl 1
 		2:[grey, 'none', [(2, ht, 1, 0, null, null)], True, "Barrier's Edge"], #lvl 2
-		3:[grey, 'none', [(2, ht, 1, 278*ts, null, null), (2, ht, 4, 0, null, null)], True, 'Outer City Ruins'],
-		4:[grey, 'none', [(2, ht, 3, 39*ts, null, null), (SCREEN_WIDTH, 2, 5, null, 2, 0)], True, 'Outer City Ruins'],
+		3:[grey, 'none', [(2, ht, 1, 299*ts, null, null), (2, ht, 4, 0, null, null)], True, 'Outer City Ruins'],
+		4:[grey, 'none', [(2, ht, 3, 39*ts, null, null), (wd, 2, 5, null, 2, 0)], True, 'Outer City Ruins'],
 		5:[dark_grey, 'none', [(wd, 2, 4, null, std_y_disp, 1)], True, 'Outer City Ruins']
 	}
  
@@ -226,7 +226,7 @@ def main():
 	#more instantiations
 
 	#dialogue box handler
-	dialogue_box0 = dialogue_box(vol_lvl)
+	dialogue_box0 = dialogue_box(vol_lvl, SCREEN_WIDTH, SCREEN_HEIGHT, ts)
 
 	#music player instance-------------------------------------------------------------------------------------------
 	m_player_sfx_list_main = ['roblox_oof.mp3', 'hat.mp3']
@@ -236,20 +236,20 @@ def main():
 	group_particle_handler = group_particle2()
 
 	#player choice handler
-	p_choice_handler0 = player_choice_handler([font, font_larger, font_massive], m_player_sfx_list_main, vol_lvl)
+	p_choice_handler0 = player_choice_handler([font, font_larger, font_massive], m_player_sfx_list_main, vol_lvl, SCREEN_WIDTH, SCREEN_HEIGHT, ts)
 
 	#ui manager
-	ui_manager0 = ui_manager(SCREEN_WIDTH, SCREEN_HEIGHT, [font, font_larger, font_massive], vol_lvl, monitor_size)
+	ui_manager0 = ui_manager(SCREEN_WIDTH, SCREEN_HEIGHT, ts, [font, font_larger, font_massive], vol_lvl, monitor_size)
 	update_vol = False
 
 	#player inventory manager
-	player_inv_UI = inventory_UI(3, 3, [font, font_larger, font_massive], SCREEN_WIDTH, SCREEN_HEIGHT, vol_lvl)
+	player_inv_UI = inventory_UI(3, 3, [font, font_larger, font_massive], SCREEN_WIDTH, SCREEN_HEIGHT, ts, vol_lvl)
 	inv_toggle = False
 	inv_toggle_en = False
 
 	#trade ui stuff
 	trade_ui_en = False
-	trade_ui = trade_menu_ui(3*3 + 1, [font, font_larger, font_massive], SCREEN_WIDTH, SCREEN_HEIGHT, vol_lvl)
+	trade_ui = trade_menu_ui(3*3 + 1, [font, font_larger, font_massive], SCREEN_WIDTH, SCREEN_HEIGHT, ts, vol_lvl)
 
 	#instantiate player at the start of load
 	stam = 6
@@ -262,6 +262,7 @@ def main():
 	normal_speed = player0.speed
 	debugger_sprint = False
 	shift = False
+	sprint_bypass = False
 
 	#load initial level-------------------------------------------------------------------------------------------------
 	
@@ -816,7 +817,7 @@ def main():
 				player0.speed = normal_speed + 1
     
 			if debugger_sprint:
-				player0.speed = normal_speed * 3
+				player0.speed = normal_speed * 5
 				player0.hits_tanked = 0
 			elif not debugger_sprint and not player0.sprint:
 				player0.speed = normal_speed
@@ -860,9 +861,12 @@ def main():
 				elif player0.rolling: 
 					player0.update_action(9)#rolling
 					player0.atk1_alternate = False
+				elif player0.wall_slide:
+					player0.update_action(17)#17: wall slide
 				else:
 					#print(player0.in_air)
-					if player0.in_air or player0.squat_done:# or (player0.vel_y > 1):
+					
+					if (player0.in_air or player0.squat_done) and not player0.wall_slide:# or (player0.vel_y > 1):
 						player0.update_action(2)#2: jump
 
 					elif ( not (move_L or move_R) and
@@ -875,7 +879,7 @@ def main():
 					elif player0.squat: 
 						player0.update_action(4)#4: squat
 
-					elif move_R or move_L:
+					elif (move_R or move_L) and not player0.wall_slide:
 						player0.update_action(1)#1: run
 					else:
 						player0.update_action(0)#0: idle
@@ -945,7 +949,9 @@ def main():
 						if event.key == ctrls_list[0]: #pygame.K_w 
 							player0.landing = False
 							player0.hold_jump = True
-							if player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:
+							if player0.wall_slide:
+								player0.squat_done = True
+							elif player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:
 								hold_jump_update = pygame.time.get_ticks()
 								player0.squat = True 
 								
@@ -983,7 +989,8 @@ def main():
 							status_bars.warning = True
 		
 					if event.key == ctrls_list[7]: #pygame.K_RALT
-						player0.sprint = True
+						if player0.inventory_handler.check_for_item('Worn Knee Socks') or sprint_bypass:
+							player0.sprint = True
 						inv_toggle = True
 					#press button and check if item selected can be used
 					if ((event.key == ctrls_list[9] or player_inv_UI.use_item_btn_output) 
@@ -1018,8 +1025,11 @@ def main():
 
 				#===============================================================UI Related Keys=============================================================
 
-				# if event.key == pygame.K_m:
-				# 	m_player.play_song('newsong18.mp3')
+				if event.key == pygame.K_r and shift: #suicide
+					player0.hits_tanked = player0.hp + 1
+				if event.key == pygame.K_RALT and shift:
+					sprint_bypass = not sprint_bypass
+					print(f"sprint bypassed = {sprint_bypass}")
     
 				if event.key == pygame.K_BACKSLASH and pygame.display.is_fullscreen():
 					pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -1243,7 +1253,8 @@ def main():
 							status_bars.warning = True
 			
 					if event.button == ctrls_list[7]: #pygame.K_RALT
-						player0.sprint = True
+						if player0.inventory_handler.check_for_item('Worn Knee Socks'):
+							player0.sprint = True
 						inv_toggle = True
 					#press button and check if item selected can be used
 					if ((event.button == ctrls_list[9] or player_inv_UI.use_item_btn_output) 

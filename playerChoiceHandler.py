@@ -10,11 +10,14 @@ from saveHandler import save_file_handler
 #it will overlay buttons over a blank text box and return the next index
 
 class player_choice_handler():
-    def __init__(self, fontlist, m_player_sfx_list_main, ini_vol):
+    def __init__(self, fontlist, m_player_sfx_list_main, ini_vol, SW, SH, TS):
 
         self.fontlist = fontlist
         self.next_index = -3
         self.prompt = ('','')
+        self.SH = SH
+        self.SW = SW
+        self.ts = TS
         
         self.t1 = textfile_formatter()
         path = 'assets/npc_dialogue_files/player_choice_config/'
@@ -33,9 +36,9 @@ class player_choice_handler():
         self.prompt_box_bg = pygame.image.load('assets/sprites/dialogue_box.png').convert_alpha()
         
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
-        self.text_manager0 = text_manager()
+        self.text_manager0 = text_manager(SW, SH, TS)
         
-        self.dialogue_box_rect = (0, 0, 640, 120)
+        self.dialogue_box_rect = (0, 0, self.SW, self.SH//4)
         
         self.save_indicator = False
         self.last_save_slot = 0
@@ -51,11 +54,11 @@ class player_choice_handler():
     def get_button_locations(self, btn_count):
         
         if btn_count == 4:
-            pos_list = [(64, 360), (320, 360), (64, 408), (320, 408)]
+            pos_list = [(2*self.ts, 1.125*self.SW//2), (self.SW//2, 1.125*self.SW//2), (2*self.ts, 0.85*self.SH), (self.SW//2, 0.85*self.SH)]
         elif btn_count == 3:
-            pos_list = [(64, 360), (320, 360), (192, 408)]
+            pos_list = [(2*self.ts, 1.125*self.SW//2), (self.SW//2, 1.125*self.SW//2), (192, 0.85*self.SH)]
         elif btn_count == 2:
-            pos_list = [(64, 384), (320, 384)]
+            pos_list = [(2*self.ts, self.SW//2 + 2*self.ts), (self.SW//2, self.SW//2 + 2*self.ts)]
         else:
             pos_list = []
         
@@ -86,6 +89,7 @@ class player_choice_handler():
                 #self.trigger_once = True
                 if key == 'save_game': # write to save file
                     #t1, slot, level, world, player
+                    world.check_onetime_spawn_dict(level)
                     self.save_handler.save(i, level, world.plot_index_dict, world.lvl_completion_dict, world.onetime_spawn_dict, player)
                     
                     self.last_save_slot = i
@@ -103,10 +107,10 @@ class player_choice_handler():
             self.button_list[i].show_text(screen, self.fontlist[1], ('', player_choices[i][0] + txt))
             
         #draw text
-        self.text_manager0.disp_text_box(screen, self.fontlist[1], self.prompt, (-1,-1,-1),  (200,200,200), (64, 12, 640, 120), False, False, 'none')
-        self.text_manager0.disp_text_box(screen, self.fontlist[1], ('Exit:(Escape)', ''), (-1,-1,-1),  (80,80,80), (533, 456, 32, 32), False, False, 'none')
+        self.text_manager0.disp_text_box(screen, self.fontlist[1], self.prompt, (-1,-1,-1),  (200,200,200), (2*self.ts, 12, self.SW, self.SH//4), False, False, 'none')
+        self.text_manager0.disp_text_box(screen, self.fontlist[1], ('Exit:(Escape)', ''), (-1,-1,-1),  (80,80,80), (0.8328125*self.SW, 0.95*self.SH, self.ts, self.ts), False, False, 'none')
         if self.save_indicator and self.save_time_pt + 2000 > pygame.time.get_ticks():
-            self.text_manager0.disp_text_box(screen, self.fontlist[1], (f'Saved in File {self.last_save_slot}', ''), (-1,-1,-1), (200,200,200), (64, 64, 32, 32), False, False, 'none')
+            self.text_manager0.disp_text_box(screen, self.fontlist[1], (f'Saved in File {self.last_save_slot}', ''), (-1,-1,-1), (200,200,200), (2*self.ts, 2*self.ts, self.ts, self.ts), False, False, 'none')
         else:
             self.save_indicator = False
         

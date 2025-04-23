@@ -395,9 +395,14 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             if self.hits_tanked < self.hp:#alive
                 
                 if self.inundated == True:
+                    
                     self.update_action(2)
                     if self.frame_index < 1:
                         dx = 0
+                        # x_avg = (self.rect.centerx + player_atk_rect.centerx)/2
+                        # y_avg = (self.rect.centery + player_atk_rect.centery)/2
+                        sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-48,48), self.rect.centery+random.randrange(-48,48), -self.direction, 0.3*self.scale, False, random.randrange(0,3))
+
                         #dy = 0
                     else:
                         dx += self.direction * self.recoil_slow
@@ -481,12 +486,15 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 if self.heavy_recoil:
                     particle_ct = 15
                     sfx_index = 5
+                    for i in range(particle_ct//2):
+                        sp_group_list[5].sprite.add_particle('extra_dmg', self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.75*self.scale, False, random.randrange(0,2))
                     self.heavy_recoil = False
                 
-                for i in range(particle_ct):
-                    sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.3*self.scale, False, random.randrange(0,3))
+                # for i in range(particle_ct):
+                #     sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.3*self.scale, False, random.randrange(0,3))
 
                 self.m_player.play_sound(self.m_player.sfx[sfx_index], (self.rect.centerx, self.rect.centery, None, None))
+                #pygame.time.delay(50)
                     
             elif (player_atk_rect.width == 0 and   
                 player_rect.x > self.rect.x - 64 and player_rect.right < self.rect.right + 64 and

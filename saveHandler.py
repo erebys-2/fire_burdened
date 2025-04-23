@@ -15,7 +15,6 @@ class save_file_handler():
         self.ini_player_inv = []
         for inv_slot in self.t1.str_list_to_list_list(self.t1.read_text_from_file(os.path.join(f'assets/save_files/initial/', self.PI_str))):
             self.ini_player_inv.append(['empty', 0])
-        
     
     def save(self, slot, level, plot_index_dict, lvl_completion_dict, onetime_spawn_dict, player):
         txt_file_map = {

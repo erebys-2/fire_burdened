@@ -196,6 +196,9 @@ def main():
 
     reload_map = False
     reload_all_maps = False
+    
+    is_loading = False
+    is_saving = False
 
     #create empty tile list(s)
 
@@ -470,7 +473,8 @@ def main():
         #update to accomodate multiple csv files
         #-------------------------------------------------------------------------------------------------------------------------------------
         #save and load data
-        if save_button.draw(screen):
+        if save_button.draw(screen) and not is_loading:
+            is_saving = True
             #save level data
             for layer in layer_name_dict:
                 write_level_data(level, level_sizes_dict, layer_list[layer], layer_name_dict[layer])
@@ -486,8 +490,10 @@ def main():
                 output_str = output_str + str_ + '\n'
             output_str = output_str[0:len(output_str)-1]
             t1.overwrite_file((path2 + 'level_sizes_dict.txt'), output_str)
+            is_saving = False
 
-        if load_button.draw(screen):
+        if load_button.draw(screen) and not is_saving:
+            is_loading = True
             if level in level_sizes_dict:
                 input_level = level
                 scroll = 0
@@ -498,6 +504,7 @@ def main():
                 (layer_list, map_dict, tile_id_map_dict) = load_lvl(level, layer_name_dict, world_layer_index, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
             else:
                 print('Level does not exist')
+            is_loading = False
 
         #-------------------------------------------------------------------------------------------------------------------------------
 
@@ -536,7 +543,7 @@ def main():
 
         #check that the coordinates are within the tile area
         rtn_data = []
-        if pos[0] < 640 and pos[1] < SCREEN_HEIGHT:
+        if pos[0] < 640 and pos[1] < SCREEN_HEIGHT and not is_saving and not is_loading:
             #update tile value 
             #THIS IS ACTUALLY CHANGING THE TILE VALUES-------------------------------------------------------------------------------
             for i in range(len(layer_list[1:])):
@@ -565,9 +572,14 @@ def main():
                 run = False
 
             #key press
-            if(event.type == pygame.KEYDOWN):
+            if(event.type == pygame.KEYDOWN) and not is_loading and not is_saving:
                 if event.key == pygame.K_ESCAPE:
-                    run = False
+                    #run = False
+                    shift = False
+                    ctrl = False
+                    eraser_mode = False
+                    select_mode = False
+                    insert_mode = False
                     
                 if event.key == pygame.K_e:
                     eraser_mode = not eraser_mode

@@ -4,7 +4,7 @@ import csv
 # from bullet import bullet_ #type: ignore
 from music_player import music_player #type: ignore
 import random
-from textManager import text_manager
+#from textManager import text_manager
 from textfile_handler import textfile_formatter
 
 #NPC class used for sprites with access to text and player choice ui
@@ -70,7 +70,7 @@ class npc(pygame.sprite.Sprite):
         self.interaction_prompt = pygame.image.load('assets/sprites/interaction_prompt.png').convert_alpha()
         self.interaction_prompt_rect = self.interaction_prompt.get_rect()
         
-        self.text_manager0 = text_manager()
+        #self.text_manager0 = text_manager(0,0,32)
         self.player_collision = False
         self.get_dialogue_flag = False
         
@@ -211,6 +211,7 @@ class npc(pygame.sprite.Sprite):
     def scroll_along(self, world_0_coord, scrollx):
         dx = 0
         self.action = 0
+        self.dist = 0
         if self.direction_set != []: #set action and distance as the first tuple in direction set (1,123)
             self.action = self.direction_set[0][0]
             self.dist = self.direction_set[0][1]

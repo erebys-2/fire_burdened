@@ -44,14 +44,16 @@ class opening_scene(npc):
             #     self.update_plot_index(1)
             #     current_dialogue_index = 4
                 
-            if self.current_dialogue_index == 13:# and self.last_dialogue_index == 2:
+            if self.current_dialogue_index == 14:# and self.last_dialogue_index == 2:
                 world.plot_index_dict[self.name] = -4
                 self.enabled = False
+                world.check_onetime_spawn_dict(self.current_level)
                 cutscene_autosave.save(selected_slot, self.current_level, world.plot_index_dict, world.lvl_completion_dict, world.onetime_spawn_dict, player)
-            elif self.current_dialogue_index == 20:
+            elif self.current_dialogue_index == 21:
                 world.plot_index_dict[self.name] = -5
                 world.plot_index_dict['Mars'] = 1
                 self.enabled = False
+                world.check_onetime_spawn_dict(self.current_level)
                 cutscene_autosave.save(selected_slot, self.current_level, world.plot_index_dict, world.lvl_completion_dict, world.onetime_spawn_dict, player)
             else:
                 self.current_dialogue_index = self.current_dialogue_index

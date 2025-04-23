@@ -8,3 +8,4 @@ Mild Herb: Consumable# This herb is said to have mild healing properties. It sme
 Seasoned Herb: Consumable# This herb has been thoroughly seasoned with spices. Its healing properties have increased. It smells and tastes like a savory dish from your homeland.
 Extreme Herb: Consumable# This herb has been further seasoned with Mars' proprietary spice mix. She hopes you can enjoy her recipe as much as she does.
 Talisman of Salted Earth: Passive# It is adorned with symbols from your homeland. Killing all enemies in a given area will prevent more from spawning for the next four times you traverse.
+Worn Knee Socks: Active# The socks are imbued with sweat and archaic symbols. Wearing them inspires swiftness in your footsteps. Enables sprint on keypress.

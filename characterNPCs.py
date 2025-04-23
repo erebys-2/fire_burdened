@@ -101,7 +101,7 @@ class Mars(npc):
         self.current_level = level
         self.current_p_inv = player_inventory
         
-        self.rect = pygame.rect.Rect(self.rect.x + 32, self.rect.y, self.width//3, self.height)
+        self.rect = pygame.rect.Rect(self.rect.x + self.width//3, self.rect.y, self.width//3, self.height)
         if world.plot_index_dict[self.name] == -1:
             if level == 1 and world.get_death_count(1) not in (0,7) and world.get_death_count(2) != 1:
                 enabled = False
@@ -125,10 +125,12 @@ class Mars(npc):
             #implement smth like this later
             if world.get_death_count(1) == 7 and self.is_initial_index:
                 self.current_dialogue_index = 2
+                world.set_death_count(2, 0)
                 self.is_initial_index = False
         if self.current_level == 1 and world.get_death_count(2) > 0:
-            self.direction_set = [(1,128,160),(1,-64,160)]
+            
             if self.is_initial_index:
+                self.direction_set = [(1,128,160),(1,-64,160)]
                 self.current_dialogue_index = 5
                 world.set_death_count(2, 0)
                 self.is_initial_index = False
