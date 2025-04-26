@@ -255,7 +255,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                     #     self.action = 0
                     #     self.rect.height = 32
                         
-                elif self.id == 'breakable_brick1' or (self.id == 'breakable_brick2' and player_action == 10):
+                elif player_action in (7,8,10) and (self.id == 'breakable_brick1' or (self.id == 'breakable_brick2' and player_action == 10)):
                     #print(self.durability)
                     if self.durability > 0:
                         if (player_action != 16 and

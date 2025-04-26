@@ -51,6 +51,8 @@ class player(pygame.sprite.Sprite):
         self.atk_show_sprite = False
         self.draw_trail = False
         self.trail_coords = []
+        self.consecutive_upstrike = 0
+        self.upstrike_limit = 2
 
         
         self.melee_hit = False
@@ -235,8 +237,8 @@ class player(pygame.sprite.Sprite):
                 if not self.in_air:
                     the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 0)
                     self.m_player.play_sound(self.m_player.sfx[2], None)
-                else:
-                    the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 1)
+                # else:
+                #     the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 1)
                 self.curr_state = self.in_air
                 
     def particles_by_frame(self, particle_index, the_sprite_group, sound):
@@ -773,7 +775,6 @@ class player(pygame.sprite.Sprite):
     
     def move(self, pause_game, moveL, moveR, world_solids, world_rect, x_scroll_en, y_scroll_en, half_screen, screenH, the_sprite_group, ccsn_chance):
         #reset mvmt variables
-        
         self.dialogue_trigger_ready = False
         self.collision_rect.x = self.rect.x + self.width
         self.collision_rect.y = self.rect.y
@@ -783,6 +784,10 @@ class player(pygame.sprite.Sprite):
         dx = 0
         dy = 0
         self.scrollx = 0
+        
+        if not self.in_air:
+            self.consecutive_upstrike = 0
+        
         #move
         if self.action == 1 and self.frame_index%2 == 0:
             self.particles_by_frame(self.frame_index//2 + 2, the_sprite_group, 3)
@@ -853,8 +858,8 @@ class player(pygame.sprite.Sprite):
                     self.rolling = False
                     #self.roll_count = self.roll_limit
                 #self.reset_jump()
-                if self.squat and (self.rolled_into_wall or self.jump_counter < 2):#(self.action_history[2] != 9 and self.action_history[0] != 7)):
-                    the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 1)
+                if self.squat and self.consecutive_upstrike < self.upstrike_limit:#(self.action_history[2] != 9 and self.action_history[0] != 7)):
+                    #the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 1)
                     self.squat_done = True
                     self.vel_y += 2
         
@@ -895,7 +900,7 @@ class player(pygame.sprite.Sprite):
                         self.rect.x += self.direction * multiplier * 2
                         
                         if self.action == 7:
-                            self.vel_y -= 0.6
+                            self.vel_y -= 0.5
                             
                         elif self.action == 8 and self.vel_y + 7 <= 28 and self.vel_y > 0 and self.in_air: #25 max 
                             self.vel_y *= 1.5
@@ -945,8 +950,9 @@ class player(pygame.sprite.Sprite):
         #==========================================================================================================================================
         
         #jump
-        if self.squat_done and not(self.atk1):
+        if self.squat_done and (not(self.atk1)):# or (self.atk1 and self.frame_index == 0)):
             self.double_jump_en = True
+            the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 1)
             self.squat_done = False
             self.vel_y = -9.5
             self.in_air = True
@@ -1013,21 +1019,15 @@ class player(pygame.sprite.Sprite):
                 self.extra_recoil = 0
                 
                 self.shoot_recoil = False
-            #print(dx)
-            
-            #self.vel_y *= 0.5
-                
-        #make this scale with the charge
-            
+
+
         #hurting/ enemy collisions
         if self.hurting:
             # if not self.hitting_wall and self.frame_index < 2:
             dx -= self.direction * 4
             if self.vel_y > 10:
                 self.vel_y -= self.vel_y - 10
-               
-            # elif self.hitting_wall:
-            #     dx = 0
+
             if self.check_if_in_ss_range():
                 self.do_screenshake = True
                 self.screenshake_profile = (-1, 3, 2)
@@ -1043,14 +1043,6 @@ class player(pygame.sprite.Sprite):
             self.vel_y *= 0.8
         if self.vel_y <= 25:#25 = terminal velocity
             self.vel_y += 0.55    
-        
-        
-        # if not self.in_air:
-        #     if self.vel_y > self.coyote_vel:
-        #         self.curr_state = True
-        #         self.in_air = True
-        #         self.squat = False
-        
             
         dy = self.vel_y
         

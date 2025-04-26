@@ -139,7 +139,7 @@ class sprite_instantiator():
                     world.enemy0_order_id += 1
                 elif sprite_id == 'worm':
                     enemy0 = ms_enemy(x * 32, y * 32, 2, 2, 'worm', world.enemy0_order_id, ini_vol, self.enemy_img_dict_x1[sprite_id],
-                                          self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'cough.mp3', 'dog_hurt.mp3', 'boonk.mp3', 'hit2.mp3', 'woof.mp3', 'mc_anvil.mp3', 'glass_break.mp3']))
+                                          self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'cough.mp3', 'dog_hurt.mp3', 'boonk.mp3', 'hit2.mp3', 'woof.mp3', 'mc_anvil.mp3', 'glass_break.mp3', 'bite.mp3']))
                     the_sprite_group.enemy0_group.add(enemy0)
                     world.enemy0_order_id += 1
                     

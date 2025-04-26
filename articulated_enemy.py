@@ -89,9 +89,9 @@ class ms_enemy(pygame.sprite.Sprite):
         self.rect.topleft = (x,y)
         self.head_img_rect = self.image.get_rect()
         self.head_img_rect.scale_by(1.5,1.5)
-        hitbox_dim = (0,0,int(body_rect.width/1.2),int(body_rect.height/1.2))
-        self.tail_hitbox_rect = pygame.rect.Rect(hitbox_dim)
-        self.head_hitbox_rect = pygame.rect.Rect(hitbox_dim)
+        self.hitbox_dim = (0,0,int(body_rect.width/1.2),int(body_rect.height/1.2))
+        self.tail_hitbox_rect = pygame.rect.Rect(self.hitbox_dim)
+        self.head_hitbox_rect = pygame.rect.Rect(self.hitbox_dim)
         
         self.pos_list = [list(self.rect.center)]*segments
         self.pos_list2 = []
@@ -225,7 +225,8 @@ class ms_enemy(pygame.sprite.Sprite):
         
         if not self.dying:
             #self.tail_hitbox_rect.center = self.pos_list[0]
-            if self.hits_tanked > 0 and pygame.time.get_ticks()%5 == 0:
+            if self.hits_tanked > 0 and pygame.time.get_ticks()%(5-self.frame_index4) == 0:
+                #for i in range(1+self.frame_index4):
                 sp_group_list[5].sprite.add_particle('player_bullet_explosion', 
                                                                 self.tail_hitbox_rect.centerx+random.randrange(-d,d), self.tail_hitbox_rect.centery+random.randrange(-d,d), 
                                                                 -self.direction, self.scale*0.3, False, random.randrange(0,3))
@@ -238,7 +239,19 @@ class ms_enemy(pygame.sprite.Sprite):
                 self.rand_mvmt_ct = -1
                 speed = int(self.speed * 2.5)
             else:
-                speed = self.speed
+                pester_dist = int(m.sqrt((self.rect.centerx - player_rect.centerx)**2 + (self.rect.centery - player_rect.centery)**2))
+                if pester_dist > 640:
+                    self.pathlist.append([player_rect.centerx - scrollx + random.randint(-4*self.width,4*self.width), 
+                                        player_rect.centery + random.randint(-4*self.height,4*self.height)]
+                                        )
+                    self.pathlist.pop(0)
+                
+                
+                if pester_dist > self.width*5:
+                    speed = self.speed + int(10*(self.width/pester_dist)*self.speed)
+                else:
+                    speed = self.speed
+                
                 self.atk_rect_scaled = pygame.rect.Rect(-32,-32,0,0)
             
             if self.rect.centerx < self.pathlist[0][0] - self.width//4:
@@ -254,7 +267,7 @@ class ms_enemy(pygame.sprite.Sprite):
                 self.speed_y = self.lin_accelerate(-speed, self.speed_y, 0.1)
                 dy += self.speed_y
             
-            #random movement logic
+            #random movement logic once the head gets close enough
             if (self.rect.centerx in range(self.pathlist[0][0] - self.width//2, self.pathlist[0][0] + self.width//2) and 
                 self.rect.centery in range(self.pathlist[0][1] - self.height//2, self.pathlist[0][1] + self.height//2)
                 ):
@@ -266,6 +279,8 @@ class ms_enemy(pygame.sprite.Sprite):
                     
                 if self.hostile and player_action not in (9,7,8,10,16):
                     self.rand_mvmt_ct = 0
+                    if self.hostile:
+                        self.m_player.play_sound(self.m_player.sfx[9], (self.rect.centerx, self.rect.centery, None, None))
                     self.hostile = False
                     #print("gottem")
                     self.pathlist[0] = [player_rect.centerx - scrollx + player_direction*8*self.height, 
@@ -331,7 +346,7 @@ class ms_enemy(pygame.sprite.Sprite):
                     
                 #hitting body
                 for pos in self.pos_list[1:]: #-1 at end to exclude last one
-                    temp_rect = pygame.rect.Rect(self.body_dimensions)
+                    temp_rect = pygame.rect.Rect(self.hitbox_dim)
                     temp_rect.center = pos
                     if not self.trig_once2 and temp_rect.colliderect(player_atk_rect) and not self.trig_once and not hitting_tail:
                         self.m_player.play_sound(self.m_player.sfx[7], (self.rect.centerx, self.rect.centery, None, None))
@@ -355,7 +370,7 @@ class ms_enemy(pygame.sprite.Sprite):
                                                          -self.direction, self.scale*0.5, False, random.randrange(0,3))
                     
                 for pos in self.pos_list[1:]: #-1 at end to exclude last one
-                    temp_rect = pygame.rect.Rect(self.body_dimensions)
+                    temp_rect = pygame.rect.Rect(self.hitbox_dim)
                     temp_rect.center = pos
                     if bullet.rect.colliderect(temp_rect):
                         sp_group_list[5].sprite.add_particle('stone_breaking', 
