@@ -787,6 +787,7 @@ class player(pygame.sprite.Sprite):
         
         if not self.in_air:
             self.consecutive_upstrike = 0
+            self.jump_counter = 0
         
         #move
         if self.action == 1 and self.frame_index%2 == 0:
@@ -858,7 +859,7 @@ class player(pygame.sprite.Sprite):
                     self.rolling = False
                     #self.roll_count = self.roll_limit
                 #self.reset_jump()
-                if self.squat and self.consecutive_upstrike < self.upstrike_limit:#(self.action_history[2] != 9 and self.action_history[0] != 7)):
+                if self.squat and self.consecutive_upstrike < self.upstrike_limit and self.jump_counter < 2:#(self.action_history[2] != 9 and self.action_history[0] != 7)):
                     #the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 1)
                     self.squat_done = True
                     self.vel_y += 2
@@ -900,7 +901,7 @@ class player(pygame.sprite.Sprite):
                         self.rect.x += self.direction * multiplier * 2
                         
                         if self.action == 7:
-                            self.vel_y -= 0.5
+                            self.vel_y -= 0.6
                             
                         elif self.action == 8 and self.vel_y + 7 <= 28 and self.vel_y > 0 and self.in_air: #25 max 
                             self.vel_y *= 1.5
@@ -965,7 +966,6 @@ class player(pygame.sprite.Sprite):
                 self.landing = False
         
         elif not self.in_air:
-            self.jump_counter = 0
             if self.vel_y > self.coyote_vel: #(self.coyote_time + 200 < pygame.time.get_ticks()):
                 self.curr_state = True
                 self.in_air = True
