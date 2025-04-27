@@ -326,7 +326,7 @@ class player(pygame.sprite.Sprite):
             self.atk_rect_scaled  = self.atk_rect.scale_by(0.90)
         else:
             self.atk_rect_scaled  = self.atk_rect
-            if (pygame.time.get_ticks() - self.particle_update > 200) and self.frame_index  < 3:
+            if (pygame.time.get_ticks() - self.particle_update > 200) and self.frame_index < 3:
                 self.particle_update = pygame.time.get_ticks()
                 the_sprite_group.particle_group.sprite.add_particle('player_crit', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, self.frame_index)
                 for i in range(5):
@@ -859,7 +859,7 @@ class player(pygame.sprite.Sprite):
                     self.rolling = False
                     #self.roll_count = self.roll_limit
                 #self.reset_jump()
-                if self.squat and self.consecutive_upstrike < self.upstrike_limit and self.jump_counter < 2:#(self.action_history[2] != 9 and self.action_history[0] != 7)):
+                if self.squat and self.consecutive_upstrike < self.upstrike_limit and self.jump_counter < 2 + self.consecutive_upstrike:#(self.action_history[2] != 9 and self.action_history[0] != 7)):
                     #the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 1)
                     self.squat_done = True
                     self.vel_y += 2

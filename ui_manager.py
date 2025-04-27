@@ -81,6 +81,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.kbd_new_game = False
         
         self.btn_click_counter = []
+        self.joysticks = {}
         
     def reset_rtn_dict(self):
         rtn_dict = {
@@ -475,7 +476,10 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 if self.do_btn_logic(screen, self.button_list[21 + 2*j], f'Load Ctrls {j+1}', False, 1):
                     self.ctrls_list = self.read_csv_data(f'ctrl_scheme_{j+1}')
                     for k in range(len(self.disp_str_list)):
-                        self.disp_str_list[k][1] = pygame.key.name(self.ctrls_list[k])
+                        if self.controller_connected:
+                            self.disp_str_list[k][1] = str(self.ctrls_list[k])
+                        else:
+                            self.disp_str_list[k][1] = pygame.key.name(self.ctrls_list[k])
                 
                 #save scheme
                 if self.do_btn_logic(screen, self.button_list[22 + 2*j], f'Save Ctrls {j+1}', False, 1):
@@ -536,7 +540,32 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 self.help_btn_str = '[Open Tips]'
               
         if not self.stop:
+            if self.controller_connected:
+                for joystick in self.joysticks.values():
+                    btns = [joystick.get_button(b) for b in range(joystick.get_numbuttons())]
+                    axiis = [joystick.get_axis(a) for a in range(joystick.get_numaxes())]
+                    #if pygame.time.get_ticks()%20 ==0:
+                    # print(btns)
+                    # print(axiis)
+                    for b in range(joystick.get_numbuttons()):
+                        if joystick.get_button(b):
+                            self.disp_str_list[self.btn_selected][1] = str(b)
+                            self.ctrls_list[self.btn_selected] = b
+                    for a in range(joystick.get_numaxes()-2):
+                        if abs(joystick.get_axis(a)) > 0.9:
+                            #print(a + joystick.get_numbuttons() - 1)
+                            self.disp_str_list[self.btn_selected][1] = str(a + joystick.get_numbuttons() - 1)
+                            self.ctrls_list[self.btn_selected] = a
+                    
+                    
+                    # self.disp_str_list[self.btn_selected][1] = str(btns[])
+                    # self.ctrls_list[self.btn_selected] = event.button
+
+                    
+                
             for event in pygame.event.get():
+                    
+                
                 if(event.type == pygame.KEYDOWN):
                     if event.key != pygame.K_ESCAPE and event.key != pygame.K_RETURN:
                         self.disp_str_list[self.btn_selected][1] = pygame.key.name(event.key)
@@ -544,10 +573,9 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                     elif event.key == pygame.K_ESCAPE:
                         self.stop = True
                         
-                if(event.type == pygame.JOYBUTTONDOWN):
-                    
-                    self.disp_str_list[self.btn_selected][1] = str(event.button)
-                    self.ctrls_list[self.btn_selected] = event.button
+                # if(event.type == pygame.JOYBUTTONDOWN):
+                #     self.disp_str_list[self.btn_selected][1] = str(event.button)
+                #     self.ctrls_list[self.btn_selected] = event.button
                     
                 if(event.type == pygame.QUIT):
                     self.stop = True

@@ -322,7 +322,8 @@ def main():
 	screen_blacked = False
  
 	joysticks = {}
- 
+	axiis = []
+	btns = []
 
 	show_cursor_signals = [level == 0, pause_game, not player0.Alive, inventory_opened, dialogue_enable, trade_ui_en]
 	print('game is running')
@@ -896,7 +897,10 @@ def main():
 		#---------------------------------------------------------------------------------------------------------------------------------------------
 		#-------------------------------------------------------KBD inputs----------------------------------------------------------------------------
 		#---------------------------------------------------------------------------------------------------------------------------------------------
+  
+		#multi input keys
 		keys = pygame.key.get_pressed()
+		
 		if not inventory_opened:
 			if keys[ctrls_list[4]] and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and not player0.using_item: #pygame.K_i, pygame.K_w
 				#player0.atk1_stamina_cost is not getting updated during heavy attack
@@ -935,14 +939,56 @@ def main():
 				if player0.rolling and not player0.in_air:
 					player0.roll_count = player0.roll_limit
 					player0.squat = True
+     
+     
+		#multi input buttons
+		if ui_manager0.controller_connected:
+			for joystick in joysticks.values():
+				btns = [joystick.get_button(b) for b in range(joystick.get_numbuttons())]
+				#print(btns)
+				axiis = [joystick.get_axis(a) for a in range(joystick.get_numaxes())]
+				#print(axiis)
     
-			# if keys[ctrls_list[2]] and roll_en and (player0.check_atk1_history() == 4 or player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost <= player0.stamina): #pygame.K_s
-			# 	player0.squat = False
-			# 	player0.rolling = True
-			# 	roll_en = False
+			#print(ctrls_list)
+			if not inventory_opened and ctrls_list[4] < len(btns)-1 and ctrls_list[0] < len(btns)-1:
+				if btns[ctrls_list[4]] == 1 and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and not player0.using_item: #pygame.K_i, pygame.K_w
+					#player0.atk1_stamina_cost is not getting updated during heavy attack
+					if atk_gettime_en:
+						atk_delay_ref_time = pygame.time.get_ticks()
+						atk_gettime_en = False
 
-			# elif keys[ctrls_list[2]] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost > player0.stamina: #pygame.K_s
-			# 	status_bars.warning = True
+					if atk_en and atk_delay_ref_time + 30 < pygame.time.get_ticks():#don't attack until delay is up
+						change_once = True#not player0.hold_jump
+						player0.atk1 = True 
+						player0.melee_hit = False
+						atk_en = False
+					#dual input jump and attack for instant upstrike
+					elif btns[ctrls_list[0]] == 1 and player0.consecutive_upstrike < player0.upstrike_limit and atk_delay_ref_time + 10 > pygame.time.get_ticks(): #and not player0.in_air
+						player0.consecutive_upstrike += 1
+						player0.in_air = True
+						player0.squat_done = True
+						player0.jump_dampen = True
+
+				elif btns[ctrls_list[4]] == 1 and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
+					status_bars.warning = True
+		
+		
+				if btns[ctrls_list[0]] == 1 and not player0.hold_jump: #pygame.K_w 
+					player0.landing = False
+					player0.hold_jump = True
+					# if player0.wall_slide:
+					# 	player0.squat_done = True
+					if player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:
+						hold_jump_update = pygame.time.get_ticks()
+						player0.squat = True 
+						
+					elif not player0.in_air:
+						player0.squat = True
+
+					if player0.rolling and not player0.in_air:
+						player0.roll_count = player0.roll_limit
+						player0.squat = True
+     
 	
 		for event in pygame.event.get():
 			#quit game
@@ -957,11 +1003,13 @@ def main():
 				joysticks[joy.get_instance_id()] = joy
 				print(f"Joystick {joy.get_instance_id()} connencted")
 				ui_manager0.controller_connected = True
+				ui_manager0.joysticks = joysticks
 
 			if event.type == pygame.JOYDEVICEREMOVED:
 				del joysticks[event.instance_id]
 				print(f"Joystick {event.instance_id} disconnected")
 				ui_manager0.controller_connected = False
+				ui_manager0.joysticks = {}
 
 			#key press
 			
@@ -982,23 +1030,6 @@ def main():
 
 						if event.key == ctrls_list[3]: #pygame.K_d
 							move_R = True
-
-						# if event.key == ctrls_list[0]: #pygame.K_w 
-						# 	player0.landing = False
-						# 	player0.hold_jump = True
-						# 	# if player0.wall_slide:
-						# 	# 	player0.squat_done = True
-						# 	if player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:
-						# 		hold_jump_update = pygame.time.get_ticks()
-						# 		player0.squat = True 
-								
-						# 	elif not player0.in_air:
-						# 		player0.squat = True
-
-						# 	if player0.rolling and not player0.in_air:
-						# 		player0.roll_count = player0.roll_limit
-						# 		player0.squat = True
-
 						
 						if event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina and not player0.using_item and player0.inventory_handler.check_for_item('Rock'): #pygame.K_o
 							player0.shot_charging = True
@@ -1132,30 +1163,6 @@ def main():
 						elif ui_manager0.saves_menu2_enable:
 							play_click_sound()
 							ui_manager0.kbd_new_game = True
-
-
-				# #temp bg adjustment
-				# amnt = 1
-				# if event.key == pygame.K_5:
-				# 	amnt = -1
-				# 	print(amnt)
-				# elif event.key == pygame.K_6:
-				# 	amnt = 1
-				# 	print(amnt)
-				# if event.key == pygame.K_1 or event.key == pygame.K_2 or event.key == pygame.K_3:
-				# 	pygame.key.set_repeat(5,60)
-				# 	if event.key == pygame.K_1 and BG_color[0] < 256 and BG_color[0] > 0:
-				# 		BG_color[0] += amnt
-				# 		#print(BG_color[0])
-				# 	if event.key == pygame.K_2 and BG_color[1] < 256 and BG_color[1] > 0:
-				# 		BG_color[1] += amnt
-				# 	if event.key == pygame.K_3 and BG_color[2] < 256 and BG_color[2] > 0:
-				# 		BG_color[2] += amnt
-				# else:
-				# 	pygame.key.set_repeat(0,0)
-				
-				# if event.key == pygame.K_4:
-				# 	print(BG_color)
 				
 			#=============================================== key lift =================
 
@@ -1179,7 +1186,7 @@ def main():
 					atk_gettime_en = True
 					status_bars.warning = False
 				if event.key == ctrls_list[2]:#pygame.K_s
-					roll_en = True
+					#roll_en = True
 					status_bars.warning = False
 				if event.key == ctrls_list[5]:#pygame.K_o
 					status_bars.warning = False
@@ -1209,6 +1216,7 @@ def main():
 		#==============================================================================================================
 		#==============================================CONTROLLER EVENT INPUTS==========================================
 		#==================================================================================================================
+
 			if(event.type == pygame.JOYBUTTONDOWN):
 				#print(pygame.button.name(event.button))
 				if player0.Alive and level_dict[level][3] and not pause_game and not dialogue_enable:
@@ -1226,27 +1234,6 @@ def main():
 						if event.button == ctrls_list[3]: #pygame.K_d
 							move_R = True
 
-						if event.button == ctrls_list[0]: #pygame.K_w 
-							player0.hold_jump = True
-							player0.landing = False
-
-							if not player0.in_air: #player is on ground
-								player0.squat = True
-							elif player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:
-								hold_jump_update = pygame.time.get_ticks()
-								player0.squat = True 
-
-							if player0.rolling and player0.in_air == False:
-								player0.roll_count = player0.roll_limit
-								player0.squat = True
-
-						if event.button == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and event.button != ctrls_list[0] and not player0.using_item: #pygame.K_i, pygame.K_w
-							change_once = True
-							player0.atk1 = True # (event.button == ctrls_list[4])
-							player0.melee_hit = False
-
-						elif event.button == ctrls_list[4] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
-							status_bars.warning = True
 						
 						if event.button == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina and not player0.using_item and player0.inventory_handler.check_for_item('Rock'): #pygame.K_o
 							player0.shot_charging = True
@@ -1290,102 +1277,8 @@ def main():
 						else:
 							inv_toggle_en = True
 							player_inv_UI.toggle_inv_slot_once()
-		
-		
-					#debugging flight button
-					#if you fly over the camera object the level breaks
-					# if event.button == pygame.K_0:
-					# 	player0.squat_done = True
 
-				#===============================================================UI Related Keys=============================================================
-
-				# # if event.button == pygame.K_m:
-				# # 	m_player.play_song('newsong18.mp3')
-				# if event.button == pygame.K_c:
-				# 	camera.is_visible = not camera.is_visible
-			
-				# if (event.button == pygame.K_BACKSPACE or event.button == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable and not ui_manager0.saves_menu_enable: 
-				# #escape exits UI ONLY before the options sub menu is shown and any deeper into sub menus
-				# 	if level != 0:
-				# 		ui_manager0.trigger_once = True
-
-				# 		if (pause_game or not player0.Alive) and not dialogue_enable: #exit to main menu from pause game
-				# 			next_level = 0
-				# 			player0 = player(32, 160, speed, hp, stam, 0, 0, vol_lvl, camera_offset)
-				# 			player_new_x = 32
-				# 			player_new_y = 32
-				# 			dialogue_box0.reset_internals()
-				# 			pygame.mixer.stop()
-				# 			play_click_sound()
-
-				# 		elif not dialogue_enable and not inventory_opened: #pause game, will trigger if player is not in dialogue
-				# 			pause_game = True
-				# 			pygame.mixer.pause()
-				# 			play_click_sound()
-		
-				# 		elif (not player0.in_cutscene and #cannot esc out of cutscene
-            	# 				(dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list or 
-                #   				the_sprite_group.textbox_output[6][0])
-                #  				): #exits dialogue window if an NPC finishes speaking (is this way to avoid bugs)
-				# 			dialogue_enable = False
-				# 			p_choice_handler0.disable()
-
-				# 		if inventory_opened:#exit inventory if opened
-				# 			inventory_opened = False
-				# 			player_inv_UI.close_inventory()
-							
-				# 	else:#if on the main menu, the game will exit on button press
-				# 		run = False
-				
-		
-				# if event.button == pygame.K_RETURN:
-				# 	if pause_game and not ui_manager0.options_menu_enable:
-				# 		ui_manager0.trigger_once = True
-				# 		dialogue_trigger_ready = False
-				# 		pause_game = False
-				# 		pygame.mixer.unpause()
-					
-				# 	if dialogue_trigger_ready or player0.in_cutscene:
-				# 		dialogue_enable = True
-				# 	if dialogue_enable and not the_sprite_group.textbox_output[6][0]:
-				# 		if dialogue_box0.str_list_rebuilt != dialogue_box0.current_str_list:
-				# 			text_speed = 0
-				# 			play_click_sound()
-				# 		else:
-				# 			text_speed = default_text_speed
-				# 			next_dialogue = True
-				# 			dialogue_box0.type_out = True				
-     
-				# 	if level == 0:#default case, auto saving will overwrite data in file 0
-				# 		play_click_sound()
-				# 		ui_manager0.trigger_once = True
-				# 		next_level = 1
-				# 		selected_slot = 0
-
-				# #temp bg adjustment
-				# amnt = 1
-				# if event.button == pygame.K_5:
-				# 	amnt = -1
-				# 	print(amnt)
-				# elif event.button == pygame.K_6:
-				# 	amnt = 1
-				# 	print(amnt)
-				# if event.button == pygame.K_1 or event.button == pygame.K_2 or event.button == pygame.K_3:
-				# 	pygame.button.set_repeat(5,60)
-				# 	if event.button == pygame.K_1 and BG_color[0] < 256 and BG_color[0] > 0:
-				# 		BG_color[0] += amnt
-				# 		#print(BG_color[0])
-				# 	if event.button == pygame.K_2 and BG_color[1] < 256 and BG_color[1] > 0:
-				# 		BG_color[1] += amnt
-				# 	if event.button == pygame.K_3 and BG_color[2] < 256 and BG_color[2] > 0:
-				# 		BG_color[2] += amnt
-				# else:
-				# 	pygame.button.set_repeat(0,0)
-				
-				# if event.button == pygame.K_4:
-				# 	print(BG_color)
-				
-
+			#================================================button up===========================
 
 			if(event.type == pygame.JOYBUTTONUP):
 				if event.button == ctrls_list[1]:#pygame.K_a
@@ -1400,10 +1293,12 @@ def main():
 				#switched to continuous signal
 				if event.button == ctrls_list[0] and not inventory_opened:#variable height jumping
 					player0.jump_dampen = True
-					player0.hold_jump = True
+					player0.hold_jump = False
 
 				if event.button == ctrls_list[4]:#pygame.K_i
 					status_bars.warning = False
+					atk_en = True
+					atk_gettime_en = True
 				if event.button == ctrls_list[2]:#pygame.K_s
 					status_bars.warning = False
 				if event.button == ctrls_list[5]:#pygame.K_o
