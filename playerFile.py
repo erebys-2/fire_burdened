@@ -146,8 +146,12 @@ class player(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         
         self.width = self.collision_rect.width 
+        self.half_w = self.width//2
+        self.qrtr_w = self.width//4
         self.height = self.collision_rect.height
-       
+        self.half_h = self.height//2
+        self.qrtr_h = self.height//4
+        
         self.hitbox_rect = pygame.Rect(self.collision_rect.x + 2, self.collision_rect.y + 8, self.width - 4, self.height*0.75 - 6)
 
         self.BP_rect = pygame.Rect(self.rect.x, self.rect.y, self.rect.height, 2*self.rect.width)
@@ -267,7 +271,7 @@ class player(pygame.sprite.Sprite):
         self.atk_rect_scaled  = self.atk_rect
         
     def atk1_set_hitbox(self, the_sprite_group):
-        if (self.frame_index == 1 or self.frame_index == 2) and (self.action == 8 or self.action == 7):#(pygame.time.get_ticks() - self.update_time < 10)
+        if (self.frame_index == 1 or self.frame_index == 2) and (self.action == 8 or self.action == 7):
             #adjust hitbox location for default atks
             self.atk_rect.width = self.collision_rect.height
             self.atk_rect.height = self.collision_rect.height
@@ -282,7 +286,7 @@ class player(pygame.sprite.Sprite):
                 x_loc += self.direction *12
             elif self.action == 7:
                 x_loc += self.direction *2
-                y_loc = self.collision_rect.y - self.width//4
+                y_loc = self.collision_rect.y - self.qrtr_w
                 if self.frame_index == 1:
                     self.image3 = self.frame_list[13][2]
                 elif self.frame_index == 2:
@@ -326,15 +330,15 @@ class player(pygame.sprite.Sprite):
             self.atk_rect_scaled  = self.atk_rect.scale_by(0.90)
         else:
             self.atk_rect_scaled  = self.atk_rect
-            if (pygame.time.get_ticks() - self.particle_update > 200) and self.frame_index < 3:
+            if self.frame_index < 3 and (pygame.time.get_ticks() - self.particle_update > 200):
                 self.particle_update = pygame.time.get_ticks()
-                the_sprite_group.particle_group.sprite.add_particle('player_crit', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, self.frame_index)
+                the_sprite_group.particle_group.sprite.add_particle('player_crit', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, self.frame_index, self.particle_update)
                 for i in range(5):
                     the_sprite_group.particle_group.sprite.add_particle('player_bullet_explosion', 
                                                                         self.rect.centerx + random.randrange(-48,48), 
                                                                         self.rect.centery + random.randrange(-48,48), 
                                                                         -self.direction, 0.3*self.scale, 
-                                                                        True, random.randrange(0,3))
+                                                                        True, random.randrange(0,3), self.particle_update)
 
 
                 
@@ -497,7 +501,7 @@ class player(pygame.sprite.Sprite):
         hitting_wall = self.hitting_wall
         hitting_wall_timer = self.hitting_wall_timer
         
-        for p_int in [p_int for p_int in platform_sprite_group if p_int.rect.x > -320 and p_int.rect.x < 960]:
+        for p_int in [p_int for p_int in platform_sprite_group if p_int.rect.x <= self.rect.right + self.width and p_int.rect.right >= self.rect.x - self.width]:
             if p_int.collision_and_hostility[p_int.id][0]:
                 #self.atk1_grinding(p_int.rect, the_sprite_group)
                 #y collisions
@@ -550,7 +554,7 @@ class player(pygame.sprite.Sprite):
                         
                 elif (self.action != 9
                     and self.disp_flag #and self.action == 67
-                    and p_int.rect.colliderect(self.collision_rect.x + self.direction*self.width//2 + dx, self.collision_rect.y+2, self.width, self.height - 2)
+                    and p_int.rect.colliderect(self.collision_rect.x + self.direction*self.half_w + dx, self.collision_rect.y+2, self.width, self.height - 2)
                     ):
                     dx = -16*self.direction
             
@@ -596,21 +600,26 @@ class player(pygame.sprite.Sprite):
         
         #timer based update for hitting wall
 
-        if self.hitting_wall_timer + 100 < pygame.time.get_ticks():
+        if self.hitting_wall and self.hitting_wall_timer + 100 < pygame.time.get_ticks():
             self.hitting_wall = False
         
         one_way_tiles = (17, 69, 70)
         
         #size adjust for displaced rects
-        if self.direction < 0:
-            disp_x = -self.width//2
-        else:
-            disp_x = self.width//2
+        # if self.direction < 0:
+        #     disp_x = -self.half_w
+        # else:
+        #     disp_x = self.half_w
+            
+        disp_x = self.direction*self.half_w
         
+        #col_dist = int(3*self.width)
         for tile in [tile for tile in world_solids 
                      if (tile[1].x > self.collision_rect.x - 64 and tile[1].right < self.collision_rect.right + 64 and 
-                        tile[1].y > self.collision_rect.y - 64 and tile[1].bottom < self.collision_rect.bottom + 64 or
-                        (tile[1].bottom < self.collision_rect.bottom + self.height and tile[1].y < self.collision_rect.y))
+                        tile[1].y > self.collision_rect.y - 64 and tile[1].bottom < self.collision_rect.bottom + 64 )
+                    #  if (tile[1].centerx in range(self.rect.centerx - col_dist, self.rect.centerx + col_dist) and 
+                    #      tile[1].centery in range(self.rect.centery - col_dist, self.rect.centery + col_dist)
+                    #  )
                         or tile[2] == 10
                      ]:
             #x collisions
@@ -621,24 +630,23 @@ class player(pygame.sprite.Sprite):
                 #dx collisions, tile walls
                 
                 #hitting wall while rolling
-                if self.action == 9 and tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//4 - 2):
-                    dx = -1 * self.direction 
+                if self.action == 9 and tile[1].colliderect(self.collision_rect.x + dx, self.collision_rect.y + self.half_h + dy, self.width, self.qrtr_h - 2):
+                    dx = -self.direction 
                     dy /= 2
-                    #self.rolled_into_wall = False
                     self.rolled_into_wall = True
                     self.hitting_wall = True
                     self.hitting_wall_timer = pygame.time.get_ticks()
-                    if not self.in_air:
+                    #if not self.in_air:
                         
-                        if self.frame_index > 0:
-                            if self.rolling:#you can die via concussion now
-                                self.m_player.play_sound(self.m_player.sfx[7], None)
-                                if self.stamina_used >= 5:
-                                    self.hits_tanked += 0.1
-                                    if random.randint(1, ccsn_chance) == 1:
-                                        self.brain_damage = True
-                            self.rolling = False
-                    #self.debuggin_rect  = (self.collision_rect.x + dx, self.collision_rect.y + self.height//2 + dy, self.width, self.height//4 - 2)
+                    if self.frame_index > 0:
+                        if self.rolling:#you can die via concussion now
+                            self.m_player.play_sound(self.m_player.sfx[7], None)
+                            if self.stamina_used >= 5:
+                                self.hits_tanked += 0.1
+                                if random.randint(1, ccsn_chance) == 1:
+                                    self.brain_damage = True
+                        self.rolling = False
+                    #self.debuggin_rect  = (self.collision_rect.x + dx, self.collision_rect.y + self.half_h + dy, self.width, self.qrtr_h - 2)
                 
                 #displaced hitbox x collisions
                 elif (self.action != 9
@@ -688,14 +696,14 @@ class player(pygame.sprite.Sprite):
                         #basically there's 2 collision checks that each make up half of the collision rect, upper and lower
                         
                         #bottom collisions
-                        if self.height//2 < tile[1].y - self.rect.y and tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + self.height//2 + dy, self.width - 4, self.height//2):
+                        if self.half_h < tile[1].y - self.rect.y:# and tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + self.half_h + dy, self.width - 4, self.half_h):
                             dy = tile[1].top - self.rect.bottom #-1
                             self.rolled_into_wall = False
                             self.in_air = False
                             self.coyote_time = pygame.time.get_ticks()
                             
                         #upper collisions
-                        if self.rect.bottom - tile[1].bottom > self.height//2 and tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.height//2):
+                        if self.rect.bottom - tile[1].bottom > self.half_h:# and tile[1].colliderect(self.collision_rect.x + 2, self.collision_rect.y + dy, self.width - 4, self.half_h):
                             dy = tile[1].bottom  - self.rect.top
                             
                 #  #wall_slide collisions doesn't work     
@@ -712,7 +720,7 @@ class player(pygame.sprite.Sprite):
                             
             #special tiles
             elif(tile[2] in (2, 60)):#spikes/ other trap tiles
-                if not self.i_frames_en and tile[1].colliderect(self.collision_rect.x + 3*self.width//8 + dx, self.collision_rect.y + dy, self.width//4, self.height - self.width//4):
+                if not self.i_frames_en and tile[1].colliderect(self.collision_rect.x + 3*self.width//8 + dx, self.collision_rect.y + dy, self.qrtr_w, self.height - self.qrtr_w):
                     #if self.frame_index%4 == 0:
                     self.take_damage(0.2, 80)
                     self.vel_y = 0
@@ -778,9 +786,10 @@ class player(pygame.sprite.Sprite):
         self.dialogue_trigger_ready = False
         self.collision_rect.x = self.rect.x + self.width
         self.collision_rect.y = self.rect.y
+        self.hitbox_rect.centerx = self.collision_rect.centerx
         
-        if pause_game:
-            dx = 0
+        # if pause_game:
+        #     dx = 0
         dx = 0
         dy = 0
         self.scrollx = 0
@@ -818,23 +827,23 @@ class player(pygame.sprite.Sprite):
                 self.landing = False
                 
         elif self.action == 5:#taking damage, hurting----------------------
-            if self.frame_index < 3:
-                self.hurting = True #perpetuates the action for the entire animation after the collision has ended
-
-        # elif self.action == 10: #disables jumping during crit
-        #     if self.action == 10:
-        #         self.squat = False
             
-        elif self.action == 9:
-            self.squat_done = False
-        elif self.action == 6:
-            dx = 0
+            dx -= self.direction * 4
+            if self.vel_y > 10:
+                self.vel_y -= self.vel_y - 10
 
-        #check for change direction
-        # if self.direction != self.last_direction:
-        #     self.update_action_history(-1)
-        #     self.atk1_stamina_cost = 1
-        #     self.last_direction = self.direction
+            if self.check_if_in_ss_range():
+                self.do_screenshake = True
+                self.screenshake_profile = (-1, 3, 2)
+                
+            if self.frame_index < 3:
+                self.hurting = True #perpetuates the action for the entire animation after the collision has ende
+            
+        # elif self.action == 9:
+        #     self.squat_done = False
+        # elif self.action == 6:
+        #     dx = 0
+            
 
 		#rolling 
         if self.rolling and not self.hurting:
@@ -853,7 +862,7 @@ class player(pygame.sprite.Sprite):
                 # and (self.check_atk1_history() != 4 or
                 # ( self.atk1
                 # ))
-                or self.rolled_into_wall #stops rolling if player rolls into wall
+                #or self.rolled_into_wall #stops rolling if player rolls into wall
                 ):
                 if (self.action != 7 and self.action != 8 and self.action != 10):
                     self.rolling = False
@@ -862,7 +871,8 @@ class player(pygame.sprite.Sprite):
                 if self.squat and self.consecutive_upstrike < self.upstrike_limit and self.jump_counter < 2 + self.consecutive_upstrike:#(self.action_history[2] != 9 and self.action_history[0] != 7)):
                     #the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 1)
                     self.squat_done = True
-                    self.vel_y += 2
+                    
+                    #self.vel_y += 2
         
                 
         #------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -970,15 +980,10 @@ class player(pygame.sprite.Sprite):
                 self.curr_state = True
                 self.in_air = True
                 self.squat = False
-            # # else:
-            # #     self.vel_y = 0
+  
             if self.coyote_time + 100 > pygame.time.get_ticks():
                 self.vel_y = 0
-            # else:
-            #     self.curr_state = True
-            #     self.in_air = True
-            #     self.squat = False
-                
+
 
         if self.jump_dampen:
             if self.squat or (self.squat_done and self.in_air): #very small hold jump
@@ -1022,18 +1027,16 @@ class player(pygame.sprite.Sprite):
 
 
         #hurting/ enemy collisions
-        if self.hurting:
-            # if not self.hitting_wall and self.frame_index < 2:
-            dx -= self.direction * 4
-            if self.vel_y > 10:
-                self.vel_y -= self.vel_y - 10
+        # if self.hurting:
+        #     # if not self.hitting_wall and self.frame_index < 2:
+        #     dx -= self.direction * 4
+        #     if self.vel_y > 10:
+        #         self.vel_y -= self.vel_y - 10
 
-            if self.check_if_in_ss_range():
-                self.do_screenshake = True
-                self.screenshake_profile = (-1, 3, 2)
-            
-            # elif self.frame_index > 1:
-            #     dx = -self.direction * 2
+        #     if self.check_if_in_ss_range():
+        #         self.do_screenshake = True
+        #         self.screenshake_profile = (-1, 3, 2)
+
 
         #gravity
         
@@ -1041,7 +1044,7 @@ class player(pygame.sprite.Sprite):
         
         if self.shoot and self.frame_index == 2:
             self.vel_y *= 0.8
-        if self.vel_y <= 25:#25 = terminal velocity
+        elif self.vel_y <= 25:#25 = terminal velocity
             self.vel_y += 0.55    
             
         dy = self.vel_y
@@ -1134,15 +1137,8 @@ class player(pygame.sprite.Sprite):
                 self.rect.x += dx
                 #print(dx)
         else:
-            dx = 0
-            #self.scrollx
-
-        self.hitbox_rect.centerx = self.collision_rect.centerx
-        
-        if self.brain_damage or self.angle != 0:
-            self.rotate(5, 360)
-            
-        if not self.Alive:
+            self.hurting = False
+            self.action = 6
             self.crit = False
             self.heavy = False
             self.atk1_stamina_cost = self.atk1_default_stam
@@ -1151,7 +1147,13 @@ class player(pygame.sprite.Sprite):
             self.rolling = False
             dx = 0
             self.scrollx = 0
+
+        
+        
+        if self.brain_damage or self.angle != 0:
+            self.rotate(5, 360)
             
+  
         return lvl_transition_flag_and_data
 
     #method for status bars, can probably return a list---------------------------    
@@ -1217,17 +1219,18 @@ class player(pygame.sprite.Sprite):
                 self.stamina_used += stamina_increment_unit
                 
     def take_damage(self, damage, i_frames_time):
-        if not self.hurting:
-            self.frame_index = 0
-        self.rolling = False
-        
-        self.i_frames_time = i_frames_time
-        
-        self.hurting = True
-        self.hits_tanked += damage
-        if self.hits_tanked >= self.hp:#killing the player------------------------------------------------
-            self.hits_tanked = self.hp
-            self.hurting = False
+        if self.Alive:
+            if not self.hurting:
+                self.frame_index = 0
+            self.rolling = False
+            
+            self.i_frames_time = i_frames_time
+            
+            self.hurting = True
+            self.hits_tanked += damage
+            if self.hits_tanked >= self.hp:#killing the player------------------------------------------------
+                self.hits_tanked = self.hp
+                self.hurting = False
             
     
     #drawing during game and animations----------------------------------------
@@ -1330,12 +1333,13 @@ class player(pygame.sprite.Sprite):
                 self.atk1_stamina_cost = self.atk1_default_stam
             
             if self.action == 15:
+                update_time = pygame.time.get_ticks()
                 for i in range(5):
                     the_sprite_group.particle_group.sprite.add_particle('player_bullet_explosion', 
                                                                         self.rect.centerx + random.randrange(-48,48), 
                                                                         self.rect.centery + random.randrange(-24,24), 
                                                                         -self.direction, 0.3*self.scale, 
-                                                                        True, random.randrange(0,3))
+                                                                        True, random.randrange(0,3), update_time)
                 self.m_player.play_sound(self.m_player.sfx[9], None)
                 self.using_item = False
                 self.speed = self.default_speed

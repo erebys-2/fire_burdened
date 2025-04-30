@@ -458,6 +458,8 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         ]
         
         if  not self.help_open:
+            ref_rect = self.button_list[self.btn_selected].rect
+            pygame.draw.rect(screen, (255,255,255), pygame.rect.Rect(ref_rect.x, ref_rect.y, 2*ref_rect.width, ref_rect.height), 1)
             for i in range(10):
                 if self.do_btn_logic(screen, self.button_list[i], ctrs_btn_list[i], False, 1):
                     self.btn_selected = i

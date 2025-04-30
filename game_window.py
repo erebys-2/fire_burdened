@@ -20,9 +20,9 @@ from ItemFile import inventory_UI, trade_menu_ui
 from playerChoiceHandler import player_choice_handler
 from particle import particle_2, group_particle2
 import random
-# import moderngl
-# from array import array
-# from shadersHandler import modernGL_handler
+import moderngl
+from array import array
+from shadersHandler import modernGL_handler
 from profilehooks import profile
 
 #@profile
@@ -32,6 +32,7 @@ def main():
 	icon = pygame.image.load('assets/icon.png')
 	pygame.display.set_icon(icon)
 	monitor_size = [pygame.display.Info().current_w, pygame.display.Info().current_h]
+	#print(monitor_size)
 
 	#setting the screen-----------------------------------------------------------
 	SCREEN_WIDTH = 640
@@ -40,9 +41,9 @@ def main():
 	standard_size = (SCREEN_WIDTH, SCREEN_HEIGHT)
 	flags = pygame.DOUBLEBUF|pygame.SHOWN #|pygame.OPENGL #windowed mode
 
-	# window = pygame.display.set_mode(standard_size, flags, vsync=0)
-	# screen = pygame.Surface(standard_size)
-	screen = pygame.display.set_mode(standard_size, flags, vsync=0)
+	window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags, vsync=0)
+	screen = pygame.Surface(standard_size)
+	#screen = pygame.display.set_mode(standard_size, flags, vsync=0)
 
 	
 
@@ -166,6 +167,9 @@ def main():
  
 	default_text_speed = 30
 	text_speed = default_text_speed
+ 
+ 
+	screen_scaling = [1,2,4,1]
 
 	#---------------------------------------------------------MODERNGL THINGS---------------------------------------------------
 	#moderngl_handler0 = modernGL_handler()
@@ -206,23 +210,6 @@ def main():
 		player0.rect.y = coords[1]
 		return False
 
-	def check_double_tap(tap, double_tap_time, double_tap_initiated, double_tap_interval):
-		double_tapped = False
-		#initial state, first single tap
-		#set timer
-		if not double_tap_initiated and tap:
-			double_tap_time = pygame.time.get_ticks()
-			double_tap_initiated = True
-		#check if second tap falls in range and reset
-		elif tap and double_tap_initiated and pygame.time.get_ticks() < double_tap_time + double_tap_interval:
-			double_tapped = True
-			double_tap_initiated = False
-		#reset timer if second tap falls out of range
-		elif tap and double_tap_initiated and pygame.time.get_ticks() > double_tap_time + double_tap_interval:
-			double_tap_time = pygame.time.get_ticks()
-			#double_tap_initiated = False
-
-		return (double_tapped, double_tap_time, double_tap_initiated)
 
 	def play_click_sound():
 		m_player.play_sound(m_player.sfx[1], None)
@@ -324,6 +311,18 @@ def main():
 	joysticks = {}
 	axiis = []
 	btns = []
+ 
+	#scaling
+	ws = 1
+	cursor_img = pygame.image.load('assets/sprites/cursor.png')
+ 
+	# if monitor_size[0] > monitor_size[1]:
+	# 	ws = monitor_size[1]/SCREEN_HEIGHT
+	# else:
+	# 	ws = monitor_size[0]/SCREEN_WIDTH
+
+	ui_manager0.ws = ws
+	window = pygame.display.set_mode((SCREEN_WIDTH*ws, SCREEN_HEIGHT*ws), flags, vsync=0)
 
 	show_cursor_signals = [level == 0, pause_game, not player0.Alive, inventory_opened, dialogue_enable, trade_ui_en]
 	print('game is running')
@@ -335,19 +334,7 @@ def main():
 		temp_move_L = False
 		player_enable_master = (level_dict[level][3] and not level_transitioning and not camera.set_ini_pos)
 
-		#deleting curser
-		show_cursor_signals = [level == 0, 
-                         		pause_game, 
-                           		not player0.Alive, 
-                             	inventory_opened, 
-                              	dialogue_enable, 
-                               	trade_ui_en
-                                ]#update the list
-		if True in show_cursor_signals:#delete mouse when out of the main menu
-			pygame.mouse.set_visible(1)
-		else:
-			pygame.mouse.set_visible(0)
-
+		
 		if player0_lvl_transition_data[0]:#test for player collision w/ level transition rects
 			next_level = player0_lvl_transition_data[1][0]
 			player_new_x = player0_lvl_transition_data[1][1]
@@ -366,7 +353,7 @@ def main():
 			do_screenshake_master = False
 			screenshake_profile = (0,0,0)
 			level_transitioning = True
-			#print(pygame.time.get_ticks())
+			
 			#update world's persistent dictionaries
 			world.update_lvl_completion(level, the_sprite_group.enemy_death_count, next_level != 0, passive_effects_dict)
 			world.check_onetime_spawn_dict(level)
@@ -468,7 +455,6 @@ def main():
 			scroll_x = player0.scrollx + camera.scrollx
 		else:
 			scroll_x = 0
-			#area_name_time = pygame.time.get_ticks()
 		
 			
 	
@@ -777,6 +763,23 @@ def main():
 			move_L = False
 			move_R = False
 			player0.brain_damage = False
+   
+		#deleting curser
+		show_cursor_signals = [level == 0, 
+                         		pause_game, 
+                           		not player0.Alive, 
+                             	inventory_opened, 
+                              	dialogue_enable, 
+                               	trade_ui_en
+                                ]#update the list
+		if True in show_cursor_signals:#delete mouse when out of the main menu
+			pygame.mouse.set_visible(0)
+			cursor_rect = cursor_img.get_rect()
+			screen.blit(pygame.transform.scale(cursor_img, (cursor_rect.width*ws,cursor_rect.height*ws)), pygame.mouse.get_pos(), cursor_rect.scale_by_ip(ws))
+			
+		else:
+			pygame.mouse.set_visible(0)
+
 
 		#============================================================update player action for animation=======================================================
 		#this is remnant code from following Coding with Russ' tutorial, I wasn't sure how to integrate this into playerFile.py
@@ -839,7 +842,7 @@ def main():
 					if change_once:
 						if player0.vel_y < -0.1:# or (player0.hold_jump and player0.vel_y < 2 and player0.in_air and player0.action_history[player0.len_action_history-1] in [2,4]):
 							player0.atk1_alternate = True
-						elif player0.vel_y > 0 and player0.in_air:
+						elif player0.vel_y >= 0 and player0.in_air:
 							player0.atk1_alternate = False
 						else:
 							player0.atk1_alternate = not player0.atk1_alternate
@@ -1096,6 +1099,8 @@ def main():
 					shift = True
 				# if event.key == pygame.K_t:
 				# 	trade_ui_en = not trade_ui_en
+    
+				#if shift and event.key == pygame.K_MINUS
 
 				#===============================================================UI Related Keys=============================================================
 
@@ -1323,13 +1328,15 @@ def main():
 			screen_r_edge = SCREEN_WIDTH - (world.rect.x + world.rect.width)
 
 		# pygame.display.flip()
-  
+		# pygame.transform.scale(screen, (SCREEN_WIDTH*ws,SCREEN_HEIGHT*ws))
 		# frame_tex = moderngl_handler0.surf_to_texture(screen)
 		# frame_tex.use(0) #using a texture at index 0
 		# moderngl_handler0.program['tex'] = 0 #write to tex uniform, the number 0, also used to update
 		# moderngl_handler0.render_object.render(mode=moderngl.TRIANGLE_STRIP)
   
-		pygame.display.update(pygame.rect.Rect(screen_l_edge, world.rect.y, SCREEN_WIDTH - screen_r_edge, SCREEN_HEIGHT-2*world.rect.y))
+		window.blit(pygame.transform.scale(screen, (SCREEN_WIDTH*ws,SCREEN_HEIGHT*ws)), (0,0))#pygame.transform.scale(screen, (SCREEN_WIDTH*1.5,SCREEN_HEIGHT*1.5))
+		pygame.display.update(pygame.rect.Rect(screen_l_edge*ws, world.rect.y*ws, (SCREEN_WIDTH - screen_r_edge)*ws, (SCREEN_HEIGHT-2*world.rect.y)*ws))
+		
 		pygame.display.set_caption(f"Fire Burdened 0.723 @ {clock.get_fps():.1f} FPS")
   
 		#frame_tex.release()

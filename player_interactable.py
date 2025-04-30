@@ -162,7 +162,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                 
     def do_player_atk_collisions(self, player_atk_rect):
         colliding = False
-        if player_atk_rect.width != 0:
+        if player_atk_rect.centerx in range(self.rect.centerx - 2*self.width, self.rect.centerx + 2*self.width) and player_atk_rect.width != 0:
             colliding = player_atk_rect.colliderect(self.rect)
         return colliding
     
@@ -191,17 +191,18 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                 if self.id == 'flame_pillar':
                     self.atk_rect = pygame.Rect(self.rect.x + 16, self.rect.y, self.width - 32, self.height)
                     if player_rect.colliderect(self.atk_rect):
+                        update_time = pygame.time.get_ticks()
                         for i in range(random.randrange(2,4)):
                             sp_group_list[5].sprite.add_particle('player_bullet_explosion', 
                                                                 player_rect.centerx + random.randint(-self.width//2,self.width//2), 
                                                                 player_rect.centery + random.randint(-self.width//2,self.width//2), 
-                                                                -self.direction, random.randint(1,2), True, random.randint(0,2))
+                                                                -self.direction, random.randint(1,2), True, random.randint(0,2), update_time)
                                         
                     sp_group_list[5].sprite.add_particle('bloom', self.rect.centerx, 
                                             self.rect.centery + random.randint(-self.width//2,self.width//2), 
                                             -self.direction, 1, True, random.randint(0,2))
 
-                    if pygame.time.get_ticks()%10 == 0:
+                    if pygame.time.get_ticks()%10 == 0:#potentially laggy
                         sp_group_list[5].sprite.add_particle('player_bullet_explosion', 
                                                                 self.rect.centerx + random.randint(-self.width//2,self.width//2), 
                                                             self.rect.centery + random.randint(-self.width//2,self.width//2), 
@@ -225,8 +226,9 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                         self.frame_index = 0
                         self.action = 1
                         self.rect.height = 0
+                        update_time = pygame.time.get_ticks()
                         for i in range(random.randrange(4,8)):
-                            sp_group_list[5].sprite.add_particle('grass_cut', self.rect.x + random.randint(-8,8), self.rect.y + random.randint(-16,8), -self.direction, self.scale, True, random.randint(0,2))
+                            sp_group_list[5].sprite.add_particle('grass_cut', self.rect.x + random.randint(-8,8), self.rect.y + random.randint(-16,8), -self.direction, self.scale, True, random.randint(0,2), update_time)
                         if random.randint(0,15) == 0:
                             sp_group_list[12].add(Item('Mild Herb', self.rect.centerx + 2*random.randint(-5,5), self.rect.centery + 2*random.randint(-5,5), 1, False))
                             
@@ -249,13 +251,12 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                             self.img_rect.y = self.rect.y + int(0.4*self.height) + self.scale
                             self.update_time2 = pygame.time.get_ticks()
                         
-                        
                     self.animate(frame_update)
                     # else:
                     #     self.action = 0
                     #     self.rect.height = 32
                         
-                elif player_action in (7,8,10) and (self.id == 'breakable_brick1' or (self.id == 'breakable_brick2' and player_action == 10)):
+                elif (self.id == 'breakable_brick1' or (self.id == 'breakable_brick2' and player_action == 10)):
                     #print(self.durability)
                     if self.durability > 0:
                         if (player_action != 16 and
@@ -269,10 +270,11 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                                 self.image = self.frame_list[self.action][self.breakable_tile_frame_change()]
                                 self.m_player.play_sound(self.m_player.sfx[2], (self.rect.centerx, self.rect.centery, None, None))
                                     
-                                sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx + random.randint(-12,12), self.rect.centery + random.randint(-12,12), -self.direction, 1.2*self.scale, False, random.randrange(0,3))
+                                update_time = pygame.time.get_ticks()
+                                sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx + random.randint(-12,12), self.rect.centery + random.randint(-12,12), -self.direction, 1.2*self.scale, False, random.randrange(0,3), update_time)
                                 
                                 for i in range(3):
-                                    sp_group_list[5].sprite.add_particle('stone_breaking', self.rect.x + random.randint(-16,16), self.rect.y + random.randint(-16,16), -self.direction, self.scale, True, random.randint(0,2))
+                                    sp_group_list[5].sprite.add_particle('stone_breaking', self.rect.x + random.randint(-16,16), self.rect.y + random.randint(-16,16), -self.direction, self.scale, True, random.randint(0,2), update_time)
                         else:
                             self.durability_changed = False
                     else:

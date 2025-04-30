@@ -178,10 +178,11 @@ class ms_enemy(pygame.sprite.Sprite):
             for i in range(3):
                 sp_group_list[12].add(Item('Cursed Flesh', self.rect.centerx + random.randint(-d,d), self.rect.centery + random.randint(-d,d), 1, False))
             
+            update_time = pygame.time.get_ticks()
             for i in range(20):
                 sp_group_list[5].sprite.add_particle('player_bullet_explosion', 
                                                                     self.tail_hitbox_rect.centerx+random.randrange(-2*d,2*d), self.tail_hitbox_rect.centery+random.randrange(-2*d,2*d), 
-                                                                    -self.direction, self.scale, False, random.randrange(0,3))
+                                                                    -self.direction, self.scale, False, random.randrange(0,3), update_time)
             for pos in self.pos_list:
                 spread = 8
                 self.pos_list2.append([pos[0] - scrollx + random.randint(-spread*self.width,spread*self.width), pos[1] + random.randint(-spread*self.height,spread*self.height)])
@@ -326,10 +327,11 @@ class ms_enemy(pygame.sprite.Sprite):
                 if self.head_hitbox_rect.colliderect(player_atk_rect):
                     
                     if not self.trig_once:
+                        update_time = pygame.time.get_ticks()
                         for i in range(4):
                             sp_group_list[5].sprite.add_particle('player_bullet_explosion', 
                                                                 self.rect.centerx+random.randrange(-d,d), self.rect.centery+random.randrange(-d,d), 
-                                                                -self.direction, self.scale, False, random.randrange(0,3))
+                                                                -self.direction, self.scale, False, random.randrange(0,3), update_time)
                         self.m_player.play_sound(self.m_player.sfx[4], (self.rect.centerx, self.rect.centery, None, None))
                         self.trig_once = True
                         
@@ -350,8 +352,9 @@ class ms_enemy(pygame.sprite.Sprite):
                     temp_rect.center = pos
                     if not self.trig_once2 and temp_rect.colliderect(player_atk_rect) and not self.trig_once and not hitting_tail:
                         self.m_player.play_sound(self.m_player.sfx[7], (self.rect.centerx, self.rect.centery, None, None))
+                        update_time = pygame.time.get_ticks()
                         for i in range(5):
-                            sp_group_list[5].sprite.add_particle('stone_breaking', temp_rect.centerx+random.randrange(-2*d,2*d), temp_rect.centery+random.randrange(-2*d,2*d), -self.direction, self.scale*0.5, False, random.randrange(0,3))
+                            sp_group_list[5].sprite.add_particle('stone_breaking', temp_rect.centerx+random.randrange(-2*d,2*d), temp_rect.centery+random.randrange(-2*d,2*d), -self.direction, self.scale*0.5, False, random.randrange(0,3), update_time)
                         self.trig_once2 = True
             else:
                 self.trig_once2 = False 

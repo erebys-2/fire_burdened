@@ -38,7 +38,7 @@ class particle_2(pygame.sprite.Sprite):
             
         #print(self.particle_img_dict)
         
-    def add_particle(self, name, x, y, direction, scale, frame_sync, frame):
+    def add_particle(self, name, x, y, direction, scale, frame_sync, frame, update_time=-1):
         
         base_name = name
         if scale != 1:
@@ -61,7 +61,8 @@ class particle_2(pygame.sprite.Sprite):
             y -= (self.particle_img_dict[base_name][0].get_height()//2)*scale
             
         #set update_time
-        update_time = pygame.time.get_ticks()
+        if update_time == -1:
+            update_time = pygame.time.get_ticks()
         
         #set frame_update
         if name in self.framerates:
@@ -131,7 +132,7 @@ class particle_2(pygame.sprite.Sprite):
         for particle0 in self.particle_list:
             if particle0[6]: #frame_synch enable
                 if pygame.time.get_ticks() - particle0[9] > particle0[10]:
-                    particle0[9] = pygame.time.get_ticks()
+                    #particle0[9] = pygame.time.get_ticks()
                     self.particle_list.pop(self.particle_list.index(particle0))
                     
             #animated particles
@@ -155,14 +156,17 @@ class particle_2(pygame.sprite.Sprite):
           
 class group_particle2():
     def __init__(self):
-        pass
+        self.counter = 0
     
     def create_particles(self, loc, area, direction, data_): #data_ = scale, p_type, frame, density, sprite_group
 
         if data_[3] > 0:
+            update_time = pygame.time.get_ticks()
             for i in range(data_[3]):
-                data_[4].sprite.add_particle(data_[1], random.randrange(loc[0], area[0]), random.randrange(loc[1], area[1]), direction, data_[0], False, data_[2])
+                data_[4].sprite.add_particle(data_[1], random.randrange(loc[0], area[0]), random.randrange(loc[1], area[1]), direction, data_[0], False, data_[2], update_time)
                     
         elif data_[3] < 0:
-            if pygame.time.get_ticks()%(-data_[3]) == 0:
+            self.counter += 1
+            if self.counter >= -data_[3]:#pygame.time.get_ticks()%(-data_[3]) == 0:
                 data_[4].sprite.add_particle(data_[1], random.randrange(loc[0], area[0]), random.randrange(loc[1], area[1]), direction, data_[0], False, data_[2])
+                self.counter = 0

@@ -313,7 +313,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                         #     #self.m_player.play_sound (self.m_player.sfx[3])
                         #     sp_group_list[7].add(enemy_bullet)
                         #     self.hit_ground = False
-                        sp_group_list[3].sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, -self.direction, self.scale, True, 1)
+                        sp_group_list[3].sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, -self.direction, self.scale, True, 1, self.update_time2)
                         self.vel_y = -8.5
                         self.in_air = True
                         
@@ -443,7 +443,8 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             
             #player collisions------------------------------------------------------------------------------------------------------------------
             
-            if (player_atk_rect.width != 0
+            if (player_atk_rect.width != 0 
+                and player_atk_rect.centerx in range(self.rect.centerx - self.width, self.rect.centerx + self.width)
                 and self.rect.colliderect(player_atk_rect)
                 and self.inundated == False
                 ):
@@ -486,8 +487,9 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 if self.heavy_recoil:
                     particle_ct = 15
                     sfx_index = 5
+                    p_update_time = pygame.time.get_ticks()
                     for i in range(particle_ct//2):
-                        sp_group_list[5].sprite.add_particle('extra_dmg', self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.75*self.scale, False, random.randrange(0,2))
+                        sp_group_list[5].sprite.add_particle('extra_dmg', self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.75*self.scale, False, random.randrange(0,2), p_update_time)
                     self.heavy_recoil = False
                 
                 # for i in range(particle_ct):
