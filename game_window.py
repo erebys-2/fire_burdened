@@ -39,9 +39,9 @@ def main():
 	HALF_SCREEN_W = SCREEN_WIDTH//2
 	SCREEN_HEIGHT = 480
 	standard_size = (SCREEN_WIDTH, SCREEN_HEIGHT)
-	flags = pygame.DOUBLEBUF|pygame.SHOWN #|pygame.OPENGL #windowed mode
+	flags = pygame.DOUBLEBUF|pygame.SHOWN #|pygame.RESIZABLE #|pygame.OPENGL #windowed mode
 
-	window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags, vsync=0)
+	window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)#, vsync=1)
 	screen = pygame.Surface(standard_size)
 	#screen = pygame.display.set_mode(standard_size, flags, vsync=0)
 
@@ -117,7 +117,7 @@ def main():
 	maroonish = [140, 107, 116]
 	reddish =  [170,143,167]
 	jade = [119, 121, 124]
-	grey = [110, 95, 111]
+	grey = (137,109,117)#(134, 112, 116)#(162, 132, 140)#(232, 124, 109)#[110, 95, 111]
 	dark_grey = [30, 29, 36]
 
 	#dictionaty for gradients
@@ -313,7 +313,7 @@ def main():
 	btns = []
  
 	#scaling
-	ws = 1
+	ws = 1 #.25
 	cursor_img = pygame.image.load('assets/sprites/cursor.png')
  
 	# if monitor_size[0] > monitor_size[1]:
@@ -322,7 +322,7 @@ def main():
 	# 	ws = monitor_size[0]/SCREEN_WIDTH
 
 	ui_manager0.ws = ws
-	window = pygame.display.set_mode((SCREEN_WIDTH*ws, SCREEN_HEIGHT*ws), flags, vsync=0)
+	window = pygame.display.set_mode((SCREEN_WIDTH*ws, SCREEN_HEIGHT*ws), flags)#, vsync=1)
 
 	show_cursor_signals = [level == 0, pause_game, not player0.Alive, inventory_opened, dialogue_enable, trade_ui_en]
 	print('game is running')
@@ -775,7 +775,16 @@ def main():
 		if True in show_cursor_signals:#delete mouse when out of the main menu
 			pygame.mouse.set_visible(0)
 			cursor_rect = cursor_img.get_rect()
-			screen.blit(pygame.transform.scale(cursor_img, (cursor_rect.width*ws,cursor_rect.height*ws)), pygame.mouse.get_pos(), cursor_rect.scale_by_ip(ws))
+			cursor_pos =  list(pygame.mouse.get_pos())
+			if cursor_pos[0] < 0:
+				cursor_pos[0] = 0
+			elif cursor_pos[0] > SCREEN_WIDTH:
+				cursor_pos[0] = SCREEN_WIDTH
+			if cursor_pos[1] < 0:
+				cursor_pos[1] = 0
+			elif cursor_pos[1] > SCREEN_HEIGHT:
+				cursor_pos[1] = SCREEN_HEIGHT
+			screen.blit(pygame.transform.scale(cursor_img, (cursor_rect.width*ws,cursor_rect.height*ws)), cursor_pos, cursor_rect.scale_by_ip(ws))
 			
 		else:
 			pygame.mouse.set_visible(0)
@@ -917,10 +926,11 @@ def main():
 					player0.melee_hit = False
 					atk_en = False
 				#dual input jump and attack for instant upstrike
-				elif keys[ctrls_list[0]] and player0.consecutive_upstrike < player0.upstrike_limit and atk_delay_ref_time + 10 > pygame.time.get_ticks(): #and not player0.in_air
+				elif keys[ctrls_list[0]] and not player0.squat_done and player0.consecutive_upstrike < player0.upstrike_limit and atk_delay_ref_time + 10 > pygame.time.get_ticks(): #and not player0.in_air
 					player0.consecutive_upstrike += 1
 					player0.in_air = True
-					player0.squat_done = True
+					if not player0.squat:
+						player0.squat_done = True
 					player0.jump_dampen = True
 
 			elif keys[ctrls_list[4]] and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
@@ -960,16 +970,17 @@ def main():
 						atk_delay_ref_time = pygame.time.get_ticks()
 						atk_gettime_en = False
 
-					if atk_en and atk_delay_ref_time + 30 < pygame.time.get_ticks():#don't attack until delay is up
+					if atk_en and atk_delay_ref_time + 10 < pygame.time.get_ticks():#don't attack until delay is up
 						change_once = True#not player0.hold_jump
 						player0.atk1 = True 
 						player0.melee_hit = False
 						atk_en = False
 					#dual input jump and attack for instant upstrike
-					elif btns[ctrls_list[0]] == 1 and player0.consecutive_upstrike < player0.upstrike_limit and atk_delay_ref_time + 10 > pygame.time.get_ticks(): #and not player0.in_air
+					elif btns[ctrls_list[0]] == 1 and not player0.squat_done and player0.consecutive_upstrike < player0.upstrike_limit and atk_delay_ref_time + 10 > pygame.time.get_ticks(): #and not player0.in_air
 						player0.consecutive_upstrike += 1
 						player0.in_air = True
-						player0.squat_done = True
+						if not player0.squat:
+							player0.squat_done = True
 						player0.jump_dampen = True
 
 				elif btns[ctrls_list[4]] == 1 and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
@@ -1088,7 +1099,7 @@ def main():
 					print(f"sprint bypassed = {sprint_bypass}")
     
 				if event.key == pygame.K_BACKSLASH and pygame.display.is_fullscreen():
-					pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+					pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))#, vsync=1)
 					ui_manager0.in_fullscreen = False
 
 				if event.key == pygame.K_c and shift:

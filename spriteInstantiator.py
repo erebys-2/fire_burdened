@@ -2,6 +2,7 @@ import pygame
 import os
 from enemy32File import enemy_32wide
 from articulated_enemy import ms_enemy
+from pecker_enemy import pecker
 from BGspritesFile import tree, fountain, lamp
 from player_interactable import player_interactable_
 from characterNPCs import Test, Test2, Mars
@@ -139,6 +140,11 @@ class sprite_instantiator():
                     world.enemy0_order_id += 1
                 elif sprite_id == 'worm':
                     enemy0 = ms_enemy(x * 32, y * 32, 2, 2, 'worm', world.enemy0_order_id, ini_vol, self.enemy_img_dict_x1[sprite_id],
+                                          self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'cough.mp3', 'dog_hurt.mp3', 'boonk.mp3', 'hit2.mp3', 'woof.mp3', 'mc_anvil.mp3', 'glass_break.mp3', 'bite.mp3']))
+                    the_sprite_group.enemy0_group.add(enemy0)
+                    world.enemy0_order_id += 1
+                elif sprite_id == 'pecker':
+                    enemy0 = pecker(x * 32, y * 32, 4, 2, 'pecker', world.enemy0_order_id, ini_vol, self.enemy_img_dict_x1[sprite_id],
                                           self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'cough.mp3', 'dog_hurt.mp3', 'boonk.mp3', 'hit2.mp3', 'woof.mp3', 'mc_anvil.mp3', 'glass_break.mp3', 'bite.mp3']))
                     the_sprite_group.enemy0_group.add(enemy0)
                     world.enemy0_order_id += 1

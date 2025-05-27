@@ -1,6 +1,6 @@
 import pygame
 import os
-
+import random
 from spriteInstantiator import sprite_instantiator
 
 from textfile_handler import textfile_formatter
@@ -124,6 +124,9 @@ class World():
         self.lvl_completion_dict = {0:0} #if all enemies are killed in a level
         self.lvl_completed = False
         print('world loaded!')
+        
+    def scale_tile(self, img, pos):
+        return(pygame.transform.scale(img, (36, 36)), (pos[0]-2, pos[1]-2))
             
     # Rabbid76's game map method, modified, from https://stackoverflow.com/questions/66781952/
     def create_map(self, size, level_tile_lists): #apply to all 1:1 layers
@@ -134,7 +137,12 @@ class World():
             for tile in level_tile_lists[len(level_tile_lists)-1-layer]:
                 x_pixel = tile[1][0]
                 y_pixel = tile[1][1]
-                game_map.blit(tile[0].convert_alpha(), (x_pixel, y_pixel))
+                img = tile[0].convert_alpha()
+                # if layer != 3 and 2 == random.randint(0,4):
+                #     img_tup = self.scale_tile(img, (x_pixel, y_pixel))
+                # else:
+                img_tup = (img, (x_pixel, y_pixel))
+                game_map.blit(img_tup[0], img_tup[1])
         return game_map
     
     def update_lvl_completion(self, level, enemy_death_count, player_alive, passive_effects):#called on level change

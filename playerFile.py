@@ -720,7 +720,7 @@ class player(pygame.sprite.Sprite):
                             
             #special tiles
             elif(tile[2] in (2, 60)):#spikes/ other trap tiles
-                if not self.i_frames_en and tile[1].colliderect(self.collision_rect.x + 3*self.width//8 + dx, self.collision_rect.y + dy, self.qrtr_w, self.height - self.qrtr_w):
+                if self.Alive and not self.i_frames_en and tile[1].colliderect(self.collision_rect.x + 3*self.width//8 + dx, self.collision_rect.y + dy, self.qrtr_w, self.height - self.qrtr_w):
                     #if self.frame_index%4 == 0:
                     self.take_damage(0.2, 80)
                     self.vel_y = 0
@@ -907,8 +907,12 @@ class player(pygame.sprite.Sprite):
                         else:
                             multiplier = 1
                             
-                        dx = self.direction * (multiplier * (self.speed))
-                        self.rect.x += self.direction * multiplier * 2
+                        # if self.rect.centerx in range(288, 352):
+                        #     dx = self.direction * (multiplier * (2))
+                        #     self.rect.x += self.direction * self.speed * 2
+                        # else:
+                        dx = self.direction * (multiplier * (4))
+                        self.rect.x += self.direction * self.speed
                         
                         if self.action == 7:
                             self.vel_y -= 0.6
