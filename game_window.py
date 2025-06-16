@@ -102,7 +102,7 @@ def main():
 
 	#camera instance
 	camera_offset = int(0.75 * ts)
-	camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, camera_offset)
+	camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, 2*camera_offset)
  
 	#instantiate sprite groups=========
 	the_sprite_group = sprite_group()
@@ -142,8 +142,9 @@ def main():
 		1:[grey, 'none', [(2, ht, 2, 44*ts, null, null), (2, ht, 3, 0, null, null)], True, 'Outer City Ruins'], #lvl 1
 		2:[grey, 'none', [(2, ht, 1, 0, null, null)], True, "Barrier's Edge"], #lvl 2
 		3:[grey, 'none', [(2, ht, 1, 299*ts, null, null), (2, ht, 4, 0, null, null)], True, 'Outer City Ruins'],
-		4:[grey, 'none', [(2, ht, 3, 39*ts, null, null), (wd, 2, 5, null, 2, 0)], True, 'Outer City Ruins'],
-		5:[dark_grey, 'none', [(wd, 2, 4, null, std_y_disp, 1)], True, 'Outer City Ruins']
+		4:[grey, 'none', [(2, ht, 3, 39*ts, null, null), (2, ht, 6, 0, null, null), (wd, 2, 5, null, 2, 0)], True, 'Outer City Ruins'],
+		5:[dark_grey, 'none', [(wd, 2, 4, null, std_y_disp, 2)], True, 'Outer City Ruins'],
+		6:[grey, 'none', [], True, 'Outer City Ruins']
 	}
  
 	level_ambiance_dict = {#scale, p_type, frame, density, sprite_group
@@ -151,7 +152,8 @@ def main():
 		2:((0.3, 'player_bullet_explosion', 0, 1, the_sprite_group.particle_group_bg), (0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg)),
 		3:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),),
 		4:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),),
-		5:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),)
+		5:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),),
+		6:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),)
 	}
 	
 	#populate area name dict

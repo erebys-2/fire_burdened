@@ -186,9 +186,9 @@ class dialogue_box(text_manager):
         
         self.disp_text_box(screen, font, (disp_name, ' '), (-1,-1,-1),  (200,200,200), (self.ts//2, 0.775*self.SH, 0.175*self.SW, self.SH//4), False, False, 'none')
         if in_cutscene:
-            self.disp_text_box(screen, font, ('Next:[Enter]', ''), (-1,-1,-1),  (120,120,120), (0.8328125*self.SW, 0.95*self.SH, self.ts, self.ts), False, False, 'none')
+            self.disp_text_box(screen, font, ('Next:[Enter]', ''), (-1,-1,-1),  (200,200,200), (0.8328125*self.SW, 0.95*self.SH, self.ts, self.ts), False, False, 'none')
         else:
-            self.disp_text_box(screen, font, ('Next:[Enter]  Exit:[Escape]', ''), (-1,-1,-1),  (120,120,120), (0.875*self.SH, 0.95*self.SH, self.ts, self.ts), False, False, 'none')
+            self.disp_text_box(screen, font, ('Next:[Enter]  Exit:[Escape]', ''), (-1,-1,-1),  (200,200,200), (0.875*self.SH, 0.95*self.SH, self.ts, self.ts), False, False, 'none')
         self.disp_text_box(screen, font, list(message), (-1,-1,-1),  (200,200,200), (self.SW//4 - self.ts, 0.775*self.SH, self.SW, self.SH//4), self.type_out, self.type_out_en, 'none')
         self.type_out_handler(self.type_out, text_speed)
         

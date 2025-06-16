@@ -5,6 +5,7 @@ from bullet import bullet_ #type: ignore
 #print('directory: ' + os.getcwd())
 from music_player import music_player #type: ignore
 from ItemFile import Item #type: ignore
+#from combat_vfx import combat_vfx
 import random
 import math
 
@@ -14,7 +15,6 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
     def __init__(self, x, y, speed, scale, id, enemy0_order_id, ini_vol, frame_list, sfx_list_ext):
         pygame.sprite.Sprite.__init__(self)
 
-        
         #self.m_player.set_sound_vol(self.m_player.sfx[0], 7) #looks like you can adjust vol in the constructor
 
         self.spawn_order_id = enemy0_order_id
@@ -230,7 +230,6 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                         
                     
                     if self.action == 1 and not self.inundated: #when the dog is running it has an attack hitbox
-                        
                         if self.direction == -1:
                             self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + 16, self.half_width, self.height - 32)
                         elif self.direction == 1:

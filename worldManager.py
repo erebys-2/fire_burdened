@@ -87,6 +87,7 @@ class World():
         #note might have to do some enemy_id type thing to specify generic sprites like chests
         self.onetime_spawn_dict = {}
         self.ots_id = 0
+        self.read_only_obj_id = 0
         self.sp_groups_to_check = []
         
         self.plot_index_dict = {}
@@ -283,6 +284,7 @@ class World():
 
         self.enemy0_order_id = 0
         self.ots_id = 0
+        self.read_only_obj_id = 0
         self.transition_index = 0
         
         #check world lvl completion dict

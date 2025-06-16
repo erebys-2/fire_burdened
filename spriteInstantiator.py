@@ -188,6 +188,7 @@ class sprite_instantiator():
                     elif sprite_id == 'read_only_obj':
                         read_only_obj_ = read_only_obj(x * 32, y * 32, 1, 1, sprite_id, ini_vol, True, world, level, player_inventory= [])
                         the_sprite_group.textprompt_group.add(read_only_obj_)
+                        world.read_only_obj_id += 1
                         
                 elif sprite_subcategory == 'cutscene':
                     if sprite_id == 'opening_scene':
