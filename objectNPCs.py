@@ -43,18 +43,24 @@ class read_only_obj(npc):
             self.is_initial_index = False
         
         if self.is_initial_index:
-           if self.current_level == 1:
-                if self.order_id == 0:#256 air jump
+            if self.current_level == 1:
+                if self.order_id == 0:
+                    self.current_dialogue_index = 6
+                elif self.order_id == 1:#256 air jump
                     self.current_dialogue_index = 2
-                elif self.order_id == 1:#256 
+                elif self.order_id == 2:#256 
                     self.current_dialogue_index = 3
-                elif self.order_id == 2:#288 
+                elif self.order_id == 3:#288 
                     self.current_dialogue_index = 4
-                elif self.order_id == 3:#upstrike
+                elif self.order_id == 4:#upstrike
                     self.current_dialogue_index = 5
-                elif self.order_id == 4:#352 statue
+                elif self.order_id == 5:#352 statue
                     self.current_dialogue_index = 0
             
+            elif self.current_level == 1:
+                if self.order_id == 0:
+                    self.current_dialogue_index = 7
+
         if self.player_collision and self.get_dialogue_flag:
             # if current_dialogue_index == 0 and self.current_level == 1 and plot_index == -1:
             #     self.current_dialogue_index = 0
