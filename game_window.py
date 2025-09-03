@@ -20,9 +20,9 @@ from ItemFile import inventory_UI, trade_menu_ui
 from playerChoiceHandler import player_choice_handler
 from particle import particle_2, group_particle2
 import random
-import moderngl
-from array import array
-from shadersHandler import modernGL_handler
+# import moderngl
+# from array import array
+# from shadersHandler import modernGL_handler
 from profilehooks import profile
 
 #@profile
@@ -117,7 +117,7 @@ def main():
 	maroonish = [140, 107, 116]
 	reddish =  [170,143,167]
 	jade = [119, 121, 124]
-	grey = (137,109,117)#(134, 112, 116)#(162, 132, 140)#(232, 124, 109)#[110, 95, 111]
+	grey = (140, 113, 108)#(140,124,148)#(134, 112, 116)#(162, 132, 140)#(232, 124, 109)#[110, 95, 111]
 	dark_grey = [30, 29, 36]
 
 	#dictionaty for gradients
@@ -342,6 +342,7 @@ def main():
 			player_new_x = player0_lvl_transition_data[1][1]
 			player_new_y = player0_lvl_transition_data[1][2]
 			bound_index = player0_lvl_transition_data[1][3]
+			#next_level, player_new_x, player_new_y, bound_index, dummy_var = player0_lvl_transition_data[1]
 			transition_orientation = player0_lvl_transition_data[2]
 			transition_disp = player0_lvl_transition_data[3]
 		else:
@@ -491,9 +492,9 @@ def main():
 					#if not do_screenshake_master:
 					do_screenshake_master = True
 					if player0.sprint:
-						screenshake_profile = (10, 6, 2)
+						screenshake_profile = (20, 12, 2)
 					else:
-						screenshake_profile = (6, 4, 2)
+						screenshake_profile = (12, 8, 1)
 
 		
 
@@ -510,7 +511,7 @@ def main():
 			next_dialogue = False
 			player0.check_melee_hits(the_sprite_group)#seems to work, wasn't responsive at first
 			player0.check_item_pickup(the_sprite_group)
-			the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, player0.direction, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
+			the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, player0.direction, (player0.dx, player0.dy), [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
    
 			the_sprite_group.update_item_group(screen, player0.hitbox_rect)
 			player0.draw(screen)
@@ -519,7 +520,7 @@ def main():
 			the_sprite_group.update_groups_infront_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, world.solids)
 		
 			status_bars.very_charred = player0.char_level/player0.char_dict['max_char'] > 0.9
-			status_bars.draw(screen, player0.get_status_bars(), player0.action, (7,8,9,10,16), font, False)
+			status_bars.draw(screen, player0.get_status_bars(), player0.action, (7,8,9,10,16,18), font, False)
 			status_bars.draw2(screen, player0.action_history, (7,8,16), font_larger)
 			status_bars.draw_status_icons(screen, player0, font_larger)
 			if world.plot_index_dict != {} and world.plot_index_dict['opening_scene'] == -4:
@@ -847,9 +848,11 @@ def main():
 			
 				if player0.shoot:
 					player0.update_action(11)
+     
 				
-				elif player0.atk1:
-					
+				
+				elif player0.atk1:# and not player0.slide_kick:
+					#player0.slide_kick = False
 					if change_once:
 						if player0.vel_y < -0.1:# or (player0.hold_jump and player0.vel_y < 2 and player0.in_air and player0.action_history[player0.len_action_history-1] in [2,4]):
 							player0.atk1_alternate = True
@@ -877,7 +880,10 @@ def main():
 					player0.rolling = False
 					player0.atk1 = False
 					player0.shoot = False
-					
+					player0.slide_kick = False
+				elif player0.slide_kick:
+					player0.update_action(18)
+
 				elif player0.rolling: 
 					player0.update_action(9)#rolling
 					player0.atk1_alternate = False
@@ -1047,11 +1053,15 @@ def main():
 						if event.key == ctrls_list[3]: #pygame.K_d
 							move_R = True
 						
-						if event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina and not player0.using_item and player0.inventory_handler.check_for_item('Rock'): #pygame.K_o
-							player0.shot_charging = True
-						elif event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost > player0.stamina: #pygame.K_o
+						# if event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina and not player0.using_item and player0.inventory_handler.check_for_item('Rock'): #pygame.K_o
+						# 	player0.shot_charging = True
+						# elif event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost > player0.stamina: #pygame.K_o
+						# 	status_bars.warning = True
+      
+						if event.key == ctrls_list[5] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and not player0.using_item: #pygame.K_o
+							player0.slide_kick = True
+						elif event.key == ctrls_list[5] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_o
 							status_bars.warning = True
-			
 
 						if event.key == ctrls_list[2] and (player0.check_atk1_history() == 4 or player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost <= player0.stamina): #pygame.K_s
 							player0.squat = False
@@ -1206,12 +1216,13 @@ def main():
 				if event.key == ctrls_list[2]:#pygame.K_s
 					#roll_en = True
 					status_bars.warning = False
-				if event.key == ctrls_list[5]:#pygame.K_o
-					status_bars.warning = False
-					player0.frame_updateBP = 150
-					if player0.shot_charging == True:
-						player0.shoot = True
-						player0.shot_charging = False
+				# if event.key == ctrls_list[5]:#pygame.K_o
+				# 	status_bars.warning = False
+				# 	player0.frame_updateBP = 150
+				# 	if player0.shot_charging == True:
+				# 		player0.shoot = True
+				# 		player0.shot_charging = False
+    
 
 				if event.key == ctrls_list[7]: #pygame.K_RALT
 					player0.speed = normal_speed

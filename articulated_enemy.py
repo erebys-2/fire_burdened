@@ -156,7 +156,7 @@ class ms_enemy(pygame.sprite.Sprite):
         particle_name = self.id + '_death'
         sp_group_list[3].sprite.add_particle(particle_name, self.rect.centerx, self.rect.centery, self.direction, self.scale, False, 0)
             
-    def move(self, player_rect, player_atk_rect, player_direction, world_solids, scrollx, player_action, sp_group_list):
+    def move(self, player_rect, player_atk_rect, player_direction, player_mvmt, world_solids, scrollx, player_action, sp_group_list):
         dx = 0
         dy = 0
         d = self.width//2
@@ -278,7 +278,7 @@ class ms_enemy(pygame.sprite.Sprite):
                 else:
                     self.rand_mvmt_ct = 0
                     
-                if self.hostile and player_action not in (9,7,8,10,16):
+                if self.hostile and player_action not in (9,7,8,10,16,18):
                     self.rand_mvmt_ct = 0
                     if self.hostile:
                         self.m_player.play_sound(self.m_player.sfx[9], (self.rect.centerx, self.rect.centery, None, None))

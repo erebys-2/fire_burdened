@@ -56,6 +56,7 @@ class World():
         #self.ref_pt = pygame.Rect((0,0),(32,32))
 
         #load tiles/images
+        #if screen_w > 0:
         for tile_set in tile_set_types:
             temp_list = []
             tile_count = len(os.listdir(f'assets/sprites/tileset/{tile_set}'))
@@ -110,15 +111,16 @@ class World():
         # self.wall_hitting_time = pygame.time.get_ticks()
         # self.hitting_wall_status = False
         
-        self.world_map_non_parallax = pygame.Surface((32,32), pygame.SRCALPHA)
-        self.world_map_non_parallax.fill(pygame.Color(0,0,0,0))
-        self.world_map_non_parallax.convert_alpha()
+        if screen_w > 0:
+            self.world_map_non_parallax = pygame.Surface((32,32), pygame.SRCALPHA)
+            self.world_map_non_parallax.fill(pygame.Color(0,0,0,0))
+            self.world_map_non_parallax.convert_alpha()
+            
+            self.world_map_non_parallax_fg = pygame.Surface((32,32), pygame.SRCALPHA)
+            self.world_map_non_parallax_fg.fill(pygame.Color(0,0,0,0))
+            self.world_map_non_parallax_fg.convert_alpha()
         
-        self.world_map_non_parallax_fg = pygame.Surface((32,32), pygame.SRCALPHA)
-        self.world_map_non_parallax_fg.fill(pygame.Color(0,0,0,0))
-        self.world_map_non_parallax_fg.convert_alpha()
-        
-        self.sp_ini = sprite_instantiator()
+            self.sp_ini = sprite_instantiator()
         
         #resets per instance
         self.death_counters_dict = {} #player deaths per level
@@ -322,6 +324,7 @@ class World():
                         tile_data = (img, img_rect, tile, [])
                         
                         self.solids.append(tile_data)
+        #self.solids, x, y = self.process_game_layer(raw_lvl_data_dict['data'], False, the_sprite_group, ini_vol, level, lvl_data_trans_list)
                         
         #set world limits as width/height of the world's rect
         self.rect.width = x * 32
@@ -347,18 +350,25 @@ class World():
         
             
         #process filter layer
-        if self.bg3 != []:
-            self.bg3 = self.post_process_filter_layer(self.bg3, lvl_size[1]*32)
+        #if self.bg3 != []:
+        self.bg3 = self.post_process_filter_layer(self.bg3, lvl_size[1]*32)
                 
         #load fg and fg_1
         self.fg = self.process_bg(raw_lvl_data_dict['fg_data'], False)
         self.fg_1 = self.process_bg(raw_lvl_data_dict['fg_1_data'], False)
         
         #create maps
-        layer_list = [self.fg_1, self.solids, self.bg1, self.bg3, self.bg2, self.bg2_1]
-        self.world_map_non_parallax = self.create_map(lvl_size, layer_list).convert_alpha()
+        # layer_list = [self.fg_1, self.solids, self.bg1, self.bg3, self.bg2, self.bg2_1]
+        # self.world_map_non_parallax = self.create_map(lvl_size, layer_list).convert_alpha()
         
-        layer_list2 = [self.fg]
+        filtered_layers = self.create_map(lvl_size, [self.bg2, self.bg2_1])#.convert_alpha()
+        filter_layer = self.create_map(lvl_size, [self.bg3,])#.convert_alpha()
+        non_filtered_layers = self.create_map(lvl_size, [self.fg_1, self.solids, self.bg1])#.convert_alpha()
+        
+        self.world_map_non_parallax = self.combine_surfaces((filtered_layers, filter_layer, non_filtered_layers)).convert_alpha()
+        
+        
+        layer_list2 = [self.fg,]
         self.world_map_non_parallax_fg = self.create_map(lvl_size, layer_list2).convert_alpha() 
 
         #add another death counter
@@ -366,22 +376,57 @@ class World():
             self.death_counters_dict[level] = 0
             
         
+    def combine_surfaces(self, surface_list):
+        rtn_surface = pygame.surface.Surface(surface_list[0].get_size(), pygame.SRCALPHA)
+        for surface in surface_list:
+            rtn_surface.blit(surface)
+        #rtn_surface.blits([(surface, (0,0)) for surface in surface_list])
+        return rtn_surface
+            
    
     def post_process_filter_layer(self, filter_layer, level_size_pixels): #for filter layer that contains one very large tile that gets repeated across the level
-        filter_width = filter_layer[0][1].width
-        filter_height = filter_layer[0][1].height
         temp_list = []
-        img = filter_layer[0][0]
-        tile = filter_layer[0][2]
-        
-        x = 0
-        while (x-1)*filter_width < level_size_pixels:
-            img_rect = pygame.rect.Rect(x*filter_width, 0, filter_width, filter_height)
-            tile_data = (img, img_rect, tile)
-            temp_list.append(tile_data)
-            x+= 1
+        if filter_layer != []:
+            filter_width = filter_layer[0][1].width
+            filter_height = filter_layer[0][1].height
+            
+            img = filter_layer[0][0]
+            tile = filter_layer[0][2]
+            
+            x = 0
+            while (x-1)*filter_width < level_size_pixels:
+                img_rect = pygame.rect.Rect(x*filter_width, 0, filter_width, filter_height)
+                tile_data = (img, img_rect, tile)
+                temp_list.append(tile_data)
+                x+= 1
         
         return temp_list
+    
+    def process_game_layer_map(self, data):
+        rtn_list = []
+        for y, row in enumerate(data):
+            for x, tile in enumerate(row):
+ 
+                #process tiles into detailed game layer list
+                if tile in self.special_hitbox_tiles_dict:
+                    tile_data = self.set_hitbox_for_special_tile(tile, x, y, None)
+                    rtn_list.append(tile_data)
+                elif tile >= 0 and tile != 10 and tile not in self.sprite_group_tiles_dict:# and tile not in self.special_hitbox_tiles_dict:
+                    if tile in self.static_bg_oversized_tiles_dict:
+                        img = self.tileList[1][self.static_bg_oversized_tiles_dict[tile]]
+                    else:
+                        img = self.tileList[0][tile]
+                    img_rect = img.get_rect()
+                    
+                    img_rect.x = x * 32
+                    img_rect.y = y * 32
+                    
+                    tile_data = (img, img_rect, tile)
+                    
+                    rtn_list.append(tile_data)
+                        
+        return rtn_list
+            
         
     def process_bg(self, data, is_detailed_bg):   
         rtrn_list = []

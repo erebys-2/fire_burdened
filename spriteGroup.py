@@ -121,13 +121,13 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 				bg_sprite.animate(bg_sprite.frame_rate)		
 			
 			
-	def update_groups_behind_player(self, screen, player_hitbox_rect, player_atk_rect_scaled, player_action, player_direction, world_solids):
+	def update_groups_behind_player(self, screen, player_hitbox_rect, player_atk_rect_scaled, player_action, player_direction, player_mvmt, world_solids):
 		for enemy0 in self.enemy0_group: #[enemy0 for enemy0 in list(self.enemy0_group) if enemy0.rect.x > -32 and enemy0.rect.x < 640]:
 			enemy0.draw(screen)
 			if not self.pause_game:
 				if enemy0.check_if_in_simulation_range(0):
 					enemy0.animate(self.sp_group_list, player_hitbox_rect)
-				enemy0.move(player_hitbox_rect, player_atk_rect_scaled, player_direction, world_solids, self.scroll_x, player_action, self.sp_group_list)
+				enemy0.move(player_hitbox_rect, player_atk_rect_scaled, player_direction, player_mvmt, world_solids, self.scroll_x, player_action, self.sp_group_list)
 			if enemy0.Alive == False:
 				self.enemy_death_count += 1
 				self.enemy0_group.remove(enemy0)

@@ -104,7 +104,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
 
                 for i in range(frames):
                     img = pygame.image.load(f'assets/sprites/enemies/{self.id}/{animation}/{i}.png').convert_alpha()
-                    
+                    img = pygame.transform.hsl(img, 11, 0.3, 0.1)
                     if animation == '2' and i < 2:
                         img = pygame.transform.scale(img, (int(img.get_width() * 0.5 * scale), int(img.get_height() * 1.2 * scale)))
                     else:
@@ -134,6 +134,8 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         self.quarter_height = self.half_width//2
         
         self.is_on_screen = False
+        
+        self.pos_list = []
         
         
 
@@ -194,7 +196,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                         self.hits_tanked += rate
         return (dx,dy)
         
-    def move(self, player_rect, player_atk_rect, player_direction, world_solids, scrollx, player_action, sp_group_list):
+    def move(self, player_rect, player_atk_rect, player_direction, player_mvmt, world_solids, scrollx, player_action, sp_group_list):
         dx = 0
         dy = 0
         moving = False
@@ -445,30 +447,33 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             if (player_atk_rect.width != 0 
                 and player_atk_rect.centerx in range(self.rect.centerx - self.width, self.rect.centerx + self.width)
                 and self.rect.colliderect(player_atk_rect)
-                and self.inundated == False
+                #and self.inundated == False
                 ):
                 #pygame.time.wait(8)
                 #the average point in a collision between rects is literally just the average of the coords opposite respective corners of rects
-                x_avg = (self.rect.centerx + player_atk_rect.centerx)/2
-                dx = player_direction * self.recoil
-                y_avg = (self.rect.centery + player_atk_rect.centery)/2
                 
+                self.direction = player_direction
+                dx += 2*player_mvmt[0] + player_direction * self.recoil
+                if self.in_air:
+                    dy += 2*player_mvmt[1]
+                x_avg = (self.rect.centerx + player_atk_rect.centerx)/2
+                y_avg = (self.rect.centery + player_atk_rect.centery)/2
                 
                 
                 if self.rando_frame < 2:
                     self.rando_frame += 1
                 else:
                     self.rando_frame = 0
+        
                 
-                if self.id == 'fly':
-                    dy += self.vertical_direction * self.recoil//2
-                else:
-                    dy += self.vel_y * 2
-
-                self.direction = player_direction
+                # if self.id == 'fly':
+                #     dy += self.vertical_direction * self.recoil//2
+                # else:
+                #     dy += self.vel_y * 2
+                self.pos_list.append(self.rect.topleft)
                 
-                self.do_screenshake = True
-                self.inundated = True
+                
+                
                 
                 if player_action ==  10 or player_action == 9:
                     self.dmg_multiplier = 6
@@ -479,28 +484,35 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 elif player_action == 7 or player_action == 8:
                     self.dmg_multiplier = 2
                     self.heavy_recoil = False
-                    
-                sp_group_list[5].sprite.add_particle('player_impact', x_avg + dx/4, y_avg, -self.direction, self.scale*1.05, True, self.rando_frame)
+                #self.dmg_multiplier = 0
+                
                 particle_ct = 3
                 sfx_index = 1
                 if self.heavy_recoil:
-                    particle_ct = 15
+                    particle_ct = 8
                     sfx_index = 5
                     p_update_time = pygame.time.get_ticks()
                     for i in range(particle_ct//2):
                         sp_group_list[5].sprite.add_particle('extra_dmg', self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.75*self.scale, False, random.randrange(0,2), p_update_time)
                     self.heavy_recoil = False
+                    
+                if not self.inundated:
+                    self.do_screenshake = True
+                    self.m_player.play_sound(self.m_player.sfx[sfx_index], (self.rect.centerx, self.rect.centery, None, None))
+                    sp_group_list[5].sprite.add_particle('player_impact', x_avg + dx/4, y_avg, -self.direction, self.scale*1.05, True, self.rando_frame)
+                self.inundated = True
                 
                 # for i in range(particle_ct):
                 #     sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.3*self.scale, False, random.randrange(0,3))
 
-                self.m_player.play_sound(self.m_player.sfx[sfx_index], (self.rect.centerx, self.rect.centery, None, None))
+                
                 #pygame.time.delay(50)
                     
             elif (player_atk_rect.width == 0 and   
                 player_rect.x > self.rect.x - 64 and player_rect.right < self.rect.right + 64 and
                     (self.rect.colliderect(player_rect.scale_by(0.2)) or (self.rect.x < player_rect.x and self.rect.right > player_rect.right ))
                     and self.id != 'walker'
+                    and not self.inundated
                 #and not (self.inundated or self.rect.colliderect(player_atk_rect))
                 ):
                 dx = -dx
@@ -581,8 +593,8 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                             self.jump = False    
 
                         #y collisions
-                        if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width , self.height):
-                            if self.vel_y >= 0:
+                        if tile[1].colliderect(self.rect.x, self.rect.y, self.width , self.height):
+                            if self.vel_y >= 0 or dy >= 0:
                                 #self.vel_y = 0 
                                 #lower half collision
                                 if tile[1].colliderect(self.rect.x, self.rect.y + (self.half_height), self.width, self.half_height):
@@ -596,7 +608,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                                     if self.action == 5:
                                         self.hit_ground = True
 
-                            elif self.vel_y < 0:
+                            elif self.vel_y < 0 or dy < 0:
                                 #upper half collision
                                 if tile[1].colliderect(self.rect.x + self.quarter_width//2, self.rect.y, self.width - self.quarter_width, self.half_height):
                                     dy = 32
@@ -753,6 +765,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             if self.action == 2:#hurting
                 #boolean to whether just take damage or die
                 if self.inundated == True:
+                    self.pos_list *= 0
                     self.inundated = False
                 self.recovering = True
                 self.idle_counter = 0
@@ -788,15 +801,20 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         sp_group_list[3].sprite.add_particle(particle_name, self.rect.x - self.half_width, self.rect.y - self.half_height, self.direction, self.scale, False, 0)
         
 
-    def draw(self, p_screen):
+    def draw(self, screen):
         #self.animate()
         if self.check_if_onscreen():
             if self.inundated and self.frame_index < 1:
                 if pygame.time.get_ticks()%5 != 0:
-                    p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+                    screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
             else:
-                p_screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
-        #pygame.draw.rect(p_screen, (255,0,0), self.atk_rect_scaled)
+                screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+                
+            # if self.pos_list != []:
+            #     for pos in self.pos_list:
+            #         screen.blit(pygame.transform.flip(self.image, self.flip, False), pygame.rect.Rect(pos[0], pos[1], self.width, self.height))
+                
+        #pygame.draw.rect(screen, (255,0,0), self.atk_rect_scaled)
     
     def update_action(self, new_action):
         #check if action has changed

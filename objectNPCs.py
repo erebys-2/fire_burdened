@@ -57,7 +57,7 @@ class read_only_obj(npc):
                 elif self.order_id == 5:#352 statue
                     self.current_dialogue_index = 0
             
-            elif self.current_level == 1:
+            elif self.current_level == 4:
                 if self.order_id == 0:
                     self.current_dialogue_index = 7
 

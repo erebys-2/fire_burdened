@@ -3,6 +3,7 @@ import os
 import button
 import csv
 from textfile_handler import textfile_formatter
+from worldManager import World
 
 pygame.init()
 from profilehooks import profile
@@ -13,6 +14,7 @@ def main():
     SCREEN_HEIGHT = 480
     LOWER_MARGIN = 96
     SIDE_MARGIN = 320
+    
     t1 = textfile_formatter()
     path = 'assets/config_textfiles/level_config/'
     level_sizes_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'level_sizes_dict.txt')), 'list')
@@ -42,7 +44,7 @@ def main():
         7:'bg2_1_data',
         8:'bg4_data',
         9:'bg5_data',
-        10: 'bg6_data'
+        10:'bg6_data'
     }
     
     world_layer_index = [key for key in layer_name_dict if layer_name_dict[key] == 'data'][0]-1
@@ -105,6 +107,7 @@ def main():
 
     screen = pygame.display.set_mode((SCREEN_WIDTH + SIDE_MARGIN, SCREEN_HEIGHT + LOWER_MARGIN), 0, 32)
     pygame.display.set_caption('editor window')
+    w = World(-1,-1)
 
     #framerate set up------------------------------------
     clock = pygame.time.Clock()
@@ -410,6 +413,9 @@ def main():
     else:
         (layer_list, map_dict, tile_id_map_dict) = create_new_lvl(layer_name_dict)
         
+    # def save_lvl_layers(level):
+        
+        
     run = True
     while run:
         clock.tick(FPS)
@@ -475,9 +481,25 @@ def main():
         #save and load data
         if save_button.draw(screen) and not is_loading:
             is_saving = True
+            surface_list = []
             #save level data
             for layer in layer_name_dict:
                 write_level_data(level, level_sizes_dict, layer_list[layer], layer_name_dict[layer])
+                if layer > 0:
+                    if layer != 3:
+                        surface_list.append(w.process_bg(layer_list[layer], (layer in (6,7))))
+                    else:
+                        surface_list.append(w.process_game_layer_map(layer_list[layer]))
+                    
+            lvl_size = (ROWS, MAX_COLS)
+            
+            base_path = f'assets/sprites/world_maps/level{level}_maps'
+            if f'level{level}_maps' not in os.listdir('assets/sprites/world_maps'):
+                os.mkdir(base_path)
+            pygame.image.save(w.create_map(lvl_size, surface_list[5:7]), os.path.join(base_path, 'filtered_layers.PNG'))
+            pygame.image.save(w.create_map(lvl_size, [w.post_process_filter_layer(surface_list[4], MAX_COLS*32),]), os.path.join(base_path, 'filter_layer.PNG'))
+            pygame.image.save(w.create_map(lvl_size, surface_list[1:4]), os.path.join(base_path, 'non_filtered_layers.PNG'))
+            pygame.image.save(w.create_map(lvl_size, [surface_list[0],]), os.path.join(base_path, 'true_fg.PNG'))
             
             print('~~Saved!~~')
             if level not in level_sizes_dict:
