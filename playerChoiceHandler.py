@@ -20,20 +20,22 @@ class player_choice_handler():
         self.ts = TS
         
         self.t1 = textfile_formatter()
-        path = 'assets/npc_dialogue_files/player_choice_config/'
+        #path = 'assets/npc_dialogue_files/player_choice_config/'
+        base_path = os.path.join('assets', 'npc_dialogue_files', 'player_choice_config')
         self.player_choice_dict = {}
-        player_choice_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'choice_selection_dict.txt')), 'list_list')
+        player_choice_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(base_path, 'choice_selection_dict.txt')), 'list_list')
         for entry in player_choice_dict:
             self.player_choice_dict[entry] = tuple(player_choice_dict[entry])
         
         #2nd dictionary for prompts
-        self.player_prompt_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'prompt_dict.txt')), 'text_box')
+        self.player_prompt_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(base_path, 'prompt_dict.txt')), 'text_box')
 
         self.trigger_once = True
         self.button_list = []
-        self.btn_img = pygame.image.load('assets/sprites/dialogue_btn.png').convert_alpha()
-        self.bg_img = pygame.image.load('assets/sprites/pause_bg.png').convert_alpha()
-        self.prompt_box_bg = pygame.image.load('assets/sprites/dialogue_box.png').convert_alpha()
+        generic_ui_path = os.path.join('assets', 'sprites')
+        self.btn_img = pygame.image.load(os.path.join(generic_ui_path, 'dialogue_btn.png')).convert_alpha()
+        self.bg_img = pygame.image.load(os.path.join(generic_ui_path, 'pause_bg.png')).convert_alpha()
+        self.prompt_box_bg = pygame.image.load(os.path.join(generic_ui_path, 'dialogue_box.png')).convert_alpha()
         
         self.m_player = music_player(m_player_sfx_list_main, ini_vol)
         self.text_manager0 = text_manager(SW, SH, TS)

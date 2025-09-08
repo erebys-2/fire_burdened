@@ -16,10 +16,16 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.text_manager0 = text_manager(SCREEN_WIDTH, SCREEN_HEIGHT, ts)
         self.save_handler = save_file_handler()
         
-        self.generic_img = pygame.image.load('assets/sprites/generic_btn.png').convert_alpha()
-        self.generic_img2 = pygame.image.load('assets/sprites/generic_btn2.png').convert_alpha()
-        self.invisible_img = pygame.image.load('assets/sprites/invisible_btn.png').convert_alpha()
-        self.pause_img = pygame.image.load('assets/sprites/pause_bg.png').convert_alpha()
+        # self.generic_img = pygame.image.load('assets/sprites/generic_btn.png').convert_alpha()
+        # self.generic_img2 = pygame.image.load('assets/sprites/generic_btn2.png').convert_alpha()
+        # self.invisible_img = pygame.image.load('assets/sprites/invisible_btn.png').convert_alpha()
+        # self.pause_img = pygame.image.load('assets/sprites/pause_bg.png').convert_alpha()
+
+        assets_path = os.path.join('assets', 'sprites')
+        self.generic_img = pygame.image.load(os.path.join(assets_path, 'generic_btn.png')).convert_alpha()#'assets/sprites/generic_btn.png'
+        self.generic_img2 = pygame.image.load(os.path.join(assets_path, 'generic_btn2.png')).convert_alpha()#'assets/sprites/generic_btn2.png'
+        self.invisible_img = pygame.image.load(os.path.join(assets_path, 'invisible_btn.png')).convert_alpha()#'assets/sprites/.png'
+        self.pause_img = pygame.image.load(os.path.join(assets_path, 'pause_bg.png')).convert_alpha()#'assets/sprites/pause_bg.png'
         
         self.S_W = SCREEN_WIDTH
         self.S_H = SCREEN_HEIGHT
@@ -54,7 +60,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.ctrls_list = [-1]*10
         self.ctrls_updated = False
 
-        self.title_screen = pygame.image.load('assets/sprites/title_screen.png').convert_alpha()
+        self.title_screen = pygame.image.load(os.path.join('assets', 'sprites', 'title_screen.png')).convert_alpha()#'assets/sprites/title_screen.png'
         self.ts_rect = self.title_screen.get_rect()
         self.ts_rect.center = (self.S_W//2, self.S_H//2 +self.ts)
         
@@ -72,7 +78,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.help_open = False
         self.help_btn_str = '[Open Tips]'
         
-        path = 'assets/game_settings'
+        path = os.path.join('assets', 'game_settings')#'assets/game_settings'
         self.toggle_settings_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'toggle_settings.txt')), 'int')
         
         self.came_from_death_menu = False
@@ -96,7 +102,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         }  
         
         plot_index_dict = {} #populate plot index for each npc
-        for npc in os.listdir('assets/sprites/npcs'):
+        for npc in os.listdir(os.path.join('assets', 'sprites', 'npcs')):#'assets/sprites/npcs'):
             plot_index_dict[npc] = -1
         rtn_dict['PID'] = plot_index_dict
         
@@ -104,7 +110,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
     
     def read_csv_data(self, data_name):
         temp_list = []
-        with open(f'assets/game_settings/{data_name}.csv', newline= '') as csvfile:
+        with open(os.path.join('assets', 'game_settings', f'{data_name}.csv'), newline= '') as csvfile:#f'assets/game_settings/{data_name}.csv'
             reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
             for row in reader:
                 for entry in row:
@@ -113,7 +119,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         return temp_list
         
     def write_csv_data(self, data_name, data):
-        with open(f'assets/game_settings/{data_name}.csv', 'w', newline='') as csvfile:
+        with open(os.path.join('assets', 'game_settings', f'{data_name}.csv'), 'w', newline='') as csvfile:#f'assets/game_settings/{data_name}.csv'
             writer = csv.writer(csvfile, delimiter = ',')
             writer.writerow(data)
             
@@ -245,7 +251,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 for key_ in self.toggle_settings_dict:
                     str2 = str2 + f'{key_}: {self.toggle_settings_dict[key_]}\n'
                 str2 = str2[0:len(str2)-1]
-                self.t1.overwrite_file('assets/game_settings/toggle_settings.txt', str2)
+                self.t1.overwrite_file(os.path.join('assets', 'game_settings', 'toggle_settings.txt'), str2)#'assets/game_settings/toggle_settings.txt'
             self.text_manager0.disp_text_box(screen, self.fontlist[1], (f'[{str(self.toggle_settings_dict['skip_death_screen'] > 0)}]',''),
                                     (-1,-1,-1), (200,200,200), (self.button_list[3].rect.right + 10, self.button_list[3].rect.y + 8, 0, 0), False, False, 'none')
                 
@@ -307,7 +313,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                     self.rtn_dict['NL'] = 1
                     
                     #populate onetime_spawn_dict with default values
-                    path2 = 'assets/config_textfiles/world_config/'
+                    path2 = os.path.join('assets', 'config_textfiles', 'world_config')#'assets/config_textfiles/world_config/'
                     self.rtn_dict['OSD'] = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path2, 'ini_onetime_spawns.txt')), 'list_list') #onetime_spawn_dict
                     
                     #set flag

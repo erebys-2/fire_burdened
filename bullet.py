@@ -34,12 +34,13 @@ class bullet_(pygame.sprite.Sprite):
         if type == 'ground_impact':
             self.animation_types = ['default']
             
+        base_path = os.path.join('assets', 'sprites', 'bullet', self.bullet_type)
         for animation in self.animation_types:
             temp_list = []
-            frames = len(os.listdir(f'assets/sprites/bullet/{self.bullet_type}/{animation}'))
+            frames = len(os.listdir(os.path.join(base_path, animation)))#f'assets/sprites/bullet/{self.bullet_type}/{animation}'))
 
             for i in range(frames):
-                img = pygame.image.load(f'assets/sprites/bullet/{self.bullet_type}/{animation}/{i}.png').convert_alpha()
+                img = pygame.image.load(os.path.join(base_path, animation, f'{i}.png')).convert_alpha()#f'assets/sprites/bullet/{self.bullet_type}/{animation}/{i}.png'
                 img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
                 temp_list.append(img)
             self.frame_list.append(temp_list)

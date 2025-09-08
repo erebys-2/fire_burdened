@@ -21,16 +21,17 @@ class StatusBars():
         self.bar_ydisp2 = 20 * scale
         self.bar_ydisp1 = self.bar_ydisp2//5
         
-        self.image = pygame.image.load('assets/sprites/UI/statusbars/0.png').convert_alpha()
+        ui_path = os.path.join('assets', 'sprites', 'UI')
+        self.image = pygame.image.load(os.path.join(ui_path, 'statusbars', '0.png')).convert_alpha()#'assets/sprites/UI/statusbars/0.png'
         self.image = pygame.transform.scale(self.image, (int(self.image.get_width() * scale), int(self.image.get_height() * scale)))
         
-        self.image2 = pygame.image.load('assets/sprites/UI/statusbars/1.png').convert_alpha()
+        self.image2 = pygame.image.load(os.path.join(ui_path, 'statusbars', '1.png')).convert_alpha()
         self.image2 = pygame.transform.scale(self.image2, (int(self.image2.get_width() * scale), int(self.image2.get_height() * scale)))
         
-        self.img3 = pygame.image.load('assets/sprites/UI/melee_count/0.png').convert_alpha()
-        self.img4 = pygame.image.load('assets/sprites/UI/melee_count/1.png').convert_alpha()
+        self.img3 = pygame.image.load(os.path.join(ui_path, 'melee_count', '0.png')).convert_alpha()
+        self.img4 = pygame.image.load(os.path.join(ui_path, 'melee_count', '1.png')).convert_alpha()
         self.img4_1 = pygame.transform.scale(self.img4, (int(self.img4.get_width() * scale**3), int(self.img4.get_height() * scale**3)))
-        self.img5 = pygame.image.load('assets/sprites/UI/melee_count/2.png').convert_alpha()
+        self.img5 = pygame.image.load(os.path.join(ui_path, 'melee_count', '2.png')).convert_alpha()
         self.rect_list = []
         self.rect_list2 = []
         

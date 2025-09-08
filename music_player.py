@@ -135,7 +135,7 @@ class music_player():
 
     def play_song(self, file_name):
         if not pygame.mixer.music.get_busy():
-            pygame.mixer.music.load(f'assets/music/{file_name}')
+            pygame.mixer.music.load(os.path.join('assets', 'music', file_name))#f'assets/music/{file_name}'
             pygame.mixer.music.play()
         else:
             pygame.mixer.music.stop()

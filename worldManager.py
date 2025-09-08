@@ -59,10 +59,11 @@ class World():
         #if screen_w > 0:
         for tile_set in tile_set_types:
             temp_list = []
-            tile_count = len(os.listdir(f'assets/sprites/tileset/{tile_set}'))
+            tset_path = os.path.join('assets', 'sprites', 'tileset', tile_set)
+            tile_count = len(os.listdir(tset_path))#f'assets/sprites/tileset/{tile_set}'))
 
             for i in range(tile_count):
-                tile_img = pygame.image.load(f'assets/sprites/tileset/{tile_set}/{i}.png').convert_alpha()
+                tile_img = pygame.image.load(os.path.join(tset_path, f'{i}.png')).convert_alpha()#f'assets/sprites/tileset/{tile_set}/{i}.png'
                 temp_list.append(tile_img)
             self.tileList.append(temp_list)
         
@@ -70,14 +71,14 @@ class World():
         self.t1 = textfile_formatter()
         
         #create dicitonary from special tiles text file
-        path = 'assets/config_textfiles/world_config/'
-        self.sprite_group_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'sprite_group_tiles_dict.txt')), 'list')
-        self.static_bg_oversized_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'static_bg_oversized_tiles_dict.txt')), 'int')
-        self.special_hitbox_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'special_hitbox_tiles_dict.txt')), 'none')
-        self.slightly_oversized_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path + 'slightly_oversized_tiles_dict.txt')), 'float')
+        path = os.path.join('assets', 'config_textfiles', 'world_config')#'assets/config_textfiles/world_config/'
+        self.sprite_group_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'sprite_group_tiles_dict.txt')), 'list')
+        self.static_bg_oversized_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'static_bg_oversized_tiles_dict.txt')), 'int')
+        self.special_hitbox_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'special_hitbox_tiles_dict.txt')), 'none')
+        self.slightly_oversized_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'slightly_oversized_tiles_dict.txt')), 'float')
         
-        path2 = 'assets/config_textfiles/level_config/'
-        self.level_sizes_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path2 + 'level_sizes_dict.txt')), 'list')
+        path2 = os.path.join('assets', 'config_textfiles', 'level_config')#'assets/config_textfiles/level_config/'
+        self.level_sizes_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path2, 'level_sizes_dict.txt')), 'list')
 
         #load onetime_spawn_dict whenever a save file is selected
         #this will be saved as a textfile, used for items and chests
@@ -174,7 +175,7 @@ class World():
             level_csv_data.append(r)
 
         #change list with values from CSV file
-        with open(f'assets/level_files/level{level}/level{level}_{csv_data_name}.csv', newline= '') as csvfile:
+        with open(os.path.join('assets', 'level_files', f'level{level}', f'level{level}_{csv_data_name}.csv'), newline= '') as csvfile:#f'assets/level_files/level{level}/level{level}_{csv_data_name}.csv'
             reader = csv.reader(csvfile, delimiter= ',') 
             for x, current_row in enumerate(reader):
                 for y, tile in enumerate(current_row):

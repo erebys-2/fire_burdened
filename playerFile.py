@@ -128,12 +128,13 @@ class player(pygame.sprite.Sprite):
                            'charging', 'atk1_2_particle', 'turn_around', 'use_item', 'atk1_4', 'wall_slide', 
                            'atk1_5')
         #print(os.listdir(f'sprites/player'))
+        base_path = os.path.join('assets', 'sprites', 'player')
         for animation in animation_types:
             temp_list = []
-            frames = len(os.listdir(f'assets/sprites/player/{animation}'))
+            frames = len(os.listdir(os.path.join(base_path, animation)))
 
             for i in range(frames):
-                img = pygame.image.load(f'assets/sprites/player/{animation}/{i}.png').convert_alpha()
+                img = pygame.image.load(os.path.join(base_path, animation, f'{i}.png')).convert_alpha()
                 img = pygame.transform.hsl(img, 10, 0.3, 0.1)
                 img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
                 temp_list.append(img)
@@ -188,7 +189,7 @@ class player(pygame.sprite.Sprite):
         )
         
         t = textfile_formatter()
-        config_path = 'assets/config_textfiles/player_config'
+        config_path = os.path.join('assets', 'config_textfiles', 'player_config')
         stamina_ini_cost_dict = t.str_list_to_dict(t.read_text_from_file(os.path.join(config_path, 'player_stamina_base_costs_config.txt')), 'float')
         self.len_action_history = 4
         self.action_history = [-1]*self.len_action_history

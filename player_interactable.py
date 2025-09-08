@@ -7,7 +7,7 @@ from ItemFile import Item
 
 class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that can interact with the player/have hitboxes
     #constructor
-    def __init__(self, x, y, scale, direction, id, ini_vol, enabled, frame_list, sfx_list_ext):
+    def __init__(self, x, y, scale, direction, id, ini_vol, enabled, frame_dict, sfx_list_ext):
         pygame.sprite.Sprite.__init__(self)
         self.direction = direction
         if id == 'tall_plant':
@@ -32,7 +32,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
 
         self.id = id
         
-        self.frame_list = []
+        self.frame_dict = {}
         self.frame_index = 0
         self.update_time = pygame.time.get_ticks()
         self.update_time2 = pygame.time.get_ticks()
@@ -44,33 +44,34 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         # else:
         #     scale2 = 1
         
-        if frame_list == None:
-            for animation in os.listdir(f'assets/sprites/player_interactable/{self.id}'):#order matters for these, I don't want to keep adding to dictionaries 
-                temp_list = []
-                frames = len(os.listdir(f'assets/sprites/player_interactable/{self.id}/{animation}'))
+        # base_path = os.path.join('assets', 'sprites', 'player_interactable', self.id)
+        # if frame_dict == None:
+        #     for animation in os.listdir(base_path):#order matters for these, I don't want to keep adding to dictionaries 
+        #         temp_list = []
+        #         frames = len(os.listdir(os.path.join(base_path, animation)))
             
-                for i in range(frames):
-                    img = pygame.image.load(f'assets/sprites/player_interactable/{self.id}/{animation}/{i}.png').convert_alpha()
-                    img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-                    temp_list.append(img)
-                self.frame_list.append(temp_list)
-        else:
-            self.frame_list = frame_list
+        #         for i in range(frames):
+        #             img = pygame.image.load(os.path.join(base_path, animation, f'{i}.png')).convert_alpha()
+        #             img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
+        #             temp_list.append(img)
+        #         self.frame_dict.append(temp_list)
+        # else:
+        self.frame_dict = frame_dict
             
             
-        #generate special frames
+        #post process special frames
         if self.id in ('grass', 'tall_plant'):
             temp_list = []
-            for img in self.frame_list[0]:
+            for img in self.frame_dict[0]:
                 frame = pygame.transform.scale(img, (int(img.get_width() * 1.2), int(img.get_height() * 0.6)))
                 temp_list.append(frame)
-            self.frame_list.append(temp_list)
+            self.frame_dict[len(self.frame_dict)] = temp_list#.append(temp_list)
         elif self.id == 'flame_pillar':
-            for animation in self.frame_list:
-                for img in animation:
+            for animation in self.frame_dict:
+                for img in self.frame_dict[animation]:
                     img = pygame.transform.scale(img, (int(img.get_width()), int(img.get_height() * 3)))
 
-        self.image = self.frame_list[self.action][self.frame_index]
+        self.image = self.frame_dict[self.action][self.frame_index]
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.rect.topleft = (x,y)
@@ -176,9 +177,9 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
     
     def breakable_tile_frame_change(self):
         if self.durability > 0:
-            index = len(self.frame_list[self.action]) - self.durability
+            index = len(self.frame_dict[self.action]) - self.durability
         else:
-            index = len(self.frame_list[self.action]) - 1
+            index = len(self.frame_dict[self.action]) - 1
         return index
         
     def enable(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list):
@@ -267,7 +268,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                                 #if player_action != 16:
                                 self.durability -= 1
                                 self.durability_changed = True
-                                self.image = self.frame_list[self.action][self.breakable_tile_frame_change()]
+                                self.image = self.frame_dict[self.action][self.breakable_tile_frame_change()]
                                 self.m_player.play_sound(self.m_player.sfx[2], (self.rect.centerx, self.rect.centery, None, None))
                                     
                                 update_time = pygame.time.get_ticks()
@@ -322,17 +323,17 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                         self.animate(None)
                     elif not self.dropping and self.on_ground and not self.pause:
                         self.vel_y = -5
-                        self.image = self.frame_list[0][0]
+                        self.image = self.frame_dict[0][0]
                     # elif self.do_player_atk_collisions(player_atk_rect):
                     #     self.vel_y = random.randint(-8,0)
                     else:
                         self.vel_y = 0
                         if self.pause:
-                            #self.image = self.frame_list[self.action][random.randint(4,6)]
+                            #self.image = self.frame_dict[self.action][random.randint(4,6)]
                             self.update_action(1)
                             self.animate(None)
                         else:
-                            self.image = self.frame_list[0][0]
+                            self.image = self.frame_dict[0][0]
             
                     #self.current_x += self.vel_y
                     self.rect.y += self.vel_y
@@ -366,14 +367,14 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         else:
             frame_update = frame_update_forced
         #setting the image
-        self.image = self.frame_list[self.action][self.frame_index]
+        self.image = self.frame_dict[self.action][self.frame_index]
 
         if pygame.time.get_ticks() - self.update_time > frame_update:
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1 
 
         #END OF ANIMATION FRAMES    
-        if self.frame_index >= len(self.frame_list[self.action]):
+        if self.frame_index >= len(self.frame_dict[self.action]):
             self.frame_index = 0
             if self.id == 'crusher_top' and self.action == 1:
                 self.update_action(0)

@@ -195,7 +195,7 @@ def main():
 	#reading settings data
 	def read_settings_data(data):
 		temp_list = []
-		with open(f'assets/game_settings/{data}.csv', newline= '') as csvfile:
+		with open(os.path.join('assets', 'game_settings', f'{data}.csv'), newline= '') as csvfile:
 			reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
 			for row in reader:
 				for entry in row:
@@ -261,7 +261,7 @@ def main():
 	#load initial level-------------------------------------------------------------------------------------------------
 	
 	#load img dict for particles
-	particle_path = 'assets/sprites/particle'
+	particle_path = os.path.join('assets', 'sprites', 'particle')#'assets/sprites/particle'
 	particle_img_dict = world.sp_ini.load_img_dict(particle_path)
 	
 	#add particle_2 objects into particle sprite groups

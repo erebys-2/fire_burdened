@@ -6,7 +6,7 @@ from music_player import music_player
 from ItemFile import Item 
 
 class ms_enemy(pygame.sprite.Sprite):
-    def __init__(self, x, y, speed, scale, id, enemy0_order_id, ini_vol, frame_list, sfx_list_ext):
+    def __init__(self, x, y, speed, scale, id, enemy0_order_id, ini_vol, frame_dict, sfx_list_ext):
         pygame.sprite.Sprite.__init__(self)
         
         self.spawn_order_id = enemy0_order_id
@@ -36,7 +36,7 @@ class ms_enemy(pygame.sprite.Sprite):
         #animations, frames, images
         # animation_types = ['0', '1', '2', '3']
         
-        # if frame_list == None:#doesn't actually work 
+        # if frame_dict == None:#doesn't actually work 
         #     for animation in animation_types:
         #         temp_list = []
         #         frames = len(os.listdir(f'assets/sprites/enemies/{self.id}/{animation}'))
@@ -47,16 +47,16 @@ class ms_enemy(pygame.sprite.Sprite):
         #             iimg = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
                     
         #             temp_list.append(img)
-        #         self.frame_list.append(temp_list)
+        #         self.frame_dict.append(temp_list)
         # else:
-        self.frame_list = frame_list
+        self.frame_dict = frame_dict
             
         self.action = 0
-        self.image = self.frame_list[0][0]
-        self.image2 = self.frame_list[1][0]
-        self.body_img_list = [self.frame_list[1][x%len(self.frame_list[1])] for x in range(segments-1)]
-        self.image3 = self.frame_list[2][0]
-        self.image4 = self.frame_list[4][0]
+        self.image = self.frame_dict[0][0]#head
+        self.image2 = self.frame_dict[1][0]#body
+        self.body_img_list = [self.frame_dict[1][x%len(self.frame_dict[1])] for x in range(segments-1)]#body
+        self.image3 = self.frame_dict[2][0]#bitng head
+        self.image4 = self.frame_dict[4][0]#cracks
         self.frame_index = 0
         self.frame_index2 = 0
         self.frame_index3 = 0
@@ -137,11 +137,11 @@ class ms_enemy(pygame.sprite.Sprite):
     
     def update_tail_sprite(self):
         #change tail sprite overlay
-        dmg_states = len(self.frame_list[4])
+        dmg_states = len(self.frame_dict[4])
         for i in range(dmg_states):
             if self.hits_tanked >= int(self.hp*(i/dmg_states)) and i > self.frame_index4:
                 self.frame_index4 = i
-                self.image4 = self.frame_list[4][self.frame_index4]
+                self.image4 = self.frame_dict[4][self.frame_index4]
     
     def take_dmg(self, player_action):
         dmg_dict = {
@@ -502,34 +502,34 @@ class ms_enemy(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         
         #animating head
-        self.image = self.frame_list[3*self.action + 3*self.hostile][self.frame_index]
+        self.image = self.frame_dict[3*self.action + 3*self.hostile][self.frame_index]
         
         if pygame.time.get_ticks() - self.update_time > self.framerates[self.action][0] - self.hostile * 80:
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
             
-        if self.frame_index >= len(self.frame_list[3*self.action]):
+        if self.frame_index >= len(self.frame_dict[3*self.action]):
             self.frame_index = 0
             if self.hostile:
                 self.m_player.play_sound(self.m_player.sfx[6], (self.rect.centerx, self.rect.centery, None, None))
         
         #animating body
-        self.body_img_list.append(self.frame_list[3*self.action + 1][self.frame_index2])
+        self.body_img_list.append(self.frame_dict[3*self.action + 1][self.frame_index2])
         self.body_img_list.pop(0)
         
         if pygame.time.get_ticks() - self.update_time2 > self.framerates[self.action][1]:
             self.update_time2 = pygame.time.get_ticks()
             self.frame_index2 += 1
             
-        if self.frame_index2 >= len(self.frame_list[3*self.action + 1]):
+        if self.frame_index2 >= len(self.frame_dict[3*self.action + 1]):
             self.frame_index2 = 0
             
         #animating tail
-        self.image3 = self.frame_list[3*self.action + 2][self.frame_index3]
+        self.image3 = self.frame_dict[3*self.action + 2][self.frame_index3]
         
         if pygame.time.get_ticks() - self.update_time3 > self.framerates[self.action][2]:
             self.update_time3 = pygame.time.get_ticks()
             self.frame_index3 += 1
             
-        if self.frame_index3 >= len(self.frame_list[3*self.action + 2]):
+        if self.frame_index3 >= len(self.frame_dict[3*self.action + 2]):
             self.frame_index3 = 0

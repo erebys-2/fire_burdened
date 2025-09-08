@@ -16,8 +16,8 @@ def main():
     SIDE_MARGIN = 320
     
     t1 = textfile_formatter()
-    path = 'assets/config_textfiles/level_config/'
-    level_sizes_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'level_sizes_dict.txt')), 'list')
+    path = os.path.join('assets', 'config_textfiles', 'level_config')#'assets/config_textfiles/level_config/'
+    level_sizes_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path, 'level_sizes_dict.txt')), 'list')
     #print(level_sizes_dict)
     
     layer_desc_dict = {
@@ -53,8 +53,8 @@ def main():
     layer_list = []
     
     
-    path = 'assets/config_textfiles/world_config/'
-    path2 = 'assets/config_textfiles/level_config/'
+    path = os.path.join('assets', 'config_textfiles', 'world_config')#'assets/config_textfiles/world_config/'
+    path2 = os.path.join('assets', 'config_textfiles', 'level_config')#'assets/config_textfiles/level_config/'
     sprite_group_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'sprite_group_tiles_dict.txt')), 'list')
     static_bg_oversized_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'static_bg_oversized_tiles_dict.txt')), 'int')
     special_hitbox_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'special_hitbox_tiles_dict.txt')), 'none')
@@ -140,16 +140,17 @@ def main():
 
     for tile_set in tile_types:
         temp_list = []
-        tile_count = len(os.listdir(f'assets/sprites/tileset/{tile_set}'))
+        base_path = os.path.join('assets', 'sprites', 'tileset', tile_set)
+        tile_count = len(os.listdir(base_path))#f'assets/sprites/tileset/{tile_set}'
 
         for i in range(tile_count):
-            img = pygame.image.load(f'assets/sprites/tileset/{tile_set}/{i}.png').convert_alpha()
+            img = pygame.image.load(os.path.join(base_path, f'{i}.png')).convert_alpha()#f'assets/sprites/tileset/{tile_set}/{i}.png'
             temp_list.append(img)
         tile_list.append(temp_list)
 
 
-    save_img = pygame.image.load('assets/sprites/save_btn.png').convert_alpha()
-    load_img = pygame.image.load('assets/sprites/load_btn.png').convert_alpha()
+    save_img = pygame.image.load(os.path.join('assets', 'sprites', 'save_btn.png')).convert_alpha()
+    load_img = pygame.image.load(os.path.join('assets', 'sprites', 'load_btn.png')).convert_alpha()
 
     '''
     good bg colors
@@ -299,7 +300,7 @@ def main():
     #-------Reading and writing level data for loading---------------------------------------
     def read_level_data(level, data_str):
         rtn_list = []
-        with open(f'assets/level_files/level{level}/level{level}_{data_str}.csv', newline= '') as csvfile:
+        with open(os.path.join('assets', 'level_files', f'level{level}', f'level{level}_{data_str}.csv'), newline= '') as csvfile:#f'assets/level_files/level{level}/level{level}_{data_str}.csv'
             reader = csv.reader(csvfile, delimiter= ',') #what separates values = delimiter
             for x, current_row in enumerate(reader):
                 row_list = []
@@ -310,9 +311,9 @@ def main():
         return rtn_list
 
     def write_level_data(level, level_sizes_dict, data_, data_str):
-        if f'level{level}' not in os.listdir('assets/level_files'):
-            os.mkdir(f'assets/level_files/level{level}')
-        with open(f'assets/level_files/level{level}/level{level}_{data_str}.csv', 'w', newline='') as csvfile:
+        if f'level{level}' not in os.listdir(os.path.join('assets', 'level_files')):
+            os.mkdir(os.path.join('assets', 'level_files', f'level{level}'))
+        with open(os.path.join('assets', 'level_files', f'level{level}', f'level{level}_{data_str}.csv'), 'w', newline='') as csvfile:#f'assets/level_files/level{level}/level{level}_{data_str}.csv'
             writer = csv.writer(csvfile, delimiter = ',')
             for row in data_:
                 writer.writerow(row)
@@ -493,13 +494,13 @@ def main():
                     
             lvl_size = (ROWS, MAX_COLS)
             
-            base_path = f'assets/sprites/world_maps/level{level}_maps'
-            if f'level{level}_maps' not in os.listdir('assets/sprites/world_maps'):
+            base_path = os.path.join('assets', 'sprites', 'world_maps')
+            if f'level{level}_maps' not in os.listdir(base_path):
                 os.mkdir(base_path)
-            pygame.image.save(w.create_map(lvl_size, surface_list[5:7]), os.path.join(base_path, 'filtered_layers.PNG'))
-            pygame.image.save(w.create_map(lvl_size, [w.post_process_filter_layer(surface_list[4], MAX_COLS*32),]), os.path.join(base_path, 'filter_layer.PNG'))
-            pygame.image.save(w.create_map(lvl_size, surface_list[1:4]), os.path.join(base_path, 'non_filtered_layers.PNG'))
-            pygame.image.save(w.create_map(lvl_size, [surface_list[0],]), os.path.join(base_path, 'true_fg.PNG'))
+            pygame.image.save(w.create_map(lvl_size, surface_list[5:7]), os.path.join(base_path, f'level{level}_maps', 'filtered_layers.PNG'))
+            pygame.image.save(w.create_map(lvl_size, [w.post_process_filter_layer(surface_list[4], MAX_COLS*32),]), os.path.join(base_path, f'level{level}_maps', 'filter_layer.PNG'))
+            pygame.image.save(w.create_map(lvl_size, surface_list[1:4]), os.path.join(base_path, f'level{level}_maps', 'non_filtered_layers.PNG'))
+            pygame.image.save(w.create_map(lvl_size, [surface_list[0],]), os.path.join(base_path, f'level{level}_maps', 'true_fg.PNG'))
             
             print('~~Saved!~~')
             if level not in level_sizes_dict:

@@ -12,7 +12,7 @@ import math
 
 class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemies
     #constructors
-    def __init__(self, x, y, speed, scale, id, enemy0_order_id, ini_vol, frame_list, sfx_list_ext):
+    def __init__(self, x, y, speed, scale, id, enemy0_order_id, ini_vol, frame_dict, sfx_list_ext):
         pygame.sprite.Sprite.__init__(self)
 
         #self.m_player.set_sound_vol(self.m_player.sfx[0], 7) #looks like you can adjust vol in the constructor
@@ -54,7 +54,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         
         self.id = id
         animation_types = []
-        self.frame_list = []
+        self.frame_dict = []
         self.frame_index = 0
         self.update_time = pygame.time.get_ticks()
         self.update_time2 = pygame.time.get_ticks()
@@ -96,26 +96,29 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         self.m_player.sfx = sfx_list_ext
         self.ini_vol = ini_vol
         self.heavy_recoil = False
+        
 
-        if frame_list == None:
-            for animation in animation_types:
-                temp_list = []
-                frames = len(os.listdir(f'assets/sprites/enemies/{self.id}/{animation}'))
+        # if frame_dict == None:
+        #     base_path = os.path.join('assets', 'sprites', 'enemies', self.id)
+        #     for animation in animation_types:
+        #         temp_list = []
+        #         base_path2 = os.listdir(os.path.join(base_path, animation))
+        #         frames = len(base_path2)#f'assets/sprites/enemies/{self.id}/{animation}'))
 
-                for i in range(frames):
-                    img = pygame.image.load(f'assets/sprites/enemies/{self.id}/{animation}/{i}.png').convert_alpha()
-                    img = pygame.transform.hsl(img, 11, 0.3, 0.1)
-                    if animation == '2' and i < 2:
-                        img = pygame.transform.scale(img, (int(img.get_width() * 0.5 * scale), int(img.get_height() * 1.2 * scale)))
-                    else:
-                        img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
+        #         for i in range(frames):
+        #             img = pygame.image.load(os.path.join(base_path2, f'{i}.png')).convert_alpha()
+        #             img = pygame.transform.hsl(img, 11, 0.3, 0.1)
+        #             if animation == '2' and i < 2:
+        #                 img = pygame.transform.scale(img, (int(img.get_width() * 0.5 * scale), int(img.get_height() * 1.2 * scale)))
+        #             else:
+        #                 img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
                     
-                    temp_list.append(img)
-                self.frame_list.append(temp_list)
-        else:
-            self.frame_list = frame_list
+        #             temp_list.append(img)
+        #         self.frame_dict(temp_list)
+        # else:
+        self.frame_dict = frame_dict
 
-        self.image = self.frame_list[self.action][self.frame_index]
+        self.image = self.frame_dict[self.action][self.frame_index]
         self.mask = pygame.mask.from_surface(self.image)
         if self.id != 'fly':
             self.rect = self.image.get_rect()
@@ -732,7 +735,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             self.shoot = False
         
         #setting the image
-        self.image = self.frame_list[self.action][self.frame_index]
+        self.image = self.frame_dict[self.action][self.frame_index]
         self.mask = pygame.mask.from_surface(self.image)
 
         #update sprite dimensions
@@ -758,7 +761,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             self.frame_index += 1
 
         #END OF ANIMATION FRAMES    
-        if self.frame_index >= len(self.frame_list[self.action]):
+        if self.frame_index >= len(self.frame_dict[self.action]):
             
             self.frame_index = 0
             

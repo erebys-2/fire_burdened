@@ -9,12 +9,12 @@ class particle_2(pygame.sprite.Sprite):
         self.Active = True
  
         if particle_img_dict == None:
-            particle_path = 'assets/sprites/particle'
+            particle_path = os.path.join('assets', 'sprites', 'particle')#'assets/sprites/particle'
             self.particle_img_dict = {}
             for subdir in os.listdir(particle_path):
                 temp_list = []
-                for i in range(len(os.listdir(f'{particle_path}/{subdir}'))):
-                    loaded_img = pygame.image.load(f'{particle_path}/{subdir}/{i}.png').convert_alpha()
+                for i in range(len(os.listdir(os.path.join(particle_path, subdir)))):#f'{particle_path}/{subdir}'
+                    loaded_img = pygame.image.load(os.path.join(particle_path, subdir, f'{i}.png')).convert_alpha()#f'{particle_path}/{subdir}/{i}.png'
                     temp_list.append(loaded_img)
                 self.particle_img_dict[subdir] = temp_list
         else:

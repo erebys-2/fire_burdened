@@ -25,7 +25,8 @@ class npc(pygame.sprite.Sprite):
         self.is_obj = False
         self.flip = False
 
-        self.npc_index_id = (os.listdir('assets/sprites/npcs')).index(name)
+        self.base_path = os.path.join('assets', 'sprites', 'npcs')
+        self.npc_index_id = (os.listdir(self.base_path)).index(name)
 
         self.plot_index_dict = world.plot_index_dict
         
@@ -39,24 +40,26 @@ class npc(pygame.sprite.Sprite):
         self.trigger_once = False
         
         self.frame_list = []
+        self.frame_dict = {}
         self.frame_index = 0
         self.action = 0
         self.update_time = pygame.time.get_ticks()
         
         #action_types = ('idle', 'wave', 'sit', 'shock')
-        for action in range(len(os.listdir(f'assets/sprites/npcs/{self.name}'))):
+        for action in range(len(os.listdir(os.path.join(self.base_path, self.name)))):#f'assets/sprites/npcs/{self.name}'
             temp_list = []
-            frames = len(os.listdir(f'assets/sprites/npcs/{self.name}/{action}'))
+            frames = len(os.listdir(os.path.join(self.base_path, self.name, str(action))))#f'assets/sprites/npcs/{self.name}/{action}'
 
             for i in range(frames):
-                img = pygame.image.load(f'assets/sprites/npcs/{self.name}/{action}/{i}.png').convert_alpha()
+                img = pygame.image.load(os.path.join(self.base_path, self.name, str(action), f'{i}.png')).convert_alpha()#f'assets/sprites/npcs/{self.name}/{action}/{i}.png'
                 img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
                 temp_list.append(img)
                 
-            self.frame_list.append(temp_list)
+            #self.frame_list.append(temp_list)
+            self.frame_dict[action] = temp_list
         
 
-        self.image = self.frame_list[self.action][self.frame_index]
+        self.image = self.frame_dict[self.action][self.frame_index]#frame_list
         self.mask = pygame.mask.from_surface(self.image)
         
         self.rect = self.image.get_rect()
@@ -67,7 +70,7 @@ class npc(pygame.sprite.Sprite):
         self.width = self.image.get_width()
         self.height = self.image.get_height()
         
-        self.interaction_prompt = pygame.image.load('assets/sprites/interaction_prompt.png').convert_alpha()
+        self.interaction_prompt = pygame.image.load(os.path.join('assets', 'sprites', 'interaction_prompt.png')).convert_alpha()
         self.interaction_prompt_rect = self.interaction_prompt.get_rect()
         
         #self.text_manager0 = text_manager(0,0,32)
@@ -88,17 +91,18 @@ class npc(pygame.sprite.Sprite):
         
         self.t1 = textfile_formatter()
         #plot index, dialogue index to jump to
-        self.plot_index_jumps_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file('assets/npc_dialogue_files/npc_plot_index_config/' + self.name + '.txt'), 'int')
+        self.plot_index_jumps_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join('assets', 'npc_dialogue_files', 'npc_plot_index_config', f'{self.name}.txt')), 'int')
+        #'assets/npc_dialogue_files/npc_plot_index_config/' + self.name + '.txt'
         #print(self.plot_index_jumps_dict)
         self.dialogue_list = self.get_specific_npc_dialogue(self.name)
         
     
     def get_npc_index_id(self, name):
-        return (os.listdir('assets/sprites/npcs')).index(name)
+        return (os.listdir(self.base_path)).index(name)
     
     def get_specific_npc_dialogue(self, name):
-        path = 'assets/npc_dialogue_files/npc_dialogue_txt_files/'
-        rtn_list = self.t1.str_list_to_dialogue_list(self.t1.read_text_from_file(path + name + '.txt'), 60, self.t1.endcase_char)
+        path = os.path.join('assets', 'npc_dialogue_files', 'npc_dialogue_txt_files')#'assets/npc_dialogue_files/npc_dialogue_txt_files/'
+        rtn_list = self.t1.str_list_to_dialogue_list(self.t1.read_text_from_file(os.path.join(path, f'{name}.txt')), 60, self.t1.endcase_char)
         
         return rtn_list
     
@@ -280,7 +284,7 @@ class npc(pygame.sprite.Sprite):
         frame_update = self.frame_rate
 
         #setting the image
-        self.image = self.frame_list[self.action][self.frame_index]
+        self.image = self.frame_dict[self.action][self.frame_index]#frame_list
         
         #change frame index---------------------------------------------------------------
         if pygame.time.get_ticks() - self.update_time > frame_update:
@@ -288,7 +292,7 @@ class npc(pygame.sprite.Sprite):
             self.frame_index += 1 
 
         #END OF ANIMATION FRAMES    
-        if self.frame_index >= len(self.frame_list[self.action]):
+        if self.frame_index >= len(self.frame_dict[self.action]):#frame_list
             self.frame_index = 0
     
     #npc sub classes take plot index and current level to decide the dialogue index

@@ -1,6 +1,7 @@
 import csv
 import os
 from textfile_handler import textfile_formatter
+#DEPRECIATED
 
 t1 = textfile_formatter()
 path = 'assets/config_textfiles/level_config/'

@@ -140,20 +140,20 @@ class text_manager():
 class dialogue_box(text_manager):
     def __init__(self, ini_vol, SW, SH, TS):
         super().__init__(SW, SH, TS)
-        self.obj_directory_names  = tuple(os.listdir('assets/sprites/npcs')) #inverse plot index dict
+        self.obj_directory_names  = tuple(os.listdir(os.path.join('assets', 'sprites', 'npcs'))) #inverse plot index dict
         self.img_master_list = []
         
         self.m_player_sfx_list = ['hat.mp3']
         self.m_player = music_player(self.m_player_sfx_list, ini_vol)
         
-        
-        obj_count = len(os.listdir(f'assets/sprites/npc_expressions'))
+        base_path = os.path.join('assets', 'sprites', 'npc_expressions')
+        obj_count = len(os.listdir(base_path))
         for i in range(obj_count):
-            img_count = len(os.listdir(f'assets/sprites/npc_expressions/{self.obj_directory_names[i]}'))
+            img_count = len(os.listdir(os.path.join(base_path, self.obj_directory_names[i])))#f'assets/sprites/npc_expressions/{self.obj_directory_names[i]}'
 
             temp_list = []
             for j in range(img_count):
-                img = pygame.image.load(f'assets/sprites/npc_expressions/{self.obj_directory_names[i]}/{j}.png').convert_alpha()
+                img = pygame.image.load(os.path.join(base_path, self.obj_directory_names[i], f'{j}.png')).convert_alpha()#f'assets/sprites/npc_expressions/{self.obj_directory_names[i]}/{j}.png'
                 img = pygame.transform.scale(img, (int(img.get_width() * 1), int(img.get_height() * 1)))
                 temp_list.append(img)
                 
@@ -163,7 +163,7 @@ class dialogue_box(text_manager):
         self.character_art_rect = (0, 0, self.SW, self.SH)
         self.counter = 0
         
-        self.dialogue_box_bg = pygame.image.load('assets/sprites/dialogue_box.png').convert_alpha()
+        self.dialogue_box_bg = pygame.image.load(os.path.join('assets', 'sprites', 'dialogue_box.png')).convert_alpha()#'assets/sprites/dialogue_box.png'
         
     def draw_box_and_portrait(self, screen, image_index, name_index):
         img = self.img_master_list[name_index][image_index]

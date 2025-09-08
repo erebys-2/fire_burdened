@@ -19,19 +19,19 @@ from music_player import music_player
 class sprite_instantiator():
     def __init__(self):
         print('loading sprite instantiator')
-        base_path = 'assets/sprites/'
+        base_path = os.path.join('assets', 'sprites')
         self.bg_sprite_img_dict = self.load_img_dict(os.path.join(base_path, 'bg_sprites'))
         self.enemy_img_dict = self.load_img_dict2(os.path.join(base_path, 'enemies'), 2)
         self.enemy_img_dict_x1 = self.load_img_dict2(os.path.join(base_path, 'enemies'), 1)
         self.p_int_img_dict = self.load_img_dict2(os.path.join(base_path, 'player_interactable'), 1)
         
-        sfx_path = 'assets/sfx'
+        sfx_path = os.path.join('assets', 'sfx')
         self.master_sfx_list = []
         self.sfx_index_dict = {}
         i = 0
         for sound in os.listdir(sfx_path):
             self.sfx_index_dict[sound] = i
-            self.master_sfx_list.append(pygame.mixer.Sound(f'{sfx_path}/{sound}'))
+            self.master_sfx_list.append(pygame.mixer.Sound(os.path.join(sfx_path, sound)))#f'{sfx_path}/{sound}'
             i += 1
             
         self.ini_vol = 0
@@ -40,22 +40,27 @@ class sprite_instantiator():
         print('sprite instantiator loaded!')
         
     
-    def load_img_dict2(self, asset_path, scale):
+    def load_img_dict2(self, asset_path, scale):#3 layers deep
         img_dict = {}
         for subdir in os.listdir(asset_path):
-            frame_list = []
-            subdir_path = f'{asset_path}/{subdir}'
+            frame_dict = {}
+            #print(subdir)
+            subdir_path = os.path.join(asset_path, subdir)#f'{asset_path}/{subdir}'
+            subdir2_ct = 0
             for subdir2 in os.listdir(subdir_path):
+                #print('     '+subdir2)
                 temp_list = []
-                for i in range(len(os.listdir(f'{subdir_path}/{subdir2}'))):
-                    loaded_img = pygame.image.load(f'{subdir_path}/{subdir2}/{i}.png').convert_alpha()
+                for i in range(len(os.listdir(os.path.join(subdir_path, subdir2)))):#f'{subdir_path}/{subdir2}'
+                    #print('             ' + 'frame: ' + str(i))
+                    loaded_img = pygame.image.load(os.path.join(subdir_path, subdir2, f'{i}.png')).convert_alpha()#f'{subdir_path}/{subdir2}/{i}.png'
                     loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * scale), int(loaded_img.get_height() * scale)))
-                    if asset_path == 'assets/sprites/enemies' and f'{subdir2}' == '2' and subdir != 'worm':#enemy spaghetti code :(
+                    enemy_path = os.path.join('assets', 'sprites', 'enemies')
+                    if asset_path == enemy_path and f'{subdir2}' == '2' and subdir != 'worm':#enemy spaghetti code :(
                         if i < 2:
                             loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * 0.8), int(loaded_img.get_height() * 1.1)))
                         elif i == 2:
                             loaded_img = pygame.transform.scale(loaded_img, (int(loaded_img.get_width() * 1.1), int(loaded_img.get_height() * 0.9)))
-                    elif asset_path == 'assets/sprites/enemies' and subdir == 'worm':#and int(subdir2) in (0,3)
+                    elif asset_path == enemy_path and subdir == 'worm':#and int(subdir2) in (0,3)
                         if int(subdir2) in (0,3):
                             scale2 = 1.5
                         else:
@@ -64,8 +69,14 @@ class sprite_instantiator():
                             
 
                     temp_list.append(loaded_img)
-                frame_list.append(temp_list)
-            img_dict[subdir] = frame_list
+
+                try:
+                    key = int(subdir2)
+                except:
+                    key = subdir2_ct
+                subdir2_ct += 1
+                frame_dict[key] = temp_list
+            img_dict[subdir] = frame_dict
             
         return img_dict
     
@@ -73,8 +84,8 @@ class sprite_instantiator():
         img_dict = {}
         for subdir in os.listdir(asset_path):
             temp_list = []
-            for i in range(len(os.listdir(f'{asset_path}/{subdir}'))):
-                loaded_img = pygame.image.load(f'{asset_path}/{subdir}/{i}.png').convert_alpha()
+            for i in range(len(os.listdir(os.path.join(asset_path, subdir)))):#f'{asset_path}/{subdir}'
+                loaded_img = pygame.image.load(os.path.join(asset_path, subdir, f'{i}.png')).convert_alpha()#f'{asset_path}/{subdir}/{i}.png'
                 temp_list.append(loaded_img)
             img_dict[subdir] = temp_list
             
