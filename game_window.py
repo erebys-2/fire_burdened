@@ -95,10 +95,15 @@ def main():
 
 
 	#define font
-	font = pygame.font.SysFont('SimSun', 12)
-	font_larger = pygame.font.SysFont('SimSun', 16)
-	font_largerer = pygame.font.SysFont('SimSun', 24)
-	font_massive = pygame.font.SysFont('SimSun', 48)
+	# font = pygame.font.SysFont('SimSun', 12)
+	# font_larger = pygame.font.SysFont('SimSun', 16)
+	# font_largerer = pygame.font.SysFont('SimSun', 24)
+	# font_massive = pygame.font.SysFont('SimSun', 48)
+	font_path = os.path.join('assets', 'FiraCode-Regular.ttf')
+	font = pygame.font.Font(font_path, 10)
+	font_larger = pygame.font.Font(font_path, 14)
+	font_largerer = pygame.font.Font(font_path, 20)
+	font_massive = pygame.font.Font(font_path, 40)
 
 	#camera instance
 	camera_offset = int(0.75 * ts)
@@ -1348,8 +1353,11 @@ def main():
 		screen_r_edge = 0
 		if world.rect.x > 0:
 			screen_l_edge = world.rect.x
+			pygame.draw.rect(screen, (0,0,0), pygame.rect.Rect(0, 0, screen_l_edge, SCREEN_HEIGHT))
+			#print(screen_l_edge)
 		elif world.rect.x < -world.rect.width + (SCREEN_WIDTH - ts):
-			screen_r_edge = SCREEN_WIDTH - (world.rect.x + world.rect.width)
+			screen_r_edge = SCREEN_WIDTH - (world.rect.x + world.rect.width) - 32
+			pygame.draw.rect(screen, (0,0,0), pygame.rect.Rect(SCREEN_WIDTH - screen_r_edge, 0, screen_r_edge, SCREEN_HEIGHT))
 
 		# pygame.display.flip()
 		# pygame.transform.scale(screen, (SCREEN_WIDTH*ws,SCREEN_HEIGHT*ws))
@@ -1359,7 +1367,7 @@ def main():
 		# moderngl_handler0.render_object.render(mode=moderngl.TRIANGLE_STRIP)
   
 		window.blit(pygame.transform.scale(screen, (SCREEN_WIDTH*ws,SCREEN_HEIGHT*ws)), (0,0))#pygame.transform.scale(screen, (SCREEN_WIDTH*1.5,SCREEN_HEIGHT*1.5))
-		pygame.display.update(pygame.rect.Rect(screen_l_edge*ws, world.rect.y*ws, (SCREEN_WIDTH - screen_r_edge)*ws, (SCREEN_HEIGHT-2*world.rect.y)*ws))
+		pygame.display.update(screen_l_edge*ws, world.rect.y*ws, (SCREEN_WIDTH - screen_r_edge)*ws, (SCREEN_HEIGHT-2*world.rect.y)*ws)
 		
 		pygame.display.set_caption(f"Fire Burdened 0.723 @ {clock.get_fps():.1f} FPS")
   

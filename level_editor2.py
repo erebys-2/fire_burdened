@@ -55,9 +55,9 @@ def main():
     
     path = os.path.join('assets', 'config_textfiles', 'world_config')#'assets/config_textfiles/world_config/'
     path2 = os.path.join('assets', 'config_textfiles', 'level_config')#'assets/config_textfiles/level_config/'
-    sprite_group_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'sprite_group_tiles_dict.txt')), 'list')
-    static_bg_oversized_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'static_bg_oversized_tiles_dict.txt')), 'int')
-    special_hitbox_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path + 'special_hitbox_tiles_dict.txt')), 'none')
+    sprite_group_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path, 'sprite_group_tiles_dict.txt')), 'list')
+    static_bg_oversized_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path, 'static_bg_oversized_tiles_dict.txt')), 'int')
+    special_hitbox_tiles_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path, 'special_hitbox_tiles_dict.txt')), 'none')
     
     #should be user entered for later
     print('\nstandard level is 15 rows, 200 cols ')
@@ -169,8 +169,9 @@ def main():
     BG_color2 = (50,50,50)
 
     #define font
-    font = pygame.font.SysFont('SimSun', 12)
-    font2 = pygame.font.SysFont('SimSun', 16)
+    font_path = os.path.join('assets', 'FiraCode-Regular.ttf')
+    font = pygame.font.Font(font_path, 12)#SysFont('SimSun', 12)
+    font2 = pygame.font.Font(font_path, 16)#SysFont('SimSun', 16)
     
      #button stuff
     save_button = button.Button(SCREEN_WIDTH // 3 + 150, SCREEN_HEIGHT + LOWER_MARGIN - 50, save_img, 1)
