@@ -174,8 +174,8 @@ def main():
     font2 = pygame.font.Font(font_path, 16)#SysFont('SimSun', 16)
     
      #button stuff
-    save_button = button.Button(SCREEN_WIDTH // 3 + 150, SCREEN_HEIGHT + LOWER_MARGIN - 50, save_img, 1)
-    load_button = button.Button(SCREEN_WIDTH // 3 + 235, SCREEN_HEIGHT + LOWER_MARGIN - 50, load_img, 1)
+    save_button = button.Button(SCREEN_WIDTH // 3 + 235, SCREEN_HEIGHT + LOWER_MARGIN - 90, save_img, 1)
+    load_button = button.Button(SCREEN_WIDTH // 3 + 235, SCREEN_HEIGHT + LOWER_MARGIN - 40, load_img, 1)
                         
 
     #populate buttons
@@ -495,25 +495,43 @@ def main():
                     
             lvl_size = (ROWS, MAX_COLS)
             
-            base_path = os.path.join('assets', 'sprites', 'world_maps')
-            if f'level{level}_maps' not in os.listdir(base_path):
-                os.mkdir(base_path)
-            pygame.image.save(w.create_map(lvl_size, surface_list[5:7]), os.path.join(base_path, f'level{level}_maps', 'filtered_layers.PNG'))
-            pygame.image.save(w.create_map(lvl_size, [w.post_process_filter_layer(surface_list[4], MAX_COLS*32),]), os.path.join(base_path, f'level{level}_maps', 'filter_layer.PNG'))
-            pygame.image.save(w.create_map(lvl_size, surface_list[1:4]), os.path.join(base_path, f'level{level}_maps', 'non_filtered_layers.PNG'))
-            pygame.image.save(w.create_map(lvl_size, [surface_list[0],]), os.path.join(base_path, f'level{level}_maps', 'true_fg.PNG'))
+            #saving images into files
+            base_path = os.path.join('assets', 'sprites', 'world_maps')#set up paths
+            lvl_map_path = os.path.join(base_path, f'level{level}_maps')
+            editor_output_path = os.path.join(lvl_map_path, 'editor_output')
+            drawn_path = os.path.join(lvl_map_path, 'drawn_maps')
+            if f'level{level}_maps' not in os.listdir(base_path):#create directory if not present
+                os.mkdir(lvl_map_path)
+                os.mkdir(editor_output_path)
+                os.mkdir(drawn_path)
+                
+            surface_list_dict = {
+                'filtered_layers.PNG': surface_list[5:7],
+                'filter_layer.PNG': [w.post_process_filter_layer(surface_list[4], MAX_COLS*32),],
+                'non_filtered_layers.PNG': surface_list[1:4],
+                'true_fg.PNG': [surface_list[0],]
+            }
+            for file_name in surface_list_dict:
+                pygame.image.save(w.create_map(lvl_size, surface_list_dict[file_name]), os.path.join(editor_output_path, file_name))
+                if file_name not in os.listdir(drawn_path):#save into drawn path only if the files don't exist yet
+                    pygame.image.save(w.create_map(lvl_size, surface_list_dict[file_name]), os.path.join(drawn_path, file_name))
+                    
+            # pygame.image.save(w.create_map(lvl_size, surface_list[5:7]), os.path.join(base_path, f'level{level}_maps', 'filtered_layers.PNG'))
+            # pygame.image.save(w.create_map(lvl_size, [w.post_process_filter_layer(surface_list[4], MAX_COLS*32),]), os.path.join(base_path, f'level{level}_maps', 'filter_layer.PNG'))
+            # pygame.image.save(w.create_map(lvl_size, surface_list[1:4]), os.path.join(base_path, f'level{level}_maps', 'non_filtered_layers.PNG'))
+            # pygame.image.save(w.create_map(lvl_size, [surface_list[0],]), os.path.join(base_path, f'level{level}_maps', 'true_fg.PNG'))
             
             print('~~Saved!~~')
             if level not in level_sizes_dict:
                 t1.add_line_to_file(f'{level}: {ROWS}, {MAX_COLS}', path2 + 'level_sizes_dict.txt')
     
-            str_list = list(t1.read_text_from_file((path2 + 'level_sizes_dict.txt')))
+            str_list = list(t1.read_text_from_file(os.path.join(path2, 'level_sizes_dict.txt')))
             str_list[level] = f'{level}: {ROWS}, {MAX_COLS}'
             output_str = ''
             for str_ in str_list:
                 output_str = output_str + str_ + '\n'
             output_str = output_str[0:len(output_str)-1]
-            t1.overwrite_file((path2 + 'level_sizes_dict.txt'), output_str)
+            t1.overwrite_file(os.path.join(path2, 'level_sizes_dict.txt'), output_str)
             is_saving = False
 
         if load_button.draw(screen) and not is_saving:
