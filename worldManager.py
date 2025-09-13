@@ -97,7 +97,8 @@ class World():
         for npc in range(len(os.listdir('assets/sprites/npcs'))):
             self.npc_current_dialogue_list.append(0)
         
-        self.lvl_slice_lists = []
+        #===============================================create surface dict from layers
+        self.surface_map_dict = self.get_lvl_map_dict()
             
         self.slice_width = 1 #tiles
         self.slice_height = 15
@@ -131,6 +132,23 @@ class World():
         
     def scale_tile(self, img, pos):
         return(pygame.transform.scale(img, (36, 36)), (pos[0]-2, pos[1]-2))
+    
+    def get_lvl_map_dict(self):
+        surface_map_dict = {}
+        ini_path = os.path.join('assets', 'sprites', 'world_maps')
+        for lvl_subdir in os.listdir(ini_path):#will get level folders
+            map_subdir = os.path.join(ini_path, lvl_subdir, 'drawn_maps')
+            temp_dict = {}
+            for img_name in os.listdir(map_subdir):#gets img names
+                temp_dict[img_name] = pygame.image.load(os.path.join(map_subdir, img_name)).convert_alpha()
+
+            #combine maps
+            non_paralax_map = self.combine_surfaces([temp_dict[f'{name}.PNG'] for name in ('filtered_layers', 'filter_layer', 'non_filtered_layers')]).convert_alpha()
+            true_fg_map = temp_dict['true_fg.PNG']
+
+            surface_map_dict[lvl_subdir] = {'non_parallax': non_paralax_map, 'true_fg': true_fg_map}
+
+        return surface_map_dict
             
     # Rabbid76's game map method, modified, from https://stackoverflow.com/questions/66781952/
     def create_map(self, size, level_tile_lists): #apply to all 1:1 layers
@@ -339,38 +357,41 @@ class World():
             
         self.y_scroll_en = False
         
-        
-        #can clear lists by iterating through dictionary but cannot set lists
-        self.bg1 = self.process_bg(raw_lvl_data_dict['bg1_data'], False)
-        self.bg2 = self.process_bg(raw_lvl_data_dict['bg2_data'], True)
-        self.bg2_1 = self.process_bg(raw_lvl_data_dict['bg2_1_data'], True)
-        self.bg3 = self.process_bg(raw_lvl_data_dict['bg3_data'], False)
+        #===========================================================Loading Lvl maps=============================================
+        # #can clear lists by iterating through dictionary but cannot set lists
+        # self.bg1 = self.process_bg(raw_lvl_data_dict['bg1_data'], False)
+        # self.bg2 = self.process_bg(raw_lvl_data_dict['bg2_data'], True)
+        # self.bg2_1 = self.process_bg(raw_lvl_data_dict['bg2_1_data'], True)
+        # self.bg3 = self.process_bg(raw_lvl_data_dict['bg3_data'], False)
         self.bg4 = self.process_bg(raw_lvl_data_dict['bg4_data'], False)
         self.bg5 = self.process_bg(raw_lvl_data_dict['bg5_data'], False)
         self.bg6 = self.process_bg(raw_lvl_data_dict['bg6_data'], False)
         
             
-        #process filter layer
-        #if self.bg3 != []:
-        self.bg3 = self.post_process_filter_layer(self.bg3, lvl_size[1]*32)
+        # #process filter layer
+        # #if self.bg3 != []:
+        # self.bg3 = self.post_process_filter_layer(self.bg3, lvl_size[1]*32)
                 
-        #load fg and fg_1
-        self.fg = self.process_bg(raw_lvl_data_dict['fg_data'], False)
-        self.fg_1 = self.process_bg(raw_lvl_data_dict['fg_1_data'], False)
+        # #load fg and fg_1
+        # self.fg = self.process_bg(raw_lvl_data_dict['fg_data'], False)
+        # self.fg_1 = self.process_bg(raw_lvl_data_dict['fg_1_data'], False)
         
-        #create maps
-        # layer_list = [self.fg_1, self.solids, self.bg1, self.bg3, self.bg2, self.bg2_1]
-        # self.world_map_non_parallax = self.create_map(lvl_size, layer_list).convert_alpha()
+        # #create maps
+        # # layer_list = [self.fg_1, self.solids, self.bg1, self.bg3, self.bg2, self.bg2_1]
+        # # self.world_map_non_parallax = self.create_map(lvl_size, layer_list).convert_alpha()
         
-        filtered_layers = self.create_map(lvl_size, [self.bg2, self.bg2_1])#.convert_alpha()
-        filter_layer = self.create_map(lvl_size, [self.bg3,])#.convert_alpha()
-        non_filtered_layers = self.create_map(lvl_size, [self.fg_1, self.solids, self.bg1])#.convert_alpha()
+        # filtered_layers = self.create_map(lvl_size, [self.bg2, self.bg2_1])#.convert_alpha()
+        # filter_layer = self.create_map(lvl_size, [self.bg3,])#.convert_alpha()
+        # non_filtered_layers = self.create_map(lvl_size, [self.fg_1, self.solids, self.bg1])#.convert_alpha()
         
-        self.world_map_non_parallax = self.combine_surfaces((filtered_layers, filter_layer, non_filtered_layers)).convert_alpha()
+        # self.world_map_non_parallax = self.combine_surfaces((filtered_layers, filter_layer, non_filtered_layers)).convert_alpha()
         
         
-        layer_list2 = [self.fg,]
-        self.world_map_non_parallax_fg = self.create_map(lvl_size, layer_list2).convert_alpha() 
+        # layer_list2 = [self.fg,]
+        # self.world_map_non_parallax_fg = self.create_map(lvl_size, layer_list2).convert_alpha() 
+        self.world_map_non_parallax = self.surface_map_dict[f'level{level}_maps']['non_parallax'].convert_alpha()
+        self.world_map_non_parallax_fg = self.surface_map_dict[f'level{level}_maps']['true_fg'].convert_alpha()
+        #==========================================================================================================
 
         #add another death counter
         if level not in self.death_counters_dict:
@@ -409,7 +430,7 @@ class World():
             for x, tile in enumerate(row):
  
                 #process tiles into detailed game layer list
-                if tile in self.special_hitbox_tiles_dict:
+                if tile in self.special_hitbox_tiles_dict and tile != 10:
                     tile_data = self.set_hitbox_for_special_tile(tile, x, y, None)
                     rtn_list.append(tile_data)
                 elif tile >= 0 and tile != 10 and tile not in self.sprite_group_tiles_dict:# and tile not in self.special_hitbox_tiles_dict:
