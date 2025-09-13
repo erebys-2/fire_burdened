@@ -258,7 +258,7 @@ def main():
 	
 	player0 = player(32, 160, speed, hp, stam, 0, 0, vol_lvl, camera_offset)#6368 #5856 #6240 #test coords for camera autocorrect
 	#good news is that the player's coordinates can go off screen and currently the camera's auto scroll will eventually correct it
-	normal_speed = player0.speed
+	#normal_speed = player0.speed
 	debugger_sprint = False
 	shift = False
 	sprint_bypass = False
@@ -834,86 +834,7 @@ def main():
 
 		if player0.Alive:
 			dialogue_trigger_ready = player0.dialogue_trigger_ready
-   
-			if player0.sprint and player0.using_item:
-				player0.speed = 0
-			elif player0.sprint and not player0.using_item:
-				player0.speed = normal_speed + 1
-    
-			if debugger_sprint:
-				player0.speed = normal_speed * 5
-				player0.hits_tanked = 0
-			elif not debugger_sprint and not player0.sprint:
-				player0.speed = normal_speed
-			
-    
-			if (player0.hurting):
-				player0.update_action(5) #hurting
-			else:
-			
-				if player0.shoot:
-					player0.update_action(11)
-     
-				
-				
-				elif player0.atk1:# and not player0.slide_kick:
-					#player0.slide_kick = False
-					if change_once:
-						if player0.vel_y < -0.1:# or (player0.hold_jump and player0.vel_y < 2 and player0.in_air and player0.action_history[player0.len_action_history-1] in [2,4]):
-							player0.atk1_alternate = True
-						elif player0.vel_y >= 0 and player0.in_air:
-							player0.atk1_alternate = False
-						else:
-							player0.atk1_alternate = not player0.atk1_alternate
-						change_once = False
-					# elif not player0.in_air:
-					# 	player0.atk1_alternate = True
-
-					if player0.crit:
-						player0.update_action(10)
-					elif player0.heavy:
-						player0.update_action(16)
-					else:
-						if player0.atk1_alternate:# and player0.in_air == False: # or (player0.hold_jump and player0.frame_index == 0)
-							player0.update_action(7)	
-						else:
-							player0.update_action(8)#8: atk1
-				elif player0.using_item:#and player0.action != 15:
-					player0.update_action(15)
-					# move_L = False
-					# move_R = False
-					player0.rolling = False
-					player0.atk1 = False
-					player0.shoot = False
-					player0.slide_kick = False
-				elif player0.slide_kick:
-					player0.update_action(18)
-
-				elif player0.rolling: 
-					player0.update_action(9)#rolling
-					player0.atk1_alternate = False
-				elif player0.wall_slide:
-					player0.update_action(17)#17: wall slide
-				else:
-					#print(player0.in_air)
-					
-					if (player0.in_air or player0.squat_done) and not player0.wall_slide:# or (player0.vel_y > 1):
-						player0.update_action(2)#2: jump
-
-					elif ( not (move_L or move_R) and
-						not player0.in_air and
-						player0.vel_y >= 0 and
-						player0.landing
-						):
-						player0.update_action(3)#3: land
-						
-					elif player0.squat: 
-						player0.update_action(4)#4: squat
-
-					elif (move_R or move_L) and not player0.wall_slide:
-						player0.update_action(1)#1: run
-					else:
-						player0.update_action(0)#0: idle
+			change_once = player0.execute_action_tree(move_R, move_L, debugger_sprint, change_once)
 		else:
 			player0.update_action(6) #dead
 			player0.scrollx = 0
@@ -1040,22 +961,41 @@ def main():
 
 			#key press
 			
-			if(event.type == pygame.KEYDOWN):
+			if ui_manager0.controller_connected:
+				event_type_dn = pygame.JOYBUTTONDOWN
+				event_type_up = pygame.JOYBUTTONUP
+			else:
+				event_type_dn = pygame.KEYDOWN
+				event_type_up = pygame.KEYUP
+
+			if(event.type == event_type_dn):#pygame.KEYDOWN):
 				#print(pygame.key.name(event.key))
+				if event_type_dn == pygame.KEYDOWN:
+					event_trigger = event.key
+				else:
+					event_trigger = event.button
+
 				if player0.Alive and level_dict[level][3] and not pause_game and not dialogue_enable:
 					if inventory_opened:
-						inv_directions[0] = (event.key == pygame.K_RIGHT) #Right
-						inv_directions[1] = (event.key == pygame.K_LEFT) #Left
-						inv_directions[2] = (event.key == pygame.K_UP) #Up
-						inv_directions[3] = (event.key == pygame.K_DOWN) #Down
-						inv_directions[4] = (event.key == ctrls_list[4]) #discard
+						if event_type_dn == pygame.KEYDOWN:
+							inv_directions[0] = (event_trigger == pygame.K_RIGHT) #Right
+							inv_directions[1] = (event_trigger == pygame.K_LEFT) #Left
+							inv_directions[2] = (event_trigger == pygame.K_UP) #Up
+							inv_directions[3] = (event_trigger == pygame.K_DOWN) #Down
+							inv_directions[4] = (event_trigger == ctrls_list[4]) #discard
+						else:
+							inv_directions[0] = (event.button == ctrls_list[3]) #Right
+							inv_directions[1] = (event.button == ctrls_list[1]) #Left
+							inv_directions[2] = (event.button == ctrls_list[0]) #Up
+							inv_directions[3] = (event.button == ctrls_list[2]) #Down
+							inv_directions[4] = (event.button == ctrls_list[4]) #discard
 						move_L = False
 						move_R = False
 					else:
-						if event.key == ctrls_list[1]: #pygame.K_a
+						if event_trigger == ctrls_list[1]: #pygame.K_a
 							move_L = True
 
-						if event.key == ctrls_list[3]: #pygame.K_d
+						if event_trigger == ctrls_list[3]: #pygame.K_d
 							move_R = True
 						
 						# if event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina and not player0.using_item and player0.inventory_handler.check_for_item('Rock'): #pygame.K_o
@@ -1063,36 +1003,36 @@ def main():
 						# elif event.key == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost > player0.stamina: #pygame.K_o
 						# 	status_bars.warning = True
       
-						if event.key == ctrls_list[5] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and not player0.using_item: #pygame.K_o
+						if event_trigger == ctrls_list[5] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and not player0.using_item: #pygame.K_o
 							player0.slide_kick = True
-						elif event.key == ctrls_list[5] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_o
+						elif event_trigger == ctrls_list[5] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_o
 							status_bars.warning = True
 
-						if event.key == ctrls_list[2] and (player0.check_atk1_history() == 4 or player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost <= player0.stamina): #pygame.K_s
+						if event_trigger == ctrls_list[2] and (player0.check_atk1_history() == 4 or player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost <= player0.stamina): #pygame.K_s
 							player0.squat = False
 							player0.rolling = True
 
-						elif event.key == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost > player0.stamina: #pygame.K_s
+						elif event_trigger == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost > player0.stamina: #pygame.K_s
 							status_bars.warning = True
 		
-					if event.key == ctrls_list[7]: #pygame.K_RALT
+					if event_trigger == ctrls_list[7]: #pygame.K_RALT
 						if player0.inventory_handler.check_for_item('Worn Knee Socks') or sprint_bypass:
 							player0.sprint = True
 						inv_toggle = True
 					#press button and check if item selected can be used
-					if ((event.key == ctrls_list[9] or player_inv_UI.use_item_btn_output) 
+					if ((event_trigger == ctrls_list[9] or player_inv_UI.use_item_btn_output) 
 						and player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory)
                     	):
 
 						if not player_inv_UI.use_item_btn_output: #using the use item key
-							player0.using_item = (event.key == ctrls_list[9])
-						elif event.key != ctrls_list[9]: #using the use item button
+							player0.using_item = (event_trigger == ctrls_list[9])
+						elif event_trigger != ctrls_list[9]: #using the use item button
 							player0.using_item = player_inv_UI.use_item_btn_output
 							player_inv_UI.use_item_btn_output = False
 						player0.speed = 0 #set speed to 0, it will be reset to default speed at the end of the animation
 
 					#open inventory
-					if event.key == ctrls_list[8] and not dialogue_enable:
+					if event_trigger == ctrls_list[8] and not dialogue_enable:
 						if not inv_toggle:
 							inventory_opened = not inventory_opened
 							if inventory_opened:
@@ -1101,7 +1041,7 @@ def main():
 							inv_toggle_en = True
 							player_inv_UI.toggle_inv_slot_once()
 		
-					
+			if event.type == pygame.KEYDOWN:
 				#=======================================================DEV KEYS===========================================================
     
 				#debugging flight button
@@ -1199,26 +1139,32 @@ def main():
 				
 			#=============================================== key lift =================
 
-			if(event.type == pygame.KEYUP):
-				if event.key == ctrls_list[1]:#pygame.K_a
+			if(event.type == event_type_up):
+				if event_type_up == pygame.KEYUP:
+					event_trigger = event.key
+				else:
+					event_trigger = event.button
+
+
+				if event_trigger == ctrls_list[1]:#pygame.K_a
 					move_L = False
 					
-				if event.key == ctrls_list[3]:#pygame.K_d
+				if event_trigger == ctrls_list[3]:#pygame.K_d
 					move_R = False
 					
 				#delayed full jump bug:
 				#if the the animation for squatting before a jump is just slow enough, it might finish AFTER  the jump key is released
 				#so the code below to limit the jump height will not execute, resulting in a full height jump if the jump key is pressed sufficiently fast enough
 				#switched to continuous signal
-				if event.key == ctrls_list[0] and not inventory_opened:#variable height jumping
+				if event_trigger == ctrls_list[0] and not inventory_opened:#variable height jumping
 					player0.jump_dampen = True
 					player0.hold_jump = False
 
-				if event.key == ctrls_list[4]:#pygame.K_i
+				if event_trigger == ctrls_list[4]:#pygame.K_i
 					atk_en = True
 					atk_gettime_en = True
 					status_bars.warning = False
-				if event.key == ctrls_list[2]:#pygame.K_s
+				if event_trigger == ctrls_list[2]:#pygame.K_s
 					#roll_en = True
 					status_bars.warning = False
 				# if event.key == ctrls_list[5]:#pygame.K_o
@@ -1229,19 +1175,19 @@ def main():
 				# 		player0.shot_charging = False
     
 
-				if event.key == ctrls_list[7]: #pygame.K_RALT
-					player0.speed = normal_speed
+				if event_trigger == ctrls_list[7]: #pygame.K_RALT
+					player0.speed = player0.default_speed
 					player0.sprint = False
 					inv_toggle = False
 					inv_toggle_en = False
 
-				if event.key == ctrls_list[8]:
+				if event_trigger == ctrls_list[8]:
 					inv_toggle_en = False
 
-				if event.key == pygame.K_MINUS:
+				if event_trigger == pygame.K_MINUS:
 					debugger_sprint = False
      
-				if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
+				if event_trigger == pygame.K_LSHIFT or event_trigger == pygame.K_RSHIFT:
 					shift = False
 
 				
@@ -1251,102 +1197,102 @@ def main():
 		#==============================================CONTROLLER EVENT INPUTS==========================================
 		#==================================================================================================================
 
-			if(event.type == pygame.JOYBUTTONDOWN):
-				#print(pygame.button.name(event.button))
-				if player0.Alive and level_dict[level][3] and not pause_game and not dialogue_enable:
-					if inventory_opened:
-						inv_directions[0] = (event.button == ctrls_list[3]) #Right
-						inv_directions[1] = (event.button == ctrls_list[1]) #Left
-						inv_directions[2] = (event.button == ctrls_list[0]) #Up
-						inv_directions[3] = (event.button == ctrls_list[2]) #Down
-						inv_directions[4] = (event.button == ctrls_list[4]) #discard
-					else:
+		 	# if(event.type == pygame.JOYBUTTONDOWN):
+			# 	#print(pygame.button.name(event.button))
+			# 	if player0.Alive and level_dict[level][3] and not pause_game and not dialogue_enable:
+			# 		if inventory_opened:
+			# 			inv_directions[0] = (event.button == ctrls_list[3]) #Right
+			# 			inv_directions[1] = (event.button == ctrls_list[1]) #Left
+			# 			inv_directions[2] = (event.button == ctrls_list[0]) #Up
+			# 			inv_directions[3] = (event.button == ctrls_list[2]) #Down
+			# 			inv_directions[4] = (event.button == ctrls_list[4]) #discard
+			# 		else:
 						
-						if event.button == ctrls_list[1]: #pygame.K_a
-							move_L = True
+			# 			if event.button == ctrls_list[1]: #pygame.K_a
+			# 				move_L = True
 
-						if event.button == ctrls_list[3]: #pygame.K_d
-							move_R = True
+			# 			if event.button == ctrls_list[3]: #pygame.K_d
+			# 				move_R = True
 
 						
-						if event.button == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina and not player0.using_item and player0.inventory_handler.check_for_item('Rock'): #pygame.K_o
-							player0.shot_charging = True
-						elif event.button == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost > player0.stamina: #pygame.K_o
-							status_bars.warning = True
+			# 			if event.button == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina and not player0.using_item and player0.inventory_handler.check_for_item('Rock'): #pygame.K_o
+			# 				player0.shot_charging = True
+			# 			elif event.button == ctrls_list[5] and player0.stamina_used + player0.shoot_stamina_cost > player0.stamina: #pygame.K_o
+			# 				status_bars.warning = True
 			
 
-						if event.button == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost <= player0.stamina: #pygame.K_s
-							player0.squat = False
-							player0.rolling = True
+			# 			if event.button == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost <= player0.stamina: #pygame.K_s
+			# 				player0.squat = False
+			# 				player0.rolling = True
 
-						elif event.button == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost > player0.stamina: #pygame.K_s
-							status_bars.warning = True
+			# 			elif event.button == ctrls_list[2] and player0.stamina_used + player0.roll_stam_rate + player0.roll_stamina_cost > player0.stamina: #pygame.K_s
+			# 				status_bars.warning = True
 			
-					if event.button == ctrls_list[7]: #pygame.K_RALT
-						if player0.inventory_handler.check_for_item('Worn Knee Socks'):
-							player0.sprint = True
-						inv_toggle = True
-					#press button and check if item selected can be used
-					if ((event.button == ctrls_list[9] or player_inv_UI.use_item_btn_output) 
-						and player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory)
-                        #and player0.inventory_handler.item_usage_hander0.sub_function_dict[][0] != 'nothing'
-                    	):
+			# 		if event.button == ctrls_list[7]: #pygame.K_RALT
+			# 			if player0.inventory_handler.check_for_item('Worn Knee Socks'):
+			# 				player0.sprint = True
+			# 			inv_toggle = True
+			# 		#press button and check if item selected can be used
+			# 		if ((event.button == ctrls_list[9] or player_inv_UI.use_item_btn_output) 
+			# 			and player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory)
+            #             #and player0.inventory_handler.item_usage_hander0.sub_function_dict[][0] != 'nothing'
+            #         	):
 						
-						#trigger an animation here
-						#let the last frame of the animation trigger apply the effects of the item
-						#player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory)
-						if not player_inv_UI.use_item_btn_output: #using the use item key
-							player0.using_item = (event.button == ctrls_list[9])
-						elif event.button != ctrls_list[9]: #using the use item button
-							player0.using_item = player_inv_UI.use_item_btn_output
-							player_inv_UI.use_item_btn_output = False
-						player0.speed = 0 #set speed to 0, it will be reset to default speed at the end of the animation
+			# 			#trigger an animation here
+			# 			#let the last frame of the animation trigger apply the effects of the item
+			# 			#player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory)
+			# 			if not player_inv_UI.use_item_btn_output: #using the use item key
+			# 				player0.using_item = (event.button == ctrls_list[9])
+			# 			elif event.button != ctrls_list[9]: #using the use item button
+			# 				player0.using_item = player_inv_UI.use_item_btn_output
+			# 				player_inv_UI.use_item_btn_output = False
+			# 			player0.speed = 0 #set speed to 0, it will be reset to default speed at the end of the animation
 
-					#open inventory
-					if event.button == ctrls_list[8] and not dialogue_enable:
-						if not inv_toggle:
-							inventory_opened = not inventory_opened
-							if inventory_opened:
-								player_inv_UI.close_inventory()
-						else:
-							inv_toggle_en = True
-							player_inv_UI.toggle_inv_slot_once()
+			# 		#open inventory
+			# 		if event.button == ctrls_list[8] and not dialogue_enable:
+			# 			if not inv_toggle:
+			# 				inventory_opened = not inventory_opened
+			# 				if inventory_opened:
+			# 					player_inv_UI.close_inventory()
+			# 			else:
+			# 				inv_toggle_en = True
+			# 				player_inv_UI.toggle_inv_slot_once()
 
-			#================================================button up===========================
+			# #================================================button up===========================
 
-			if(event.type == pygame.JOYBUTTONUP):
-				if event.button == ctrls_list[1]:#pygame.K_a
-					move_L = False
+			# if(event.type == pygame.JOYBUTTONUP):
+			# 	if event.button == ctrls_list[1]:#pygame.K_a
+			# 		move_L = False
 					
-				if event.button == ctrls_list[3]:#pygame.K_d
-					move_R = False
+			# 	if event.button == ctrls_list[3]:#pygame.K_d
+			# 		move_R = False
 					
-				#delayed full jump bug:
-				#if the the animation for squatting before a jump is just slow enough, it might finish AFTER  the jump key is released
-				#so the code below to limit the jump height will not execute, resulting in a full height jump if the jump key is pressed sufficiently fast enough
-				#switched to continuous signal
-				if event.button == ctrls_list[0] and not inventory_opened:#variable height jumping
-					player0.jump_dampen = True
-					player0.hold_jump = False
+			# 	#delayed full jump bug:
+			# 	#if the the animation for squatting before a jump is just slow enough, it might finish AFTER  the jump key is released
+			# 	#so the code below to limit the jump height will not execute, resulting in a full height jump if the jump key is pressed sufficiently fast enough
+			# 	#switched to continuous signal
+			# 	if event.button == ctrls_list[0] and not inventory_opened:#variable height jumping
+			# 		player0.jump_dampen = True
+			# 		player0.hold_jump = False
 
-				if event.button == ctrls_list[4]:#pygame.K_i
-					status_bars.warning = False
-					atk_en = True
-					atk_gettime_en = True
-				if event.button == ctrls_list[2]:#pygame.K_s
-					status_bars.warning = False
-				if event.button == ctrls_list[5]:#pygame.K_o
-					status_bars.warning = False
-					player0.frame_updateBP = 150
-					if player0.shot_charging == True:
-						player0.shoot = True
-						player0.shot_charging = False
+			# 	if event.button == ctrls_list[4]:#pygame.K_i
+			# 		status_bars.warning = False
+			# 		atk_en = True
+			# 		atk_gettime_en = True
+			# 	if event.button == ctrls_list[2]:#pygame.K_s
+			# 		status_bars.warning = False
+			# 	if event.button == ctrls_list[5]:#pygame.K_o
+			# 		status_bars.warning = False
+			# 		player0.frame_updateBP = 150
+			# 		if player0.shot_charging == True:
+			# 			player0.shoot = True
+			# 			player0.shot_charging = False
 
-				if event.button == ctrls_list[7]: #pygame.K_RALT
-					player0.speed = normal_speed
-					player0.sprint = False
-					inv_toggle = False
-					inv_toggle_en = False
+			# 	if event.button == ctrls_list[7]: #pygame.K_RALT
+			# 		player0.speed = player0.default_speed
+			# 		player0.sprint = False
+			# 		inv_toggle = False
+			# 		inv_toggle_en = False
 
 		#code to prevent drawing empty space beyond the level
 		screen_l_edge = 0

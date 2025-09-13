@@ -1527,6 +1527,89 @@ class player(pygame.sprite.Sprite):
         #                                       2)
         #                      )
         
+
+    def execute_action_tree(self, move_R, move_L, debugger_sprint, change_once):
+        if self.sprint and self.using_item:
+            self.speed = 0
+        elif self.sprint and not self.using_item:
+            self.speed = self.default_speed + 1
+
+        if debugger_sprint:
+            self.speed = self.default_speed * 5
+            self.hits_tanked = 0
+        elif not debugger_sprint and not self.sprint:
+            self.speed = self.default_speed
+        
+
+        if (self.hurting):
+            self.update_action(5) #hurting
+        else:
+        
+            if self.shoot:
+                self.update_action(11)
+    
+            
+            
+            elif self.atk1:# and not self.slide_kick:
+                #self.slide_kick = False
+                if change_once:
+                    if self.vel_y < -0.1:# or (self.hold_jump and self.vel_y < 2 and self.in_air and self.action_history[self.len_action_history-1] in [2,4]):
+                        self.atk1_alternate = True
+                    elif self.vel_y >= 0 and self.in_air:
+                        self.atk1_alternate = False
+                    else:
+                        self.atk1_alternate = not self.atk1_alternate
+                    change_once = False
+                # elif not self.in_air:
+                # 	self.atk1_alternate = True
+
+                if self.crit:
+                    self.update_action(10)
+                elif self.heavy:
+                    self.update_action(16)
+                else:
+                    if self.atk1_alternate:# and self.in_air == False: # or (self.hold_jump and self.frame_index == 0)
+                        self.update_action(7)	
+                    else:
+                        self.update_action(8)#8: atk1
+            elif self.using_item:#and self.action != 15:
+                self.update_action(15)
+                # move_L = False
+                # move_R = False
+                self.rolling = False
+                self.atk1 = False
+                self.shoot = False
+                self.slide_kick = False
+            elif self.slide_kick:
+                self.update_action(18)
+
+            elif self.rolling: 
+                self.update_action(9)#rolling
+                self.atk1_alternate = False
+            elif self.wall_slide:
+                self.update_action(17)#17: wall slide
+            else:
+                #print(self.in_air)
+                
+                if (self.in_air or self.squat_done) and not self.wall_slide:# or (self.vel_y > 1):
+                    self.update_action(2)#2: jump
+
+                elif ( not (move_L or move_R) and
+                    not self.in_air and
+                    self.vel_y >= 0 and
+                    self.landing
+                    ):
+                    self.update_action(3)#3: land
+                    
+                elif self.squat: 
+                    self.update_action(4)#4: squat
+
+                elif (move_R or move_L) and not self.wall_slide:
+                    self.update_action(1)#1: run
+                else:
+                    self.update_action(0)#0: idle
+
+        return change_once
     
     
     def update_action(self, new_action):
