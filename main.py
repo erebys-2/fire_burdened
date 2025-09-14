@@ -64,8 +64,6 @@ def main():
 	atk_en = True
 	atk_gettime_en = True
 	atk_delay_ref_time = pygame.time.get_ticks()
-	roll_en = True
- 
 
 	pause_game = False
 	inventory_opened = False
@@ -844,11 +842,17 @@ def main():
 		#-------------------------------------------------------KBD inputs----------------------------------------------------------------------------
 		#---------------------------------------------------------------------------------------------------------------------------------------------
   
-		#multi input keys
-		keys = pygame.key.get_pressed()
+		#multi input keys and btns
+
+		if ui_manager0.controller_connected:
+			for joystick in joysticks.values():
+				input_list = [joystick.get_button(b) for b in range(joystick.get_numbuttons())]
+				input_list2 = [joystick.get_axis(a) for a in range(joystick.get_numaxes())]
+		else:
+			input_list = pygame.key.get_pressed()
 		
 		if not inventory_opened:
-			if keys[ctrls_list[4]] and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and not player0.using_item: #pygame.K_i, pygame.K_w
+			if input_list[ctrls_list[4]] and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and not player0.using_item: #pygame.K_i, pygame.K_w
 				#player0.atk1_stamina_cost is not getting updated during heavy attack
 				if atk_gettime_en:
 					atk_delay_ref_time = pygame.time.get_ticks()
@@ -860,18 +864,18 @@ def main():
 					player0.melee_hit = False
 					atk_en = False
 				#dual input jump and attack for instant upstrike
-				elif keys[ctrls_list[0]] and not player0.squat_done and player0.consecutive_upstrike < player0.upstrike_limit and atk_delay_ref_time + 10 > pygame.time.get_ticks(): #and not player0.in_air
+				elif input_list[ctrls_list[0]] and not player0.squat_done and player0.consecutive_upstrike < player0.upstrike_limit and atk_delay_ref_time + 10 > pygame.time.get_ticks(): #and not player0.in_air
 					player0.consecutive_upstrike += 1
 					player0.in_air = True
 					if not player0.squat:
 						player0.squat_done = True
 					player0.jump_dampen = True
 
-			elif keys[ctrls_list[4]] and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
+			elif input_list[ctrls_list[4]] and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
 				status_bars.warning = True
 	
 	
-			if keys[ctrls_list[0]] and not player0.hold_jump: #pygame.K_w 
+			if input_list[ctrls_list[0]] and not player0.hold_jump: #pygame.K_w 
 				player0.landing = False
 				player0.hold_jump = True
 				# if player0.wall_slide:
@@ -886,56 +890,6 @@ def main():
 				if player0.rolling and not player0.in_air:
 					player0.roll_count = player0.roll_limit
 					player0.squat = True
-     
-     
-		#multi input buttons
-		if ui_manager0.controller_connected:
-			for joystick in joysticks.values():
-				btns = [joystick.get_button(b) for b in range(joystick.get_numbuttons())]
-				#print(btns)
-				axiis = [joystick.get_axis(a) for a in range(joystick.get_numaxes())]
-				#print(axiis)
-    
-			#print(ctrls_list)
-			if not inventory_opened and ctrls_list[4] < len(btns)-1 and ctrls_list[0] < len(btns)-1:
-				if btns[ctrls_list[4]] == 1 and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and not player0.using_item: #pygame.K_i, pygame.K_w
-					#player0.atk1_stamina_cost is not getting updated during heavy attack
-					if atk_gettime_en:
-						atk_delay_ref_time = pygame.time.get_ticks()
-						atk_gettime_en = False
-
-					if atk_en and atk_delay_ref_time + 10 < pygame.time.get_ticks():#don't attack until delay is up
-						change_once = True#not player0.hold_jump
-						player0.atk1 = True 
-						player0.melee_hit = False
-						atk_en = False
-					#dual input jump and attack for instant upstrike
-					elif btns[ctrls_list[0]] == 1 and not player0.squat_done and player0.consecutive_upstrike < player0.upstrike_limit and atk_delay_ref_time + 10 > pygame.time.get_ticks(): #and not player0.in_air
-						player0.consecutive_upstrike += 1
-						player0.in_air = True
-						if not player0.squat:
-							player0.squat_done = True
-						player0.jump_dampen = True
-
-				elif btns[ctrls_list[4]] == 1 and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
-					status_bars.warning = True
-		
-		
-				if btns[ctrls_list[0]] == 1 and not player0.hold_jump: #pygame.K_w 
-					player0.landing = False
-					player0.hold_jump = True
-					# if player0.wall_slide:
-					# 	player0.squat_done = True
-					if player0.in_air and pygame.time.get_ticks() - 10 > hold_jump_update:
-						hold_jump_update = pygame.time.get_ticks()
-						player0.squat = True 
-						
-					elif not player0.in_air:
-						player0.squat = True
-
-					if player0.rolling and not player0.in_air:
-						player0.roll_count = player0.roll_limit
-						player0.squat = True
      
 	
 		for event in pygame.event.get():
@@ -1181,6 +1135,7 @@ def main():
 					inv_toggle = False
 					inv_toggle_en = False
 
+			if(event.type == pygame.KEYUP):
 				if event_trigger == ctrls_list[8]:
 					inv_toggle_en = False
 
