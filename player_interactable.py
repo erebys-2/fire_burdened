@@ -110,7 +110,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         self.atk_rect = pygame.Rect(0,0,0,0)
         
         if self.id == 'breakable_brick1':
-            self.durability = 2
+            self.durability = 1
         else:
             self.durability = 1
         self.durability_changed = False

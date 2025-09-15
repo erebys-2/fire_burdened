@@ -156,7 +156,7 @@ class player(pygame.sprite.Sprite):
         self.half_h = self.height//2
         self.qrtr_h = self.height//4
         
-        self.hitbox_rect = pygame.Rect(self.collision_rect.x + 2, self.collision_rect.y + 8, self.width - 4, self.height*0.75 - 6)
+        self.hitbox_rect = pygame.Rect(self.collision_rect.x + 4, self.collision_rect.y + 8, self.width - 8, self.height*0.75 - 6)
 
         self.BP_rect = pygame.Rect(self.rect.x, self.rect.y, self.rect.height, 2*self.rect.width)
         self.atk_rect = pygame.Rect(-32, -32, 0,0)#self.rect.x, self.rect.y, self.rect.height, 2*self.rect.width
@@ -265,7 +265,8 @@ class player(pygame.sprite.Sprite):
                 scale = self.scale * 1.5
                 y -= 16
             the_sprite_group.particle_group.sprite.add_particle('player_mvmt', x + self.direction*scale, y, self.direction, scale, True, particle_index)
-            self.m_player.play_sound(self.m_player.sfx[sound], None)
+            if sound > 0:
+                self.m_player.play_sound(self.m_player.sfx[sound], None)
         self.last_frame = self.frame_index
         
     def atk1_kill_hitbox(self):
@@ -729,7 +730,7 @@ class player(pygame.sprite.Sprite):
             elif(tile[2] in (2, 60)):#spikes/ other trap tiles
                 if self.Alive and not self.i_frames_en and tile[1].colliderect(self.collision_rect.x + 3*self.width//8 + self.dx, self.collision_rect.y + self.dy, self.qrtr_w, self.height - self.qrtr_w):
                     #if self.frame_index%4 == 0:
-                    self.take_damage(0.2, 80)
+                    self.take_damage(0.2, 480)#80
                     self.vel_y = 0
                     self.in_air = False
                     self.coyote_time = pygame.time.get_ticks()
@@ -889,6 +890,9 @@ class player(pygame.sprite.Sprite):
             ):
             if not self.in_air:
                 self.particles_by_frame(self.frame_index//2 + 2, the_sprite_group, 3)
+            else:
+                self.particles_by_frame(self.frame_index//2 + 2, the_sprite_group, -1)
+
             self.roll_count = 0
             #self.roll_stam_rate = 0
             # self.atk1 = False
@@ -1089,6 +1093,8 @@ class player(pygame.sprite.Sprite):
         #     self.vel_y 
         elif self.vel_y <= 20:#25 = terminal velocity
             self.vel_y += 0.4    
+        elif self.vel_y > 20:
+            self.vel_y = 20
             
         self.dy = self.vel_y
         

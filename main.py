@@ -1118,6 +1118,10 @@ def main():
 					atk_en = True
 					atk_gettime_en = True
 					status_bars.warning = False
+
+				if event_trigger == ctrls_list[5]:
+					status_bars.warning = False
+				
 				if event_trigger == ctrls_list[2]:#pygame.K_s
 					#roll_en = True
 					status_bars.warning = False
