@@ -831,8 +831,8 @@ def main():
 		#however they can still be interupted by the player getting damaged
 
 		if player0.Alive:
-			dialogue_trigger_ready = player0.dialogue_trigger_ready
 			change_once = player0.execute_action_tree(move_R, move_L, debugger_sprint, change_once)
+			dialogue_trigger_ready = player0.dialogue_trigger_ready
 		else:
 			player0.update_action(6) #dead
 			player0.scrollx = 0

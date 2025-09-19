@@ -730,7 +730,8 @@ class player(pygame.sprite.Sprite):
             elif(tile[2] in (2, 60)):#spikes/ other trap tiles
                 if self.Alive and not self.i_frames_en and tile[1].colliderect(self.collision_rect.x + 3*self.width//8 + self.dx, self.collision_rect.y + self.dy, self.qrtr_w, self.height - self.qrtr_w):
                     #if self.frame_index%4 == 0:
-                    self.take_damage(0.2, 480)#80
+                    if self.frame_index < 1:
+                        self.take_damage(0.2, 140)#80
                     self.vel_y = 0
                     self.in_air = False
                     self.coyote_time = pygame.time.get_ticks()
@@ -1143,21 +1144,21 @@ class player(pygame.sprite.Sprite):
             self.vel_y = 0
             
         #wall_slide
-        if self.hitting_wall2:# and self.vel_y >= -5:# and not (self.last_direction < 0 and moveL) and not (self.last_direction > 0 and moveR):
+        # if self.hitting_wall2:# and self.vel_y >= -5:# and not (self.last_direction < 0 and moveL) and not (self.last_direction > 0 and moveR):
             
-            self.wall_slide = True
-            self.in_air = False
-            # if not self.disp_flag:
-            #     self.dx = 0
-            if not self.squat_done:
-                self.vel_y = 0
-            # if self.squat:
-            #     self.vel_y -= 2
-            #     self.squat_done = True
-            # self.jump = False
-        else:
-            #self.hitting_wall2 = False
-            self.wall_slide = False
+        #     self.wall_slide = True
+        #     self.in_air = False
+        #     # if not self.disp_flag:
+        #     #     self.dx = 0
+        #     if not self.squat_done:
+        #         self.vel_y = 0
+        #     # if self.squat:
+        #     #     self.vel_y -= 2
+        #     #     self.squat_done = True
+        #     # self.jump = False
+        # else:
+        #     #self.hitting_wall2 = False
+        #     self.wall_slide = False
             
 
             
