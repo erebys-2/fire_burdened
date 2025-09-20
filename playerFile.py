@@ -126,7 +126,7 @@ class player(pygame.sprite.Sprite):
         animation_types = ('idle', 'run', 'jump', 'land', 'squat', 'hurt', 
                            'die', 'atk1', 'atk1_2', 'roll', 'atk1_3', 'shoot',
                            'charging', 'atk1_2_particle', 'turn_around', 'use_item', 'atk1_4', 'wall_slide', 
-                           'atk1_5')
+                           'atk1_5', 'jump_up', 'jump_down')
         #print(os.listdir(f'sprites/player'))
         base_path = os.path.join('assets', 'sprites', 'player')
         for animation in animation_types:
@@ -185,7 +185,9 @@ class player(pygame.sprite.Sprite):
             False,  #use_item 15
             True, #atk1_4 16
             False, #wall slide 17
-            True #slide kick 18
+            True, #slide kick 18
+            False, #jump up 19
+            False #jump down 20
         )
         
         t = textfile_formatter()
@@ -1341,7 +1343,9 @@ class player(pygame.sprite.Sprite):
             120, #use item
             130, #heavy
             200, #wall slide
-            105, #
+            105, #slide kick
+            145, #jump up
+            145 #jump down
         )
         #everything speeds up when pressing alt/sprint except shooting at the cost of slower stamina regen
         adjustment = 0
@@ -1599,7 +1603,12 @@ class player(pygame.sprite.Sprite):
                 #print(self.in_air)
                 
                 if (self.in_air or self.squat_done) and not self.wall_slide:# or (self.vel_y > 1):
-                    self.update_action(2)#2: jump
+                    if self.vel_y < -1.2:
+                        self.update_action(19)
+                    elif self.vel_y > 1.2:
+                        self.update_action(20)
+                    else:
+                        self.update_action(2)#2: jump
 
                 elif ( not (move_L or move_R) and
                     not self.in_air and
