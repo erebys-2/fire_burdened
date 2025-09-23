@@ -199,7 +199,14 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                         self.hits_tanked += rate
         return (dx,dy)
         
-    def move(self, player_rect, player_atk_rect, player_direction, player_mvmt, world_solids, scrollx, player_action, sp_group_list):
+    def move(self, player, world_solids, scrollx, sp_group_list):
+        player_rect = player.hitbox_rect
+        player_atk_rect = player.atk_rect_scaled
+        player_action = player.action
+        player_direction = player.direction
+        player_mvmt = (player.dx, player.dy)
+        
+        
         dx = 0
         dy = 0
         moving = False

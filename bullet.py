@@ -55,7 +55,12 @@ class bullet_(pygame.sprite.Sprite):
         self.edge_rect = pygame.rect.Rect(self.rect.right, self.rect.y, 2, self.rect.height)
         
         
-    def move(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list, player_direction):
+    def move(self, player, world_solids, scrollx, sp_group_list):
+        player_rect = player.hitbox_rect
+        player_atk_rect = player.atk_rect_scaled
+        player_action = player.action
+        player_direction = player.direction
+        
         dx = 0
         dy = 0
         
@@ -66,7 +71,7 @@ class bullet_(pygame.sprite.Sprite):
         
         #player interactions
         if self.bullet_type == '8x8_red':
-            if player_action not in (6,7,8,9,18):
+            if not player.is_invulnerable[player_action] or player_action == 5:
                 if self.rect.colliderect(player_rect.scale_by(0.8)):
                     if self.exploded == True:
                         #self.kill()

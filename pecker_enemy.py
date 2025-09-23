@@ -31,7 +31,13 @@ class pecker(general_enemy):
         self.head_rect.x -= scrollx
         self.rect.x -= scrollx
         
-    def move(self, player_rect, player_atk_rect, player_direction, player_mvmt, world_solids, scrollx, player_action, sp_group_list):
+    def move(self, player, world_solids, scrollx, sp_group_list):
+        player_rect = player.hitbox_rect
+        player_atk_rect = player.atk_rect_scaled
+        player_action = player.action
+        player_direction = player.direction
+        
+        
         #head_pos_ini = (self.rect.centerx, self.rect.centery )#- self.h_height)
         dx = 0
         dy = 0

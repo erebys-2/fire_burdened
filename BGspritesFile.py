@@ -57,7 +57,7 @@ class tree(animated_bg_sprite):
         self.frame_rate = 300
     
     #this will be specialized per sub class
-    def enable(self, scrollx, player_hitbox_rect, player_atk_rect_scaled, particle_group):
+    def enable(self, scrollx, player, particle_group):
         self.rect.x -= scrollx
         
 class fountain(animated_bg_sprite):
@@ -66,7 +66,7 @@ class fountain(animated_bg_sprite):
         
         self.frame_rate = 300
         
-    def enable(self, scrollx, player_hitbox_rect, player_atk_rect_scaled, particle_group):
+    def enable(self, scrollx, player, particle_group):
         self.rect.x -= scrollx
         
 class lamp(animated_bg_sprite):
@@ -75,5 +75,5 @@ class lamp(animated_bg_sprite):
         
         self.frame_rate = 300
         
-    def enable(self, scrollx, player_hitbox_rect, player_atk_rect_scaled, particle_group):
+    def enable(self, scrollx, player,  particle_group):
         self.rect.x -= scrollx

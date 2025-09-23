@@ -105,7 +105,7 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 			item.scroll_along(self.scroll_x)
 			item.enable(player_hitbox_rect, self, self.pause_game)#player has to send pick up confirmation
 	
-	def update_bg_sprite_group(self, screen, player_hitbox_rect, player_atk_rect_scaled):
+	def update_bg_sprite_group(self, screen, player):
 		particle = self.particle_group_bg.sprite
 		particle.draw(screen)
 		if not self.pause_game:
@@ -117,17 +117,17 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 		for bg_sprite in self.bg_sprite_group:
 			bg_sprite.draw(screen)
 			if not self.pause_game:
-				bg_sprite.enable(self.scroll_x, player_hitbox_rect, player_atk_rect_scaled, self.particle_group)
+				bg_sprite.enable(self.scroll_x, player, self.particle_group)
 				bg_sprite.animate(bg_sprite.frame_rate)		
 			
 			
-	def update_groups_behind_player(self, screen, player_hitbox_rect, player_atk_rect_scaled, player_action, player_direction, player_mvmt, world_solids):
+	def update_groups_behind_player(self, screen, player, world_solids):
 		for enemy0 in self.enemy0_group: #[enemy0 for enemy0 in list(self.enemy0_group) if enemy0.rect.x > -32 and enemy0.rect.x < 640]:
 			enemy0.draw(screen)
 			if not self.pause_game:
 				if enemy0.check_if_in_simulation_range(0):
-					enemy0.animate(self.sp_group_list, player_hitbox_rect)
-				enemy0.move(player_hitbox_rect, player_atk_rect_scaled, player_direction, player_mvmt, world_solids, self.scroll_x, player_action, self.sp_group_list)
+					enemy0.animate(self.sp_group_list, player.hitbox_rect)
+				enemy0.move(player, world_solids, self.scroll_x, self.sp_group_list)
 			if enemy0.Alive == False:
 				self.enemy_death_count += 1
 				self.enemy0_group.remove(enemy0)
@@ -136,7 +136,7 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 			enemy_bullet.draw(screen)
 			if not self.pause_game:
 				enemy_bullet.animate()
-				enemy_bullet.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, self.scroll_x, player_action, self.sp_group_list, player_direction)
+				enemy_bullet.move(player, world_solids, self.scroll_x, self.sp_group_list)
 			if enemy_bullet.Active == False:
 				self.enemy_bullet_group.remove(enemy_bullet)
     
@@ -144,7 +144,7 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 			enemy_bullet.draw(screen)
 			if not self.pause_game:
 				enemy_bullet.animate()
-				enemy_bullet.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, self.scroll_x, player_action, self.sp_group_list, player_direction)
+				enemy_bullet.move(player, world_solids, self.scroll_x, self.sp_group_list)
 			if enemy_bullet.Active == False:
 				self.enemy_bullet_group2.remove(enemy_bullet)
 	
@@ -152,7 +152,7 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 			player_bullet.draw(screen)
 			if not self.pause_game:
 				player_bullet.animate()
-				player_bullet.move(player_hitbox_rect, player_atk_rect_scaled, world_solids, self.scroll_x, player_action, self.sp_group_list, player_direction)
+				player_bullet.move(player, world_solids, self.scroll_x, self.sp_group_list)
 			if player_bullet.Active == False:
 				self.player_bullet_group.remove(player_bullet)
 
@@ -165,17 +165,17 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 			self.particle_group.remove(particle)
     
 
-	def update_groups_infront_player(self, screen, player_hitbox_rect, player_atk_rect_scaled, player_action, world_solids):
+	def update_groups_infront_player(self, screen, player, world_solids):
     
 		for p_int in self.p_int_group:
 			p_int.draw(screen)
 			if not self.pause_game:
-				p_int.enable(player_hitbox_rect, player_atk_rect_scaled, world_solids, self.scroll_x, player_action, self.sp_group_list)
+				p_int.enable(player, world_solids, self.scroll_x, self.sp_group_list)
     
 		for p_int2 in self.p_int_group2:
 			p_int2.draw(screen)
 			if not self.pause_game:
-				p_int2.enable(player_hitbox_rect, player_atk_rect_scaled, world_solids, self.scroll_x, player_action, self.sp_group_list)
+				p_int2.enable(player, world_solids, self.scroll_x, self.sp_group_list)
 	
 		particle = self.particle_group_fg.sprite
 		particle.draw(screen)

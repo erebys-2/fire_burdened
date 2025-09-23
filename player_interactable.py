@@ -182,7 +182,12 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
             index = len(self.frame_dict[self.action]) - 1
         return index
         
-    def enable(self, player_rect, player_atk_rect, world_solids, scrollx, player_action, sp_group_list):
+    def enable(self, player, world_solids, scrollx, sp_group_list):
+        player_rect = player.hitbox_rect
+        player_atk_rect = player.atk_rect_scaled
+        player_action = player.action
+        player_direction = player.direction
+        
         if self.enabled:
             self.is_onscreen = self.check_if_onscreen()
             if self.is_onscreen:

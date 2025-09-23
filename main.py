@@ -509,18 +509,18 @@ def main():
 			#if not level_transitioning: #surpress sprite logic while level transitioning
 
 			screen.blit(world.world_map_non_parallax, (world.rect.x, world.rect.y))
-			the_sprite_group.update_bg_sprite_group(screen, player0.hitbox_rect, player0.atk_rect_scaled)
+			the_sprite_group.update_bg_sprite_group(screen, player0)
 			the_sprite_group.update_text_prompt_group(screen, dialogue_enable, next_dialogue, player0, world, selected_slot)#player and world
 			next_dialogue = False
 			player0.check_melee_hits(the_sprite_group)#seems to work, wasn't responsive at first
 			player0.check_item_pickup(the_sprite_group)
-			the_sprite_group.update_groups_behind_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, player0.direction, (player0.dx, player0.dy), [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
+			the_sprite_group.update_groups_behind_player(screen, player0, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
    
 			the_sprite_group.update_item_group(screen, player0.hitbox_rect)
 			player0.draw(screen)
     
 			screen.blit(world.world_map_non_parallax_fg,  (world.rect.x, world.rect.y))
-			the_sprite_group.update_groups_infront_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, world.solids)
+			the_sprite_group.update_groups_infront_player(screen, player0, world.solids)
 		
 			status_bars.very_charred = player0.char_level/player0.char_dict['max_char'] > 0.9
 			status_bars.draw(screen, player0.get_status_bars(), player0.action, (7,8,9,10,16,18), font, False)
