@@ -88,7 +88,7 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 				obj.display_interaction_prompt(dialogue_enable, player.hitbox_rect, screen)
 				obj.scroll_along(world.rect.x, self.scroll_x)
 				if obj.player_collision:
-					self.textbox_output = obj.enable(dialogue_enable, next_dialogue, world.npc_current_dialogue_list)
+					self.textbox_output = obj.enable2(dialogue_enable, next_dialogue)
 					
 					#print(obj.enable(dialogue_enable, next_dialogue, screen, player_hitbox_rect, scroll_x))
 		#annoying but necessary or else the indexing goes wrong

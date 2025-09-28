@@ -177,10 +177,10 @@ class dialogue_box(text_manager):
         image_index = textbox_output[4]
         name_index = textbox_output[5]
         
-        if name != ' ':
+        if name != '_':
             disp_name = name + ':'
         else:
-            disp_name = name
+            disp_name = ' '
    
         self.draw_box_and_portrait(screen, image_index, name_index)
         

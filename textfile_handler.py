@@ -156,7 +156,41 @@ class textfile_formatter():
             destination_list.append((tuple(str_list),item[1],item[2]))
         
         return destination_list
-            
+    
+    def split_string2(self, string_, limit):
+        str_list = []
+        if len(string_) > limit:
+            #split string into a list of words
+            index0 = 0
+            index1 = 0
+            word_list = []
+            for char in string_:
+                index1 += 1
+                if char == ' ' or index1 == len(string_):
+                    adjustment = 0
+                    if index1 != len(string_):
+                        adjustment = 1
+                    word_list.append(string_[index0:index1-adjustment])
+                    index0 = index1
+                    
+            #fill string list with words so that they don't exceed character limit
+            temp_str = ''
+            for word in word_list:
+                if len(temp_str) + len(word) + 1 <= limit:
+                    if temp_str == '':
+                        temp_str = word
+                    else:
+                        temp_str = temp_str + ' ' + word
+                else:
+                    str_list.append(temp_str)
+                    temp_str = word
+            str_list.append(temp_str)
+        else:
+            str_list.append(string_)
+        str_list.append('')
+                    
+        return str_list
+                        
     def split_string(self, string_, limit, endcase_char):
         str_list = []
         if len(string_) > limit:

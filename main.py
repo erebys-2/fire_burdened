@@ -560,9 +560,9 @@ def main():
 		elif player0.in_cutscene:
 			the_sprite_group.pause_game = pause_game or ui_manager0.saves_menu_enable
 			the_sprite_group.scroll_x = scroll_x
-			the_sprite_group.update_bg_sprite_group(screen, player0.hitbox_rect, player0.atk_rect_scaled)
+			the_sprite_group.update_bg_sprite_group(screen, player0)
 			the_sprite_group.update_text_prompt_group(screen, dialogue_enable, next_dialogue, player0, world, selected_slot)#player and world
-			the_sprite_group.update_groups_infront_player(screen, player0.hitbox_rect, player0.atk_rect_scaled, player0.action, world.solids)
+			the_sprite_group.update_groups_infront_player(screen, player0, world.solids)
 			next_dialogue = False
      
 		if lvl_transition_counter > 0:

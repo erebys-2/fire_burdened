@@ -6,12 +6,13 @@ from music_player import music_player #type: ignore
 import random
 #from textManager import text_manager
 from textfile_handler import textfile_formatter
+#from cfg_handler0 import cfg_handler
 
 #NPC class used for sprites with access to text and player choice ui
 
 class npc(pygame.sprite.Sprite):
     #constructor
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world):#plot index is passed from game_window, to world, then here
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict):#plot index is passed from game_window, to world, then here
         pygame.sprite.Sprite.__init__(self)
         self.direction = direction
         self.enabled = enabled
@@ -96,6 +97,9 @@ class npc(pygame.sprite.Sprite):
         #print(self.plot_index_jumps_dict)
         self.dialogue_list = self.get_specific_npc_dialogue(self.name)
         
+        #cfgp0 = cfg_handler()
+        self.dialogue_dict = dialogue_dict#cfgp0.get_dict_from_cfg(os.path.join('assets', 'npc_dialogue_files', 'npc_dialogue_txt_files', f'{self.name}.ini'))
+        
     
     def get_npc_index_id(self, name):
         return (os.listdir(self.base_path)).index(name)
@@ -117,12 +121,13 @@ class npc(pygame.sprite.Sprite):
     #generally, current_dialogue_index will advance itself by following the next index in the dialogue array
     #self.get_dialogue_index() will only be triggered by specific conditions: level, plot index, current dialogue index and will be called right before
     #and will force current_dialogue_index to some other value in that moment
-    def enable(self, dialogue_enable, next_dialogue, current_dialogue_list):
+    def enable(self, dialogue_enable, next_dialogue):
+        message = ''
+        name = ''
+        expression = 0
         if self.enabled:
-            
             #dialogue_enable and next_dialogue are global booleans in the game window file
-            message = ''
-            name = ''
+  
             if self.player_collision and dialogue_enable:
                 dialogue = self.get_message(self.current_dialogue_index) #returns message and index of next dialogue
                 expression = dialogue[3]
@@ -138,11 +143,10 @@ class npc(pygame.sprite.Sprite):
                     self.player_choice_key = message[0]
                     next_dialogue = True
                     #print(message)
-                else:
-                    current_dialogue_list[self.npc_index_id] = dialogue[3]
+                # else:
+                #     current_dialogue_list[self.npc_index_id] = dialogue[3]
                 
                 if next_dialogue:#convert continuous signal next_dialogue into an impulse
-
                     if self.trigger_once != next_dialogue and not self.get_dialogue_flag:
 
                         if dialogue[2] == -3: #if the index is -3, then a player choice is in progress.
@@ -154,26 +158,79 @@ class npc(pygame.sprite.Sprite):
                             #updates to next dialogue index
                             self.last_dialogue_index = self.current_dialogue_index
                             self.current_dialogue_index = dialogue[2]
-                            
                             self.get_dialogue_flag = True
                             
                         elif self.is_initial_index: #skips changing index for first dialogue box
                             self.is_initial_index = False
-                            
-                        
-                            
-                    
+
                     self.trigger_once = True
                     message = (' ',' ')#prevents lingering text from previous textbox
                 else:
                     self.trigger_once = False
-            else:
-                expression = 0
         else:
-            message = ''
-            name = ''
             dialogue_enable= False
-            expression = 0
+            if self.rect.width > 0:#kills rect
+                self.rect = pygame.rect.Rect(0,0,0,0)
+        
+        return (message, 
+                self.player_collision, 
+                dialogue_enable, 
+                name, 
+                expression, 
+                self.npc_index_id, 
+                (self.player_choice_flag, self.player_choice_key),
+                self.enabled)
+        
+    def enable2(self, dialogue_enable, next_dialogue):
+        #print(self.current_dialogue_index)
+        str_curr_dialogue_index = str(self.current_dialogue_index)
+        message = ''
+        name = ''
+        expression = 0
+        if self.enabled:
+            #dialogue_enable and next_dialogue are global booleans in the game window file
+  
+            if self.player_collision and dialogue_enable:
+                #dialogue = self.get_message(self.current_dialogue_index) #returns message and index of next dialogue
+                expression = int(self.dialogue_dict[str_curr_dialogue_index]['frame'])
+                name = self.dialogue_dict[str_curr_dialogue_index]['name']
+                
+                if not self.player_choice_flag:
+                    message = self.dialogue_dict[str_curr_dialogue_index]['msg'] #reformat here
+                else:
+                    message = ('','')
+                
+                if int(self.dialogue_dict[str_curr_dialogue_index]['next']) == -3 and not self.player_choice_flag: #impulse signal
+                    self.player_choice_flag = True
+                    self.player_choice_key = message[0]
+                    next_dialogue = True
+                    #print(message)
+                # else:
+                #     current_dialogue_list[self.npc_index_id] = dialogue[3]
+                
+                if next_dialogue:#convert continuous signal next_dialogue into an impulse
+                    if self.trigger_once != next_dialogue and not self.get_dialogue_flag:
+
+                        if int(self.dialogue_dict[str_curr_dialogue_index]['next']) == '-3': #if the index is -3, then a player choice is in progress.
+                            #do not change variables and set player_choice_flag to true
+                            #self.current_dialogue_index = 0
+                            message = ('','')
+                            self.get_dialogue_flag = True
+                        elif not self.is_initial_index and int(self.dialogue_dict[str_curr_dialogue_index]['next']) != -3: #2nd condition is important!!!
+                            #updates to next dialogue index
+                            self.last_dialogue_index = self.current_dialogue_index
+                            self.current_dialogue_index = int(self.dialogue_dict[str_curr_dialogue_index]['next'])
+                            self.get_dialogue_flag = True
+                            
+                        elif self.is_initial_index: #skips changing index for first dialogue box
+                            self.is_initial_index = False
+
+                    self.trigger_once = True
+                    message = (' ',' ')#prevents lingering text from previous textbox
+                else:
+                    self.trigger_once = False
+        else:
+            dialogue_enable= False
             if self.rect.width > 0:#kills rect
                 self.rect = pygame.rect.Rect(0,0,0,0)
         

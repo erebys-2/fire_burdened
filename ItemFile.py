@@ -700,7 +700,7 @@ class item_details():#helper class for getting and formatting item descriptions 
     def format_desc_dict(self, input_dict, limit):
         temp_list = []
         for key in input_dict:
-            str_list = self.t.split_string(input_dict[key][1], limit, (',', '.', ' ', ':', ';', '-'))
+            str_list = self.t.split_string2(input_dict[key][1], limit)#, (',', '.', ' ', ':', ';', '-'))
             temp_list.append([key, str_list])
             
         return dict(temp_list)

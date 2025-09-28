@@ -3,8 +3,8 @@ from npcFile import npc
 #helper file containing object type NPCs for instantiation
 
 class save_pt(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world)
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict)
         self.plot_index = 0
         self.current_level = level
         self.current_p_inv = player_inventory
@@ -22,8 +22,8 @@ class save_pt(npc):
                 
 
 class read_only_obj(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world)
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict)
         #get plot index 
         self.plot_index = self.plot_index_dict[self.name]
         self.current_level = level

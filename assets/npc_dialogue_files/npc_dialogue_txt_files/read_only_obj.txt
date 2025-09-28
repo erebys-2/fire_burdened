@@ -1,8 +1,0 @@
- # A great bronze statue looms above you. Its plaque is too weather worn to fully decipher.# 1# 0
- # "Three immortal sages... voices of the land herself..."# 0# 0
-Worn Note# When walking off a ledge (holding [move right/left] while falling from a ledge), press [jump] to air jump once.# 2# 1
-Worn Note# While rolling mid air, press [jump] to reset air jump.# 3# 1
-Worn Note# While in air or mid jump, press [roll] to gain horitontal distance.# 4# 1
-Worn Note# The vertical direction of an attack depends on your vertical velocity. [jump] -> [melee] to perform an upstrike. Vertical distance traveled depends on how long [jump] is held.# 5# 1
-Worn Note# An upstrike can be used as a dash/jump to traverse gaps.# 6# 1
-Worn Note# Upstrikes ([jump] -> [melee]) can be chained with air jump resets ([roll] mid air) to gain more height. This applies in the other order as well.# 7# 1

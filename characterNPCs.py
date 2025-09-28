@@ -4,8 +4,8 @@ from npcFile import npc
 #helper file containing character type NPCs for instantiation
     
 class Test(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world)
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict)
         #get plot index
         self.plot_index = self.plot_index_dict[self.name]
 
@@ -51,8 +51,8 @@ class Test(npc):
             
 
 class Test2(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world)
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict)
         #get plot index 
         self.plot_index = self.plot_index_dict[self.name]
         self.current_level = level
@@ -94,8 +94,8 @@ class Test2(npc):
             
 
 class Mars(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world)
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict)
         #get plot index 
         self.plot_index = self.plot_index_dict[self.name]
         self.current_level = level

@@ -1,4 +1,0 @@
-Test2# This is another test NPC.# 1# 0
-Test2# How are you today?# 2# 3
-Test2# Go eat  chocolate.# 2# 1
-Test2# You talked to Test.# 0# 2

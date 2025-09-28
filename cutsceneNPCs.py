@@ -9,8 +9,8 @@ from textfile_handler import textfile_formatter
 cutscene_autosave = save_file_handler()
 
 class opening_scene(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world)
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict)
         #get plot index
         #self.plot_index = self.plot_index_dict[self.name]
         if level == 1 and world.plot_index_dict[self.name] <= -4:

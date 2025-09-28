@@ -93,9 +93,6 @@ class World():
         self.sp_groups_to_check = []
         
         self.plot_index_dict = {}
-        self.npc_current_dialogue_list = []
-        for npc in range(len(os.listdir('assets/sprites/npcs'))):
-            self.npc_current_dialogue_list.append(0)
         
         #===============================================create surface dict from layers
         self.surface_map_dict = self.get_lvl_map_dict()
