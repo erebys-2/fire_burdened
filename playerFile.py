@@ -1350,7 +1350,7 @@ class player(pygame.sprite.Sprite):
             100, #run160
             145, #jump
             90, #land
-            25, #squat
+            20, #squat
             50, #take damage
             145, #die
             105, #upstrike
