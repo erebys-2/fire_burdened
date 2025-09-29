@@ -91,96 +91,14 @@ class npc(pygame.sprite.Sprite):
         self.ini_frame_rate = 200
         
         self.t1 = textfile_formatter()
-        #plot index, dialogue index to jump to
-        self.plot_index_jumps_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join('assets', 'npc_dialogue_files', 'npc_plot_index_config', f'{self.name}.txt')), 'int')
-        #'assets/npc_dialogue_files/npc_plot_index_config/' + self.name + '.txt'
-        #print(self.plot_index_jumps_dict)
-        self.dialogue_list = self.get_specific_npc_dialogue(self.name)
-        
-        #cfgp0 = cfg_handler()
-        self.dialogue_dict = dialogue_dict#cfgp0.get_dict_from_cfg(os.path.join('assets', 'npc_dialogue_files', 'npc_dialogue_txt_files', f'{self.name}.ini'))
-        
-    
-    def get_npc_index_id(self, name):
-        return (os.listdir(self.base_path)).index(name)
-    
-    def get_specific_npc_dialogue(self, name):
-        path = os.path.join('assets', 'npc_dialogue_files', 'npc_dialogue_txt_files')#'assets/npc_dialogue_files/npc_dialogue_txt_files/'
-        rtn_list = self.t1.str_list_to_dialogue_list(self.t1.read_text_from_file(os.path.join(path, f'{name}.txt')), 60, self.t1.endcase_char)
-        
-        return rtn_list
-    
-    def get_message(self, current_dialogue_index):
-        name = self.dialogue_list[current_dialogue_index][0]
-        message = self.dialogue_list[current_dialogue_index][1]
-        next_dialogue_index = self.dialogue_list[current_dialogue_index][2]
-        npc_expression = self.dialogue_list[current_dialogue_index][3]
-        
-        return (name, message, next_dialogue_index, npc_expression) #string, int
-    
+
+        self.dialogue_dict = dialogue_dict
+        self.plot_index_jumps_dict = self.dialogue_dict['plot_index_jumps']
+
     #generally, current_dialogue_index will advance itself by following the next index in the dialogue array
     #self.get_dialogue_index() will only be triggered by specific conditions: level, plot index, current dialogue index and will be called right before
     #and will force current_dialogue_index to some other value in that moment
-    def enable(self, dialogue_enable, next_dialogue):
-        message = ''
-        name = ''
-        expression = 0
-        if self.enabled:
-            #dialogue_enable and next_dialogue are global booleans in the game window file
-  
-            if self.player_collision and dialogue_enable:
-                dialogue = self.get_message(self.current_dialogue_index) #returns message and index of next dialogue
-                expression = dialogue[3]
-                name = dialogue[0]
-                
-                if not self.player_choice_flag:
-                    message = dialogue[1] #reformat here
-                else:
-                    message = ('','')
-                
-                if dialogue[2] == -3 and not self.player_choice_flag: #impulse signal
-                    self.player_choice_flag = True
-                    self.player_choice_key = message[0]
-                    next_dialogue = True
-                    #print(message)
-                # else:
-                #     current_dialogue_list[self.npc_index_id] = dialogue[3]
-                
-                if next_dialogue:#convert continuous signal next_dialogue into an impulse
-                    if self.trigger_once != next_dialogue and not self.get_dialogue_flag:
-
-                        if dialogue[2] == -3: #if the index is -3, then a player choice is in progress.
-                            #do not change variables and set player_choice_flag to true
-                            #self.current_dialogue_index = 0
-                            message = ('','')
-                            self.get_dialogue_flag = True
-                        elif not self.is_initial_index: 
-                            #updates to next dialogue index
-                            self.last_dialogue_index = self.current_dialogue_index
-                            self.current_dialogue_index = dialogue[2]
-                            self.get_dialogue_flag = True
-                            
-                        elif self.is_initial_index: #skips changing index for first dialogue box
-                            self.is_initial_index = False
-
-                    self.trigger_once = True
-                    message = (' ',' ')#prevents lingering text from previous textbox
-                else:
-                    self.trigger_once = False
-        else:
-            dialogue_enable= False
-            if self.rect.width > 0:#kills rect
-                self.rect = pygame.rect.Rect(0,0,0,0)
-        
-        return (message, 
-                self.player_collision, 
-                dialogue_enable, 
-                name, 
-                expression, 
-                self.npc_index_id, 
-                (self.player_choice_flag, self.player_choice_key),
-                self.enabled)
-        
+   
     def enable2(self, dialogue_enable, next_dialogue):
         #print(self.current_dialogue_index)
         str_curr_dialogue_index = str(self.current_dialogue_index)
@@ -191,7 +109,6 @@ class npc(pygame.sprite.Sprite):
             #dialogue_enable and next_dialogue are global booleans in the game window file
   
             if self.player_collision and dialogue_enable:
-                #dialogue = self.get_message(self.current_dialogue_index) #returns message and index of next dialogue
                 expression = int(self.dialogue_dict[str_curr_dialogue_index]['frame'])
                 name = self.dialogue_dict[str_curr_dialogue_index]['name']
                 
@@ -200,7 +117,7 @@ class npc(pygame.sprite.Sprite):
                 else:
                     message = ('','')
                 
-                if int(self.dialogue_dict[str_curr_dialogue_index]['next']) == -3 and not self.player_choice_flag: #impulse signal
+                if self.dialogue_dict[str_curr_dialogue_index]['next'] == -3 and not self.player_choice_flag: #impulse signal
                     self.player_choice_flag = True
                     self.player_choice_key = message[0]
                     next_dialogue = True
@@ -211,15 +128,15 @@ class npc(pygame.sprite.Sprite):
                 if next_dialogue:#convert continuous signal next_dialogue into an impulse
                     if self.trigger_once != next_dialogue and not self.get_dialogue_flag:
 
-                        if int(self.dialogue_dict[str_curr_dialogue_index]['next']) == '-3': #if the index is -3, then a player choice is in progress.
+                        if self.dialogue_dict[str_curr_dialogue_index]['next'] == -3: #if the index is -3, then a player choice is in progress.
                             #do not change variables and set player_choice_flag to true
                             #self.current_dialogue_index = 0
                             message = ('','')
                             self.get_dialogue_flag = True
-                        elif not self.is_initial_index and int(self.dialogue_dict[str_curr_dialogue_index]['next']) != -3: #2nd condition is important!!!
+                        elif not self.is_initial_index and self.dialogue_dict[str_curr_dialogue_index]['next'] != -3: #2nd condition is important!!!
                             #updates to next dialogue index
                             self.last_dialogue_index = self.current_dialogue_index
-                            self.current_dialogue_index = int(self.dialogue_dict[str_curr_dialogue_index]['next'])
+                            self.current_dialogue_index = self.dialogue_dict[str_curr_dialogue_index]['next']
                             self.get_dialogue_flag = True
                             
                         elif self.is_initial_index: #skips changing index for first dialogue box
@@ -258,6 +175,8 @@ class npc(pygame.sprite.Sprite):
     def display_interaction_prompt(self, dialogue_enable, player_rect, screen):
         if not self.collisions_disabled and self.action in (0,):
             self.player_collision = self.rect.colliderect(player_rect)
+            if self.rect.height == 480:
+                self.player_collision = self.rect.colliderect(player_rect.scale_by(2, 2))
         else:
             self.player_collision = False
         if self.player_collision and self.name != 'invisible_prompt':

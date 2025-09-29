@@ -1,4 +1,0 @@
-test_greeting: * How are you feeling? *
-save_game: * Which file to save? *
-mars_before_wall: Mars: What's up?
-mars_1st_lvl: Mars: Any questions?

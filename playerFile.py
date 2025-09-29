@@ -927,7 +927,7 @@ class player(pygame.sprite.Sprite):
                 multiplier = 1
                 
             if self.frame_index == 1:
-                self.dx = self.direction * (multiplier * 4)
+                self.dx = self.direction * (multiplier * 3 + self.speed)
                 self.rect.x += self.direction * self.speed
                 
             else:
@@ -966,7 +966,7 @@ class player(pygame.sprite.Sprite):
                         self.rect.x += self.direction
                     elif self.atk1_stamina_cost == self.atk1_default_stam:
                         if moveL or moveR:
-                            multiplier = 2
+                            multiplier = 3
                         else:
                             multiplier = 1
                             

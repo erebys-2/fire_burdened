@@ -5,6 +5,7 @@ from music_player import music_player
 from textManager import text_manager
 from textfile_handler import textfile_formatter
 from saveHandler import save_file_handler
+from cfg_handler0 import cfg_handler
 
 #addon class for the subclass dialogue box under text manager
 #it will overlay buttons over a blank text box and return the next index
@@ -20,15 +21,16 @@ class player_choice_handler():
         self.ts = TS
         
         self.t1 = textfile_formatter()
-        #path = 'assets/npc_dialogue_files/player_choice_config/'
         base_path = os.path.join('assets', 'npc_dialogue_files', 'player_choice_config')
-        self.player_choice_dict = {}
-        player_choice_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(base_path, 'choice_selection_dict.txt')), 'list_list')
-        for entry in player_choice_dict:
-            self.player_choice_dict[entry] = tuple(player_choice_dict[entry])
+
+        cfgp = cfg_handler()
+        self.player_choice_dict2 = cfgp.get_dict_from_cfg(os.path.join(base_path, 'player_choice.ini'))
         
-        #2nd dictionary for prompts
-        self.player_prompt_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(base_path, 'prompt_dict.txt')), 'text_box')
+        for p_choice in self.player_choice_dict2:#format prompt string into string list
+            for entry in self.player_choice_dict2[p_choice]:
+                if entry == 'prompt':
+                    temp_str = self.player_choice_dict2[p_choice][entry]
+                    self.player_choice_dict2[p_choice][entry] = self.t1.split_string2(temp_str, 60)
 
         self.trigger_once = True
         self.button_list = []
@@ -71,13 +73,13 @@ class player_choice_handler():
         screen.blit(pygame.transform.flip(self.bg_img, False, False), screen.get_rect())
         #pygame.draw.rect(screen, (0,0,0), self.dialogue_box_rect)#draw box
         screen.blit(self.prompt_box_bg, self.dialogue_box_rect)
-        player_choices = self.player_choice_dict[key] #get relevant data
+        player_choices2 = [k for k in self.player_choice_dict2[key] if k != 'prompt']
 
         if self.trigger_once:#instantiate buttons
-            self.prompt = self.player_prompt_dict[key]#get prmpt
+            self.prompt = self.player_choice_dict2[key]['prompt']#get prmpt
             self.next_index = -3
             self.button_list *= 0
-            btn_count = len(player_choices)
+            btn_count = len(self.player_choice_dict2[key])-1
             pos_list = self.get_button_locations(btn_count)
             
             for i in range(btn_count):
@@ -87,7 +89,7 @@ class player_choice_handler():
             
         for i in range(len(self.button_list)):#button behvior, the buttons should be aligned with the player_choices list
             if self.button_list[i].draw(screen):
-                self.next_index = player_choices[i][1]
+                self.next_index = self.player_choice_dict2[key][player_choices2[i]]#player_choices[i][1]
                 #self.trigger_once = True
                 if key == 'save_game': # write to save file
                     #t1, slot, level, world, player
@@ -106,7 +108,7 @@ class player_choice_handler():
                 if self.save_handler.check_plot_index(i):
                     txt = f': {self.save_handler.get_save_time(i)}'
                 
-            self.button_list[i].show_text(screen, self.fontlist[1], ('', player_choices[i][0] + txt))
+            self.button_list[i].show_text(screen, self.fontlist[1], ('', player_choices2[i] + txt))
             
         #draw text
         self.text_manager0.disp_text_box(screen, self.fontlist[1], self.prompt, (-1,-1,-1),  (200,200,200), (2*self.ts, 12, self.SW, self.SH//4), False, False, 'none')

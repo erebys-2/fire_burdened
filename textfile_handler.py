@@ -116,33 +116,35 @@ class textfile_formatter():
     #takes string, converts to float or int when possible
     def auto_string_to_number(self, str_):
         rtn_val = str_ #stay a string by default
-        is_int = True
-        is_float = False
-        dot_count = 0
-        
-        for i in range(0, len(str_)):
-            char = str_[i]
-            if char not in ('1','2','3','4','5','6','7','8','9','0','-','.'): #letter found, abort
-                is_int = False
-                is_float = False
-                break
-            if char == '-' and i != 0: #minus sign must be in the front
-                is_int = False
-                is_float = False
-                break
-            if char == '.': #switch to float conversion
-                is_int = False
-                is_float = True
-                dot_count += 1
-            if dot_count > 1:
-                is_int = False
-                is_float = False
-                break
+        if str_ != '':
             
-        if is_int:
-            rtn_val = int(str_)
-        elif is_float:
-            rtn_val = float(str_)
+            is_int = True
+            is_float = False
+            dot_count = 0
+
+            for i in range(0, len(str_)):
+                char = str_[i]
+                if char not in ('1','2','3','4','5','6','7','8','9','0','-','.'): #letter found, abort
+                    is_int = False
+                    is_float = False
+                    break
+                if char == '-' and i != 0: #minus sign must be in the front
+                    is_int = False
+                    is_float = False
+                    break
+                if char == '.': #switch to float conversion
+                    is_int = False
+                    is_float = True
+                    dot_count += 1
+                if dot_count > 1:
+                    is_int = False
+                    is_float = False
+                    break
+                
+            if is_int:
+                rtn_val = int(str_)
+            elif is_float:
+                rtn_val = float(str_)
             
         return rtn_val
     

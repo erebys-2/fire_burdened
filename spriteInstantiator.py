@@ -55,6 +55,8 @@ class sprite_instantiator():
                     if key == 'msg':
                         tmp_str = self.all_dialogue_dict[npc_dict][line][key]
                         self.all_dialogue_dict[npc_dict][line][key] = t1.split_string2(tmp_str, 60)#, t1.endcase_char)
+                        
+        #self.plot_index_jump_dict =  os.path.join('assets', 'npc_dialogue_files', 'npc_plot_index_config')
                 
         print('sprite instantiator loaded!')
         
