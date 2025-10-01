@@ -852,7 +852,7 @@ def main():
 			input_list = pygame.key.get_pressed()
 		
 		if not inventory_opened:
-			if input_list[ctrls_list[4]] and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and not player0.using_item: #pygame.K_i, pygame.K_w
+			if input_list[ctrls_list[4]] and not input_list[ctrls_list[5]] and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and not player0.using_item: #pygame.K_i, pygame.K_w
 				#player0.atk1_stamina_cost is not getting updated during heavy attack
 				if atk_gettime_en:
 					atk_delay_ref_time = pygame.time.get_ticks()
@@ -865,11 +865,14 @@ def main():
 					atk_en = False
 				#dual input jump and attack for instant upstrike
 				elif input_list[ctrls_list[0]] and not player0.squat_done and player0.consecutive_upstrike < player0.upstrike_limit and atk_delay_ref_time + 10 > pygame.time.get_ticks(): #and not player0.in_air
-					player0.consecutive_upstrike += 1
+					
 					player0.in_air = True
 					if not player0.squat:
 						player0.squat_done = True
 					player0.jump_dampen = True
+     
+				if player0.in_air and not player0.atk1:
+					player0.consecutive_upstrike += 1
 
 			elif input_list[ctrls_list[4]] and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
 				status_bars.warning = True
