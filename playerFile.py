@@ -194,7 +194,7 @@ class player(pygame.sprite.Sprite):
             22: (False, False, 100), #sprint
         }
         self.is_invulnerable = {key:self.action_dict[key][0] for key in self.action_dict}
-        self.disp_states = {key:self.action_dict[key][0] for key in self.action_dict}
+        self.disp_states = {key:self.action_dict[key][1] for key in self.action_dict}
         self.framerates = {key:self.action_dict[key][2] for key in self.action_dict}
 
         # self.disp_states = ( #actions/states when the player has a larger and or displaced hitbox
@@ -750,9 +750,10 @@ class player(pygame.sprite.Sprite):
                     self.hitting_wall = True
                     self.hitting_wall_timer = pygame.time.get_ticks()
                     
-                elif (self.action == 5#going backwards collisions
-                      and tile[1].colliderect(self.collision_rect.x + 2 + self.dx, self.collision_rect.y, self.width - 4, self.height - 16) ):
-                    self.dx = self.direction
+                # elif (self.action == 5#going backwards collisions
+                #       and tile[1].colliderect(self.collision_rect.x + 2 + self.dx, self.collision_rect.y, self.width - 4, self.height - 16) ):
+                #     self.dx = 2*self.direction
+                #     #self.scrollx = 0
                 
                 #wall collisions while NOT rolling
                 elif (self.action not in (9, 21) #this line is important for consistency
@@ -762,7 +763,11 @@ class player(pygame.sprite.Sprite):
                     self.hitting_wall = True
                     self.hitting_wall_timer = pygame.time.get_ticks()
                     
-                    self.dx = -self.direction
+                    #self.dx = -self.direction
+                    if abs(self.direction + self.dx) < abs(self.dx):
+                        self.dx = self.direction
+                    elif abs(self.direction + self.dx) > abs(self.dx):
+                        self.dx = -self.direction
 
                         
                 #self.dy collision stuff, sinking through tiles etc
@@ -928,7 +933,7 @@ class player(pygame.sprite.Sprite):
 
             if self.check_if_in_ss_range():
                 self.do_screenshake = True
-                self.screenshake_profile = (-1, 3, 2)
+                self.screenshake_profile = (0, 3, 2)
                 
             if self.frame_index < 3:
                 self.hurting = True #perpetuates the action for the entire animation after the collision has ende
