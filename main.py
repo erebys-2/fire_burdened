@@ -118,7 +118,7 @@ def main():
 	white = [255,255,255]
 	white2 = [190,162,178]
 	maroonish = [140, 107, 116]
-	reddish =  [170,143,167]
+	light_grey =  [190,163,167]
 	jade = [119, 121, 124]
 	grey = (140, 113, 108)#(140,124,148)#(134, 112, 116)#(162, 132, 140)#(232, 124, 109)#[110, 95, 111]
 	dark_grey = [30, 29, 36]
@@ -495,9 +495,9 @@ def main():
 					#if not do_screenshake_master:
 					do_screenshake_master = True
 					if player0.sprint:
-						screenshake_profile = (20, 12, 2)
+						screenshake_profile = (20, 6, 2)
 					else:
-						screenshake_profile = (12, 8, 1)
+						screenshake_profile = (12, 4, 1)
 
 		
 
@@ -509,6 +509,7 @@ def main():
 			#if not level_transitioning: #surpress sprite logic while level transitioning
 
 			screen.blit(world.world_map_non_parallax, (world.rect.x, world.rect.y))
+
 			the_sprite_group.update_bg_sprite_group(screen, player0)
 			the_sprite_group.update_text_prompt_group(screen, dialogue_enable, next_dialogue, player0, world, selected_slot)#player and world
 			next_dialogue = False
@@ -518,7 +519,7 @@ def main():
    
 			the_sprite_group.update_item_group(screen, player0.hitbox_rect)
 			player0.draw(screen)
-    
+			   
 			screen.blit(world.world_map_non_parallax_fg,  (world.rect.x, world.rect.y))
 			the_sprite_group.update_groups_infront_player(screen, player0, world.solids)
 		
@@ -980,13 +981,21 @@ def main():
 					if ((event_trigger == ctrls_list[9] or player_inv_UI.use_item_btn_output) 
 						and player_inv_UI.press_use_item_btn(player0.inventory_handler.inventory)
                     	):
-
+						player0.inventory_handler.slot = player_inv_UI.slot
 						if not player_inv_UI.use_item_btn_output: #using the use item key
 							player0.using_item = (event_trigger == ctrls_list[9])
 						elif event_trigger != ctrls_list[9]: #using the use item button
 							player0.using_item = player_inv_UI.use_item_btn_output
 							player_inv_UI.use_item_btn_output = False
 						player0.speed = 0 #set speed to 0, it will be reset to default speed at the end of the animation
+					elif event_trigger == ctrls_list[9] and player_inv_UI.get_item_class(player0.inventory_handler.inventory) == 'Projectile': #get_selected_item(player0.inventory_handler.inventory) == 'Rock':
+						player0.inventory_handler.slot = player_inv_UI.slot
+						if player0.stamina_used + player0.shoot_stamina_cost <= player0.stamina and not player0.using_item:# and player0.inventory_handler.check_for_item('Rock'): #pygame.K_o
+							#player0.shot_charging = True
+							player0.shoot = True
+							player0.charge_built = 1
+						elif player0.stamina_used + player0.shoot_stamina_cost > player0.stamina: #pygame.K_o
+							status_bars.warning = True
 
 					#open inventory
 					if event_trigger == ctrls_list[8] and not dialogue_enable:
@@ -1128,8 +1137,9 @@ def main():
 				if event_trigger == ctrls_list[2]:#pygame.K_s
 					#roll_en = True
 					status_bars.warning = False
-				# if event.key == ctrls_list[5]:#pygame.K_o
-				# 	status_bars.warning = False
+     
+				if event.key == ctrls_list[9]:#pygame.K_o
+					status_bars.warning = False
 				# 	player0.frame_updateBP = 150
 				# 	if player0.shot_charging == True:
 				# 		player0.shoot = True

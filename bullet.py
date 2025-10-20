@@ -26,11 +26,13 @@ class bullet_(pygame.sprite.Sprite):
         self.frame_list = []
         self.frame_index = 0
         self.update_time = pygame.time.get_ticks()
+        self.max_cycles = -1
         
         if type == '8x8_red':
             self.animation_types = ['default']
         if type == 'player_basic':
             self.animation_types = ['default']
+            self.max_cycles = 5
         if type == 'ground_impact':
             self.animation_types = ['default']
             
@@ -193,13 +195,15 @@ class bullet_(pygame.sprite.Sprite):
 
         #END OF ANIMATION FRAMES    
         if self.frame_index >= len(self.frame_list[self.action]):
-            if self.bullet_type != 'ground_impact':
+            if self.bullet_type != 'ground_impact' and self.max_cycles < 0:
                 if self.action == 1:
                     self.frame_index = 2
                     self.Active = False
                     #self.kill()
                 else:
                     self.frame_index = 0
+            elif self.max_cycles > 0:
+                self.Active = False
             else:
                 self.Active = False
         

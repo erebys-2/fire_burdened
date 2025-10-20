@@ -308,7 +308,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                             elif player_rect.x < self.rect.x + self.width + (jump_range*self.width) and player_rect.x >= self.rect.x:
                                 self.jump = True
                                 
-                        if self.action == 5 and not  self.inundated: #when the shooter is jumping it has an attack hitbox
+                        if self.action == 5 and not self.inundated and self.vel_y > 0: #when the shooter is jumping it has an attack hitbox
                             self.atk_rect = pygame.Rect(self.rect.x, self.rect.y + self.half_height, self.width, self.half_height)
                             self.atk_rect_scaled = self.atk_rect.scale_by(0.8)
                         else:
@@ -464,8 +464,12 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 
                 self.direction = player_direction
                 dx += 2*player_mvmt[0] + player_direction * self.recoil
-                if self.in_air:
-                    dy += 2*player_mvmt[1]
+                if self.in_air:# and self.id != 'fly':
+                    #self.vel_y = 0
+                    if 2*player_mvmt[1] <= 20:
+                        dy = 2*player_mvmt[1]
+                    else:
+                        dy = 20
                 x_avg = (self.rect.centerx + player_atk_rect.centerx)/2
                 y_avg = (self.rect.centery + player_atk_rect.centery)/2
                 
@@ -559,6 +563,37 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 dxdy = self.do_p_int_group_collisions(sp_group_list[8], dx, dy)
                 dx = dxdy[0]
                 dy = dxdy[1]
+                
+            #bullet collisions =====================================================================
+            direction = 0
+            if player.rect.centerx < self.rect.centerx:
+                direction = 1
+            elif player.rect.centerx > self.rect.centerx:
+                direction = -1
+            #this is fucked, look into collide rect
+            if (pygame.sprite.spritecollide(self, sp_group_list[1], False)):
+                #self.hits_tanked += 5
+                self.inundated = True
+                # if self.inundated  == True and self.dmg_multiplier != 0:
+                #     self.hits_tanked += 5
+                # else:
+                self.dmg_multiplier = 5
+                dx += direction * 10
+                #print("hit" + str(self.hits_tanked))
+                
+            if (pygame.sprite.spritecollide(self, sp_group_list[2], False)):#player bullet
+                self.inundated = True
+                self.dmg_multiplier = 0
+                self.hits_tanked += 0.5
+                dx += direction * 32
+                #print("hit" + str(self.hits_tanked))
+                
+            if (pygame.sprite.spritecollide(self, sp_group_list[9], False)):#looks like a p_int
+                if pygame.sprite.spritecollide(self, sp_group_list[9], False, pygame.sprite.collide_mask):
+                    self.inundated = True
+                    self.dmg_multiplier = 0
+                    self.hits_tanked += 3
+                    dx -= self.direction * 2
             #world collisions
             
             
@@ -684,31 +719,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             #sp_group_list[12].add(Item('test', self.rect.centerx + 2*random.randint(-5,5), self.rect.centery + 2*random.randint(-5,5), 1, False))
             self.kill()
         
-        #colliding with bullet 
-        #this is fucked, look into collide rect
-        if (pygame.sprite.spritecollide(self, sp_group_list[1], False)):
-            #self.hits_tanked += 5
-            self.inundated = True
-            # if self.inundated  == True and self.dmg_multiplier != 0:
-            #     self.hits_tanked += 5
-            # else:
-            self.dmg_multiplier = 5
-            self.rect.x += -self.direction * 2
-            #print("hit" + str(self.hits_tanked))
-            
-        if (pygame.sprite.spritecollide(self, sp_group_list[2], False)):
-            self.inundated = True
-            self.dmg_multiplier = 0
-            self.hits_tanked += 1
-            self.rect.x += -self.direction * 2
-            #print("hit" + str(self.hits_tanked))
-            
-        if (pygame.sprite.spritecollide(self, sp_group_list[9], False)):
-            if pygame.sprite.spritecollide(self, sp_group_list[9], False, pygame.sprite.collide_mask):
-                self.inundated = True
-                self.dmg_multiplier = 0
-                self.hits_tanked += 3
-                self.rect.x += -self.direction * 2
+        
             
         if self.action == 0 and self.id != 'fly':#idle
             frame_update = 140

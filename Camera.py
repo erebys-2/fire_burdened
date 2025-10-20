@@ -25,6 +25,7 @@ class Camera():
         self.on_right_edge = False
         
         self.cycle = 0
+        self.trigger_once = False
         self.is_visible = False
         
         
@@ -33,8 +34,8 @@ class Camera():
         intensity_x = profile[0]
         intensity_y = profile[1]
         cycle_limit = profile[2] * 2
-
-        if trigger:
+        
+        if trigger:# and self.trigger_once:
             if self.cycle < cycle_limit:
                 if self.cycle %2 == 0:
                     #player_mvmt_x, scroll_x, player_mvmt_y, scroll_y
@@ -47,6 +48,10 @@ class Camera():
                 mvmt_output = (0,0,0,0)
                 self.cycle = 0
                 trigger = False
+            self.trigger_once = False
+        # elif trigger:
+        #     self.trigger_once = pygame.time.get_ticks()%1 == 0
+        #     mvmt_output = (0,0,0,0)
         else:
             mvmt_output = (0,0,0,0)
             self.cycle = 0

@@ -126,7 +126,7 @@ class player(pygame.sprite.Sprite):
         animation_types = ('idle', 'run', 'jump', 'land', 'squat', 'hurt', 
                            'die', 'atk1', 'atk1_2', 'roll', 'atk1_3', 'shoot',
                            'charging', 'atk1_2_particle', 'turn_around', 'use_item', 'atk1_4', 'wall_slide', 
-                           'atk1_5', 'jump_up', 'jump_down', 'flip', 'sprint')
+                           'atk1_5', 'jump_up', 'jump_down', 'flip', 'sprint', 'throw')
         
         
         #print(os.listdir(f'sprites/player'))
@@ -137,7 +137,7 @@ class player(pygame.sprite.Sprite):
 
             for i in range(frames):
                 img = pygame.image.load(os.path.join(base_path, animation, f'{i}.png')).convert_alpha()
-                img = pygame.transform.hsl(img, 10, 0.3, 0.1)
+                img = pygame.transform.hsl(img, 10.1, 0.3, 0.11)
                 img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
                 temp_list.append(img)
             self.frame_list.append(temp_list)
@@ -168,7 +168,7 @@ class player(pygame.sprite.Sprite):
         self.ini_vol = ini_vol
         self.play_sound_once_en = True
         
-        self.action_dict = {
+        self.action_dict = {#invulnerable, disp, framerate
             0: (False, False, 200), #idle
             1: (False, False, 100), #run160
             2: (False, False, 145), #jump
@@ -192,88 +192,12 @@ class player(pygame.sprite.Sprite):
             20: (False, False, 145), #jump down
             21: (True, False, 100), #flip
             22: (False, False, 100), #sprint
+            23: (False, False, 125) #throw
         }
         self.is_invulnerable = {key:self.action_dict[key][0] for key in self.action_dict}
         self.disp_states = {key:self.action_dict[key][1] for key in self.action_dict}
         self.framerates = {key:self.action_dict[key][2] for key in self.action_dict}
 
-        # self.disp_states = ( #actions/states when the player has a larger and or displaced hitbox
-        #     False, #idle 0
-        #     False, #run 1
-        #     False, #jump 2 
-        #     False, #land 3
-        #     False, #squat 4
-        #     False, #hurt 5
-        #     True, #die 6
-        #     True, #atk1 7
-        #     True, #atk1_2 8
-        #     False, #roll 9
-        #     True, #atk1_3 10
-        #     False, #shoot 11
-        #     False, #
-        #     False, #
-        #     False, #turn_around 14
-        #     False,  #use_item 15
-        #     True, #atk1_4 16
-        #     False, #wall slide 17
-        #     True, #slide kick 18
-        #     False, #jump up 19
-        #     False, #jump down 20
-        #     False, #flip
-        #     False, #sprint
-        # )
-        
-        # self.is_invulnerable = {
-        #     0: False,
-        #     1: False,
-        #     2: False,
-        #     3: False,
-        #     4: False,
-        #     5: True,
-        #     6: True,
-        #     7: True,
-        #     8: True,
-        #     9: True,
-        #     10: True,
-        #     11: False,
-        #     12: False,
-        #     13: False,
-        #     14: False,
-        #     15: False,
-        #     16: True,
-        #     17: False,
-        #     18: True,
-        #     19: False,
-        #     20: False,
-        #     21: True,
-        #     22: False
-        # }
-        
-        # self.framerates = {
-        #     0: 200, #idle
-        #     1: 100, #run160
-        #     2: 145, #jump
-        #     3: 90, #land
-        #     4: 20, #squat
-        #     5: 50, #take damage
-        #     6: 145, #die
-        #     7: 105, #upstrike
-        #     8: 105, #downstrike
-        #     9: 100, #roll
-        #     10: 110, #crit
-        #     11: 85, #shoot
-        #     12: 145, #idk
-        #     13: 145, #idk
-        #     14: 145, #idk
-        #     15: 120, #use item
-        #     16: 130, #heavy
-        #     17: 200, #wall slide
-        #     18: 105, #slide kick
-        #     19: 145, #jump up
-        #     20: 145, #jump down
-        #     21: 100, #flip
-        #     22: 100, #sprint
-        # }
         
         t = textfile_formatter()
         config_path = os.path.join('assets', 'config_textfiles', 'player_config')
@@ -959,7 +883,7 @@ class player(pygame.sprite.Sprite):
                 # ))
                 #or self.rolled_into_wall #stops rolling if player rolls into wall
                 ):
-                if (self.action != 7 and self.action != 8 and self.action != 10):
+                if (self.action not in (7,8,10,23)):
                     self.rolling = False
                     #self.roll_count = self.roll_limit
                 #self.reset_jump()
@@ -1105,14 +1029,14 @@ class player(pygame.sprite.Sprite):
             else:
                 self.landing = False
         
-        elif not self.in_air:
-            if self.vel_y > self.coyote_vel: #(self.coyote_time + 200 < pygame.time.get_ticks()):
-                self.curr_state = True
-                self.in_air = True
-                self.squat = False
+        # elif not self.in_air:
+        #     # if self.vel_y > self.coyote_vel: #(self.coyote_time + 200 < pygame.time.get_ticks()):
+        #     #     self.curr_state = True
+        #     #     self.in_air = True
+        #     #     self.squat = False
   
-            if self.coyote_time + 100 > pygame.time.get_ticks():
-                self.vel_y = 0
+        #     if self.coyote_time + 100 > pygame.time.get_ticks():
+        #         self.vel_y = 0
 
 
         if self.jump_dampen:
@@ -1154,6 +1078,33 @@ class player(pygame.sprite.Sprite):
                 self.extra_recoil = 0
                 
                 self.shoot_recoil = False
+                
+        #throwing
+        if self.action == 23:
+            
+            if self.frame_index == 0 and not self.hitting_wall and not self.in_air:
+                self.dx = -self.direction*self.speed
+            elif self.frame_index == 1 and self.charge_built == 1:
+                self.dx = self.direction*self.speed*3
+                #self.vel_y = 0
+                self.charge_built = 0
+                self.rolling = False
+                self.inventory_handler.discard_item_by_slot()
+                self.m_player.play_sound(self.m_player.sfx[5], None)
+                #self.shoot = False
+                #spawn bullet---------------------------------------------------------------------------------------------
+                if self.flip == False:
+                    x = self.rect.right
+                else:
+                    x = self.rect.left
+                y = int(self.rect.y + 0.5 * self.height)
+                #have different projectiles depending on what's in the current slot
+                if self.inventory_handler.get_item_name_in_slot() == 'Rock':
+                    player_bullet = bullet_(x, y, 20, self.direction, self.scale, 'player_basic', self.ini_vol)
+                    the_sprite_group.player_bullet_group.add(player_bullet)
+                self.stamina_used += self.shoot_stamina_cost
+            else:
+                self.dx = self.direction*self.speed//2
 
 
         #hurting/ enemy collisions
@@ -1172,9 +1123,9 @@ class player(pygame.sprite.Sprite):
         
         
         
-        if self.shoot and self.frame_index == 2:
-            self.vel_y *= 0.8
-        elif self.slide_kick and self.frame_index == 1:
+        # if self.shoot and self.frame_index == 2:
+        #     self.vel_y *= 0.8
+        if self.slide_kick and self.frame_index == 1:
             self.vel_y *= 0.99
         # elif self.rolling and self.in_air and self.frame_index == 0:
         #     self.vel_y 
@@ -1466,28 +1417,28 @@ class player(pygame.sprite.Sprite):
                 self.finished_use_item_animation = True
  
             
-            if self.action == 16:
+            elif self.action == 16:
                 self.recovery_counter *= 2
                 self.atk1 = False
                 self.heavy = False
                 
-            if self.action == 18:
+            elif self.action == 18:
                 self.slide_kick = False
                 self.atk1 = False
                 self.crit = False
                 self.heavy = False
     
-            if self.action == 5:
+            elif self.action == 5:
                 self.hurting = False
                 self.i_frames_en = True #triggers i_frames for next tick
                 self.update_time2 = pygame.time.get_ticks()
                 #self.i_frames_time = 836
 
-            if self.action == 4:
+            elif self.action == 4:
                 self.squat_done = True #squatting finished when it loops frames
                 self.squat = False
 
-            if self.action == 7 or self.action == 8 or self.action == 10:
+            elif self.action == 7 or self.action == 8 or self.action == 10:
                 
                 #self.squat = False #this line will cancel jumps that have been inputted before the atk
                 
@@ -1500,17 +1451,20 @@ class player(pygame.sprite.Sprite):
                 self.landing = False
                 self.atk1 = False
                     
-            if self.action in (9, 21): 
+            elif self.action in (9, 21): 
                 #self.image = pygame.image.load('sprites/player/end_of_roll/0.png') #this messes up everything do not add back
                 if self.roll_count == self.roll_limit:# or self.rolled_into_wall:#roll limit, this ends up getting incremented once more after 
                     self.rolling = False
                 self.roll_count += 1
                 self.rolled_into_wall = False
             
-            if self.action == 6:
-                self.frame_index = 5   
+            elif self.action == 6:
+                self.frame_index = 5  
                 
-            if self.action == 11:
+            elif self.action == 23:
+                self.shoot = False 
+                
+            elif self.action == 11:
                 if self.inventory_handler.discard_item_by_name('Rock'):
                     self.charge_built = 0
                 self.shoot = False
@@ -1618,7 +1572,7 @@ class player(pygame.sprite.Sprite):
         else:
         
             if self.shoot:
-                self.update_action(11)
+                self.update_action(23)#11
     
             
             
@@ -1714,7 +1668,7 @@ class player(pygame.sprite.Sprite):
                 self.atk1 = False
                 self.char_level += self.char_dict['melee']
                 #print(self.char_level)
-            elif self.action in (9, 21) and (new_action == 7 or new_action == 8) and self.atk1:
+            elif self.action == 9 and (new_action == 7 or new_action == 8) and self.atk1:
                 self.heavy = False
                 if do_not_crit:
                     self.atk1 = False
@@ -1726,7 +1680,7 @@ class player(pygame.sprite.Sprite):
                         self.screenshake_profile = (16, 6, 3)
                     self.m_player.play_sound(self.m_player.sfx[4], None)
                     self.char_level += self.char_dict['crit']
-            elif self.action not in (9, 21) and (new_action == 7 or new_action == 8):
+            elif self.action != 9 and (new_action == 7 or new_action == 8):
                 self.crit = False
                 self.m_player.play_sound(self.m_player.sfx[1], None)
                 self.char_level += self.char_dict['melee']

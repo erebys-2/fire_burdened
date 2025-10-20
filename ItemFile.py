@@ -136,6 +136,7 @@ class Item(pygame.sprite.Sprite): #helper class with logic for item behavior out
 class inventory_handler(): #handles setting up inventory, picking up items, and storing items; is instantiated in player
 
     def __init__(self, slot_count):
+        self.slot = 0
         self.slot_count = slot_count
         
         #create a limited list of lists
@@ -160,6 +161,18 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
         
         return item_name in [x[0] for x in self.inventory]#item_found
     
+    def discard_item_by_slot(self):
+        empty = False
+        if self.inventory[self.slot][1] > 0:
+            self.inventory[self.slot][1] -= 1
+            
+        if self.inventory[self.slot][1] == 0:
+            self.inventory[self.slot][0] = 'empty'
+            empty = True
+            
+        return empty
+        
+    
     def discard_item_by_name(self, item_name):
         empty = False
         for slot in self.inventory:
@@ -174,6 +187,9 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
                 break
             
         return empty
+    
+    def get_item_name_in_slot(self):
+        return self.inventory[self.slot][0]
     
     def find_available_slot(self, item_id):
         slot_index = 0
@@ -457,6 +473,11 @@ class inventory_UI(): #handles displaying inventory, item description and counts
             
         return inventory
         
+    def get_selected_item(self, inventory):
+        return inventory[self.slot][0]
+    
+    def get_item_class(self, inventory):
+        return self.item_details0.get_item_class(inventory[self.slot][0])
     
     def show_selected_item(self, inventory, screen):#draws currently selected item over status bar
         blit_coord = (11, 453)

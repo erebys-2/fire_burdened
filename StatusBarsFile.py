@@ -97,28 +97,29 @@ class StatusBars():
             
         #should make a txt file for ini player config values
         #draw arrows for player vertical direction
-        if abs(player.vel_y) > 1.5:
-            p_jump_val = 10
+        #no longer relevant
+        # if abs(player.vel_y) > 1.5:
+        #     p_jump_val = 10
             
-            numerator = player.vel_y#get numerator
-            if abs(player.vel_y) > p_jump_val:#set bounds 
-                numerator = (abs(player.vel_y)/player.vel_y)*p_jump_val
+        #     numerator = player.vel_y#get numerator
+        #     if abs(player.vel_y) > p_jump_val:#set bounds 
+        #         numerator = (abs(player.vel_y)/player.vel_y)*p_jump_val
                 
-            vel_y_ratio = numerator/p_jump_val
+        #     vel_y_ratio = numerator/p_jump_val
 
-            index = 0#set img index
-            if vel_y_ratio < 0 or (player.in_air and player.hold_jump and player.vel_y < 0.5):
-                index = 1
+        #     index = 0#set img index
+        #     if vel_y_ratio < 0 or (player.in_air and player.hold_jump and player.vel_y < 0.5):
+        #         index = 1
             
-            if self.arrow_y_disp != player.rect.y:#set y disp
-                self.arrow_y_disp += 0.85*p_jump_val*vel_y_ratio
+        #     if self.arrow_y_disp != player.rect.y:#set y disp
+        #         self.arrow_y_disp += 0.85*p_jump_val*vel_y_ratio
                 
-            screen.blit(self.direction_img_list[index],#pygame.transform.hsl(self.direction_img_list[index], 0, vel_y_ratio, 1-abs(vel_y_ratio)), 
-                        (player.rect.centerx - self.scale*(self.t_size//2),# - player.direction*self.t_size, 
-                         self.arrow_y_disp - self.t_size*self.scale)#player.rect.y + self.t_size//4)
-                        )
-        else:
-            self.arrow_y_disp = player.rect.y
+        #     screen.blit(self.direction_img_list[index],#pygame.transform.hsl(self.direction_img_list[index], 0, vel_y_ratio, 1-abs(vel_y_ratio)), 
+        #                 (player.rect.centerx - self.scale*(self.t_size//2),# - player.direction*self.t_size, 
+        #                  self.arrow_y_disp - self.t_size*self.scale)#player.rect.y + self.t_size//4)
+        #                 )
+        # else:
+        #     self.arrow_y_disp = player.rect.y
             
         
     def draw_status_icons(self, screen, player, font):#NOT independent from other draw functions
@@ -138,17 +139,17 @@ class StatusBars():
         active_status_fx_list = [fx_status[0] for fx_status in enumerate(self.status_enable_list) if fx_status[1]] #list comprehension !...
             
         #draw
-        for i in range(len(active_status_fx_list)):
-            screen.blit(self.status_icon_imglist[active_status_fx_list[i]], (self.HALF_SC_WIDTH+self.t_size*i, self.SC_HEIGHT-self.t_size))
+        # for i in range(len(active_status_fx_list)):
+        #     screen.blit(self.status_icon_imglist[active_status_fx_list[i]], (self.HALF_SC_WIDTH+self.t_size*i, self.SC_HEIGHT-self.t_size))
             
-            if active_status_fx_list[i] == 0:
-                num = int(255*(1-player.coyote_ratio))
-                pygame.draw.rect(screen, (num,num,num), 
-                                pygame.rect.Rect(self.HALF_SC_WIDTH+self.t_size*i,
-                                                self.SC_HEIGHT-self.t_size, 
-                                                self.t_size*(1-player.coyote_ratio), 
-                                                2)
-                                )
+        #     if active_status_fx_list[i] == 0:
+        #         num = int(255*(1-player.coyote_ratio))
+        #         pygame.draw.rect(screen, (num,num,num), 
+        #                         pygame.rect.Rect(self.HALF_SC_WIDTH+self.t_size*i,
+        #                                         self.SC_HEIGHT-self.t_size, 
+        #                                         self.t_size*(1-player.coyote_ratio), 
+        #                                         2)
+        #                         )
     
     def draw_text(self, text, font, text_col, x, y, screen):
         screen.blit(font.render(text, True, text_col), (x, y))
