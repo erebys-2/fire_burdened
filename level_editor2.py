@@ -2,8 +2,13 @@ import pygame
 import os
 import button
 import csv
+import sys
+from PyQt6.QtWidgets import QInputDialog, QApplication, QWidget, QGridLayout, QListWidget, QPushButton, QLabel, QMessageBox, QLineEdit
 from textfile_handler import textfile_formatter
 from worldManager import World
+from cfg_handler0 import yaml_handler
+from level_editor_subgui import level_editor_subgui
+
 
 pygame.init()
 from profilehooks import profile
@@ -16,10 +21,37 @@ def main():
     SIDE_MARGIN = 320
     
     t1 = textfile_formatter()
-    path = os.path.join('assets', 'config_textfiles', 'level_config')#'assets/config_textfiles/level_config/'
-    level_sizes_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path, 'level_sizes_dict.txt')), 'list')
+    # path = os.path.join('assets', 'config_textfiles', 'level_config')#'assets/config_textfiles/level_config/'
+    # level_sizes_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path, 'level_sizes_dict.txt')), 'list')
     #print(level_sizes_dict)
     
+    #level dict yaml
+    y0 = yaml_handler()	
+    all_levels_dict = y0.get_data(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'))
+    affected_levels_dict = {}
+    #if trans_data != []
+    #everytime the level size is changed:
+    #   the keys 'x' and 'y' for every transition tile needs to be changed
+    #   levels where a leftmost lvl transition exists (n_lvl = this level and loc = (0,0) and pair = None) needs to be updated as well
+    #everytime a level trans tile is added:
+    #   insert it into the existing list at the correct index
+    #   automatically populate some values in its dict like position, size, etc
+    
+    level_dict_data = {#default value
+            'size': [15, 20],
+            'color': [0, 0, 0],
+            'trans_data': [],
+            'player_en': True,
+            'name': ''
+        }
+    
+    #size = [ROWS, MAX_COLS]
+    #these should be set later through a pop up window
+    lvl_color = [0,0,0]
+    trans_data = []
+    player_en = True
+    name = ''
+
     layer_desc_dict = {
         0:'true foreground',
         1:'foreground',
@@ -69,21 +101,23 @@ def main():
     if input_level < 0:
         levels_must_be_greater_than_0 = 0/0
 
-    if input_level not in level_sizes_dict:
+    if input_level not in all_levels_dict:
         row_str = input('enter rows: ')
         col_str = input('enter cols: ')
         ROWS = int(row_str)
         MAX_COLS = int(col_str)
         level = input_level
         direct_load = False
-
+        level_dict_data['size'] = [ROWS, MAX_COLS]
     else:
-        ROWS = level_sizes_dict[input_level][0]
-        MAX_COLS = level_sizes_dict[input_level][1]
+        ROWS = all_levels_dict[input_level]['size'][0]
+        MAX_COLS = all_levels_dict[input_level]['size'][1]
         row_str = str(ROWS)
         col_str = str(MAX_COLS)
         level = input_level
         direct_load = True
+        level_dict_data = all_levels_dict[input_level]
+
 
     #create surfaces
     tile_id_map_dict = {}
@@ -104,8 +138,10 @@ def main():
     scroll_right = False
     scroll = 0
     scroll_speed = 1
-
-    screen = pygame.display.set_mode((SCREEN_WIDTH + SIDE_MARGIN, SCREEN_HEIGHT + LOWER_MARGIN), 0, 32)
+    
+    ws = 1
+    window = pygame.display.set_mode((SCREEN_WIDTH + SIDE_MARGIN, SCREEN_HEIGHT + LOWER_MARGIN))
+    screen = pygame.Surface((SCREEN_WIDTH + SIDE_MARGIN, SCREEN_HEIGHT + LOWER_MARGIN))
     pygame.display.set_caption('editor window')
     w = World(-1,-1)
 
@@ -135,6 +171,13 @@ def main():
     ctrl = False
     ini_scroll = 0
     copied_chunk = []
+    
+    
+    WHITE = (210, 210, 210)
+    BG_color = (200,143,167)
+    black = (0,0,0)
+    RED = (255, 128, 128)
+    BG_color2 = (50,50,50)
 
     #load tiles
 
@@ -149,8 +192,10 @@ def main():
         tile_list.append(temp_list)
 
 
-    save_img = pygame.image.load(os.path.join('assets', 'sprites', 'save_btn.png')).convert_alpha()
-    load_img = pygame.image.load(os.path.join('assets', 'sprites', 'load_btn.png')).convert_alpha()
+    # save_img = pygame.image.load(os.path.join('assets', 'sprites', 'save_btn.png')).convert_alpha()
+    # load_img = pygame.image.load(os.path.join('assets', 'sprites', 'load_btn.png')).convert_alpha()
+    generic_btn_img = pygame.surface.Surface((76,24))
+    generic_btn_img.fill(BG_color2, pygame.rect.Rect(0,0,76,24))
 
     '''
     good bg colors
@@ -162,11 +207,6 @@ def main():
     '''
 
 
-    WHITE = (210, 210, 210)
-    BG_color = (200,143,167)
-    black = (0,0,0)
-    RED = (255, 128, 128)
-    BG_color2 = (50,50,50)
 
     #define font
     font_path = os.path.join('assets', 'FiraCode-Regular.ttf')
@@ -174,9 +214,10 @@ def main():
     font2 = pygame.font.Font(font_path, 16)#SysFont('SimSun', 16)
     
      #button stuff
-    save_button = button.Button(SCREEN_WIDTH // 3 + 235, SCREEN_HEIGHT + LOWER_MARGIN - 90, save_img, 1)
-    load_button = button.Button(SCREEN_WIDTH // 3 + 235, SCREEN_HEIGHT + LOWER_MARGIN - 40, load_img, 1)
-                        
+    save_button = button.Button(SCREEN_WIDTH // 3 + 235, SCREEN_HEIGHT + LOWER_MARGIN - 90, generic_btn_img, 1)
+    load_button = button.Button(SCREEN_WIDTH // 3 + 235, SCREEN_HEIGHT + LOWER_MARGIN - 60, generic_btn_img, 1)
+    config_button = button.Button(SCREEN_WIDTH // 3 + 235, SCREEN_HEIGHT + LOWER_MARGIN - 30, generic_btn_img, 1)
+
 
     #populate buttons
     button_list = []
@@ -204,6 +245,7 @@ def main():
     
     is_loading = False
     is_saving = False
+    cfg_open = False
 
     #create empty tile list(s)
 
@@ -218,6 +260,91 @@ def main():
 
     def check_onscreen(x):
         return (x >= 0 and x < 640)
+    
+    #everytime the level size is changed:
+    #   the keys 'x' and 'y' for every transition tile needs to be changed
+    #   levels where a leftmost lvl transition exists (n_lvl = this level and loc = (0,0) and pair = None) needs to be updated as well
+    
+    def autofill_trans_data_dict(x, y):
+        temp_data_dict = {'x': x, 'y': y, 'n_lvl': None, 'new_x': None, 'new_y': None, 'pair': None, 'w': None, 'h': None}
+        if x == 0 or x == MAX_COLS-1:#if transition is on the edge of a level, assume it has a vertical shape
+            temp_data_dict['w'] = 2
+            temp_data_dict['h'] = 480
+            if x == MAX_COLS-1:#if on right edge, it is probably transitioning to the left edge of a level
+                temp_data_dict['new_x'] = 0
+            
+        else:#if in middle of level assume horizontal shape
+            temp_data_dict['w'] = 640
+            temp_data_dict['h'] = 2
+            if y == 0:#assume bottom transition
+                temp_data_dict['new_y'] = 384
+            elif y == ROWS-1:#assume top transition
+                temp_data_dict['new_y'] = 2
+                
+        return temp_data_dict
+
+    def insert_trans_data(x, y, tile):
+        if tile == 10:
+            added = False
+            temp_data_dict = autofill_trans_data_dict(x, y)
+            for i in range(len(trans_data)):
+                #print(trans_data[i]['y'])
+                if y < trans_data[i]['y'] or (y == trans_data[i]['y'] and x < trans_data[i]['x']):
+                    trans_data.insert(i, temp_data_dict)
+                    added = True
+                    break
+            
+            if not added:
+                trans_data.append(temp_data_dict)
+            
+    def pop_trans_data(x, y, tile):
+        if tile == 10:
+            for i in range(len(trans_data)):
+                if trans_data[i]['x'] == x and trans_data[i]['y'] == y:
+                    trans_data.pop(i)
+                    break
+    
+    def shift_trans_data(dx, insert_pos, trans_data):
+        for data_dict in trans_data:
+            if data_dict['x'] >= insert_pos//32:
+                data_dict['x'] += dx
+                
+        
+    def get_affected_trans_data(level, all_levels_dict, dx):
+        affected_levels_dict = {k:all_levels_dict[k] for k in all_levels_dict #most insane list comprehension i've written
+                                    if (
+                                        True in [True for trans_data in all_levels_dict[k]['trans_data'] 
+                                            if (trans_data['n_lvl'] == level and 
+                                                trans_data['x'] == 0 and 
+                                                trans_data['y'] == 0 and 
+                                                trans_data['pair'] == None
+                                                )
+                                        ]
+                                    )
+                                }
+            
+        for k in affected_levels_dict:
+            for i in range(len(affected_levels_dict[k]['trans_data'])):
+                trans_data = affected_levels_dict[k]['trans_data'][i]
+                if (trans_data['n_lvl'] == level and 
+                    trans_data['x'] == 0 and 
+                    trans_data['y'] == 0 and 
+                    trans_data['pair'] == None
+                    ):
+                    affected_levels_dict[k]['trans_data'][i]['new_x'] += 32*dx
+            
+        return affected_levels_dict
+    
+    def update_level_dict_data(size, color, trans_data, player_en, name):
+        dict_data = {
+            'size': size,
+            'color': color,
+            'trans_data': trans_data,
+            'player_en': player_en,
+            'name': name
+        }
+        
+        return dict_data
 
     def draw_grid():
         #vertical lines
@@ -311,7 +438,7 @@ def main():
 
         return rtn_list
 
-    def write_level_data(level, level_sizes_dict, data_, data_str):
+    def write_level_data(level, data_, data_str):
         if f'level{level}' not in os.listdir(os.path.join('assets', 'level_files')):
             os.mkdir(os.path.join('assets', 'level_files', f'level{level}'))
         with open(os.path.join('assets', 'level_files', f'level{level}', f'level{level}_{data_str}.csv'), 'w', newline='') as csvfile:#f'assets/level_files/level{level}/level{level}_{data_str}.csv'
@@ -327,9 +454,11 @@ def main():
                 print("cannot place sprite group tile in non-game layer")
             elif rtn_data[y][x] != current_tile:
                 rtn_data[y][x] = current_tile
+                insert_trans_data(x, y, current_tile)
                 reload_map = True
         if pygame.mouse.get_pressed()[2] == 1 or (pygame.mouse.get_pressed()[0] == 1 and eraser_mode):
             if rtn_data[y][x] != -1:
+                pop_trans_data(x, y ,rtn_data[y][x])
                 rtn_data[y][x] = -1
                 reload_map = True
             # rtn_data[y][x] = -1
@@ -371,6 +500,15 @@ def main():
         print("chunk pasted!")
         return tiles_added
     
+    def get_tile_locations(tile_list, target_tile):
+        coord_list = []
+        for y, row in enumerate(tile_list):
+            for x, tile in enumerate(row):
+                if tile==target_tile:
+                    coord_list.append([x,y])
+                    
+        return coord_list
+    
 
     #running the editor----------------------------------------------------
     
@@ -391,8 +529,15 @@ def main():
                     (rtn_map_dict[layer-1], rtn_TIM_dict[layer-1]) = draw_bg(rtn_list[layer], layer-1, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
                 else:
                     (rtn_map_dict[layer-1], rtn_TIM_dict[layer-1]) = draw_world(rtn_list[layer], static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
+        level_dict_data = {#default value
+            'size': [ROWS, MAX_COLS],
+            'color': [0, 0, 0],
+            'trans_data': [],
+            'player_en': True,
+            'name': ''
+        }
                     
-        return (rtn_list, rtn_map_dict, rtn_TIM_dict)
+        return (rtn_list, rtn_map_dict, rtn_TIM_dict, level_dict_data)
 
     
     def load_lvl(level, layer_name_dict, world_layer_index, static_bg_oversized_tiles_dict, sprite_group_tiles_dict):
@@ -406,27 +551,34 @@ def main():
                     (rtn_map_dict[layer-1], rtn_TIM_dict[layer-1]) = draw_bg(rtn_list[layer], layer-1, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
                 else:
                     (rtn_map_dict[layer-1], rtn_TIM_dict[layer-1]) = draw_world(rtn_list[layer], static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
+        level_dict_data = all_levels_dict[level]
         
         print('~~loaded!~~')   
-        return (rtn_list, rtn_map_dict, rtn_TIM_dict)
+        return (rtn_list, rtn_map_dict, rtn_TIM_dict, level_dict_data)
     
     if direct_load:
-        (layer_list, map_dict, tile_id_map_dict) = load_lvl(level, layer_name_dict, world_layer_index, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
+        (layer_list, map_dict, tile_id_map_dict, level_dict_data) = load_lvl(level, layer_name_dict, world_layer_index, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
+        #set variables
+        lvl_color = level_dict_data['color']
+        trans_data = level_dict_data['trans_data']
+        player_en = level_dict_data['player_en']
+        name = level_dict_data['name']
+        affected_levels_dict = {}
+        
     else:
-        (layer_list, map_dict, tile_id_map_dict) = create_new_lvl(layer_name_dict)
+        (layer_list, map_dict, tile_id_map_dict, level_dict_data) = create_new_lvl(layer_name_dict)
+        affected_levels_dict = {}
         
-    # def save_lvl_layers(level):
-        
-        
+  
     run = True
     while run:
         clock.tick(FPS)
         screen.fill(black)
-        screen.fill(BG_color, canvas_rect)
+        screen.fill(level_dict_data['color'], canvas_rect)
 
             
         #check overwrite
-        if level != input_level and level in level_sizes_dict:
+        if level != input_level and level in all_levels_dict:
             pygame.draw.rect(screen, (255,0,0), (0, SCREEN_HEIGHT, SCREEN_WIDTH, LOWER_MARGIN))
             draw_text(screen, f'YOU ARE IN OVERWRITE MODE. SAVING WILL OVERWRITE ANOTHER LEVEL.', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 15)   
            
@@ -480,18 +632,24 @@ def main():
 
         #update to accomodate multiple csv files
         #-------------------------------------------------------------------------------------------------------------------------------------
+        pos_ = pygame.mouse.get_pos()
+        pos = [int(pos_[0]/ws), int(pos_[1]/ws)]
         #save and load data
-        if save_button.draw(screen) and not is_loading:
+        if save_button.draw(screen, pos_ = pos) and not is_loading and not cfg_open:
             is_saving = True
             surface_list = []
             #save level data
             for layer in layer_name_dict:
-                write_level_data(level, level_sizes_dict, layer_list[layer], layer_name_dict[layer])
+                write_level_data(level, layer_list[layer], layer_name_dict[layer])
                 if layer > 0:
                     if layer != 3:
                         surface_list.append(w.process_bg(layer_list[layer], (layer in (6,7))))
                     else:
                         surface_list.append(w.process_game_layer_map(layer_list[layer]))
+                        # trans_tile_coordlist = get_tile_locations(layer_list[layer], 10)
+                        # for i in range(len(trans_tile_coordlist)):
+                        #     trans_data[i]['x'] = trans_tile_coordlist[i][0]
+                        #     trans_data[i]['y'] = trans_tile_coordlist[i][1]
                     
             lvl_size = (ROWS, MAX_COLS)
             
@@ -513,40 +671,85 @@ def main():
             }
             for file_name in surface_list_dict:
                 pygame.image.save(w.create_map(lvl_size, surface_list_dict[file_name]), os.path.join(editor_output_path, file_name))
-                if file_name not in os.listdir(drawn_path):#save into drawn path only if the files don't exist yet
-                    pygame.image.save(w.create_map(lvl_size, surface_list_dict[file_name]), os.path.join(drawn_path, file_name))
+                #if file_name not in os.listdir(drawn_path):#save into drawn path only if the files don't exist yet
+                pygame.image.save(w.create_map(lvl_size, surface_list_dict[file_name]), os.path.join(drawn_path, file_name))
                     
             # pygame.image.save(w.create_map(lvl_size, surface_list[5:7]), os.path.join(base_path, f'level{level}_maps', 'filtered_layers.PNG'))
             # pygame.image.save(w.create_map(lvl_size, [w.post_process_filter_layer(surface_list[4], MAX_COLS*32),]), os.path.join(base_path, f'level{level}_maps', 'filter_layer.PNG'))
             # pygame.image.save(w.create_map(lvl_size, surface_list[1:4]), os.path.join(base_path, f'level{level}_maps', 'non_filtered_layers.PNG'))
             # pygame.image.save(w.create_map(lvl_size, [surface_list[0],]), os.path.join(base_path, f'level{level}_maps', 'true_fg.PNG'))
             
-            print('~~Saved!~~')
-            if level not in level_sizes_dict:
-                t1.add_line_to_file(f'{level}: {ROWS}, {MAX_COLS}', path2 + 'level_sizes_dict.txt')
+            print('~~Saved!~~')#FUCK
+            level_dict_data = update_level_dict_data([ROWS, MAX_COLS], lvl_color, trans_data, player_en, name)
+            y0.write_value(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'), level, level_dict_data)
+            
+            for l in affected_levels_dict:
+                y0.write_value(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'), l, affected_levels_dict[l])
+                
+            # if level not in level_sizes_dict:
+            #     t1.add_line_to_file(f'{level}: {ROWS}, {MAX_COLS}', path2 + 'level_sizes_dict.txt')
     
-            str_list = list(t1.read_text_from_file(os.path.join(path2, 'level_sizes_dict.txt')))
-            str_list[level] = f'{level}: {ROWS}, {MAX_COLS}'
-            output_str = ''
-            for str_ in str_list:
-                output_str = output_str + str_ + '\n'
-            output_str = output_str[0:len(output_str)-1]
-            t1.overwrite_file(os.path.join(path2, 'level_sizes_dict.txt'), output_str)
+            # str_list = list(t1.read_text_from_file(os.path.join(path2, 'level_sizes_dict.txt')))
+            # str_list[level] = f'{level}: {ROWS}, {MAX_COLS}'
+            # output_str = ''
+            # for str_ in str_list:
+            #     output_str = output_str + str_ + '\n'
+            # output_str = output_str[0:len(output_str)-1]
+            # t1.overwrite_file(os.path.join(path2, 'level_sizes_dict.txt'), output_str)
             is_saving = False
+        elif save_button.draw(screen, pos_=pos) and cfg_open:
+            print('close cfg window')
 
-        if load_button.draw(screen) and not is_saving:
+        if load_button.draw(screen, pos_=pos) and not is_saving and not cfg_open:
             is_loading = True
-            if level in level_sizes_dict:
+            if level in all_levels_dict:
                 input_level = level
                 scroll = 0
-                ROWS = level_sizes_dict[input_level][0]
-                MAX_COLS = level_sizes_dict[input_level][1]
+                ROWS = all_levels_dict[input_level]['size'][0]
+                MAX_COLS = all_levels_dict[input_level]['size'][1]
                 row_str = str(ROWS)
                 col_str = str(MAX_COLS)
-                (layer_list, map_dict, tile_id_map_dict) = load_lvl(level, layer_name_dict, world_layer_index, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
+                (layer_list, map_dict, tile_id_map_dict, level_dict_data) = load_lvl(level, layer_name_dict, world_layer_index, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
+                #set variables
+                lvl_color = level_dict_data['color']
+                trans_data = level_dict_data['trans_data']
+                player_en = level_dict_data['player_en']
+                name = level_dict_data['name']
             else:
                 print('Level does not exist')
             is_loading = False
+        elif load_button.draw(screen, pos_=pos) and cfg_open:
+            print('close cfg window')
+            
+        if config_button.draw(screen, pos_=pos) and not is_loading and not is_saving:
+            cfg_open = True
+            app = QApplication(sys.argv)
+            subgui = level_editor_subgui(level_dict_data)
+            window_closed = app.exec()
+
+            if window_closed == 0:#pygame window does weird scaling stuff when the qt window opens
+                ws = 1.5
+                window = pygame.display.set_mode(((SCREEN_WIDTH + SIDE_MARGIN)*ws, (SCREEN_HEIGHT + LOWER_MARGIN)*ws), flags=pygame.RESIZABLE)
+                window.blit(pygame.transform.scale(screen, ((SCREEN_WIDTH + SIDE_MARGIN)*ws, (SCREEN_HEIGHT + LOWER_MARGIN)*ws)), (0,0))
+                if subgui.export_data_dict != {}:
+                    rtn_data = subgui.export_data_dict
+                    lvl_color = rtn_data['color']
+                    trans_data = rtn_data['trans_data']
+                    player_en = rtn_data['player_en']
+                    name = rtn_data['name']
+                    level_dict_data = update_level_dict_data([ROWS, MAX_COLS], lvl_color, trans_data, player_en, name)
+                del app
+                del subgui
+                cfg_open = False
+            
+        save_button.show_text(screen, font, ('','save'))
+        load_button.show_text(screen, font, ('','load'))
+        
+        # if cfg_open:
+        #     cfg_text = 'close cfg'
+        # else:
+        #     cfg_text = 'open cfg'
+        config_button.show_text(screen, font, ('','config'))
 
         #-------------------------------------------------------------------------------------------------------------------------------
 
@@ -558,7 +761,7 @@ def main():
         #choose a tile
         button_count = 0
         for button_count, i in enumerate(button_list):
-            if i.draw(screen):
+            if i.draw(screen, pos_=pos):
                 current_tile = button_count
 
         #highlight the selected tile
@@ -579,7 +782,8 @@ def main():
             scroll += 1
         #adding new tiles to the screen (using the program)
         #get mouse position
-        pos = pygame.mouse.get_pos()
+        pos_ = pygame.mouse.get_pos()
+        pos = [int(pos_[0]/ws), int(pos_[1]/ws)]
         x = (pos[0] + scroll) // TILE_SIZE
         y = pos[1] // TILE_SIZE
 
@@ -668,11 +872,14 @@ def main():
                     else:
                         layer_list = extend_lvl(-1, layer_list)
                     MAX_COLS -= 1
+                    shift_trans_data(-1, insert_pos, trans_data)
+                    affected_levels_dict = get_affected_trans_data(level, all_levels_dict, -1)
                     reload_all_maps = True
                     if scroll > ((MAX_COLS) * TILE_SIZE) - 640:
                         scroll -= TILE_SIZE
                     row_str = str(ROWS)
                     col_str = str(MAX_COLS)
+                    
                 elif event.key == pygame.K_RIGHTBRACKET:
                     if insert_mode:
                         for layer in layer_list:
@@ -681,6 +888,8 @@ def main():
                     else:
                         layer_list = extend_lvl(1, layer_list)
                     MAX_COLS += 1
+                    shift_trans_data(1, insert_pos, trans_data)
+                    affected_levels_dict = get_affected_trans_data(level, all_levels_dict, 1)
                     reload_all_maps = True
                     row_str = str(ROWS)
                     col_str = str(MAX_COLS)
@@ -692,6 +901,8 @@ def main():
                     tiles_added = paste_chunk(insert_pos//32, copied_chunk, layer_list)
                     reload_all_maps = tiles_added != 0
                     MAX_COLS += tiles_added
+                    shift_trans_data(tiles_added, insert_pos, trans_data)
+                    affected_levels_dict = get_affected_trans_data(level, all_levels_dict, tiles_added)
                     col_str = str(MAX_COLS)
                     
                 if event.key == pygame.K_LSHIFT:
@@ -716,6 +927,7 @@ def main():
                     ctrl = False
 
         pygame.display.set_caption(f"editor window v2.0 @ {clock.get_fps():.1f} FPS")
+        window.blit(pygame.transform.scale(screen, ((SCREEN_WIDTH + SIDE_MARGIN)*ws, (SCREEN_HEIGHT + LOWER_MARGIN)*ws)), (0,0))
         pygame.display.update()
 
     pygame.quit()

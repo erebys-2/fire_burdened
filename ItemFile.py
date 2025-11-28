@@ -904,6 +904,8 @@ class trade_menu_ui():
             rtn_str = 'Inventory Full!!'
         elif transaction_output[1] == 1:
             rtn_str = 'Insufficient Funds!!'
+        elif transaction_output[0] == 69:
+            rtn_str = 'Pick one of my wares!'
         else:
             rtn_str = 'Transaction Success!'
             
@@ -1130,6 +1132,9 @@ class trade_menu_ui():
                 if self.selected_group == 1:
                     self.transaction_msg = self.get_transaction_msg(self.trade_item(inventory, self.wares[self.slot][0], self.wares[self.slot][1]))
                     #reset timer for drawing transaction_msg
+                    self.transaction_msg_timer = pygame.time.get_ticks()
+                else:
+                    self.transaction_msg = self.get_transaction_msg((69,0))
                     self.transaction_msg_timer = pygame.time.get_ticks()
                 #change frame
                 if self.frame_index < len(self.frame_list) - 1:

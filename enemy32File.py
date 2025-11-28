@@ -8,6 +8,7 @@ from ItemFile import Item #type: ignore
 #from combat_vfx import combat_vfx
 import random
 import math
+from geometry import geometry
 
 
 class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemies
@@ -63,6 +64,13 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         self.do_screenshake = False
         
         self.increment = 0
+        
+        self.fly_atk_ready = False
+        self.fly_atk_finished = True
+        self.fly_aimline_tgt = (-1,-1)
+        
+        self.theta = 0
+        self.g = geometry()
 
         #fill animation frames
         if id == 'dog':
@@ -83,7 +91,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             self.hp = 4
             self.recoil = 43
             self.recoil_slow = 3
-            sfx_list = ['bassdrop2.mp3', 'hit.mp3', 'bee_hurt.mp3', 'bee.mp3', 'step2soft.mp3']
+            sfx_list = ['bassdrop2.mp3', 'hit.mp3', 'bee_hurt.mp3', 'bee.mp3', 'step2soft.mp3', 'shoot.mp3']
         elif id == 'walker':
             animation_types = ['0', '1', '2']
             self.action = 1
@@ -331,31 +339,74 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     
                 elif self.id == 'fly':
                     #print(self.action)
+                    self.fly_aimline_tgt = (-1,-1)
+                    x_in_range = False
+                    y_in_range = False
                     if self.inundated == False: #cannot move towards player when inundated
                         #move if the player gets too close
                         chase_range = 3
-                    
-                        if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x <= self.rect.x:
+                        atk_range = 1.5
+                        
+                        #move towards player until threshold
+                        if player_rect.centerx + atk_range*self.width > self.rect.centerx - chase_range*self.width and player_rect.centerx + atk_range*self.width < self.rect.centerx:
                             dx = -self.speed
-                            moving = True
                             self.direction = -1
-                        elif player_rect.x < self.rect.x + self.width + chase_range*self.width and player_rect.x >= self.rect.x:
+                            self.flip = False
+                            #self.vel_y = 0
+                        elif player_rect.centerx - atk_range*self.width < self.rect.centerx + chase_range*self.width and player_rect.centerx - atk_range*self.width > self.rect.centerx:
                             dx = self.speed
-                            moving = True
                             self.direction = 1
+                            self.flip = True
+                            #self.vel_y = 0
+                        #go back and forth in threshold
+                        elif player_rect.centerx + atk_range*self.width >= self.rect.centerx and player_rect.centerx - atk_range*self.width <= self.rect.centerx:
+                            moving = True
+                            x_in_range = True
+                            if self.direction == 1:
+                                dx = self.speed
+                            elif self.direction == -1:
+                                dx = -self.speed
                             
-                        if player_rect.x > self.rect.x - chase_range*self.width and player_rect.x < self.rect.x + self.width + chase_range*self.width:
-                            if player_rect.y - self.height*2.5 > self.rect.y - 2*chase_range*self.height and player_rect.y - self.half_height <= self.rect.y:
-                                self.vel_y = -self.speed*0.75
-                                moving = True
-                            elif player_rect.y - self.height*2.5 < self.rect.y + 4*chase_range*self.height and player_rect.y - self.height*2.5 >= self.rect.y:
-                                self.vel_y = self.speed*2
-                                moving = True
-                            if self.vel_y == 0:
-                                if player_rect.y > self.rect.bottom:
-                                    self.vel_y = self.speed
-                                else:
-                                    self.vel_y = -self.speed
+                        low = 1
+                        high = 2.3
+                        if player_rect.centerx + 6*self.width >= self.rect.centerx and player_rect.centerx - 6*self.width <= self.rect.centerx:
+                        #hover above player when in the above range
+                            #rise
+                            if player_rect.centery - low*self.width > self.rect.centery - 3*chase_range*self.width and player_rect.centery - low*self.width < self.rect.centery:
+                                self.vel_y = -self.speed
+                            #fall
+                            elif player_rect.centery - high*self.width < self.rect.centery + 3*chase_range*self.width and player_rect.centery - high*self.width > self.rect.centery:
+                                self.vel_y = self.speed
+                            #hover
+                            elif player_rect.centery - low*self.width >= self.rect.centery and player_rect.centery - high*self.width <= self.rect.centery:
+                                if self.vel_y <= 0:
+                                    self.vel_y = -1.1*self.speed
+                                elif self.vel_y > 0:
+                                    self.vel_y = 1.1*self.speed
+                                y_in_range = True
+                                self.vel_y *= 0.5
+                                
+                                if self.action == 4 and self.frame_index <= 6:
+                                    
+                                    dx *= 0.4
+                                    if self.frame_index in (3,6):
+                                        self.fly_aimline_tgt = player_rect.midtop
+                                        s = 24
+                                        if pygame.time.get_ticks()%6 != 0:
+                                            sp_group_list[4].sprite.add_particle('bloom_orange', self.rect.centerx + random.randrange(-s,s), self.rect.centery+16 + random.randrange(-s,s), -self.direction, self.scale/4, True, -1)
+                                            sp_group_list[4].sprite.add_particle('bloom_yellow', self.rect.centerx + random.randrange(-s,s), self.rect.centery+16 + random.randrange(-s,s), -self.direction, self.scale/4, True, -1)
+                                        
+                                # else:
+                                #     dx += random.randrange(-2,2)
+                                    
+                            if self.action == 4 and self.frame_index <= 6:
+                                self.theta = self.g.get_angle_from_pts(self.rect.center, player.rect.center)
+                        else:   
+                            self.vel_y = 0
+
+                    self.fly_atk_ready = y_in_range and x_in_range
+                    # if self.fly_atk_ready:
+                    #     print('attacking')
                             
                     if not self.inundated and self.action == 1:
                         if self.direction == -1:
@@ -396,7 +447,8 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     #     dx = -dx
                     #     self.atk1_kill_hitbox()
                         
-
+                        
+                
             
             else:
                 moving = False
@@ -408,11 +460,14 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 if self.inundated == True:
                     
                     self.update_action(2)
+                    
                     if self.frame_index < 1:
                         dx = 0
+
                         # x_avg = (self.rect.centerx + player_atk_rect.centerx)/2
                         # y_avg = (self.rect.centery + player_atk_rect.centery)/2
-                        sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-48,48), self.rect.centery+random.randrange(-48,48), -self.direction, 0.3*self.scale, False, random.randrange(0,3))
+                        sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-48,48), self.rect.centery+random.randrange(-48,48), -self.direction, 0.2*self.scale, False, random.randrange(0,3))
+                        sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-32,32), self.rect.centery+random.randrange(-32,32), -self.direction, 0.5*self.scale, False, random.randrange(0,3))
 
                         #dy = 0
                     else:
@@ -422,20 +477,30 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 else:
                     # if self.recovering:
                     #     self.update_action(0)
-                    if self.shoot == True and (self.idle_counter == 1 or self.idle_bypass == True) and self.direction != 0:#2
+                    if self.id == 'shooter' and self.shoot == True and (self.idle_counter == 1 or self.idle_bypass == True) and self.direction != 0:#2
                         if self.frame_index <= 4:
                             self.shoot = True
                         self.update_action(4)
                     elif self.jump == True:
                         self.update_action(5)
+                    elif self.id == 'fly' and self.fly_atk_ready and self.fly_atk_finished and self.idle_counter == 1:
+                        self.fly_atk_finished = False
+                        self.update_action(4)
                     elif moving == True:
-                        self.update_action(1)
+                        if self.id != 'fly':
+                            self.update_action(1)
+                        elif self.id == 'fly' and self.fly_atk_finished:
+                            self.update_action(0)
+                            
                         if dx < 0:
                             self.flip = False
                         else:
                             self.flip = True
                     else:
-                        self.update_action(0)
+                        if self.id == 'fly' and self.fly_atk_finished:
+                            self.update_action(0)
+                        elif self.id != 'fly':
+                            self.update_action(0)
             else:#dies
                 self.dead = True
                 
@@ -516,6 +581,12 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     sp_group_list[5].sprite.add_particle('player_impact', x_avg + dx/4, y_avg, -self.direction, self.scale*1.05, True, self.rando_frame)
                 self.inundated = True
                 
+                # self.shoot = False
+                # self.shoot_done = True
+                # self.idle_counter = -2
+                # self.fly_atk_ready = False
+                self.shoot_done = False
+                
                 # for i in range(particle_ct):
                 #     sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-48,48), y_avg+random.randrange(-48,48), -self.direction, 0.3*self.scale, False, random.randrange(0,3))
 
@@ -525,7 +596,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             elif (player_atk_rect.width == 0 and   
                 player_rect.x > self.rect.x - 64 and player_rect.right < self.rect.right + 64 and
                     (self.rect.colliderect(player_rect.scale_by(0.2)) or (self.rect.x < player_rect.x and self.rect.right > player_rect.right ))
-                    and self.id != 'walker'
+                    and self.id not in ('walker', 'fly')
                     and not self.inundated
                 #and not (self.inundated or self.rect.colliderect(player_atk_rect))
                 ):
@@ -728,7 +799,10 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         elif self.action == 2:#hurting
             frame_update = 80
         elif self.action == 4:
-            frame_update = 120
+            if self.id == 'shooter':
+                frame_update = 120
+            else:
+                frame_update = 130
         else:
             frame_update = 95
             
@@ -736,22 +810,38 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             frame_update = 90
 
         #--shooting bullet---------------------------------------------------------------------------------
-        if self.action == 4 and self.frame_index == 4 and self.shoot_done == False and self.direction != 0:
-            #print("Pew!")
+        if self.id == 'shooter':
+            if self.action == 4 and self.frame_index == 4 and not self.shoot_done and self.direction != 0:
+                #print("Pew!")
+                
+                if self.flip == True:
+                    x = self.rect.right + 12
+                    #print("flipped") this is flipped
+                else:
+                    x = self.rect.left - 28
+                y = self.rect.y + self.height//3 - 4
+                enemy_bullet = bullet_(x, y, 8, self.direction, self.scale, '8x8_red', self.ini_vol)
+                self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery, None, None))
+                sp_group_list[1].add(enemy_bullet)
+                
+                self.shoot_done = True
+                self.shoot = False
+        elif self.id == 'fly':
+            if self.action == 4 and self.frame_index == 6 and not self.shoot_done:
+                #print('pew!')
+                sp_group_list[5].sprite.add_particle('enemy_bullet_explosion', self.rect.centerx, self.rect.bottom+4, -self.direction, self.scale, False, random.randrange(0,2))
+                for i in range(7):
+                    sp_group_list[5].sprite.add_particle('enemy_bullet_explosion', self.rect.centerx+random.randrange(-16,16), self.rect.bottom+random.randrange(-16,16), -self.direction, 0.3*self.scale, False, random.randrange(0,2))
+                enemy_bullet = bullet_(self.rect.centerx, self.rect.bottom+8, 6, self.direction, 1.5, '8x8_red', self.ini_vol, angle=self.theta, dmg=1)
+                enemy_bullet1 = bullet_(self.rect.centerx, self.rect.bottom+8, 6, self.direction, 1.5, '8x8_red', self.ini_vol, angle=self.theta+0.3, dmg=1)
+                enemy_bullet2 = bullet_(self.rect.centerx, self.rect.bottom+8, 6, self.direction, 1.5, '8x8_red', self.ini_vol, angle=self.theta-0.3, dmg=1)
+                self.m_player.play_sound(self.m_player.sfx[5], (self.rect.centerx, self.rect.centery, None, None))
+                sp_group_list[1].add(enemy_bullet)
+                sp_group_list[1].add(enemy_bullet1)
+                sp_group_list[1].add(enemy_bullet2)
+                
+                self.shoot_done = True
             
-            if self.flip == True:
-                x = self.rect.right + 12
-                #print("flipped") this is flipped
-            else:
-                x = self.rect.left - 28
-            y = self.rect.y + self.height//3 - 4
-            enemy_bullet = bullet_(x, y, 8, self.direction, self.scale, '8x8_red', self.ini_vol)
-            self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery, None, None))
-            sp_group_list[1].add(enemy_bullet)
-            
-            self.shoot_done = True
-            self.shoot = False
-        
         #setting the image
         self.image = self.frame_dict[self.action][self.frame_index]
         self.mask = pygame.mask.from_surface(self.image)
@@ -766,7 +856,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             if self.check_if_in_simulation_range(0):
                 if self.id == 'walker' and self.action == 0 and self.frame_index == 2:
                     self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery, None, None))
-                elif self.id == 'fly' and self.action != 2 and self.frame_index in (0,2):
+                elif self.id == 'fly' and self.action not in (2,4) and self.frame_index in (0,2):
                     self.m_player.play_sound(self.m_player.sfx[3], (self.rect.centerx, self.rect.centery, 
                                                                     pygame.rect.Rect(player_rect.x - self.width, 
                                                                                      player_rect.y - self.width, 
@@ -774,6 +864,9 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                                                                                      player_rect.height + 2*self.width),
                                                                     6*self.width
                                                                     ))
+                elif self.id == 'fly' and self.action == 4 and self.frame_index == 0:
+                    self.m_player.play_sound(self.m_player.sfx[2], (self.rect.centerx, self.rect.centery, None, None))
+                    
             
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
@@ -784,12 +877,14 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             self.frame_index = 0
             
             if self.action == 2:#hurting
+                #print('hi')
                 #boolean to whether just take damage or die
-                if self.inundated == True:
-                    self.pos_list *= 0
-                    self.inundated = False
+                #if self.inundated == True:
+                self.pos_list *= 0
+                self.inundated = False
                 self.recovering = True
                 self.idle_counter = 0
+                self.fly_atk_finished = True
                 
                 if self.id == 'walker':
                     if (self.flip and self.direction == -1) or (not self.flip and self.direction == 1):
@@ -803,33 +898,54 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             elif self.action == 0:
                 self.idle_counter += 1
                 if self.idle_counter > 1: #2
-                    self.idle_counter = 0
+                    self.idle_counter = 1
                 #print(self.idle_counter)
                 self.recovering = False
                 
             elif self.action == 4:
                 self.idle_counter = 0
                 self.shoot_done = False
+                if self.id == 'fly':
+                    self.fly_atk_finished = True
+                    self.idle_counter -= 5
                 
             elif self.action == 5:
                 self.jump_counter += 1
                 if self.jump_counter > 1:
                     self.jump = False
                     self.jump_counter = 0
+                    
+            
     
     def explode(self, sp_group_list):
         particle_name = self.id + '_death'
+        for i in range(15):
+            sp_group_list[5].sprite.add_particle('bloom', self.rect.centerx+random.randrange(-32,32), self.rect.centery+random.randrange(-32,32), -self.direction, 0.2*self.scale, False, random.randrange(0,2))
+            sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-72,72), self.rect.centery+random.randrange(-72,72), -self.direction, 0.2*self.scale, False, random.randrange(0,3))
+        # for i in range(5):
+        #     sp_group_list[5].sprite.add_particle('bloom_orange', self.rect.centerx+random.randrange(-32,32), self.rect.centery+random.randrange(-32,32), -self.direction, 0.2*self.scale, False, random.randrange(0,2))
+        #     sp_group_list[5].sprite.add_particle('bloom_yellow', self.rect.centerx+random.randrange(-32,32), self.rect.centery+random.randrange(-32,32), -self.direction, 0.2*self.scale, False, random.randrange(0,2))
+
         sp_group_list[3].sprite.add_particle(particle_name, self.rect.x - self.half_width, self.rect.y - self.half_height, self.direction, self.scale, False, 0)
         
 
     def draw(self, screen):
         #self.animate()
         if self.check_if_onscreen():
+            if self.fly_aimline_tgt != (-1,-1) and pygame.time.get_ticks()%2 == 0:
+                pygame.draw.line(screen, (255,0,0), (self.rect.centerx, self.rect.centery+24), self.fly_aimline_tgt, 3)
+                # if self.frame_index == 4 and pygame.time.get_ticks()%5 != 0:
+                #     pygame.draw.line(screen, (255,255,255), self.rect.center, self.fly_aimline_tgt) 
+            
+            
             if self.inundated and self.frame_index < 1:
                 if pygame.time.get_ticks()%5 != 0:
                     screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
             else:
                 screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+                
+            
+                    
                 
             # if self.pos_list != []:
             #     for pos in self.pos_list:

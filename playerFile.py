@@ -192,7 +192,7 @@ class player(pygame.sprite.Sprite):
             20: (False, False, 145), #jump down
             21: (True, False, 100), #flip
             22: (False, False, 100), #sprint
-            23: (False, False, 125) #throw
+            23: (False, True, 100) #throw
         }
         self.is_invulnerable = {key:self.action_dict[key][0] for key in self.action_dict}
         self.disp_states = {key:self.action_dict[key][1] for key in self.action_dict}
@@ -225,6 +225,9 @@ class player(pygame.sprite.Sprite):
         self.slide_kick = False
        
     #methods
+    def cancel_shoot(self):
+        self.shoot = False
+        self.charge_built = 0
     
     def update_action_history(self, action):
         if action != 0 and action != 1:# and action != 4: 
@@ -265,10 +268,11 @@ class player(pygame.sprite.Sprite):
                 
     def particles_by_frame(self, particle_index, the_sprite_group, sound):
         if self.frame_index != self.last_frame:
-            if not self.disp_flag or self.action == 18: 
-                x = self.rect.centerx
-            else:
-                x = self.rect.right
+            # if not self.disp_flag or self.action == 18: 
+            #     x = self.rect.centerx
+            # else:
+            #     x = self.rect.right
+            x = self.rect.centerx
                 
             scale = self.scale
             y = self.rect.centery
@@ -384,22 +388,26 @@ class player(pygame.sprite.Sprite):
         if (not self.is_invulnerable[self.action] and not self.i_frames_en and self.Alive):
             #sprite based collisions
             #expensive
-            for enemy in enumerate(the_sprite_group.hostiles_group):
-                if pygame.sprite.spritecollide(self, enemy[1], False): 
-                    if pygame.sprite.spritecollide(self, enemy[1], False, pygame.sprite.collide_mask):
-                        # if enemy[1] == the_sprite_group.enemy0_group:
-                        #     print(enemy)
-                        if enemy[1] == the_sprite_group.enemy_bullet_group:
-                            damage += 3
-                            self.take_damage(damage, 826)
-                        if enemy[1] == the_sprite_group.enemy_bullet_group2:
-                            damage += 2
-                            self.take_damage(damage, 836)
-                        if enemy[1] == the_sprite_group.p_int_group2:
-                            damage += 0.75*self.hp
-                            self.take_damage(damage, 836)
-                    #print(damage)
-                damage = 0
+            # for enemy in enumerate(the_sprite_group.hostiles_group):
+            #     if pygame.sprite.spritecollide(self, enemy[1], False): 
+            #         if pygame.sprite.spritecollide(self, enemy[1], False, pygame.sprite.collide_mask):
+            #             # if enemy[1] == the_sprite_group.enemy0_group:
+            #             #     print(enemy)
+            #             if enemy[1] == the_sprite_group.enemy_bullet_group:
+            #                 damage += 3
+            #                 self.take_damage(damage, 826)
+            #             if enemy[1] == the_sprite_group.enemy_bullet_group2:
+            #                 damage += 2
+            #                 self.take_damage(damage, 836)
+            #             if enemy[1] == the_sprite_group.p_int_group2:
+            #                 damage += 0.75*self.hp
+            #                 self.take_damage(damage, 836)
+            #         #print(damage)
+            #     damage = 0
+            
+            for bullet in the_sprite_group.enemy_bullet_group:
+                if self.hitbox_rect.colliderect(bullet.rect):
+                    self.take_damage(bullet.dmg, 836) 
 
             #rect based collisions
             for enemy in [enemy for enemy in the_sprite_group.enemy0_group 
@@ -603,7 +611,7 @@ class player(pygame.sprite.Sprite):
             
     def do_tile_collisions(self, world_solids, the_sprite_group, ccsn_chance):
         lvl_transition_flag = False
-        lvl_transition_data = []
+        lvl_transition_data = {}
         lvl_trans_orientation = 'vertical'
         lvl_trans_disp = 0
         self.do_platform_sprite_collisions(the_sprite_group.p_int_group)
@@ -688,8 +696,11 @@ class player(pygame.sprite.Sprite):
                     self.hitting_wall_timer = pygame.time.get_ticks()
                     
                     #self.dx = -self.direction
+                    m = 1
+                    if self.hurting:
+                        m = 16
                     if abs(self.direction + self.dx) < abs(self.dx):
-                        self.dx = self.direction
+                        self.dx = m*self.direction
                     elif abs(self.direction + self.dx) > abs(self.dx):
                         self.dx = -self.direction
 
@@ -795,7 +806,6 @@ class player(pygame.sprite.Sprite):
             self.coyote_time = pygame.time.get_ticks()
             
         return (lvl_transition_flag, lvl_transition_data, lvl_trans_orientation, lvl_trans_disp)
-        #return (self.dx, self.dy, (lvl_transition_flag, lvl_transition_data, lvl_trans_orientation, lvl_trans_disp))
     
     
     def update_coords(self, world_rect):
@@ -821,10 +831,10 @@ class player(pygame.sprite.Sprite):
             self.jump_counter = 0
         
         #move
-        if (self.action == 1 or self.action == 22) and self.frame_index%3 == 0:
+        if (self.action in (1, 22)) and self.frame_index%3 == 0:
             self.particles_by_frame(self.frame_index//2 + 2, the_sprite_group, 3)
         
-        if not self.disp_flag and self.action != 5 and not self.hitting_wall and not self.using_item: #self.action < 5:# and self.rolled_into_wall == False:
+        if not self.disp_flag and self.action != 5 and not self.hitting_wall and not self.using_item and not self.shoot: #self.action < 5:# and self.rolled_into_wall == False:
             if moveL and not moveR:
                 self.dx = -self.speed
                 self.flip = True
@@ -850,6 +860,7 @@ class player(pygame.sprite.Sprite):
                 
         elif self.action == 5:#taking damage, hurting----------------------
             #print(self.direction)
+            self.cancel_shoot()
             self.slide_kick = False
             self.dx = -self.direction * 4
             if self.vel_y > 10:
@@ -899,10 +910,12 @@ class player(pygame.sprite.Sprite):
             and not (moveL and self.direction == 1)
             and not (moveR and self.direction == -1)
             ):
-            if not self.in_air:
-                self.particles_by_frame(self.frame_index//2 + 2, the_sprite_group, 3)
-            else:
-                self.particles_by_frame(self.frame_index//2 + 2, the_sprite_group, -1)
+            # if not self.in_air:
+            #     self.particles_by_frame(self.frame_index//2 + 2, the_sprite_group, 3)
+            # else:
+            #     self.particles_by_frame(self.frame_index//2 + 2, the_sprite_group, -1)
+                
+            self.particles_by_frame(self.frame_index//2 + 2, the_sprite_group, 3)
 
             self.roll_count = 0
             #self.roll_stam_rate = 0
@@ -925,7 +938,8 @@ class player(pygame.sprite.Sprite):
         #------------------------------------------------------------------------------------------------------------------------------------------------------
         #atk1------------------------------------------------------------------------------------------------------------------------------------
         #------------------------------------------------------------------------------------------------------------------
-
+        if self.action == 10 and self.frame_index < 1:
+            the_sprite_group.particle_group.sprite.add_particle('bloom', self.rect.centerx, self.rect.centery, -self.direction, self.scale/5, True, -1)
         
         if self.atk1 and not self.hurting:#adjusting speed to simulate momentum, motion stuff
             self.curr_state = self.in_air
@@ -939,6 +953,7 @@ class player(pygame.sprite.Sprite):
                 and not (self.slide_kick and self.frame_index > 2 + self.crit - 2*self.heavy)
                 ): #not (self.rolling) and 
                 if (self.frame_index == 0):#fast initial impulse
+                    self.slide_kick = False
                     # if pygame.time.get_ticks() < self.update_time + 20:
                     #     self.m_player.play_sound (self.m_player.sfx[1])
                     if self.crit and self.check_if_in_ss_range():
@@ -1081,15 +1096,16 @@ class player(pygame.sprite.Sprite):
                 
         #throwing
         if self.action == 23:
+            if self.frame_index < 2:
+                self.particles_by_frame(self.frame_index//2 + 2, the_sprite_group, 3)
             
-            if self.frame_index == 0 and not self.hitting_wall and not self.in_air:
-                self.dx = -self.direction*self.speed
-            elif self.frame_index == 1 and self.charge_built == 1:
-                self.dx = self.direction*self.speed*3
+            # if self.frame_index == 0 and not self.hitting_wall and not self.in_air:
+            #     self.dx = -self.direction*self.speed
+            if self.frame_index == 1 and self.charge_built == 1:
+                #self.dx += self.direction*self.speed
                 #self.vel_y = 0
                 self.charge_built = 0
                 self.rolling = False
-                self.inventory_handler.discard_item_by_slot()
                 self.m_player.play_sound(self.m_player.sfx[5], None)
                 #self.shoot = False
                 #spawn bullet---------------------------------------------------------------------------------------------
@@ -1100,11 +1116,20 @@ class player(pygame.sprite.Sprite):
                 y = int(self.rect.y + 0.5 * self.height)
                 #have different projectiles depending on what's in the current slot
                 if self.inventory_handler.get_item_name_in_slot() == 'Rock':
-                    player_bullet = bullet_(x, y, 20, self.direction, self.scale, 'player_basic', self.ini_vol)
+                    player_bullet = bullet_(x, y, 32, self.direction, self.scale, 'player_basic', self.ini_vol)
                     the_sprite_group.player_bullet_group.add(player_bullet)
+                self.inventory_handler.discard_item_by_slot()
+                    
                 self.stamina_used += self.shoot_stamina_cost
-            else:
+            if self.frame_index >= 1:
                 self.dx = self.direction*self.speed//2
+
+            
+            if moveL or moveR:
+                if self.frame_index == 1:
+                    self.dx += self.direction*self.speed*2
+                else:
+                    self.dx += self.direction*self.speed//2
 
 
         #hurting/ enemy collisions
@@ -1168,8 +1193,6 @@ class player(pygame.sprite.Sprite):
             self.dy = 0
             lvl_transition_flag_and_data = (False, [])
         else:
-            # self.dxself.dy = self.do_tile_collisions(world_solids, the_sprite_group, ccsn_chance)
-            # lvl_transition_flag_and_data = self.dxself.dy[2]
             lvl_transition_flag_and_data = self.do_tile_collisions(world_solids, the_sprite_group, ccsn_chance)
 
         # self.dx = self.dxself.dy[0]
@@ -1357,7 +1380,7 @@ class player(pygame.sprite.Sprite):
     
     
     def animate(self, the_sprite_group):
-        self.mask = pygame.mask.from_surface(self.image)
+        
 
         #everything speeds up when pressing alt/sprint except shooting at the cost of slower stamina regen
         adjustment = 0
@@ -1384,7 +1407,7 @@ class player(pygame.sprite.Sprite):
 
         #setting the image
         self.image = self.frame_list[self.action][self.frame_index]
-        
+        self.mask = pygame.mask.from_surface(self.image)
         
         #change frame index---------------------------------------------------------------
         if pygame.time.get_ticks() - self.update_time > frame_update:
@@ -1475,7 +1498,7 @@ class player(pygame.sprite.Sprite):
                 else:
                     x = self.rect.left - 32
                 y = int(self.rect.y + 0.25 * self.height)
-                player_bullet = bullet_(x, y, 20, self.direction, self.scale, 'player_basic', self.ini_vol)
+                player_bullet = bullet_(x, y, 32, self.direction, self.scale, 'player_basic', self.ini_vol)
                 the_sprite_group.player_bullet_group.add(player_bullet)
                 self.charge_built -= 2
                 i = 0
@@ -1493,7 +1516,7 @@ class player(pygame.sprite.Sprite):
                         y += (i)
                     else:
                         y -= (i)
-                    player_bullet = bullet_(x , y, 20, self.direction, self.scale, 'player_basic', self.ini_vol)
+                    player_bullet = bullet_(x , y, 32, self.direction, self.scale, 'player_basic', self.ini_vol)
                     the_sprite_group.player_bullet_group.add(player_bullet)
                 
                 self.extra_recoil = i*3
@@ -1528,6 +1551,16 @@ class player(pygame.sprite.Sprite):
         if self.shot_charging and self.action < 5:
             self.BP_animate()
             screen.blit(pygame.transform.flip(self.image2, self.flip, False), self.BP_rect)
+
+        # if self.flip:
+        #     dispx = 1
+        # else:
+        #     dispx = -1
+        # outline_surf = pygame.surface.Surface((self.rect.width+2, self.rect.height+2), flags=pygame.SRCALPHA, depth=32)
+        # for pix in self.mask.outline():
+        #     pygame.draw.rect(outline_surf, (255, 0, 0, 100), pygame.rect.Rect(pix[0]+dispx, pix[1]-2, 3, 3))
+        # outline_surf.blit(self.mask.to_surface(setcolor=(255, 0, 0, 100), unsetcolor=(0,0,0,0)))
+        # screen.blit(pygame.transform.flip(outline_surf, self.flip, False), self.rect)
         
         #pygame.draw.rect(screen, (0,0,255), self.collision_rect)
         # pygame.draw.rect(screen, (255,0,0), self.hitbox_rect)

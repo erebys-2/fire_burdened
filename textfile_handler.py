@@ -51,6 +51,12 @@ class textfile_formatter():
                         value = int(line[line.index(char)+2: len(line)])
                     elif format_mode == 'float':
                         value = float(line[line.index(char)+2: len(line)])
+                    elif format_mode == 'bool':
+                        word = line[line.index(char)+2: len(line)]
+                        if word == 'True':
+                            value = True
+                        else:
+                            value = False
                     else:
                         value = line[line.index(char)+2: len(line)]
                     

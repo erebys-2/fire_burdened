@@ -56,6 +56,9 @@ class sprite_instantiator():
                         tmp_str = self.all_dialogue_dict[npc_dict][line][key]
                         self.all_dialogue_dict[npc_dict][line][key] = t1.split_string2(tmp_str, 60)#, t1.endcase_char)
                         
+        config_path = os.path.join('assets', 'config_textfiles', 'world_config', 'particle_alignment_dict.txt')
+        self.particle_alignment_dict = t1.str_list_to_dict(t1.read_text_from_file(config_path), 'bool')
+                        
         #self.plot_index_jump_dict =  os.path.join('assets', 'npc_dialogue_files', 'npc_plot_index_config')
                 
         print('sprite instantiator loaded!')
@@ -112,6 +115,25 @@ class sprite_instantiator():
             
         return img_dict
     
+    def add_hsl_particles(self, img_dict, centered_dict, name_list):
+        for data_tuple in name_list:
+            name = data_tuple[0]
+            
+            if name in img_dict:
+                new_name = data_tuple[1]
+                h = data_tuple[2]
+                s = data_tuple[3]
+                l = data_tuple[4]
+                temp_list = []
+                for img in img_dict[name]:
+                    temp_list.append(pygame.transform.hsl(img, h, s, l))
+                img_dict[new_name] = temp_list
+                
+                if centered_dict[name]:
+                    centered_dict[new_name] = True
+        
+        return img_dict, centered_dict
+    
     def get_sfx_list(self, str_list):
         sfx_list = []
         for str_ in str_list:
@@ -162,7 +184,7 @@ class sprite_instantiator():
                     world.enemy0_order_id += 1
                 elif sprite_id == 'fly':
                     enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'fly', world.enemy0_order_id, ini_vol, self.enemy_img_dict[sprite_id],
-                                          self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'bee_hurt.mp3', 'bee.mp3', 'step2soft.mp3', 'hit2.mp3']))
+                                          self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'bee_hurt.mp3', 'bee.mp3', 'step2soft.mp3', 'hit2.mp3', 'shoot.mp3']))
                     the_sprite_group.enemy0_group.add(enemy0)
                     world.enemy0_order_id += 1
                 elif sprite_id == 'walker':

@@ -1,4 +1,5 @@
 import configparser as cfgp
+import yaml
 #import os
 
 class cfg_handler():
@@ -55,6 +56,43 @@ class cfg_handler():
                 rtn_val = float(str_)
             
         return rtn_val
+    
+class yaml_handler():
+    def __init__(self):
+        pass
+    
+    def get_data(self, path):
+        with open(path, 'r') as f:
+            data = yaml.safe_load(f)
+        return data
+    
+    def write_full_data(self, data, path):
+        with open(path, 'w') as f:
+            yaml.dump(data, f, indent=4, sort_keys=False)
+            
+    def write_value(self, path, key, value):
+        with open(path, 'r') as f:
+            data = yaml.safe_load(f)
+            
+        data[key] = value
+        
+        with open(path, 'w') as f:
+            yaml.dump(data, f, indent=4, sort_keys=False)
+                
+    def format_complex_str(self, str_, force_none=False):
+        if force_none:
+            self.filter_word(str_, 'None', '~')
+        
+        return yaml.safe_load(str_)
+    
+    def filter_word(self, str_, word, replacement):
+        index_ = str_.find(word)
+        while index_ != -1:
+            #print('hit')
+            str_ = str_[0:index_] + replacement + str_[index_ + len(word):len(str_)]
+            index_ = str_.find(word)
+        
+        return str_
     
 # def __main__():
 #     cfg0 = cfg_handler()

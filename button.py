@@ -43,7 +43,7 @@ class Button():
 		pygame.draw.rect(surface, (200,200,120), self.rect)
   
 
-	def draw(self, surface):
+	def draw(self, surface, pos_=None):
 		#print(self.clicked)
 		if self.count_down == 1:
 			self.count_down = 0
@@ -56,7 +56,10 @@ class Button():
 			img = self.image2
   
 		#get mouse position
-		pos = pygame.mouse.get_pos()
+		if pos_ is None:
+			pos = pygame.mouse.get_pos()
+		else:
+			pos = pos_
 
 		#check mouseover and clicked conditions
 		if self.rect.collidepoint(pos):

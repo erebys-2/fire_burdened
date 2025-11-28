@@ -2,7 +2,7 @@ import pygame
 import os
 import random
 from spriteInstantiator import sprite_instantiator
-
+from cfg_handler0 import yaml_handler
 from textfile_handler import textfile_formatter
 
 import csv
@@ -69,6 +69,7 @@ class World():
         
             
         self.t1 = textfile_formatter()
+        y = yaml_handler()
         
         #create dicitonary from special tiles text file
         path = os.path.join('assets', 'config_textfiles', 'world_config')#'assets/config_textfiles/world_config/'
@@ -77,8 +78,8 @@ class World():
         self.special_hitbox_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'special_hitbox_tiles_dict.txt')), 'none')
         self.slightly_oversized_tiles_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path, 'slightly_oversized_tiles_dict.txt')), 'float')
         
-        path2 = os.path.join('assets', 'config_textfiles', 'level_config')#'assets/config_textfiles/level_config/'
-        self.level_sizes_dict = self.t1.str_list_to_dict(self.t1.read_text_from_file(os.path.join(path2, 'level_sizes_dict.txt')), 'list')
+        full_level_data = y.get_data(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'))
+        self.level_sizes_dict = {level:full_level_data[level]['size'] for level in full_level_data}
 
         #load onetime_spawn_dict whenever a save file is selected
         #this will be saved as a textfile, used for items and chests
@@ -232,12 +233,15 @@ class World():
         elif lvl_data_trans_list != None and tile_type == 'lvl_transition':#level transition tile
             img = self.tileList[0][9]
             
-            # img = pygame.Surface((lvl_data_trans_list[self.transition_index][0], lvl_data_trans_list[self.transition_index][1]))
+            lvl_data_trans_dict = lvl_data_trans_list[self.transition_index]
+            
+            # img = pygame.Surface((lvl_data_trans_dict['w'], lvl_data_trans_dict['h']))
             # img.fill((255,0,0))        
-            img_rect = pygame.Rect(0, 0, lvl_data_trans_list[self.transition_index][0], lvl_data_trans_list[self.transition_index][1])
-            transition_data = list(lvl_data_trans_list[self.transition_index][2:6]) #passed to the player: next_level, player new x, player new y, bound index
-            transition_data.append((x*32,y*32))
-            #print(transition_data)
+            img_rect = pygame.Rect(0, 0, lvl_data_trans_dict['w'], lvl_data_trans_dict['h'])
+            
+            transition_data = {k:lvl_data_trans_dict[k] for k in lvl_data_trans_dict if k not in ('w', 'h')}
+            transition_data['pos'] = (x*32,y*32)
+            
             self.transition_index += 1
         
         #modify placement of the rect
@@ -260,6 +264,7 @@ class World():
     #check onetime spawn dict
     def check_onetime_spawn_dict(self, level): #called before sprite groups are purged during level change
         if level != 0 and level in self.onetime_spawn_dict:
+            #print(self.onetime_spawn_dict[level])
             for i in range(len(self.onetime_spawn_dict[level])):
                 found = False
                 for sp_group in self.sp_groups_to_check:
@@ -340,8 +345,7 @@ class World():
                         tile_data = (img, img_rect, tile, [])
                         
                         self.solids.append(tile_data)
-        #self.solids, x, y = self.process_game_layer(raw_lvl_data_dict['data'], False, the_sprite_group, ini_vol, level, lvl_data_trans_list)
-                        
+      
         #set world limits as width/height of the world's rect
         self.rect.width = x * 32
         self.rect.height = y * 32
@@ -467,7 +471,7 @@ class World():
                         else:
                             img = self.tileList[0][tile]
                             
-                        if is_detailed_bg and tile not in (8,57,58):
+                        if is_detailed_bg and tile not in (8,57,58,85,86,87,88):
                             img = pygame.transform.hsl(img, -0.75, -0.75, -0.75)
                             
                         if tile in self.slightly_oversized_tiles_dict:

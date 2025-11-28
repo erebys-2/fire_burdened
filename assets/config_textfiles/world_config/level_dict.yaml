@@ -1,0 +1,149 @@
+0:
+    size:
+    - 15
+    - 26
+    color:
+    - 0
+    - 0
+    - 0
+    trans_data: []
+    player_en: false
+    name: ''
+1:
+    size:
+    - 15
+    - 300
+    color:
+    - 140
+    - 113
+    - 108
+    trans_data:
+    -   x: 0
+        y: 0
+        n_lvl: 2
+        new_x: 1408
+        new_y: null
+        pair: null
+        w: 2
+        h: 480
+    -   x: 299
+        y: 0
+        n_lvl: 3
+        new_x: 0
+        new_y: null
+        pair: null
+        w: 2
+        h: 480
+    player_en: true
+    name: Outer City Ruins
+2:
+    size:
+    - 15
+    - 45
+    color:
+    - 140
+    - 113
+    - 108
+    trans_data:
+    -   x: 44
+        y: 0
+        n_lvl: 1
+        new_x: 0
+        new_y: null
+        pair: null
+        w: 2
+        h: 480
+    player_en: true
+    name: Barrier's Edge
+3:
+    size:
+    - 15
+    - 40
+    color:
+    - 140
+    - 113
+    - 108
+    trans_data:
+    -   x: 0
+        y: 0
+        n_lvl: 1
+        new_x: 9568
+        new_y: null
+        pair: null
+        w: 2
+        h: 480
+    -   x: 39
+        y: 0
+        n_lvl: 4
+        new_x: 0
+        new_y: null
+        pair: null
+        w: 2
+        h: 480
+    player_en: true
+    name: Outer City Ruins
+4:
+    size:
+    - 15
+    - 244
+    color:
+    - 140
+    - 113
+    - 108
+    trans_data:
+    -   x: 0
+        y: 0
+        n_lvl: 3
+        new_x: 1248
+        new_y: null
+        pair: null
+        w: 2
+        h: 480
+    -   x: 243
+        y: 0
+        n_lvl: 6
+        new_x: 0
+        new_y: null
+        pair: null
+        w: 2
+        h: 480
+    -   x: 176
+        y: 14
+        n_lvl: 5
+        new_x: null
+        new_y: 2
+        pair: 0
+        w: 640
+        h: 2
+    player_en: true
+    name: Outer City Ruins
+5:
+    size:
+    - 15
+    - 20
+    color:
+    - 30
+    - 29
+    - 36
+    trans_data:
+    -   x: 0
+        y: 0
+        n_lvl: 4
+        new_x: null
+        new_y: 384
+        pair: 2
+        w: 640
+        h: 2
+    player_en: true
+    name: Outer City Ruins
+6:
+    size:
+    - 15
+    - 160
+    color:
+    - 140
+    - 113
+    - 108
+    trans_data: []
+    player_en: true
+    name: Outer City Ruins

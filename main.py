@@ -24,6 +24,7 @@ import random
 # from array import array
 # from shadersHandler import modernGL_handler
 from profilehooks import profile
+from cfg_handler0 import yaml_handler
 
 #@profile
 
@@ -122,34 +123,10 @@ def main():
 	jade = [119, 121, 124]
 	grey = (140, 113, 108)#(140,124,148)#(134, 112, 116)#(162, 132, 140)#(232, 124, 109)#[110, 95, 111]
 	dark_grey = [30, 29, 36]
-
-	#dictionaty for gradients
-	gradient_dict = {
-		'none':(0,0,0),
-		'sunset':(-1,-1,1),
-		'rain':(-1,1,2)
-	}
-
-	#tuple for level transitions
-	#level_dict: (color, gradient, y tile count, x tile count, lvl trans data, player enable)
-	#lvl trans data: (width, height, next_level, player_new_x, player_new_y, paired_index)
- 	# 			=> (tile rect, next level, new player location)
-	null = -999
-	ht = SCREEN_HEIGHT
-	wd = SCREEN_WIDTH
-	std_y_disp = ht - 3*ts
-	
-	level_dict = {
-		#==================================================================Note that tile order priority is row then column=================================================================
-		0:[black, 'none', [], False, ''], #lvl 0
-		1:[grey, 'none', [(2, ht, 2, 44*ts, null, null), (2, ht, 3, 0, null, null)], True, 'Outer City Ruins'], #lvl 1
-		2:[grey, 'none', [(2, ht, 1, 0, null, null)], True, "Barrier's Edge"], #lvl 2
-		3:[grey, 'none', [(2, ht, 1, 299*ts, null, null), (2, ht, 4, 0, null, null)], True, 'Outer City Ruins'],
-		4:[grey, 'none', [(2, ht, 3, 39*ts, null, null), (2, ht, 6, 0, null, null), (wd, 2, 5, null, 2, 0)], True, 'Outer City Ruins'],
-		5:[dark_grey, 'none', [(wd, 2, 4, null, std_y_disp, 2)], True, 'Outer City Ruins'],
-		6:[grey, 'none', [], True, 'Outer City Ruins']
-	}
  
+	y = yaml_handler()	
+	level_dict = y.get_data(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'))
+
 	level_ambiance_dict = {#scale, p_type, frame, density, sprite_group
 		1:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),),#have to put an extra comma in
 		2:((0.3, 'player_bullet_explosion', 0, 1, the_sprite_group.particle_group_bg), (0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg)),
@@ -162,7 +139,7 @@ def main():
 	#populate area name dict
 	area_name_dict = {}
 	for entry in level_dict:
-		area_name_dict[entry] = level_dict[entry][4]
+		area_name_dict[entry] = level_dict[entry]['name']
 	area_name_img = pygame.image.load('assets/sprites/pause_bg2.png').convert_alpha()
 	area_name_img = pygame.transform.scale(area_name_img, (SCREEN_WIDTH, SCREEN_HEIGHT//15))
 
@@ -173,7 +150,6 @@ def main():
 	default_text_speed = 30
 	text_speed = default_text_speed
  
- 
 	screen_scaling = [1,2,4,1]
 
 	#---------------------------------------------------------MODERNGL THINGS---------------------------------------------------
@@ -182,16 +158,6 @@ def main():
 
 
 	#methods--------------
-
-	def draw_bg(screen, gradient_dict, gradient_type, bg_color):
-		
-		rgb = gradient_dict[gradient_type]
-		#drawing bg color
-		if gradient_type != 'none':
-			for i in range(SCREEN_HEIGHT//32):
-				pygame.draw.rect(screen, [bg_color[0]+ i*rgb[0], bg_color[1]+i*rgb[1], bg_color[2] + i*rgb[2]], ((0,i*32), (SCREEN_WIDTH,(i+1)*32)))
-		else:
-			screen.fill((bg_color))
 	
 	
 
@@ -266,15 +232,21 @@ def main():
 	#load img dict for particles
 	particle_path = os.path.join('assets', 'sprites', 'particle')#'assets/sprites/particle'
 	particle_img_dict = world.sp_ini.load_img_dict(particle_path)
-	
+	centered_dict = world.sp_ini.particle_alignment_dict
+	name_list = [
+		('bloom', 'bloom_orange', 10, 0, 0.2),
+		('bloom', 'bloom_yellow', 20, 0, 0.2)
+	]
+	particle_img_dict, centered_dict = world.sp_ini.add_hsl_particles(particle_img_dict, centered_dict, name_list)
+
 	#add particle_2 objects into particle sprite groups
-	particle_2_ = particle_2(particle_img_dict)
+	particle_2_ = particle_2(particle_img_dict, centered_dict)
 	the_sprite_group.particle_group.add(particle_2_)
  
-	particle_2_fg = particle_2(particle_img_dict)
+	particle_2_fg = particle_2(particle_img_dict, centered_dict)
 	the_sprite_group.particle_group_fg.add(particle_2_fg)
  
-	particle_2_bg = particle_2(particle_img_dict)
+	particle_2_bg = particle_2(particle_img_dict, centered_dict)
 	the_sprite_group.particle_group_bg.add(particle_2_bg)
 	
 	the_sprite_group.purge_sprite_groups()#does as the name suggests at the start of each load of the game
@@ -284,14 +256,14 @@ def main():
 	}
 
 	# load level data
-	world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][2], vol_lvl)
+	world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level]['trans_data'], vol_lvl)
 
 	#running the game----------------------------------------------------------------------------------------------------------------------
 
 	run = True
 	player_new_x = 32
 	player_new_y = 32
-	bound_index = null
+	bound_index = None
 	transition_orientation = 'vertical'
 	ld_title_screen_en = True
 
@@ -337,14 +309,14 @@ def main():
 		#screen.fill((0, 0, 0)) 
 		temp_move_R = False
 		temp_move_L = False
-		player_enable_master = (level_dict[level][3] and not level_transitioning and not camera.set_ini_pos)
+		player_enable_master = (level_dict[level]['player_en'] and not level_transitioning and not camera.set_ini_pos)
 
 		
 		if player0_lvl_transition_data[0]:#test for player collision w/ level transition rects
-			next_level = player0_lvl_transition_data[1][0]
-			player_new_x = player0_lvl_transition_data[1][1]
-			player_new_y = player0_lvl_transition_data[1][2]
-			bound_index = player0_lvl_transition_data[1][3]
+			next_level = player0_lvl_transition_data[1]['n_lvl']
+			player_new_x = player0_lvl_transition_data[1]['new_x']
+			player_new_y = player0_lvl_transition_data[1]['new_y']
+			bound_index = player0_lvl_transition_data[1]['pair']
 			#next_level, player_new_x, player_new_y, bound_index, dummy_var = player0_lvl_transition_data[1]
 			transition_orientation = player0_lvl_transition_data[2]
 			transition_disp = player0_lvl_transition_data[3]
@@ -376,7 +348,7 @@ def main():
 			level = next_level
 
 			# load level data
-			world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level][2], vol_lvl)
+			world.process_data(level, the_sprite_group, SCREEN_WIDTH, SCREEN_HEIGHT, level_dict[level]['trans_data'], vol_lvl)
 			# each tile is set with data
 			
 			if move_L:
@@ -398,7 +370,9 @@ def main():
 						loaded_lvl_trans_tiles.append(tile)
 					#set new x to the x position of the paired lvl trans tile 
      				#with some transition_disp = previous player rect.x - previous lvl trans tile rect.x
-					player0.rect.x = loaded_lvl_trans_tiles[bound_index][3][4][0] + transition_disp
+					#print(loaded_lvl_trans_tiles[bound_index])
+     				#(<Surface(32x32x32, global_alpha=255)>, Rect(0, 0, 640, 2), 10, [4, -999, 384, 2, (0, 0)])
+					player0.rect.x = loaded_lvl_trans_tiles[bound_index][3]['pos'][0] + transition_disp
 					player0.rect.y = player_new_y
 					camera.scrollx = 0				
 	
@@ -424,7 +398,7 @@ def main():
 
 		#---------------------------------------------------------drawing level and sprites------------------------------------------------------------------
 		#---------------------------------------------------------handling movement and collisions and AI----------------------------------------------------
-		draw_bg(screen, gradient_dict, level_dict[level][1], level_dict[level][0])#this just draws the color
+		screen.fill(level_dict[level]['color'])
 		if camera.is_visible:
 			camera.draw(screen)#for camera debugging
 		if world.x_scroll_en and not pause_game:
@@ -533,7 +507,6 @@ def main():
    
 			#passive items temp code
 			passive_effects_dict['salted_earth'] = player0.inventory_handler.check_for_item('Talisman of Salted Earth')
-				
    
 			#draw area name here
 			if area_name_time + 2500 > pygame.time.get_ticks():
@@ -628,7 +601,7 @@ def main():
 	
 		#--------------------------------------------------------------MAIN MENU CODE---------------------------------------------------------------------
 		if level == 0 or ui_manager0.saves_menu_enable: 
-			draw_bg(screen, gradient_dict, level_dict[level][1], level_dict[level][0])
+			screen.fill(level_dict[level]['color'])
 			world.lvl_completion_dict = {0:0} #reset 
 			world.onetime_spawn_dict = {}
 			pause_game = False
@@ -933,7 +906,7 @@ def main():
 				else:
 					event_trigger = event.button
 
-				if player0.Alive and level_dict[level][3] and not pause_game and not dialogue_enable:
+				if player0.Alive and level_dict[level]['player_en'] and not pause_game and not dialogue_enable:
 					if inventory_opened:
 						if event_type_dn == pygame.KEYDOWN:
 							inv_directions[0] = (event_trigger == pygame.K_RIGHT) #Right

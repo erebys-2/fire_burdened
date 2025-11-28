@@ -1,15 +1,22 @@
 import pygame
 import os
 from music_player import music_player
+import math as m
+
 class bullet_(pygame.sprite.Sprite):
-    def __init__(self, x, y, speed, direction, scale, type, ini_vol):
+    def __init__(self, x, y, speed, direction, scale, type, ini_vol, angle = 0, dmg = -1):
         pygame.sprite.Sprite.__init__(self)
         
         self.m_player = music_player(['pop.mp3', 'hit.mp3'], ini_vol)
         self.Active = True
         self.scale = scale
         
-        self.direction = direction
+        if angle == 0:
+            self.direction = direction
+        else:
+            self.direction = 1
+        self.v_direction = 1
+        
         self.speed = speed
         self.bullet_type = type
         self.exploded = False
@@ -22,19 +29,23 @@ class bullet_(pygame.sprite.Sprite):
         self.deflected = False
         self.action = 0
         
+        
         self.animation_types = []
         self.frame_list = []
         self.frame_index = 0
         self.update_time = pygame.time.get_ticks()
         self.max_cycles = -1
+        self.dmg = 0
         
         if type == '8x8_red':
             self.animation_types = ['default']
+            self.dmg = 3
         if type == 'player_basic':
             self.animation_types = ['default']
-            self.max_cycles = 5
+            self.max_cycles = 6
         if type == 'ground_impact':
             self.animation_types = ['default']
+            self.dmg = 3
             
         base_path = os.path.join('assets', 'sprites', 'bullet', self.bullet_type)
         for animation in self.animation_types:
@@ -56,6 +67,13 @@ class bullet_(pygame.sprite.Sprite):
         
         self.edge_rect = pygame.rect.Rect(self.rect.right, self.rect.y, 2, self.rect.height)
         
+        self.vel_y = 0
+        self.vel_x = 0
+        self.angle = angle
+        if dmg != -1:
+            self.dmg = dmg
+        
+        
         
     def move(self, player, world_solids, scrollx, sp_group_list):
         player_rect = player.hitbox_rect
@@ -67,12 +85,19 @@ class bullet_(pygame.sprite.Sprite):
         dy = 0
         
         if self.Active == True and self.action != 1:
-            dx = self.direction * self.speed
+            if self.angle == 0:
+                dx = self.direction * self.speed
+            else:
+                dx = self.direction * self.speed * m.cos(self.angle)
+                dy = self.v_direction * self.speed * m.sin(self.angle)
+                self.vel_x = dx
+                self.vel_y = dy
         else:
             dx = 0
         
         #player interactions
         if self.bullet_type == '8x8_red':
+            sp_group_list[5].sprite.add_particle('bloom_orange', self.rect.centerx, self.rect.centery, -self.direction, self.scale/8, True, -1)
             if not player.is_invulnerable[player_action] or player_action == 5:
                 if self.rect.colliderect(player_rect.scale_by(0.8)):
                     if self.exploded == True:
@@ -96,6 +121,7 @@ class bullet_(pygame.sprite.Sprite):
                     self.explode(sp_group_list)
                     self.m_player.play_sound(self.m_player.sfx[1], (self.rect.centerx, self.rect.centery, None, None))
                     self.direction = -self.direction
+                    self.v_direction = -self.v_direction
                     self.deflected = True
                     self.speed += 16
                     self.flip = not self.flip
@@ -145,6 +171,7 @@ class bullet_(pygame.sprite.Sprite):
             #self.kill()
         
         self.rect.x += (dx - scrollx)
+        self.rect.y += dy
         
         if self.direction > 0:
             self.edge_rect.x = self.rect.right + (dx - scrollx) + 1
@@ -164,10 +191,10 @@ class bullet_(pygame.sprite.Sprite):
         else:
             x_loc = self.rect.right
         if self.bullet_type == 'player_basic':    
-            sp_group_list[5].sprite.add_particle('player_bullet_explosion', x_loc, self.rect.y + self.height//2, -self.direction, self.scale, True, frame)
+            sp_group_list[5].sprite.add_particle('player_bullet_explosion', x_loc, self.rect.centery, -self.direction, self.scale, True, frame)
             self.m_player.play_sound(self.m_player.sfx[0], (self.rect.centerx, self.rect.centery, None, None))
         elif self.bullet_type == '8x8_red':
-            sp_group_list[5].sprite.add_particle('enemy_bullet_explosion', x_loc, self.rect.y + self.height//2, -self.direction, self.scale, True, frame)
+            sp_group_list[5].sprite.add_particle('enemy_bullet_explosion', x_loc, self.rect.centery, -self.direction, self.scale, True, frame)
             self.m_player.play_sound(self.m_player.sfx[0], (self.rect.centerx, self.rect.centery, None, None))
         #self.kill()
         
@@ -211,7 +238,14 @@ class bullet_(pygame.sprite.Sprite):
     
     def draw(self, screen):
         #self.animate()
-        screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+        img = pygame.transform.flip(self.image, self.flip, False)
+        if abs(self.vel_y) > abs(self.vel_x):
+            img = pygame.transform.rotate(self.image, 90)
+            
+        if self.vel_y == -1:
+            img = pygame.transform.rotate(self.image, 180)
+        
+        screen.blit(img, self.rect)
         #pygame.draw.rect(screen, (225,0,0), self.edge_rect)
         
     def update_action(self, new_action):

@@ -20,7 +20,7 @@ class Camera():
         self.camera_offset = camera_offset
         self.curr_direction = 0
         self.shift_dist = 1
-        self.max_shift_dist = self.camera_offset//8
+        self.max_shift_dist = self.camera_offset//12 #8
         
         self.on_right_edge = False
         
