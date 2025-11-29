@@ -529,15 +529,8 @@ def main():
                     (rtn_map_dict[layer-1], rtn_TIM_dict[layer-1]) = draw_bg(rtn_list[layer], layer-1, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
                 else:
                     (rtn_map_dict[layer-1], rtn_TIM_dict[layer-1]) = draw_world(rtn_list[layer], static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
-        level_dict_data = {#default value
-            'size': [ROWS, MAX_COLS],
-            'color': [0, 0, 0],
-            'trans_data': [],
-            'player_en': True,
-            'name': ''
-        }
                     
-        return (rtn_list, rtn_map_dict, rtn_TIM_dict, level_dict_data)
+        return (rtn_list, rtn_map_dict, rtn_TIM_dict)
 
     
     def load_lvl(level, layer_name_dict, world_layer_index, static_bg_oversized_tiles_dict, sprite_group_tiles_dict):
@@ -551,14 +544,14 @@ def main():
                     (rtn_map_dict[layer-1], rtn_TIM_dict[layer-1]) = draw_bg(rtn_list[layer], layer-1, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
                 else:
                     (rtn_map_dict[layer-1], rtn_TIM_dict[layer-1]) = draw_world(rtn_list[layer], static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
-        level_dict_data = all_levels_dict[level]
         
         print('~~loaded!~~')   
-        return (rtn_list, rtn_map_dict, rtn_TIM_dict, level_dict_data)
+        return (rtn_list, rtn_map_dict, rtn_TIM_dict)
     
     if direct_load:
-        (layer_list, map_dict, tile_id_map_dict, level_dict_data) = load_lvl(level, layer_name_dict, world_layer_index, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
+        (layer_list, map_dict, tile_id_map_dict) = load_lvl(level, layer_name_dict, world_layer_index, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
         #set variables
+        level_dict_data = all_levels_dict[level]
         lvl_color = level_dict_data['color']
         trans_data = level_dict_data['trans_data']
         player_en = level_dict_data['player_en']
@@ -566,7 +559,14 @@ def main():
         affected_levels_dict = {}
         
     else:
-        (layer_list, map_dict, tile_id_map_dict, level_dict_data) = create_new_lvl(layer_name_dict)
+        (layer_list, map_dict, tile_id_map_dict) = create_new_lvl(layer_name_dict)
+        level_dict_data = {#default value
+            'size': [ROWS, MAX_COLS],
+            'color': [0, 0, 0],
+            'trans_data': [],
+            'player_en': True,
+            'name': ''
+        }
         affected_levels_dict = {}
         
   
@@ -673,30 +673,28 @@ def main():
                 pygame.image.save(w.create_map(lvl_size, surface_list_dict[file_name]), os.path.join(editor_output_path, file_name))
                 #if file_name not in os.listdir(drawn_path):#save into drawn path only if the files don't exist yet
                 pygame.image.save(w.create_map(lvl_size, surface_list_dict[file_name]), os.path.join(drawn_path, file_name))
-                    
-            # pygame.image.save(w.create_map(lvl_size, surface_list[5:7]), os.path.join(base_path, f'level{level}_maps', 'filtered_layers.PNG'))
-            # pygame.image.save(w.create_map(lvl_size, [w.post_process_filter_layer(surface_list[4], MAX_COLS*32),]), os.path.join(base_path, f'level{level}_maps', 'filter_layer.PNG'))
-            # pygame.image.save(w.create_map(lvl_size, surface_list[1:4]), os.path.join(base_path, f'level{level}_maps', 'non_filtered_layers.PNG'))
-            # pygame.image.save(w.create_map(lvl_size, [surface_list[0],]), os.path.join(base_path, f'level{level}_maps', 'true_fg.PNG'))
-            
-            print('~~Saved!~~')#FUCK
+
+            #update yaml
             level_dict_data = update_level_dict_data([ROWS, MAX_COLS], lvl_color, trans_data, player_en, name)
             y0.write_value(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'), level, level_dict_data)
-            
             for l in affected_levels_dict:
                 y0.write_value(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'), l, affected_levels_dict[l])
                 
-            # if level not in level_sizes_dict:
-            #     t1.add_line_to_file(f'{level}: {ROWS}, {MAX_COLS}', path2 + 'level_sizes_dict.txt')
-    
-            # str_list = list(t1.read_text_from_file(os.path.join(path2, 'level_sizes_dict.txt')))
-            # str_list[level] = f'{level}: {ROWS}, {MAX_COLS}'
-            # output_str = ''
-            # for str_ in str_list:
-            #     output_str = output_str + str_ + '\n'
-            # output_str = output_str[0:len(output_str)-1]
-            # t1.overwrite_file(os.path.join(path2, 'level_sizes_dict.txt'), output_str)
+            #update all levels dict
+            all_levels_dict = y0.get_data(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'))
+            #overwriting
+            level_gap = level-input_level
+            input_level = level
+            level_dict_data = all_levels_dict[level]
+            lvl_color = level_dict_data['color']
+            for i in range(len(level_dict_data['trans_data'])):#move next levels in level transistions
+                level_dict_data['trans_data'][i]['n_lvl'] += level_gap
+            trans_data = level_dict_data['trans_data']
+            player_en = level_dict_data['player_en']
+            name = level_dict_data['name']
+                
             is_saving = False
+            print('~~Saved!~~')#FUCK
         elif save_button.draw(screen, pos_=pos) and cfg_open:
             print('close cfg window')
 
@@ -709,12 +707,14 @@ def main():
                 MAX_COLS = all_levels_dict[input_level]['size'][1]
                 row_str = str(ROWS)
                 col_str = str(MAX_COLS)
-                (layer_list, map_dict, tile_id_map_dict, level_dict_data) = load_lvl(level, layer_name_dict, world_layer_index, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
+                (layer_list, map_dict, tile_id_map_dict) = load_lvl(level, layer_name_dict, world_layer_index, static_bg_oversized_tiles_dict, sprite_group_tiles_dict)
                 #set variables
+                level_dict_data = all_levels_dict[level]
                 lvl_color = level_dict_data['color']
                 trans_data = level_dict_data['trans_data']
                 player_en = level_dict_data['player_en']
                 name = level_dict_data['name']
+                #level_dict_data = update_level_dict_data([ROWS, MAX_COLS], lvl_color, trans_data, player_en, name)
             else:
                 print('Level does not exist')
             is_loading = False
@@ -744,11 +744,6 @@ def main():
             
         save_button.show_text(screen, font, ('','save'))
         load_button.show_text(screen, font, ('','load'))
-        
-        # if cfg_open:
-        #     cfg_text = 'close cfg'
-        # else:
-        #     cfg_text = 'open cfg'
         config_button.show_text(screen, font, ('','config'))
 
         #-------------------------------------------------------------------------------------------------------------------------------
