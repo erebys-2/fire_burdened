@@ -919,13 +919,10 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
     
     def explode(self, sp_group_list):
         particle_name = self.id + '_death'
+        p_scale = 0.2
         for i in range(15):
-            sp_group_list[5].sprite.add_particle('bloom', self.rect.centerx+random.randrange(-32,32), self.rect.centery+random.randrange(-32,32), -self.direction, 0.2*self.scale, False, random.randrange(0,2))
+            sp_group_list[5].sprite.add_particle('bloom', self.rect.centerx+random.randrange(-32,32), self.rect.centery+random.randrange(-32,32), -self.direction, p_scale*self.scale, False, random.randrange(0,2))
             sp_group_list[5].sprite.add_particle('player_bullet_explosion', self.rect.centerx+random.randrange(-72,72), self.rect.centery+random.randrange(-72,72), -self.direction, 0.2*self.scale, False, random.randrange(0,3))
-        # for i in range(5):
-        #     sp_group_list[5].sprite.add_particle('bloom_orange', self.rect.centerx+random.randrange(-32,32), self.rect.centery+random.randrange(-32,32), -self.direction, 0.2*self.scale, False, random.randrange(0,2))
-        #     sp_group_list[5].sprite.add_particle('bloom_yellow', self.rect.centerx+random.randrange(-32,32), self.rect.centery+random.randrange(-32,32), -self.direction, 0.2*self.scale, False, random.randrange(0,2))
-
         sp_group_list[3].sprite.add_particle(particle_name, self.rect.x - self.half_width, self.rect.y - self.half_height, self.direction, self.scale, False, 0)
         
 
