@@ -7,16 +7,16 @@ from ItemFile import Item
 
 class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that can interact with the player/have hitboxes
     #constructor
-    def __init__(self, x, y, scale, direction, id, ini_vol, enabled, frame_dict, sfx_list_ext):
+    def __init__(self, x, y, scale, direction, id_, ini_vol, enabled, frame_dict, sfx_list_ext):
         pygame.sprite.Sprite.__init__(self)
         self.direction = direction
-        if id == 'tall_plant':
+        if id_ == 'tall_plant':
             self.direction = random.randint(0,1)
             if self.direction == 0:
                 self.direction = -1
             
         self.enabled = enabled
-        self.is_moving_plat = id in ('moving_plat_h', 'moving_plat_v', 'crusher_top')
+        self.is_moving_plat = id_ in ('moving_plat_h', 'moving_plat_v', 'crusher_top')
 
         self.angle = 0
         self.initial_y = y
@@ -30,7 +30,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         else:
             self.flip = True
 
-        self.id = id
+        self.id_ = id_
         
         self.frame_dict = {}
         self.frame_index = 0
@@ -39,7 +39,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         self.action = 0
         
         
-        # if self.id == 'flame_pillar':
+        # if self.id_ == 'flame_pillar':
         #     scale2 = 3
         # else:
         #     scale2 = 1
@@ -60,13 +60,13 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
             
             
         #post process special frames
-        if self.id in ('grass', 'tall_plant'):
+        if self.id_ in ('grass', 'tall_plant'):
             temp_list = []
             for img in self.frame_dict[0]:
                 frame = pygame.transform.scale(img, (int(img.get_width() * 1.2), int(img.get_height() * 0.6)))
                 temp_list.append(frame)
             self.frame_dict[len(self.frame_dict)] = temp_list#.append(temp_list)
-        elif self.id == 'flame_pillar':
+        elif self.id_ == 'flame_pillar':
             for animation in self.frame_dict:
                 for img in self.frame_dict[animation]:
                     img = pygame.transform.scale(img, (int(img.get_width()), int(img.get_height() * 3)))
@@ -109,7 +109,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         
         self.atk_rect = pygame.Rect(0,0,0,0)
         
-        if self.id == 'breakable_brick1':
+        if self.id_ == 'breakable_brick1':
             self.durability = 1
         else:
             self.durability = 1
@@ -191,10 +191,10 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         if self.enabled:
             self.is_onscreen = self.check_if_onscreen()
             if self.is_onscreen:
-                if self.id == 'spinning_blades':
+                if self.id_ == 'spinning_blades':
                     self.animate(None)
                         
-                if self.id == 'flame_pillar':
+                if self.id_ == 'flame_pillar':
                     self.atk_rect = pygame.Rect(self.rect.x + 16, self.rect.y, self.width - 32, self.height)
                     if player_rect.colliderect(self.atk_rect):
                         update_time = pygame.time.get_ticks()
@@ -220,7 +220,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
 
                         self.animate(None)
                         
-                elif self.id in ('grass', 'tall_plant'):
+                elif self.id_ in ('grass', 'tall_plant'):
                     frame_update = None
                     if (self.action in (0,2) and 
                         (self.do_player_atk_collisions(player_atk_rect) or 
@@ -262,7 +262,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                     #     self.action = 0
                     #     self.rect.height = 32
                         
-                elif (self.id == 'breakable_brick1' or (self.id == 'breakable_brick2' and player_action == 10)):
+                elif (self.id_ == 'breakable_brick1' or (self.id_ == 'breakable_brick2' and player_action == 10)):
                     #print(self.durability)
                     if self.durability > 0:
                         if (player_action != 16 and
@@ -291,7 +291,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                         self.kill()
                         
 
-                elif self.id == 'moving_plat_v':
+                elif self.id_ == 'moving_plat_v':
                     self.do_tile_y_collisions(world_solids, self.vel_x)
 
                     if (self.dropping and not self.on_ground):
@@ -302,7 +302,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                         
                     self.rect.y += self.vel_y
                     
-                elif self.id == 'crusher_top':
+                elif self.id_ == 'crusher_top':
                     self.atk_rect = pygame.Rect(self.rect.x + 4, self.rect.bottom - 32, self.width - 8, 32)
                     if pygame.time.get_ticks() - self.update_time2 > 720:
                         self.update_time2 = pygame.time.get_ticks()
@@ -344,7 +344,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                     self.rect.y += self.vel_y
                 
             #p_ints that need to function on/off screen    
-            if self.id == 'moving_plat_h':
+            if self.id_ == 'moving_plat_h':
                 self.do_tile_x_collisions(world_solids, self.vel_x)
                 self.vel_x = 4*self.direction
             
@@ -361,12 +361,12 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                 
     def animate(self, frame_update_forced):
 
-        if self.id in self.has_mask_collisions:
+        if self.id_ in self.has_mask_collisions:
             self.mask = pygame.mask.from_surface(self.image)
         
         if frame_update_forced == None:
-            if self.id in self.framerates:
-                frame_update = self.framerates[self.id]
+            if self.id_ in self.framerates:
+                frame_update = self.framerates[self.id_]
             else:
                 frame_update = 100
         else:
@@ -381,7 +381,7 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
         #END OF ANIMATION FRAMES    
         if self.frame_index >= len(self.frame_dict[self.action]):
             self.frame_index = 0
-            if self.id == 'crusher_top' and self.action == 1:
+            if self.id_ == 'crusher_top' and self.action == 1:
                 self.update_action(0)
             
     def update_action(self, new_action):

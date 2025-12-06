@@ -76,13 +76,19 @@ class StatusBars():
                 x_disp = player.direction*3 - player.rect.width*0.75
             
                 
-        elif not self.is_exhausted and enemies_nearby:#draw attack/ evade cues
+        elif not self.is_exhausted and enemies_nearby > 0:#draw attack/ evade cues
             if not controller_en:
-                txt = f'[{pygame.key.name(ctrls_list[4])}] or [{pygame.key.name(ctrls_list[2])}]'
-                x_disp = player.direction*3 - player.rect.width*0.6
+                if enemies_nearby == 1:
+                    txt = f'[{pygame.key.name(ctrls_list[4])}]'#or [{pygame.key.name(ctrls_list[2])}]
+                else:
+                    txt = f'[{pygame.key.name(ctrls_list[2])}]'
+                x_disp = player.direction*3 - player.rect.width*0.3
             else:
-                txt = '[Melee] or [Roll]'
-                x_disp = player.direction*3 - player.rect.width*0.75
+                if enemies_nearby == 1:
+                    txt = '[Melee]' # or [Roll]
+                else:
+                    txt = '[Roll]'
+                x_disp = player.direction*3 - player.rect.width*0.5
                 
         elif p_int_nearby:
             if not controller_en:
@@ -136,7 +142,7 @@ class StatusBars():
         self.status_enable_list[3] = self.very_charred
 
         #update status fx list, list of ints that are fx id's
-        active_status_fx_list = [fx_status[0] for fx_status in enumerate(self.status_enable_list) if fx_status[1]] #list comprehension !...
+        #active_status_fx_list = [fx_status[0] for fx_status in enumerate(self.status_enable_list) if fx_status[1]] #list comprehension !...
             
         #draw
         # for i in range(len(active_status_fx_list)):

@@ -1,2 +1,2 @@
-1: item# Talisman of Salted Earth# True
-4: item# Worn Knee Socks# True
+5: item# Talisman of Salted Earth# True
+7: item# Worn Knee Socks# True

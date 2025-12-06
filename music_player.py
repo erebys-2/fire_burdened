@@ -30,10 +30,13 @@ class music_player():
         #and https://www.youtube.com/watch?v=xdkY6yhEccA
         
         self.sfx = []
+        self.sfx_dict = {}
         if sfx_list != None:
             for sound in sfx_list:
                 sfx = pygame.mixer.Sound(f'assets/sfx/{sound}')
                 self.sfx.append(sfx)
+                self.sfx_dict[sound] = sfx
+            
         
         self.channel_count = 8
         self.channel_list = []
@@ -148,6 +151,8 @@ class music_player():
             self.set_vol_by_dist(sound, pos)#set sound volumes
         self.auto_equalize()#set channel volumes
         pygame.mixer.Sound.play(sound)
+        
+        
         
     def stop_sound(self):
         pygame.mixer.stop()

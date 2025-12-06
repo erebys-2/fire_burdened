@@ -35,7 +35,8 @@ class particle_2(pygame.sprite.Sprite):
             'player_impact': 60,
             'sparks': 40,
             'grass_cut': 90,
-            'player_atk1_trail':150
+            'player_atk1_trail':150,
+            'char_yellow': 40
         }    
             
         #print(self.particle_img_dict)
@@ -127,7 +128,10 @@ class particle_2(pygame.sprite.Sprite):
                 r = 5
                 particle0['y'] += random.randint(-r, r)
                 particle0['x'] += random.randint(-r, r)
-
+                    
+            elif 'char' in basename:
+                particle0['y'] += 0.5
+            
             particle0['x'] -= scrollx
             
     def force_ini_position(self, scrollx):

@@ -3,9 +3,9 @@ from PyQt6.QtWidgets import QInputDialog, QApplication, QWidget, QGridLayout, QL
 from cfg_handler0 import yaml_handler
 
 class level_editor_subgui(QWidget):
-    def __init__(self, data_dict, *args, **kwargs):
+    def __init__(self, level, data_dict, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setWindowTitle('Editing Level Config Data')
+        self.setWindowTitle(f'Editing Level {level} Config Data')
         self.setGeometry(100, 100, 1080, 0)
         self.y0 = yaml_handler()	
         

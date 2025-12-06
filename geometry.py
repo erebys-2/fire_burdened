@@ -1,10 +1,18 @@
 import math as m
 import random
 import sys
+import pygame
 
 class geometry():
-    def __init__(self):
+    def __init__(self, orbit_ct = 3):
         self.zero = sys.float_info.min
+        # self.tick_ct = pygame.time.get_ticks()
+        # self.radians = 0
+        
+        self.orbital_list = [
+            {'tick_ct': pygame.time.get_ticks(), 'deg': 0} for i in range(orbit_ct)
+        ]
+        
         pass
     
     def get_angle_from_pts(self, pt0, pt1):#not completely reliable
@@ -32,6 +40,17 @@ class geometry():
             
         return pt_list
     
+    
+    def get_periodic_radians(self, div, dt, orbit_index = 0):
+        inc = m.pi/div
+        if pygame.time.get_ticks() > self.orbital_list[orbit_index]['tick_ct'] + dt:
+            self.orbital_list[orbit_index]['deg'] += inc
+            self.orbital_list[orbit_index]['tick_ct'] = pygame.time.get_ticks()
+            
+        if self.orbital_list[orbit_index]['deg'] >= 2*m.pi:
+            self.orbital_list[orbit_index]['deg'] = 0
+
+        return self.orbital_list[orbit_index]['deg']
 
     
     
@@ -52,13 +71,15 @@ class geometry():
 # arc_rect = pygame.rect.Rect(0,0,r,r)
 # arc_rect.center = pt0
 
-# obj_rect = pygame.rect.Rect(0,0,3,3)
+# obj_rect = pygame.rect.Rect(0,0,5,5)
 # obj_rect.center = pt0
+
+# orbital_rect = pygame.rect.Rect(0,0,3,3)
 
 # font0 = pygame.font.SysFont('SimSun', 12)
 
-# dx = 5
-# dy = 5
+# dx = 150
+# dy = 150
 
 # while running:
 #     clock.tick(60)  # limits FPS to 60
@@ -72,26 +93,18 @@ class geometry():
     
 #     screen.fill("black")
     
-#     pt1 = pygame.mouse.get_pos()
-    
-#     theta = g.get_angle_from_pts(pt0, pt1)
-#     #font0.render(str((180/m.pi)*theta), False, (255, 0, 0))
-#     screen.blit(font0.render(str((180/m.pi)*theta), False, (255, 0, 0)), (0, 0))
-    
-#     pygame.draw.line(screen, (255,0,0), (0, 240), (640, 240))
-#     pygame.draw.line(screen, (255,0,0), (pt0), (pt1))    
-#     pygame.draw.arc(screen, (255,0,0), arc_rect, -theta, 0)
-    
-    
-#     obj_rect.centerx += dx
-#     obj_rect.centery += dy
-    
-#     if obj_rect.centerx < 0 or obj_rect.centerx > 640 or  obj_rect.centery < 0 or obj_rect.centery > 480:
-#         obj_rect.center = pt0
-#         dx = 5*m.cos(theta)
-#         dy = 5*m.sin(theta)
+#     pt0 = pygame.mouse.get_pos()
 
+#     #obj_rect.center = pt0
 #     pygame.draw.rect(screen, (255,0,0), obj_rect)
+    
+#     theta = g.get_periodic_radians(100, 1)
+#     epsilon = g.get_periodic_radians(100, 1, orbit_index=1)
+    
+    
+#     orbital_rect.centerx = dx*m.cos(theta) + obj_rect.centerx
+#     orbital_rect.centery = dy*m.sin(theta) + obj_rect.centery
+#     pygame.draw.rect(screen, (255,0,0), orbital_rect)
     
 #     # RENDER YOUR GAME HERE
 

@@ -134,6 +134,15 @@ class sprite_instantiator():
         
         return img_dict, centered_dict
     
+    def add_text_particles(self, img_dict, centered_dict, font_, new_name, color, str_):
+        img_list = []
+        for char_ in str_:
+            img_list.append(font_.render(char_, False, color))
+        img_dict[new_name] = img_list
+        centered_dict[new_name] = True
+        
+        return img_dict, centered_dict
+    
     def get_sfx_list(self, str_list):
         sfx_list = []
         for str_ in str_list:
@@ -176,32 +185,37 @@ class sprite_instantiator():
                     enemy0 = enemy_32wide(x * 32, y * 32, 3, 2, 'dog', world.enemy0_order_id, ini_vol, self.enemy_img_dict[sprite_id], 
                                           self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'dog_hurt.mp3', 'woof.mp3', 'step2soft.mp3', 'hit2.mp3']))
                     the_sprite_group.enemy0_group.add(enemy0)
-                    world.enemy0_order_id += 1#for enemy-enemy collisions/ anti stacking
+                    #world.enemy0_order_id += 1#for enemy-enemy collisions/ anti stacking
                 elif sprite_id == 'shooter':
                     enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'shooter', world.enemy0_order_id, ini_vol, self.enemy_img_dict[sprite_id],
                                           self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'roblox2.mp3', 'shoot.mp3', 'step2soft.mp3', 'hit2.mp3']))
                     the_sprite_group.enemy0_group.add(enemy0)
-                    world.enemy0_order_id += 1
+                    #world.enemy0_order_id += 1
                 elif sprite_id == 'fly':
                     enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'fly', world.enemy0_order_id, ini_vol, self.enemy_img_dict[sprite_id],
                                           self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'bee_hurt.mp3', 'bee.mp3', 'step2soft.mp3', 'hit2.mp3', 'shoot.mp3']))
                     the_sprite_group.enemy0_group.add(enemy0)
-                    world.enemy0_order_id += 1
+                    #world.enemy0_order_id += 1
                 elif sprite_id == 'walker':
                     enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'walker', world.enemy0_order_id, ini_vol, self.enemy_img_dict[sprite_id],
                                           self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'cough.mp3', 'bite.mp3', 'step2soft.mp3', 'hit2.mp3']))
                     the_sprite_group.enemy0_group.add(enemy0)
-                    world.enemy0_order_id += 1
+                    #world.enemy0_order_id += 1
+                elif sprite_id == 'walker_v2':
+                    enemy0 = enemy_32wide(x * 32, y * 32, 2, 2, 'walker_v2', world.enemy0_order_id, ini_vol, self.enemy_img_dict['walker'],
+                                          self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'cough.mp3', 'bite.mp3', 'step2soft.mp3', 'hit2.mp3', 'mc_anvil.mp3']))
+                    the_sprite_group.enemy0_group.add(enemy0)
+                    #world.enemy0_order_id += 1
                 elif sprite_id == 'worm':
                     enemy0 = ms_enemy(x * 32, y * 32, 2, 2, 'worm', world.enemy0_order_id, ini_vol, self.enemy_img_dict_x1[sprite_id],
                                           self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'cough.mp3', 'dog_hurt.mp3', 'boonk.mp3', 'hit2.mp3', 'woof.mp3', 'mc_anvil.mp3', 'glass_break.mp3', 'bite.mp3']))
                     the_sprite_group.enemy0_group.add(enemy0)
-                    world.enemy0_order_id += 1
+                    #world.enemy0_order_id += 1
                 elif sprite_id == 'pecker':
                     enemy0 = pecker(x * 32, y * 32, 4, 2, 'pecker', world.enemy0_order_id, ini_vol, self.enemy_img_dict_x1[sprite_id],
                                           self.get_sfx_list(['bassdrop2.mp3', 'hit.mp3', 'cough.mp3', 'dog_hurt.mp3', 'boonk.mp3', 'hit2.mp3', 'woof.mp3', 'mc_anvil.mp3', 'glass_break.mp3', 'bite.mp3']))
                     the_sprite_group.enemy0_group.add(enemy0)
-                    world.enemy0_order_id += 1
+                world.enemy0_order_id += 1
                     
             elif sprite_category == 'p_int':
                 sfx_list_ext = self.get_sfx_list(['mc_anvil.mp3', 'step2soft.mp3', 'pop3.mp3'])

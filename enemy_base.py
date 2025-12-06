@@ -3,11 +3,11 @@ import math as m
 from music_player import music_player
 
 class general_enemy(pygame.sprite.Sprite):
-    def __init__(self, x, y, speed, scale, id, enemy0_order_id, ini_vol, frame_list, sfx_list_ext):
+    def __init__(self, x, y, speed, scale, id_, enemy0_order_id, ini_vol, frame_list, sfx_list_ext):
         pygame.sprite.Sprite.__init__(self)
         
         self.spawn_order_id = enemy0_order_id
-        self.id = id
+        self.id_ = id_
 
         self.Alive = True
         self.hp = 12
@@ -89,7 +89,7 @@ class general_enemy(pygame.sprite.Sprite):
         return (self.rect.x > - (320 + adjustment) and self.rect.right < 640 + (320 + adjustment))
     
     def explode(self, sp_group_list):
-        particle_name = self.id + '_death'
+        particle_name = self.id_ + '_death'
         sp_group_list[3].sprite.add_particle(particle_name, self.rect.centerx, self.rect.centery, self.direction, self.scale, False, 0)
            
     def force_ini_position(self, scrollx):

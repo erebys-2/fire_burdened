@@ -13,9 +13,12 @@ class opening_scene(npc):
         super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict)
         #get plot index
         #self.plot_index = self.plot_index_dict[self.name]
-        if level == 1 and world.plot_index_dict[self.name] <= -4:
+        if level == 1 and world.plot_index_dict[self.name] >= 10:
             enabled = False
-        elif level == 3 and world.plot_index_dict[self.name] <= -5:
+            #print("?")
+        elif level == 4 and world.plot_index_dict[self.name] >= 20:
+            enabled = False
+        elif level == 6 and world.plot_index_dict[self.name] >= 30:
             enabled = False
 
         if enabled:
@@ -23,6 +26,7 @@ class opening_scene(npc):
         else:
             self.rect = self.resize_rect((0, 0, 0, 0))#have to make sure the rect is destroyed immediately in the constructor
         self.enabled = enabled
+        self.autosaved = False
         
         self.current_level = level
         self.current_p_inv = player_inventory
@@ -33,8 +37,9 @@ class opening_scene(npc):
         self.is_cutscene = True
         self.is_initial_index = False #IMPORTANT IF YOU DON'T WANT THE FIRST MESSAGE REPEATED
         if world.plot_index_dict[self.name] != -1:
+            #print(self.plot_index_jumps_dict[world.plot_index_dict[self.name]])
             self.current_dialogue_index = self.plot_index_jumps_dict[world.plot_index_dict[self.name]]
-        
+            
 
     def get_dialogue_index(self, player, current_dialogue_index, world, selected_slot):
         
@@ -43,18 +48,25 @@ class opening_scene(npc):
             # elif level == 1 and plot_index == -1 and current_dialogue_index == 3:
             #     self.update_plot_index(1)
             #     current_dialogue_index = 4
-                
-            if self.current_dialogue_index == 14:# and self.last_dialogue_index == 2:
-                world.plot_index_dict[self.name] = -4
-                self.enabled = False
+            self.enabled = not self.autosaved
+            
+            if self.current_dialogue_index == 13:# and self.last_dialogue_index == 2:
+                world.plot_index_dict[self.name] = 10
                 world.check_onetime_spawn_dict(self.current_level)
                 cutscene_autosave.save(selected_slot, self.current_level, world.plot_index_dict, world.lvl_completion_dict, world.onetime_spawn_dict, player)
-            elif self.current_dialogue_index == 21:
-                world.plot_index_dict[self.name] = -5
-                world.plot_index_dict['Mars'] = 1
-                self.enabled = False
+                self.autosaved = True
+            elif self.current_dialogue_index == 33:
+                world.plot_index_dict[self.name] = 20
+                world.plot_index_dict['Mars'] = 10
                 world.check_onetime_spawn_dict(self.current_level)
                 cutscene_autosave.save(selected_slot, self.current_level, world.plot_index_dict, world.lvl_completion_dict, world.onetime_spawn_dict, player)
+                self.autosaved = True
+            elif self.current_dialogue_index == 20:
+                world.plot_index_dict[self.name] = 30
+                world.plot_index_dict['Mars'] = 20
+                world.check_onetime_spawn_dict(self.current_level)
+                cutscene_autosave.save(selected_slot, self.current_level, world.plot_index_dict, world.lvl_completion_dict, world.onetime_spawn_dict, player)
+                self.autosaved = True
             else:
                 self.current_dialogue_index = self.current_dialogue_index
             self.get_dialogue_flag = False

@@ -30,6 +30,7 @@ class npc(pygame.sprite.Sprite):
         self.npc_index_id = (os.listdir(self.base_path)).index(name)
 
         self.plot_index_dict = world.plot_index_dict
+        self.old_plot_index = -1
         
         self.current_dialogue_index = 0
         self.last_dialogue_index = 0

@@ -269,7 +269,7 @@ class World():
                 found = False
                 for sp_group in self.sp_groups_to_check:
                     for sprite in sp_group:
-                        if sprite.id == self.onetime_spawn_dict[level][i][1]:#bottleneck: ots sprites need an id
+                        if sprite.id_ == self.onetime_spawn_dict[level][i][1]:#bottleneck: ots sprites need an id
                             found = True
                             break
                     if found:

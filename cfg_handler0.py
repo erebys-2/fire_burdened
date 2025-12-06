@@ -66,18 +66,18 @@ class yaml_handler():
             data = yaml.safe_load(f)
         return data
     
-    def write_full_data(self, data, path):
+    def write_full_data(self, data, path, sort=False):
         with open(path, 'w') as f:
-            yaml.dump(data, f, indent=4, sort_keys=False)
+            yaml.dump(data, f, indent=4, sort_keys=sort)
             
-    def write_value(self, path, key, value):
+    def write_value(self, path, key, value, sort=False):
         with open(path, 'r') as f:
             data = yaml.safe_load(f)
             
         data[key] = value
         
         with open(path, 'w') as f:
-            yaml.dump(data, f, indent=4, sort_keys=False)
+            yaml.dump(data, f, indent=4, sort_keys=sort)
                 
     def format_complex_str(self, str_, force_none=False):
         if force_none:

@@ -185,7 +185,7 @@ class player(pygame.sprite.Sprite):
             13: (False, False, 145),
             14: (False, False, 145),
             15: (False, False, 120), #use item
-            16: (True, True, 130), #heavy
+            16: (False, True, 130), #heavy
             17: (False, False, 200), #wall slide
             18: (True, True, 105), #slide kick
             19: (False, False, 145), #jump up
@@ -414,7 +414,7 @@ class player(pygame.sprite.Sprite):
                           if enemy.is_on_screen and enemy.atk_rect_scaled.width != 0
                          ]:
                 if self.hitbox_rect.colliderect(enemy.atk_rect_scaled):
-                    if enemy.id == 'worm':
+                    if enemy.id_ == 'worm':
                         damage += 2
                     else:
                         damage += 1.5
@@ -422,22 +422,40 @@ class player(pygame.sprite.Sprite):
                 damage = 0
                 
     def do_extended_hitbox_collisions(self, the_sprite_group):
-        flag = False
+        flag = 0
         if not self.is_invulnerable[self.action]:
             for enemy in [enemy for enemy in the_sprite_group.enemy0_group 
                             if enemy.is_on_screen and enemy.atk_rect_scaled.width != 0
                             ]:
-                    flag = enemy.atk_rect_scaled.colliderect(self.rect.x - 1.5*self.width, 
+                
+                if enemy.atk_rect_scaled.colliderect(self.rect.x - 1.5*self.width, 
+                                                    self.rect.y - 2*self.width, 
+                                                    self.rect.width + 3*self.width, 
+                                                    self.rect.height + 4*self.width
+                                                    ):
+                    if enemy.shielded:
+                        flag = 2
+                    else:
+                        flag = 1
+                    
+            if not self.inventory_handler.check_for_item('Rock'):
+                for bb1 in [p_int for p_int in the_sprite_group.p_int_group
+                              if p_int.is_onscreen and p_int.id_ == 'breakable_brick1'
+                              ]:
+                    if bb1.rect.centerx - self.rect.centerx < 2*self.width:
+                        if bb1.rect.colliderect(self.rect.x - 1.5*self.width, 
                                                         self.rect.y - 2*self.width, 
                                                         self.rect.width + 3*self.width, 
                                                         self.rect.height + 4*self.width
-                                                        )
+                                                        ):
+                            flag = 1
+        
         return flag
     
     def check_for_breakable2(self, the_sprite_group):
         flag = False
         for p_int in [p_int for p_int in the_sprite_group.p_int_group 
-                            if p_int.is_onscreen and p_int.id == 'breakable_brick2'
+                            if p_int.is_onscreen and p_int.id_ == 'breakable_brick2'
                             ]:
             flag = (((self.rect.x < p_int.rect.x and self.direction > 0) or 
                     (self.rect.x > p_int.rect.x and self.direction < 0)) and
@@ -472,7 +490,7 @@ class player(pygame.sprite.Sprite):
                     self.do_instant_st_regen(0)
             
             for p_int in [p_int for p_int in the_sprite_group.p_int_group
-                        if p_int.id == 'breakable_brick1' and p_int.is_onscreen
+                        if p_int.id_ == 'breakable_brick1' and p_int.is_onscreen
                         ]:
                 if self.atk_rect.colliderect(p_int.rect):
                     self.do_instant_st_regen(1)
@@ -529,7 +547,7 @@ class player(pygame.sprite.Sprite):
         # hitting_wall_timer = self.hitting_wall_timer
         
         for p_int in [p_int for p_int in platform_sprite_group if p_int.rect.x <= self.rect.right + self.width and p_int.rect.right >= self.rect.x - self.width]:
-            if p_int.collision_and_hostility[p_int.id][0]:
+            if p_int.collision_and_hostility[p_int.id_][0]:
                 #self.atk1_grinding(p_int.rect, the_sprite_group)
                 #y collisions
                 if (p_int.rect.colliderect(self.collision_rect.x+2, self.collision_rect.y + self.dy, self.width-4, self.height)
@@ -599,7 +617,7 @@ class player(pygame.sprite.Sprite):
                 
                     
             #taking damage from crushing traps
-            if p_int.collision_and_hostility[p_int.id][1]:
+            if p_int.collision_and_hostility[p_int.id_][1]:
                 rate = 0.5
                 if (self.hitbox_rect.colliderect(p_int.atk_rect)):
                     if self.hits_tanked + rate > self.hp:
@@ -794,6 +812,7 @@ class player(pygame.sprite.Sprite):
                         lvl_transition_flag = True
                         lvl_transition_data = tile[3]
                         lvl_trans_disp = self.rect.x - tile[1].x
+
                     elif lvl_trans_orientation == 'vertical':
                         self.dx = -self.direction*8
     
@@ -816,9 +835,8 @@ class player(pygame.sprite.Sprite):
     def move(self, pause_game, moveL, moveR, world_solids, world_rect, x_scroll_en, y_scroll_en, half_screen, screenH, the_sprite_group, ccsn_chance):
         #reset mvmt variables
         self.dialogue_trigger_ready = False
-        self.collision_rect.x = self.rect.x + self.width
-        self.collision_rect.y = self.rect.y
-        self.hitbox_rect.centerx = self.collision_rect.centerx
+        self.collision_rect.center = self.rect.center
+        self.hitbox_rect.center = self.rect.center
         
         # if pause_game:
         #     self.dx = 0
@@ -940,7 +958,7 @@ class player(pygame.sprite.Sprite):
         #------------------------------------------------------------------------------------------------------------------
         if self.action == 10 and self.frame_index < 1:
             the_sprite_group.particle_group.sprite.add_particle('bloom', self.rect.centerx, self.rect.centery, -self.direction, self.scale/5, True, -1)
-        
+            
         if self.atk1 and not self.hurting:#adjusting speed to simulate momentum, motion stuff
             self.curr_state = self.in_air
             
@@ -1172,12 +1190,12 @@ class player(pygame.sprite.Sprite):
             self.dx = -1
         
         #--------------------------------------window boundaries
-        if self.collision_rect.x < -6:
+        if self.collision_rect.x < -4:
             self.dy = 0
-            self.dx = 4
-        elif self.collision_rect.x >= 606:
+            self.dx = 6
+        elif self.collision_rect.x >= 604:
             self.dy = 0
-            self.dx = -4
+            self.dx = -6
         
         #----------------------------------------------------------------------------------------------------------------------------------
         #================================================================TILE COLLISIONS=====================================================================

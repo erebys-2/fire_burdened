@@ -233,11 +233,14 @@ def main():
 	particle_path = os.path.join('assets', 'sprites', 'particle')#'assets/sprites/particle'
 	particle_img_dict = world.sp_ini.load_img_dict(particle_path)
 	centered_dict = world.sp_ini.particle_alignment_dict
-	name_list = [
+	name_list = [#bloom purple -30
 		('bloom', 'bloom_orange', 10, 0, 0.2),
-		('bloom', 'bloom_yellow', 20, 0, 0.2)
+		('bloom', 'bloom_yellow', 20, 0, 0.2),
+		('bloom', 'bloom_yellow_real', 60, 0.3, 0.5),
+		('bloom', 'bloom_blue', -160, 0.2, 0.2)
 	]
 	particle_img_dict, centered_dict = world.sp_ini.add_hsl_particles(particle_img_dict, centered_dict, name_list)
+	particle_img_dict, centered_dict = world.sp_ini.add_text_particles(particle_img_dict, centered_dict, font_larger, 'char_yellow', (255, 254, 200), '☴◊⟱➡⌘‡⎈∞ὧᾷἐῖѪжϞλдδ▲«×')
 
 	#add particle_2 objects into particle sprite groups
 	particle_2_ = particle_2(particle_img_dict, centered_dict)
@@ -278,6 +281,7 @@ def main():
 	dialogue_trigger_ready = False
 
 	player_enable_master = False
+	atk_disable = True
 
 	hold_jump_update = pygame.time.get_ticks()
 
@@ -328,6 +332,8 @@ def main():
 
 		#----------------------------------------------------------------------level changing-------------------------------------------------
 		if level != next_level:
+			atk_disable = world.plot_index_dict['Mars'] < 10
+   
 			do_screenshake_master = False
 			screenshake_profile = (0,0,0)
 			level_transitioning = True
@@ -363,6 +369,9 @@ def main():
 			else:
 				if transition_orientation == 'vertical':
 					player0.rect.x = player_new_x - 32 #set player location
+					camera.rect.centerx = HALF_SCREEN_W
+					# if world.x_scroll_en:
+					# 	camera.set_ini_pos = True 
 				else:
 					#loads all the lvl trans tiles from new level, these have specific coordinates
 					loaded_lvl_trans_tiles = []
@@ -373,12 +382,14 @@ def main():
 					#print(loaded_lvl_trans_tiles[bound_index])
      				#(<Surface(32x32x32, global_alpha=255)>, Rect(0, 0, 640, 2), 10, [4, -999, 384, 2, (0, 0)])
 					player0.rect.x = loaded_lvl_trans_tiles[bound_index][3]['pos'][0] + transition_disp
+					#print(player0.rect.x)
+					#camera.rect.centerx = player0.rect.centerx
 					player0.rect.y = player_new_y
 					camera.scrollx = 0				
 	
 				player0.vel_y = 0
 			
-			camera.rect.centerx = HALF_SCREEN_W
+			#
    
 			if temp_move_R:
 				move_R = temp_move_R
@@ -387,8 +398,10 @@ def main():
 			
 			if world.x_scroll_en:
 				camera.set_ini_pos = True #signal to force camera into position next cycle
+				#scroll_x = player0.scrollx + camera.scrollx
 			else:
 				camera.set_ini_pos = False
+			#print(camera.set_ini_pos)
 	
 		elif not camera.set_ini_pos:
 			level_transitioning = False
@@ -501,7 +514,7 @@ def main():
 			status_bars.draw(screen, player0.get_status_bars(), player0.action, (7,8,9,10,16,18), font, False)
 			status_bars.draw2(screen, player0.action_history, (7,8,16), font_larger)
 			status_bars.draw_status_icons(screen, player0, font_larger)
-			if world.plot_index_dict != {} and world.plot_index_dict['opening_scene'] == -4:
+			if world.plot_index_dict != {} and world.plot_index_dict['opening_scene'] == -6:
 				status_bars.draw_tutorial_cues(screen, player0, player0.do_extended_hitbox_collisions(the_sprite_group), player0.check_for_breakable2(the_sprite_group), ui_manager0.controller_connected, ctrls_list, font_largerer)
 			player_inv_UI.show_selected_item(player0.inventory_handler.inventory, screen)
    
@@ -526,6 +539,7 @@ def main():
 					last_area_name = area_name_dict[level]
 
 		elif level_transitioning:
+			player0.in_cutscene = False
 			screen_blacked = True
 			for group in the_sprite_group.sp_group_list:
 				for sprite_ in group:
@@ -788,6 +802,7 @@ def main():
 			
 		if player0.in_cutscene:#dialogue system will activate as soon as the player collides with a 'cutscene' npc
 			dialogue_enable = True #start signal for dialogue handler
+			atk_disable = world.plot_index_dict['Mars'] < 5
 			if last_area_name != area_name_dict[level]:
 				area_name_time = pygame.time.get_ticks() #extend area name time on screen
 			
@@ -824,9 +839,10 @@ def main():
 				input_list2 = [joystick.get_axis(a) for a in range(joystick.get_numaxes())]
 		else:
 			input_list = pygame.key.get_pressed()
-		
+   
+  		
 		if not inventory_opened:
-			if input_list[ctrls_list[4]] and not input_list[ctrls_list[5]] and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and not player0.using_item: #pygame.K_i, pygame.K_w
+			if input_list[ctrls_list[4]] and not input_list[ctrls_list[5]] and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and not player0.using_item and not atk_disable: #pygame.K_i, pygame.K_w
 				#player0.atk1_stamina_cost is not getting updated during heavy attack
 				if atk_gettime_en:
 					atk_delay_ref_time = pygame.time.get_ticks()

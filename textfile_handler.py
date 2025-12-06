@@ -167,7 +167,7 @@ class textfile_formatter():
     
     def split_string2(self, string_, limit):
         str_list = []
-        if len(string_) > limit:
+        if len(string_) > limit or 'n_l' in string_:
             #split string into a list of words
             index0 = 0
             index1 = 0
@@ -184,7 +184,10 @@ class textfile_formatter():
             #fill string list with words so that they don't exceed character limit
             temp_str = ''
             for word in word_list:
-                if len(temp_str) + len(word) + 1 <= limit:
+                if word == 'n_l':
+                    str_list.append(temp_str)
+                    temp_str = ''
+                elif len(temp_str) + len(word) + 1 <= limit:
                     if temp_str == '':
                         temp_str = word
                     else:

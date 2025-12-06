@@ -23,3 +23,4 @@
 82: p_int, breakable_brick2, none, -1
 83: enemy, worm, none, -1
 84: enemy, pecker, none, -1
+89: enemy, walker_v2, none, -1

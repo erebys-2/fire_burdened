@@ -135,7 +135,7 @@ class bullet_(pygame.sprite.Sprite):
                 #self.kill()
                 
         for p_int in sp_group_list[8]:
-            if (p_int.collision_and_hostility[p_int.id][0] and p_int.rect.colliderect(self.rect)):
+            if (p_int.collision_and_hostility[p_int.id_][0] and p_int.rect.colliderect(self.rect)):
                 self.Active = False
                 self.explode(sp_group_list)
         

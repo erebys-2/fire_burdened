@@ -6,11 +6,11 @@ from music_player import music_player
 from ItemFile import Item 
 
 class ms_enemy(pygame.sprite.Sprite):
-    def __init__(self, x, y, speed, scale, id, enemy0_order_id, ini_vol, frame_dict, sfx_list_ext):
+    def __init__(self, x, y, speed, scale, id_, enemy0_order_id, ini_vol, frame_dict, sfx_list_ext):
         pygame.sprite.Sprite.__init__(self)
         
         self.spawn_order_id = enemy0_order_id
-        self.id = id
+        self.id_ = id_
 
         self.Alive = True
         self.hp = 12
@@ -39,10 +39,10 @@ class ms_enemy(pygame.sprite.Sprite):
         # if frame_dict == None:#doesn't actually work 
         #     for animation in animation_types:
         #         temp_list = []
-        #         frames = len(os.listdir(f'assets/sprites/enemies/{self.id}/{animation}'))
+        #         frames = len(os.listdir(f'assets/sprites/enemies/{self.id_}/{animation}'))
 
         #         for i in range(frames):
-        #             img = pygame.image.load(f'assets/sprites/enemies/{self.id}/{animation}/{i}.png').convert_alpha()
+        #             img = pygame.image.load(f'assets/sprites/enemies/{self.id_}/{animation}/{i}.png').convert_alpha()
                     
         #             iimg = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
                     
@@ -153,7 +153,7 @@ class ms_enemy(pygame.sprite.Sprite):
         self.hits_tanked += dmg_dict[player_action]
         
     def explode(self, sp_group_list):
-        particle_name = self.id + '_death'
+        particle_name = self.id_ + '_death'
         sp_group_list[3].sprite.add_particle(particle_name, self.rect.centerx, self.rect.centery, self.direction, self.scale, False, 0)
             
     def move(self, player, world_solids, scrollx, sp_group_list):

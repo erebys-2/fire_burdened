@@ -17,10 +17,10 @@ max_item_count = 999
 #Behaviors in inventory space involve keeping track of item count and apply status effects.
 
 class Item(pygame.sprite.Sprite): #helper class with logic for item behavior outside of player inventory
-    def __init__(self, id, x, y, count, is_immortal):
+    def __init__(self, id_, x, y, count, is_immortal):
         pygame.sprite.Sprite.__init__(self)
-        self.id = id
-        self.image = pygame.image.load(os.path.join(item_sprites_path, f'{self.id}.png')).convert_alpha()
+        self.id_ = id_
+        self.image = pygame.image.load(os.path.join(item_sprites_path, f'{self.id_}.png')).convert_alpha()
         self.width = self.image.get_width()
         self.height = self.image.get_height()
         
@@ -47,8 +47,8 @@ class Item(pygame.sprite.Sprite): #helper class with logic for item behavior out
             'Talisman of Salted Earth': 3
         }
         self.weight = 9
-        if self.id in weight_dict:
-            self.weight = weight_dict[self.id]
+        if self.id_ in weight_dict:
+            self.weight = weight_dict[self.id_]
 
         
     def enable(self, player_rect, the_sprite_group, pause_game):
@@ -231,14 +231,14 @@ class inventory_handler(): #handles setting up inventory, picking up items, and 
 
         for item in item_group:
             if player_rect.colliderect(item.rect):
-                slot_index = self.find_available_slot(item.id)
-                if slot_index != -1 and self.include_exclude(exclude, item.id, item_id_list): #inventory not full
-                    self.inventory[slot_index][0] = item.id
+                slot_index = self.find_available_slot(item.id_)
+                if slot_index != -1 and self.include_exclude(exclude, item.id_, item_id_list): #inventory not full
+                    self.inventory[slot_index][0] = item.id_
                     self.inventory[slot_index][1] += item.count
                     item.disable() #item is deleted on the player side by calling an internal method
                     picked_up = True
-                elif self.include_exclude(not exclude, item.id, item_id_list): #if item is included in the item_id_list then put it in the special slot
-                    self.inventory[len(self.inventory) - 1][0] = item.id
+                elif self.include_exclude(not exclude, item.id_, item_id_list): #if item is included in the item_id_list then put it in the special slot
+                    self.inventory[len(self.inventory) - 1][0] = item.id_
                     self.inventory[len(self.inventory) - 1][1] += item.count
                     item.disable()
                     picked_up = True

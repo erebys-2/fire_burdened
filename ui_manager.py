@@ -456,7 +456,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
             'Roll',
             'Right',
             'Melee',
-            'Shoot',
+            'Slide',
             'Special',
             'Sprint',
             'Inventory',

@@ -105,9 +105,10 @@ class Mars(npc):
         if world.plot_index_dict[self.name] == -1:
             if level == 1 and world.get_death_count(1) not in (0,7) and world.get_death_count(2) != 1:
                 enabled = False
-        elif world.plot_index_dict[self.name] > -1:
-            if level == 1:
-                enabled = False
+        elif world.plot_index_dict[self.name] > -1 and level == 1:
+            enabled = False
+        elif world.plot_index_dict[self.name] > 10 and level == 4:
+            enabled = False
             
         self.enabled = enabled
         
@@ -117,8 +118,11 @@ class Mars(npc):
         plot_index = world.plot_index_dict[self.name]
         # print(self.name)
         # print(plot_index)
-        if plot_index != -1 and self.is_initial_index:
+        
+        if (plot_index != -1 and self.is_initial_index) or (self.old_plot_index != plot_index):
             self.current_dialogue_index = self.plot_index_jumps_dict[plot_index]
+            self.old_plot_index = plot_index
+            #print(self.plot_index_jumps_dict[plot_index])
             self.is_initial_index = False
         if self.current_level == 1 and world.get_death_count(1) > 0:
             #self.current_dialogue_index = 3
@@ -140,11 +144,13 @@ class Mars(npc):
         #     # self.is_initial_index = False
         #     pass
             
-        if (self.current_level == 1 and 
+        #-----------------------------------------disable when the player moves away from her
+        if (self.current_level in (1,4) and 
              self.rect.x < -20*self.rect.width 
             ):
             self.enabled = False
         
+        #----------------------------------------------------------------
         if self.is_initial_index:
             if self.current_level == 1 and plot_index == -1:
                 self.current_dialogue_index = 0

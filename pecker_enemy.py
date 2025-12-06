@@ -4,8 +4,8 @@ import math as m
 from enemy_base import general_enemy
 
 class pecker(general_enemy):
-    def __init__(self, x, y, speed, scale, id, enemy0_order_id, ini_vol, frame_list, sfx_list_ext):
-        super().__init__(x, y, speed, scale, id, enemy0_order_id, ini_vol, frame_list, sfx_list_ext)
+    def __init__(self, x, y, speed, scale, id_, enemy0_order_id, ini_vol, frame_list, sfx_list_ext):
+        super().__init__(x, y, speed, scale, id_, enemy0_order_id, ini_vol, frame_list, sfx_list_ext)
         
         
         self.image2 = self.frame_list[1][0]

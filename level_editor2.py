@@ -3,6 +3,7 @@ import os
 import button
 import csv
 import sys
+import shutil
 from PyQt6.QtWidgets import QInputDialog, QApplication, QWidget, QGridLayout, QListWidget, QPushButton, QLabel, QMessageBox, QLineEdit
 from textfile_handler import textfile_formatter
 from worldManager import World
@@ -42,7 +43,8 @@ def main():
             'color': [0, 0, 0],
             'trans_data': [],
             'player_en': True,
-            'name': ''
+            'name': '',
+            'notes': ''
         }
     
     #size = [ROWS, MAX_COLS]
@@ -51,6 +53,7 @@ def main():
     trans_data = []
     player_en = True
     name = ''
+    notes = ''
 
     layer_desc_dict = {
         0:'true foreground',
@@ -267,7 +270,7 @@ def main():
     
     def autofill_trans_data_dict(x, y):
         temp_data_dict = {'x': x, 'y': y, 'n_lvl': None, 'new_x': None, 'new_y': None, 'pair': None, 'w': None, 'h': None}
-        if x == 0 or x == MAX_COLS-1:#if transition is on the edge of a level, assume it has a vertical shape
+        if (x == 0 and y == 0) or x == MAX_COLS-1:#if transition is on the edge of a level, assume it has a vertical shape
             temp_data_dict['w'] = 2
             temp_data_dict['h'] = 480
             if x == MAX_COLS-1:#if on right edge, it is probably transitioning to the left edge of a level
@@ -284,7 +287,9 @@ def main():
         return temp_data_dict
 
     def insert_trans_data(x, y, tile):
-        if tile == 10:
+        tile_conflict = (x,y) in [(trans_data[j]['x'], trans_data[j]['y']) for j in range(len(trans_data))]
+        
+        if tile == 10 and not tile_conflict:
             added = False
             temp_data_dict = autofill_trans_data_dict(x, y)
             for i in range(len(trans_data)):
@@ -335,13 +340,14 @@ def main():
             
         return affected_levels_dict
     
-    def update_level_dict_data(size, color, trans_data, player_en, name):
+    def update_level_dict_data(size, color, trans_data, player_en, name, notes):
         dict_data = {
             'size': size,
             'color': color,
             'trans_data': trans_data,
             'player_en': player_en,
-            'name': name
+            'name': name,
+            'notes': notes
         }
         
         return dict_data
@@ -509,6 +515,18 @@ def main():
                     
         return coord_list
     
+    def back_up_level():
+        s1 = os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml')
+        s2 = os.path.join('assets', 'level_files', f'level{level}')
+        s3 = os.path.join('assets', 'sprites', 'world_maps', f'level{level}_maps')
+        
+        d1 = os.path.join('assets', 'level_files', 'editor_backup')
+        d2 = os.path.join('assets', 'level_files', 'editor_backup', f'level{level}')
+        d3 = os.path.join('assets', 'level_files', 'editor_backup', f'level{level}_maps')
+        shutil.copy(s1, d1)
+        shutil.copytree(s2, d2)
+        shutil.copytree(s3, d3)
+    
 
     #running the editor----------------------------------------------------
     
@@ -556,6 +574,7 @@ def main():
         trans_data = level_dict_data['trans_data']
         player_en = level_dict_data['player_en']
         name = level_dict_data['name']
+        notes = level_dict_data['notes']
         affected_levels_dict = {}
         
     else:
@@ -565,7 +584,8 @@ def main():
             'color': [0, 0, 0],
             'trans_data': [],
             'player_en': True,
-            'name': ''
+            'name': '',
+            'notes': ''
         }
         affected_levels_dict = {}
         
@@ -637,6 +657,7 @@ def main():
         #save and load data
         if save_button.draw(screen, pos_ = pos) and not is_loading and not cfg_open:
             is_saving = True
+            back_up_level()
             surface_list = []
             #save level data
             for layer in layer_name_dict:
@@ -675,10 +696,10 @@ def main():
                 pygame.image.save(w.create_map(lvl_size, surface_list_dict[file_name]), os.path.join(drawn_path, file_name))
 
             #update yaml
-            level_dict_data = update_level_dict_data([ROWS, MAX_COLS], lvl_color, trans_data, player_en, name)
-            y0.write_value(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'), level, level_dict_data)
+            level_dict_data = update_level_dict_data([ROWS, MAX_COLS], lvl_color, trans_data, player_en, name, notes)
+            y0.write_value(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'), level, level_dict_data, sort=True)
             for l in affected_levels_dict:
-                y0.write_value(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'), l, affected_levels_dict[l])
+                y0.write_value(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'), l, affected_levels_dict[l], sort=True)
                 
             #update all levels dict
             all_levels_dict = y0.get_data(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'))
@@ -692,6 +713,7 @@ def main():
             trans_data = level_dict_data['trans_data']
             player_en = level_dict_data['player_en']
             name = level_dict_data['name']
+            notes = level_dict_data['notes']
                 
             is_saving = False
             print('~~Saved!~~')#FUCK
@@ -714,7 +736,8 @@ def main():
                 trans_data = level_dict_data['trans_data']
                 player_en = level_dict_data['player_en']
                 name = level_dict_data['name']
-                #level_dict_data = update_level_dict_data([ROWS, MAX_COLS], lvl_color, trans_data, player_en, name)
+                notes = level_dict_data['notes']
+
             else:
                 print('Level does not exist')
             is_loading = False
@@ -724,7 +747,7 @@ def main():
         if config_button.draw(screen, pos_=pos) and not is_loading and not is_saving:
             cfg_open = True
             app = QApplication(sys.argv)
-            subgui = level_editor_subgui(level_dict_data)
+            subgui = level_editor_subgui(level, level_dict_data)
             window_closed = app.exec()
 
             if window_closed == 0:#pygame window does weird scaling stuff when the qt window opens
@@ -737,7 +760,8 @@ def main():
                     trans_data = rtn_data['trans_data']
                     player_en = rtn_data['player_en']
                     name = rtn_data['name']
-                    level_dict_data = update_level_dict_data([ROWS, MAX_COLS], lvl_color, trans_data, player_en, name)
+                    notes = rtn_data['notes']
+                    level_dict_data = update_level_dict_data([ROWS, MAX_COLS], lvl_color, trans_data, player_en, name, notes)
                 del app
                 del subgui
                 cfg_open = False
