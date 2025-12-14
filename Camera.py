@@ -160,21 +160,22 @@ class Camera():
             dx = player_rect.x - self.x_coord #adjustment for if the player is not on the right edge
             dx2 = dx - self.half_screen #adjustment for if the player is on the right edge
 
-            #new player coord not on r edge, but somewhere in the middle of the level
-            if not self.on_r_edge and player_rect.x < world_rect.width - self.half_screen:
-                # self.scrollx -= dx
-                # player_rect.x += dx
-                dx = player_rect.x - self.half_screen 
-                self.scrollx += dx
-                player_rect.x -= dx
+            # #new player coord not on r edge, but somewhere in the middle of the level
+            # if not self.on_r_edge and player_rect.x < world_rect.width - self.half_screen:
+            #     # self.scrollx -= dx
+            #     # player_rect.x += dx
+            #     dx = player_rect.x - self.half_screen 
+            #     self.scrollx += dx
+            #     player_rect.x -= dx
                 
             #new player coord on right edge of level
-            elif world_rect.width - player_rect.x < self.half_screen + self.ts:
+            if world_rect.width - player_rect.x < self.half_screen + self.ts:
                 self.on_r_edge = True
                 temp_x = player_rect.x
                 player_rect.x -= (dx2 + world_rect.width- player_rect.x - 2)
                 self.scrollx += (dx2 + world_rect.width- temp_x - 2)
             else:
+                self.on_r_edge = False
                 dx = player_rect.x - self.half_screen 
                 self.scrollx += dx
                 player_rect.x -= dx

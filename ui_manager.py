@@ -447,8 +447,8 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         
         self.text_manager0.disp_text_box(screen, self.fontlist[1], ('','Click a button to re-map then press the desired key'), (-1,-1,-1), (200,200,200), 
                                          (112, self.S_H//2 - 232, self.S_W, self.S_H), False, False, 'none')
-        self.text_manager0.disp_text_box(screen, self.fontlist[1], ('','UI buttons ESCAPE and ENTER cannot be re-mapped'), (-1,-1,-1), (200,200,200), 
-                                         (128, self.S_H//2 + 128, self.S_W, self.S_H), False, False, 'none')
+        self.text_manager0.disp_text_box(screen, self.fontlist[1], ('','UI buttons TAB, ESCAPE, and ENTER cannot be re-mapped'), (-1,-1,-1), (200,200,200), 
+                                         (110, self.S_H//2 + 128, self.S_W, self.S_H), False, False, 'none')
         
         ctrs_btn_list = [
             'Jump',

@@ -216,6 +216,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         
     def move(self, player, world_solids, scrollx, sp_group_list):
         player_rect = player.hitbox_rect
+        p_rect_shifted_centerx = player.rect.centerx + player.direction*2*self.width
         player_atk_rect = player.atk_rect_scaled
         player_action = player.action
         player_direction = player.direction
@@ -352,21 +353,21 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     if self.inundated == False: #cannot move towards player when inundated
                         #move if the player gets too close
                         chase_range = 3
-                        atk_range = 1.5
+                        atk_range = 1.2
                         
                         #move towards player until threshold
-                        if player_rect.centerx + atk_range*self.width > self.rect.centerx - chase_range*self.width and player_rect.centerx + atk_range*self.width < self.rect.centerx:
+                        if p_rect_shifted_centerx + atk_range*self.width > self.rect.centerx - chase_range*self.width and p_rect_shifted_centerx + atk_range*self.width < self.rect.centerx:
                             dx = -self.speed
                             self.direction = -1
                             self.flip = False
                             #self.vel_y = 0
-                        elif player_rect.centerx - atk_range*self.width < self.rect.centerx + chase_range*self.width and player_rect.centerx - atk_range*self.width > self.rect.centerx:
+                        elif p_rect_shifted_centerx - atk_range*self.width < self.rect.centerx + chase_range*self.width and p_rect_shifted_centerx - atk_range*self.width > self.rect.centerx:
                             dx = self.speed
                             self.direction = 1
                             self.flip = True
                             #self.vel_y = 0
                         #go back and forth in threshold
-                        elif player_rect.centerx + atk_range*self.width >= self.rect.centerx and player_rect.centerx - atk_range*self.width <= self.rect.centerx:
+                        elif p_rect_shifted_centerx + atk_range*self.width >= self.rect.centerx and p_rect_shifted_centerx - atk_range*self.width <= self.rect.centerx:
                             moving = True
                             x_in_range = True
                             if self.direction == 1:
@@ -375,8 +376,8 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                                 dx = -self.speed
                             
                         low = 1
-                        high = 2.3
-                        if player_rect.centerx + 6*self.width >= self.rect.centerx and player_rect.centerx - 6*self.width <= self.rect.centerx:
+                        high = 2.1
+                        if p_rect_shifted_centerx + 6*self.width >= self.rect.centerx and p_rect_shifted_centerx - 6*self.width <= self.rect.centerx:
                         #hover above player when in the above range
                             #rise
                             if player_rect.centery - low*self.width > self.rect.centery - 3*chase_range*self.width and player_rect.centery - low*self.width < self.rect.centery:
@@ -558,6 +559,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                             dy = 20
                 x_avg = (self.rect.centerx + player_atk_rect.centerx)/2
                 y_avg = (self.rect.centery + player_atk_rect.centery)/2
+                self.shoot_done = True
                 
                 
                 if self.rando_frame < 2:
@@ -581,7 +583,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 elif not self.shielded and  player_action == 16:
                     self.dmg_multiplier = 4
                     self.heavy_recoil = True
-                elif not self.shielded and (player_action == 7 or player_action == 8):
+                elif not self.shielded and player_action in (7,8,24):
                     self.dmg_multiplier = 2
                     self.heavy_recoil = False
                 #self.dmg_multiplier = 0
@@ -607,10 +609,10 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                         sp_group_list[4].sprite.add_particle('bloom_yellow_real', self.rect.centerx + random.randrange(-16,16), self.rect.centery + random.randrange(-16,16), -self.direction, 0.7, True, -1)
                     for pt in self.g.get_radial_pts(self.width*1.15, self.rect.center, 12, phi=self.rando_frame):
                         sp_group_list[4].sprite.add_particle('char_yellow', pt[0], pt[1], self.direction, 1, False, -1)
-                        if self.id_ == 'walker':
+                        if self.id_ == 'walker' and self.hits_tanked + self.dmg_multiplier < self.hp:
                             self.m_player.play_sound(self.m_player.sfx[6], (self.rect.centerx, self.rect.centery, None, None))
                         
-                    if player_action != 10:
+                    if player_action != 10 and player.frame_index >= 1:
                         player.take_damage(0.5, 100) 
 
                 # self.shoot = False
@@ -681,12 +683,12 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             #this is fucked, look into collide rect
             if (pygame.sprite.spritecollide(self, sp_group_list[1], False)):
                 #self.hits_tanked += 5
-                self.inundated = True
-                # if self.inundated  == True and self.dmg_multiplier != 0:
-                #     self.hits_tanked += 5
-                # else:
-                self.dmg_multiplier = 5
-                dx += direction * 10
+                if not self.inundated:
+                    self.hits_tanked += 5
+                    
+                    dx += direction * 10
+                    self.inundated = True
+
                 #print("hit" + str(self.hits_tanked))
                 
             if not self.shielded and (pygame.sprite.spritecollide(self, sp_group_list[2], False)):#player bullet

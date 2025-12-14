@@ -119,7 +119,7 @@ class Mars(npc):
         # print(self.name)
         # print(plot_index)
         
-        if (plot_index != -1 and self.is_initial_index) or (self.old_plot_index != plot_index):
+        if (plot_index != -1 and self.is_initial_index) or (self.old_plot_index != plot_index):#actively check plot index changes
             self.current_dialogue_index = self.plot_index_jumps_dict[plot_index]
             self.old_plot_index = plot_index
             #print(self.plot_index_jumps_dict[plot_index])

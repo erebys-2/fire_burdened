@@ -148,7 +148,8 @@ class ms_enemy(pygame.sprite.Sprite):
             7: 2,
             8: 2,
             10: 4,
-            16: 4
+            16: 4,
+            24: 2
         }
         self.hits_tanked += dmg_dict[player_action]
         

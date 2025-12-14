@@ -40,6 +40,7 @@ class player(pygame.sprite.Sprite):
         self.coyote_vel = 12
         self.coyote_ratio = 0
         self.hold_jump = False
+        self.upstrike = False
 
         self.in_air = False
         
@@ -126,7 +127,7 @@ class player(pygame.sprite.Sprite):
         animation_types = ('idle', 'run', 'jump', 'land', 'squat', 'hurt', 
                            'die', 'atk1', 'atk1_2', 'roll', 'atk1_3', 'shoot',
                            'charging', 'atk1_2_particle', 'turn_around', 'use_item', 'atk1_4', 'wall_slide', 
-                           'atk1_5', 'jump_up', 'jump_down', 'flip', 'sprint', 'throw')
+                           'atk1_5', 'jump_up', 'jump_down', 'flip', 'sprint', 'throw', 'upstrike')
         
         
         #print(os.listdir(f'sprites/player'))
@@ -173,7 +174,7 @@ class player(pygame.sprite.Sprite):
             1: (False, False, 100), #run160
             2: (False, False, 145), #jump
             3: (False, False, 90), #land
-            4: (False, False, 20), #squat
+            4: (False, False, 15), #squat
             5: (True, False, 50), #take damage
             6: (True, True, 145), #die
             7: (True, True, 100), #upstrike
@@ -192,7 +193,8 @@ class player(pygame.sprite.Sprite):
             20: (False, False, 145), #jump down
             21: (True, False, 100), #flip
             22: (False, False, 100), #sprint
-            23: (False, True, 100) #throw
+            23: (False, True, 100), #throw
+            24: (True, True, 90) #upstrike
         }
         self.is_invulnerable = {key:self.action_dict[key][0] for key in self.action_dict}
         self.disp_states = {key:self.action_dict[key][1] for key in self.action_dict}
@@ -294,7 +296,7 @@ class player(pygame.sprite.Sprite):
         self.atk_rect_scaled  = self.atk_rect
         
     def atk1_set_hitbox(self, the_sprite_group):
-        if (self.frame_index == 1 or self.frame_index == 2) and (self.action == 8 or self.action == 7):
+        if (self.frame_index == 1 or self.frame_index == 2) and self.action in (7,8,24):
             #adjust hitbox location for default atks
             self.atk_rect.width = self.collision_rect.height
             self.atk_rect.height = self.collision_rect.height
@@ -308,13 +310,18 @@ class player(pygame.sprite.Sprite):
                 self.image3 = self.frame_list[13][0]
                 x_loc += self.direction *12
             elif self.action == 7:
-                x_loc += self.direction *2
-                y_loc = self.collision_rect.y - self.qrtr_w
+                x_loc += self.direction * 2
+                y_loc = self.collision_rect.y - self.qrtr_w# - 4
                 if self.frame_index == 1:
                     self.image3 = self.frame_list[13][2]
                 elif self.frame_index == 2:
                     self.image3 = self.frame_list[13][3]
-            
+            elif self.action == 24:
+                y_loc = self.collision_rect.y - self.qrtr_w - 4
+                if self.frame_index == 1:
+                    self.image3 = self.frame_list[13][2]
+                elif self.frame_index == 2:
+                    self.image3 = self.frame_list[13][3]
             self.atk_rect.x = x_loc
             self.atk_rect.y = y_loc
             self.atk_show_sprite = True#variable for displaying atk sprite in draw)
@@ -418,6 +425,9 @@ class player(pygame.sprite.Sprite):
                         damage += 2
                     else:
                         damage += 1.5
+                    
+                    if enemy.shielded:
+                        damage *= 2
                     self.take_damage(damage, 836) 
                 damage = 0
                 
@@ -912,7 +922,7 @@ class player(pygame.sprite.Sprite):
                 # ))
                 #or self.rolled_into_wall #stops rolling if player rolls into wall
                 ):
-                if (self.action not in (7,8,10,23)):
+                if (self.action not in (7,8,10,23,24)):
                     self.rolling = False
                     #self.roll_count = self.roll_limit
                 #self.reset_jump()
@@ -952,6 +962,10 @@ class player(pygame.sprite.Sprite):
                 self.dx = self.direction * (multiplier * 2)
             #self.vel_y = 0
         
+        # if self.action == 24:
+        #     print(self.rolling)
+        #     if self.rolling:
+        #         self.upstrike = False
                 
         #------------------------------------------------------------------------------------------------------------------------------------------------------
         #atk1------------------------------------------------------------------------------------------------------------------------------------
@@ -986,22 +1000,22 @@ class player(pygame.sprite.Sprite):
                         self.rect.x += self.direction
                     elif self.atk1_stamina_cost == self.atk1_default_stam:
                         if moveL or moveR:
-                            multiplier = 3
+                            multiplier = 10
                         else:
-                            multiplier = 1
+                            multiplier = 4
                             
                         # if self.rect.centerx in range(288, 352):
                         #     self.dx = self.direction * (multiplier * (2))
                         #     self.rect.x += self.direction * self.speed * 2
                         # else:
-                        self.dx = self.direction * (multiplier * (3))
+                        self.dx = self.direction * multiplier
                         self.rect.x += self.direction * self.speed
                         
-                        if self.action == 7:
-                            self.vel_y -= 0.6
+                        if self.action == 24:#7:
+                            self.vel_y -= 0.7
                             
                         elif self.action == 8 and self.vel_y + 7 <= 28 and self.vel_y > 0 and self.in_air: #25 max 
-                            self.vel_y *= 1.5
+                            self.vel_y *= 1.7
 
                 elif self.frame_index > 1 :# slow forward speed
                     if self.crit and self.check_if_in_ss_range():
@@ -1011,7 +1025,7 @@ class player(pygame.sprite.Sprite):
                         else:
                             self.rect.x += self.direction * 2 * self.speed
                     else:
-                        if self.action == 7 and self.frame_index <= 2 and self.vel_y > 0: #add hang time for upstrike
+                        if self.action == 24 and self.frame_index <= 2 and self.vel_y > 0: #add hang time for upstrike
                             self.vel_y = 0
                         
                         if (moveL and self.direction == 1) or (moveR and self.direction == -1):
@@ -1033,6 +1047,7 @@ class player(pygame.sprite.Sprite):
                 self.atk1 = False
                 self.crit = False
                 self.heavy = False
+                #self.upstrike = False
                 self.atk1_stamina_cost = self.atk1_default_stam
                 self.draw_trail = False
                 
@@ -1041,6 +1056,7 @@ class player(pygame.sprite.Sprite):
             self.atk1 = False
             self.crit = False
             self.heavy = False
+            #self.upstrike = False
             self.atk1_stamina_cost = self.atk1_default_stam
             self.draw_trail = False
             
@@ -1479,7 +1495,7 @@ class player(pygame.sprite.Sprite):
                 self.squat_done = True #squatting finished when it loops frames
                 self.squat = False
 
-            elif self.action == 7 or self.action == 8 or self.action == 10:
+            elif self.action in (7,8,10,24):
                 
                 #self.squat = False #this line will cancel jumps that have been inputted before the atk
                 
@@ -1489,6 +1505,7 @@ class player(pygame.sprite.Sprite):
                 #     self.atk1_alternate = True
                 if self.action == 10:
                     self.crit = False
+                self.upstrike = False
                 self.landing = False
                 self.atk1 = False
                     
@@ -1636,9 +1653,9 @@ class player(pygame.sprite.Sprite):
                     #     self.atk1_alternate = False
                     # else:
                     #     self.atk1_alternate = not self.atk1_alternate
-                    if self.in_air and self.hold_jump and self.consecutive_upstrike <= self.upstrike_limit:
-                        self.atk1_alternate = True
-                    elif self.in_air and (not self.hold_jump or self.consecutive_upstrike > self.upstrike_limit):
+                    # if self.in_air and self.hold_jump and self.consecutive_upstrike <= self.upstrike_limit:
+                    #     self.atk1_alternate = True
+                    if self.in_air and (not self.hold_jump or self.consecutive_upstrike > self.upstrike_limit):
                         self.atk1_alternate = False
                     elif not self.in_air:
                         self.atk1_alternate = not self.atk1_alternate
@@ -1650,11 +1667,17 @@ class player(pygame.sprite.Sprite):
                     self.update_action(10)
                 elif self.heavy:
                     self.update_action(16)
+                elif self.upstrike:
+                    self.update_action(24)
+                    self.atk1_alternate = False
+                    #self.upstrike = True
                 else:
                     if self.atk1_alternate:# and self.in_air == False: # or (self.hold_jump and self.frame_index == 0)
                         self.update_action(7)	
                     else:
                         self.update_action(8)#8: atk1
+                        
+                #print(self.action)
             elif self.using_item:#and self.action != 15:
                 self.update_action(15)
                 # move_L = False
@@ -1672,6 +1695,8 @@ class player(pygame.sprite.Sprite):
                 # else:
                 self.update_action(9)#rolling
                 self.atk1_alternate = False
+                #self.upstrike = False
+                
             elif self.wall_slide:
                 self.update_action(17)#17: wall slide
             else:
@@ -1712,7 +1737,8 @@ class player(pygame.sprite.Sprite):
             do_not_crit = self.check_atk1_history() == 4
             if self.action not in (5, 22):
                 self.update_action_history(self.action)#updated with the last action
-            if (self.action == 7 or self.action == 8) and (self.rolling or self.action in (9, 21)):
+            if self.action in (7,8,24) and (self.rolling or self.action in (9, 21)):
+                self.upstrike = False
                 self.crit = False
                 self.heavy = False
                 self.atk1_stamina_cost = self.atk1_default_stam
@@ -1731,7 +1757,7 @@ class player(pygame.sprite.Sprite):
                         self.screenshake_profile = (16, 6, 3)
                     self.m_player.play_sound(self.m_player.sfx[4], None)
                     self.char_level += self.char_dict['crit']
-            elif self.action != 9 and (new_action == 7 or new_action == 8):
+            elif self.action != 9 and new_action in (7,8,24):
                 self.crit = False
                 self.m_player.play_sound(self.m_player.sfx[1], None)
                 self.char_level += self.char_dict['melee']

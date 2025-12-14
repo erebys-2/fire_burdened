@@ -9,6 +9,7 @@ from textfile_handler import textfile_formatter
 from worldManager import World
 from cfg_handler0 import yaml_handler
 from level_editor_subgui import level_editor_subgui
+from map_generator import map_gen
 
 
 pygame.init()
@@ -20,11 +21,9 @@ def main():
     SCREEN_HEIGHT = 480
     LOWER_MARGIN = 96
     SIDE_MARGIN = 320
-    
+    m1 = map_gen(os.path.join("assets", "config_textfiles", "world_config", "level_dict.yaml"))
     t1 = textfile_formatter()
-    # path = os.path.join('assets', 'config_textfiles', 'level_config')#'assets/config_textfiles/level_config/'
-    # level_sizes_dict = t1.str_list_to_dict(t1.read_text_from_file(os.path.join(path, 'level_sizes_dict.txt')), 'list')
-    #print(level_sizes_dict)
+
     
     #level dict yaml
     y0 = yaml_handler()	
@@ -249,6 +248,8 @@ def main():
     is_loading = False
     is_saving = False
     cfg_open = False
+    
+    level_map_list = []
 
     #create empty tile list(s)
 
@@ -524,9 +525,14 @@ def main():
         d2 = os.path.join('assets', 'level_files', 'editor_backup', f'level{level}')
         d3 = os.path.join('assets', 'level_files', 'editor_backup', f'level{level}_maps')
         shutil.copy(s1, d1)
+        
+        if os.path.isdir(d2):
+            shutil.rmtree(d2)
+        if os.path.isdir(d3):
+            shutil.rmtree(d3)
         shutil.copytree(s2, d2)
         shutil.copytree(s3, d3)
-    
+
 
     #running the editor----------------------------------------------------
     
@@ -701,6 +707,10 @@ def main():
             for l in affected_levels_dict:
                 y0.write_value(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'), l, affected_levels_dict[l], sort=True)
                 
+            #update map
+            map_arr = m1.generate_map_list(1)
+            m1.save_map(map_arr, os.path.join('assets', 'config_textfiles', 'world_config'))
+                
             #update all levels dict
             all_levels_dict = y0.get_data(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'))
             #overwriting
@@ -737,7 +747,7 @@ def main():
                 player_en = level_dict_data['player_en']
                 name = level_dict_data['name']
                 notes = level_dict_data['notes']
-
+                            
             else:
                 print('Level does not exist')
             is_loading = False

@@ -25,6 +25,7 @@ import random
 # from shadersHandler import modernGL_handler
 from profilehooks import profile
 from cfg_handler0 import yaml_handler
+from map_generator import map_handler
 
 #@profile
 
@@ -103,6 +104,9 @@ def main():
 	font_larger = pygame.font.Font(font_path, 14)
 	font_largerer = pygame.font.Font(font_path, 20)
 	font_massive = pygame.font.Font(font_path, 40)
+ 
+	#map handler
+	mh1 = map_handler(os.path.join("assets", "config_textfiles", "world_config"), SCREEN_WIDTH, SCREEN_HEIGHT)
 
 	#camera instance
 	camera_offset = int(0.75 * ts)
@@ -133,8 +137,12 @@ def main():
 		3:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),),
 		4:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),),
 		5:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),),
-		6:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),)
+		6:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),),
+		7:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),),
+		8:((0.5, 'dust0', 0, -10, the_sprite_group.particle_group_fg),)
 	}
+	radial_filter_img = pygame.image.load(os.path.join('assets', 'sprites', 'radial_filter.png'))
+	big_filter_rect = radial_filter_img.get_rect()
 	
 	#populate area name dict
 	area_name_dict = {}
@@ -147,7 +155,7 @@ def main():
 	vol_lvl = [10,10]
 	ctrls_list = [119, 97, 115, 100, 105, 111, 112, 1073742054, 121, 117]
  
-	default_text_speed = 30
+	default_text_speed = 10
 	text_speed = default_text_speed
  
 	screen_scaling = [1,2,4,1]
@@ -305,7 +313,7 @@ def main():
 	ui_manager0.ws = ws
 	window = pygame.display.set_mode((SCREEN_WIDTH*ws, SCREEN_HEIGHT*ws), flags)#, vsync=1)
 
-	show_cursor_signals = [level == 0, pause_game, not player0.Alive, inventory_opened, dialogue_enable, trade_ui_en]
+	show_cursor_signals = [level == 0, pause_game, not player0.Alive, inventory_opened, dialogue_enable, trade_ui_en, mh1.render_enable]
 	print('game is running')
 
 	while run:
@@ -332,6 +340,7 @@ def main():
 
 		#----------------------------------------------------------------------level changing-------------------------------------------------
 		if level != next_level:
+			mh1.render_enable = False
 			atk_disable = world.plot_index_dict['Mars'] < 10
    
 			do_screenshake_master = False
@@ -419,7 +428,7 @@ def main():
                        world.rect, 
                        SCREEN_WIDTH, SCREEN_HEIGHT)
 		world.draw(screen, scroll_x, scroll_y, player0.hitting_wall)#this draws the world and scrolls it 
-  
+		
 		#vertical screenshake correction
 		if world.rect.y != 0 and not do_screenshake_master:
 			correction_y = world.rect.y/abs(world.rect.y)
@@ -438,6 +447,7 @@ def main():
 				player0_lvl_transition_data = player0.move(pause_game, move_L, move_R, world.solids, 
 															world.rect, world.x_scroll_en, world.y_scroll_en, 
 															HALF_SCREEN_W, SCREEN_HEIGHT, the_sprite_group, ccsn_chance)
+				big_filter_rect.center = player0.rect.center
 				use_item_tuple = player0.inventory_handler.item_usage_hander0.process_use_signal(player_inv_UI.use_item_flag, player_inv_UI.item_to_use, player0)
 				player_inv_UI.use_item_flag = use_item_tuple[0] #use_item_flag (internal variable) is set to false
 				if use_item_tuple[1]: #item_was_used, once item_was_used returns true the item gets discarded
@@ -495,7 +505,10 @@ def main():
 			the_sprite_group.scroll_x = scroll_x
 			#if not level_transitioning: #surpress sprite logic while level transitioning
 
+			# c_ = pygame.transform.average_color(world.world_map_non_parallax, pygame.rect.Rect(0,0,SCREEN_WIDTH, SCREEN_HEIGHT))
+			# print(c_)
 			screen.blit(world.world_map_non_parallax, (world.rect.x, world.rect.y))
+			#screen.blit(radial_filter_img, big_filter_rect)
 
 			the_sprite_group.update_bg_sprite_group(screen, player0)
 			the_sprite_group.update_text_prompt_group(screen, dialogue_enable, next_dialogue, player0, world, selected_slot)#player and world
@@ -514,7 +527,7 @@ def main():
 			status_bars.draw(screen, player0.get_status_bars(), player0.action, (7,8,9,10,16,18), font, False)
 			status_bars.draw2(screen, player0.action_history, (7,8,16), font_larger)
 			status_bars.draw_status_icons(screen, player0, font_larger)
-			if world.plot_index_dict != {} and world.plot_index_dict['opening_scene'] == -6:
+			if world.plot_index_dict != {} and world.plot_index_dict['opening_scene'] <= 20:
 				status_bars.draw_tutorial_cues(screen, player0, player0.do_extended_hitbox_collisions(the_sprite_group), player0.check_for_breakable2(the_sprite_group), ui_manager0.controller_connected, ctrls_list, font_largerer)
 			player_inv_UI.show_selected_item(player0.inventory_handler.inventory, screen)
    
@@ -537,6 +550,9 @@ def main():
 					screen.blit(area_name_img, coord2)
 					screen.blit(font_larger.render(area_name_dict[level], True, (white)), (coord))
 					last_area_name = area_name_dict[level]
+     
+			#draw map
+			mh1.render_map(screen, level)
 
 		elif level_transitioning:
 			player0.in_cutscene = False
@@ -544,8 +560,9 @@ def main():
 			for group in the_sprite_group.sp_group_list:
 				for sprite_ in group:
 					sprite_.force_ini_position(scroll_x)
-     
+			
 		elif player0.in_cutscene:
+			mh1.render_enable = False
 			the_sprite_group.pause_game = pause_game or ui_manager0.saves_menu_enable
 			the_sprite_group.scroll_x = scroll_x
 			the_sprite_group.update_bg_sprite_group(screen, player0)
@@ -764,7 +781,8 @@ def main():
                            		not player0.Alive, 
                              	inventory_opened, 
                               	dialogue_enable, 
-                               	trade_ui_en
+                               	trade_ui_en,
+                                mh1.render_enable
                                 ]#update the list
 		if True in show_cursor_signals:#delete mouse when out of the main menu
 			pygame.mouse.set_visible(0)
@@ -849,20 +867,25 @@ def main():
 					atk_gettime_en = False
 
 				if atk_en and atk_delay_ref_time + 10 < pygame.time.get_ticks():#don't attack until delay is up
+					#print(str(player0.hold_jump) + ' 1')
+					if not player0.hold_jump:
+						player0.upstrike = False
 					change_once = True#not player0.hold_jump
 					player0.atk1 = True 
 					player0.melee_hit = False
 					atk_en = False
-				#dual input jump and attack for instant upstrike
+				#dual input jump and attack for instant upstrike, main upstrike logic
 				elif input_list[ctrls_list[0]] and not player0.squat_done and player0.consecutive_upstrike < player0.upstrike_limit and atk_delay_ref_time + 10 > pygame.time.get_ticks(): #and not player0.in_air
-					
+					#print(str(player0.hold_jump) + ' 2')
+					player0.upstrike = True
 					player0.in_air = True
 					if not player0.squat:
 						player0.squat_done = True
 					player0.jump_dampen = True
-     
-				if player0.in_air and not player0.atk1:
 					player0.consecutive_upstrike += 1
+     
+				# if player0.in_air and not player0.atk1:
+				# 	player0.consecutive_upstrike += 1
 
 			elif input_list[ctrls_list[4]] and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
 				status_bars.warning = True
@@ -987,7 +1010,7 @@ def main():
 							status_bars.warning = True
 
 					#open inventory
-					if event_trigger == ctrls_list[8] and not dialogue_enable:
+					if event_trigger == ctrls_list[8] and not dialogue_enable and not mh1.render_enable:
 						if not inv_toggle:
 							inventory_opened = not inventory_opened
 							if inventory_opened:
@@ -1026,9 +1049,17 @@ def main():
 				#if shift and event.key == pygame.K_MINUS
 
 				#===============================================================UI Related Keys=============================================================
+				if (event.key == pygame.K_TAB and 
+        			level != 0 and 
+           			not ui_manager0.options_menu_enable and 
+              		not ui_manager0.saves_menu_enable and 
+                	not pause_game and 
+                 	not inventory_opened):
+					mh1.render_enable = not mh1.render_enable
 
 				if (event.key == pygame.K_BACKSPACE or event.key == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable and not ui_manager0.saves_menu_enable: 
 				#escape exits UI ONLY before the options sub menu is shown and any deeper into sub menus
+					mh1.render_enable = False
 					if level != 0:
 						ui_manager0.trigger_once = True
 
@@ -1168,7 +1199,8 @@ def main():
 		# frame_tex.use(0) #using a texture at index 0
 		# moderngl_handler0.program['tex'] = 0 #write to tex uniform, the number 0, also used to update
 		# moderngl_handler0.render_object.render(mode=moderngl.TRIANGLE_STRIP)
-  
+		
+		#screen = pygame.transform.hsl(screen, 10, 0.2, 0.01)
 		window.blit(pygame.transform.scale(screen, (SCREEN_WIDTH*ws,SCREEN_HEIGHT*ws)), (0,0))#pygame.transform.scale(screen, (SCREEN_WIDTH*1.5,SCREEN_HEIGHT*1.5))
 		pygame.display.update(screen_l_edge*ws, world.rect.y*ws, (SCREEN_WIDTH - screen_r_edge)*ws, (SCREEN_HEIGHT-2*world.rect.y)*ws)
 		

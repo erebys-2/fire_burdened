@@ -56,6 +56,14 @@ class read_only_obj(npc):
             elif self.current_level == 4:
                 if self.order_id == 0:
                     self.current_dialogue_index = 9
+                    
+            elif self.current_level == 5:
+                if self.order_id == 1:
+                    self.current_dialogue_index = 6
+                elif self.order_id == 2:
+                    self.current_dialogue_index = 7
+                elif self.order_id == 0:
+                    self.current_dialogue_index = 8
 
         if self.player_collision and self.get_dialogue_flag:
             # if current_dialogue_index == 0 and self.current_level == 1 and plot_index == -1:
