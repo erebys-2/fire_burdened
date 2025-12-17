@@ -83,8 +83,8 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 			if obj.player_choice_flag:
 				update_all_ini_indexes = True
 			if not self.pause_game and obj.enabled:
-				obj.animate(self.sp_group_list)
-				obj.get_dialogue_index(player, obj.current_dialogue_index, world, selected_slot)#takes world's plot_index_list, modifies it directly
+				obj.animate(self)
+				obj.get_dialogue_index(player, obj.current_dialogue_index, world, self, selected_slot)#takes world's plot_index_list, modifies it directly
 				obj.display_interaction_prompt(dialogue_enable, player.hitbox_rect, screen)
 				obj.scroll_along(world.rect.x, self.scroll_x)
 				if obj.player_collision:

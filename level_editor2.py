@@ -21,7 +21,7 @@ def main():
     SCREEN_HEIGHT = 480
     LOWER_MARGIN = 96
     SIDE_MARGIN = 320
-    m1 = map_gen(os.path.join("assets", "config_textfiles", "world_config", "level_dict.yaml"))
+    
     t1 = textfile_formatter()
 
     
@@ -663,7 +663,8 @@ def main():
         #save and load data
         if save_button.draw(screen, pos_ = pos) and not is_loading and not cfg_open:
             is_saving = True
-            back_up_level()
+            if level in all_levels_dict:
+                back_up_level()
             surface_list = []
             #save level data
             for layer in layer_name_dict:
@@ -707,12 +708,15 @@ def main():
             for l in affected_levels_dict:
                 y0.write_value(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'), l, affected_levels_dict[l], sort=True)
                 
-            #update map
-            map_arr = m1.generate_map_list(1)
-            m1.save_map(map_arr, os.path.join('assets', 'config_textfiles', 'world_config'))
+            
                 
             #update all levels dict
             all_levels_dict = y0.get_data(os.path.join('assets', 'config_textfiles', 'world_config', 'level_dict.yaml'))
+            #update map
+            m1 = map_gen(os.path.join("assets", "config_textfiles", "world_config", "level_dict.yaml"))
+            map_arr = m1.generate_map_list(1)
+            m1.save_map(map_arr, os.path.join('assets', 'config_textfiles', 'world_config'))
+            del m1
             #overwriting
             level_gap = level-input_level
             input_level = level

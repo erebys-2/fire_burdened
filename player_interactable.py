@@ -262,12 +262,14 @@ class player_interactable_(pygame.sprite.Sprite):#generic class for sprites that
                     #     self.action = 0
                     #     self.rect.height = 32
                         
-                elif (self.id_ == 'breakable_brick1' or (self.id_ == 'breakable_brick2' and player_action == 10)):
+                elif (self.id_ == 'breakable_brick1' or (self.id_ == 'breakable_brick2' and player_action in (10, 18))):
                     #print(self.durability)
                     if self.durability > 0:
                         if (player_action != 16 and
                             (self.do_player_atk_collisions(player_atk_rect) or 
-                            self.do_bullet_collisions((sp_group_list[1], sp_group_list[2])))
+                            self.do_bullet_collisions((sp_group_list[1], sp_group_list[2])) or
+                            (player_action == 18 and self.rect.colliderect(player.rect))
+                            )
                             ):
                             if not self.durability_changed:
                                 #if player_action != 16:

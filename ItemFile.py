@@ -84,7 +84,7 @@ class Item(pygame.sprite.Sprite): #helper class with logic for item behavior out
             self.initial_time = pygame.time.get_ticks()
             
         if not pause_game and self.is_immortal:
-            if pygame.time.get_ticks()%50 == 0:
+            if pygame.time.get_ticks()%30 == 0:
                 the_sprite_group.particle_group_fg.sprite.add_particle('sparkle_white', 
                                                                         self.rect.centerx + random.randrange(-16,16), 
                                                                         self.rect.centery + random.randrange(-16,16), 

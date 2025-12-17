@@ -397,7 +397,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                                 if self.action == 4 and self.frame_index <= 6:
                                     
                                     dx *= 0.4
-                                    if self.frame_index in (3,6):
+                                    if self.frame_index in range(2,6):
                                         self.fly_aimline_tgt = player_rect.midtop
                                         s = 24
                                         if pygame.time.get_ticks()%6 != 0:
@@ -871,9 +871,9 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 sp_group_list[5].sprite.add_particle('enemy_bullet_explosion', self.rect.centerx, self.rect.bottom+4, -self.direction, self.scale, False, random.randrange(0,2))
                 for i in range(7):
                     sp_group_list[5].sprite.add_particle('enemy_bullet_explosion', self.rect.centerx+random.randrange(-16,16), self.rect.bottom+random.randrange(-16,16), -self.direction, 0.3*self.scale, False, random.randrange(0,2))
-                enemy_bullet = bullet_(self.rect.centerx, self.rect.bottom+8, 6, self.direction, 1.5, '8x8_red', self.ini_vol, angle=self.theta, dmg=1)
-                enemy_bullet1 = bullet_(self.rect.centerx, self.rect.bottom+8, 6, self.direction, 1.5, '8x8_red', self.ini_vol, angle=self.theta+0.3, dmg=1)
-                enemy_bullet2 = bullet_(self.rect.centerx, self.rect.bottom+8, 6, self.direction, 1.5, '8x8_red', self.ini_vol, angle=self.theta-0.3, dmg=1)
+                enemy_bullet = bullet_(self.rect.centerx, self.rect.bottom+16, 4, self.direction, 1.5, '8x8_red', self.ini_vol, angle=self.theta, dmg=1)
+                enemy_bullet1 = bullet_(self.rect.centerx, self.rect.bottom+16, 4, self.direction, 1.5, '8x8_red', self.ini_vol, angle=self.theta+0.3, dmg=1)
+                enemy_bullet2 = bullet_(self.rect.centerx, self.rect.bottom+16, 4, self.direction, 1.5, '8x8_red', self.ini_vol, angle=self.theta-0.3, dmg=1)
                 self.m_player.play_sound(self.m_player.sfx[5], (self.rect.centerx, self.rect.centery, None, None))
                 sp_group_list[1].add(enemy_bullet)
                 sp_group_list[1].add(enemy_bullet1)
@@ -946,7 +946,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 self.shoot_done = False
                 if self.id_ == 'fly':
                     self.fly_atk_finished = True
-                    self.idle_counter -= 5
+                    self.idle_counter -= 2
                 
             elif self.action == 5:
                 self.jump_counter += 1

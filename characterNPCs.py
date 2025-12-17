@@ -17,7 +17,7 @@ class Test(npc):
     #using the inputs: level, plot_index, current_dialogue_index
     #set the next dialogue index or advance the plot index if specific parameters are met
     #immediately change 1 or 2 of them such as advancing plot index or switching the dialogue index
-    def get_dialogue_index(self, player, current_dialogue_index, world, selected_slot):
+    def get_dialogue_index(self, player, current_dialogue_index, world, sp_group, selected_slot):
         plot_index = world.plot_index_dict[self.name]
         if plot_index != -1:
             self.current_dialogue_index = self.plot_index_jumps_dict[plot_index]
@@ -62,7 +62,7 @@ class Test2(npc):
     #use a dictionary with list as a key, 
     #value will be another list as well, [current_index, plot_index_w_en, plot_index_value, target_character_index]
     #might not be possible... might have to implement some kind of iteraction for writing to plot index
-    def get_dialogue_index(self, player, current_dialogue_index, world, selected_slot):
+    def get_dialogue_index(self, player, current_dialogue_index, world, sp_group, selected_slot):
         plot_index = world.plot_index_dict[self.name]
         if plot_index != -1:
             self.current_dialogue_index = self.plot_index_jumps_dict[plot_index]
@@ -114,7 +114,7 @@ class Mars(npc):
         
         #self.img_rect 
         
-    def get_dialogue_index(self, player, current_dialogue_index, world, selected_slot):
+    def get_dialogue_index(self, player, current_dialogue_index, world, sp_group, selected_slot):
         plot_index = world.plot_index_dict[self.name]
         # print(self.name)
         # print(plot_index)

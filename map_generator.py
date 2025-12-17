@@ -29,35 +29,37 @@ class map_gen():
     
         
     def recursive_trace(self, level):#fills a dictionary with positions and lengths
-        self.levels_added.append(level)
-        data = self.level_dict[level]
-        l_length = data['size'][1]
-        l = data['size'][1]//10
-        # print(f'level: {level}, length: {l}')
-        # print(self.base_lvl)
+        if level in self.level_dict:
+            self.levels_added.append(level)
+            data = self.level_dict[level]
+            l_length = data['size'][1]
+            l = data['size'][1]//10
+            # print(f'level: {level}, length: {l}')
+            # print(self.base_lvl)
+            
+            if self.direction != None:
+                base_pos = self.pos_dict[self.base_lvl]['pos']
+            if self.direction == None:
+                self.pos_dict[level] = {'pos': [0,0], 'len': l}
+            elif self.direction == 'left':
+                self.pos_dict[level] = {'pos': [base_pos[0], base_pos[1]-l], 'len': l}
+            elif self.direction == 'right':
+                self.pos_dict[level] = {'pos': [base_pos[0], base_pos[1]+self.pos_dict[self.base_lvl]['len']], 'len': l}
+            elif self.direction == 'down':
+                self.pos_dict[level] = {'pos': [base_pos[0]+1, base_pos[1]+self.x_pos//10], 'len': l}
+            elif self.direction == 'up':
+                self.pos_dict[level] = {'pos': [base_pos[0]-1, base_pos[1]+self.x_pos//10], 'len': l}
+            else:
+                self.pos_dict[level] = [-99999999999999999999,-99999999999999999999]
+                
+                
+            for transition in data['trans_data']:
+                if transition['n_lvl'] not in self.levels_added:
+                    self.direction, self.x_pos = self.check_trans_orientation(transition, l_length)
+                    self.base_lvl = level
+                    #call again
+                    self.recursive_trace(transition['n_lvl'])
         
-        if self.direction != None:
-            base_pos = self.pos_dict[self.base_lvl]['pos']
-        if self.direction == None:
-            self.pos_dict[level] = {'pos': [0,0], 'len': l}
-        elif self.direction == 'left':
-            self.pos_dict[level] = {'pos': [base_pos[0], base_pos[1]-l], 'len': l}
-        elif self.direction == 'right':
-            self.pos_dict[level] = {'pos': [base_pos[0], base_pos[1]+self.pos_dict[self.base_lvl]['len']], 'len': l}
-        elif self.direction == 'down':
-            self.pos_dict[level] = {'pos': [base_pos[0]+1, base_pos[1]+self.x_pos//10], 'len': l}
-        elif self.direction == 'up':
-            self.pos_dict[level] = {'pos': [base_pos[0]-1, base_pos[1]+self.x_pos//10], 'len': l}
-        else:
-            self.pos_dict[level] = [-99999999999999999999,-99999999999999999999]
-            
-            
-        for transition in data['trans_data']:
-            if transition['n_lvl'] not in self.levels_added:
-                self.direction, self.x_pos = self.check_trans_orientation(transition, l_length)
-                self.base_lvl = level
-                #call again
-                self.recursive_trace(transition['n_lvl'])
                 
     def normalize_positions(self, level):
         leftest_lvl = level

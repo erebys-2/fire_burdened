@@ -16,7 +16,7 @@
     - 113
     - 108
     name: Outer City Ruins
-    notes: ''
+    notes: null
     player_en: true
     size:
     - 15
@@ -37,6 +37,14 @@
         pair: 1
         w: 640
         x: 130
+        y: 0
+    -   h: 480
+        n_lvl: 10
+        new_x: 0
+        new_y: None
+        pair: None
+        w: 2
+        x: 149
         y: 0
 2:
     color:
@@ -238,3 +246,51 @@
     - 15
     - 160
     trans_data: []
+10:
+    color:
+    - 140
+    - 113
+    - 108
+    name: Outer City Ruins, Underside
+    notes: None
+    player_en: true
+    size:
+    - 15
+    - 150
+    trans_data:
+    -   h: 480
+        n_lvl: 1
+        new_x: 4768
+        new_y: None
+        pair: None
+        w: 2
+        x: 0
+        y: 0
+11:
+    color:
+    - 140
+    - 113
+    - 108
+    name: Outer City Ruins, Underside
+    notes: None
+    player_en: true
+    size:
+    - 15
+    - 150
+    trans_data:
+    -   h: 480
+        n_lvl: 1
+        new_x: 4768
+        new_y: None
+        pair: None
+        w: 2
+        x: 0
+        y: 0
+    -   h: 2
+        n_lvl: 11
+        new_x: None
+        new_y: 384
+        pair: 1
+        w: 640
+        x: 130
+        y: 0

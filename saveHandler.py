@@ -40,6 +40,7 @@ class save_file_handler():
             str3 = str3 + f'{slot[0]}, {slot[1]}\n'
         str3 = str3[0:len(str3)-1]
         txt_file_map[self.PI_str] = str3
+        #print(str3)
         
         str4 = ''
         for lvl in lvl_completion_dict:

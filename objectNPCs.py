@@ -10,7 +10,7 @@ class save_pt(npc):
         self.current_p_inv = player_inventory
         self.is_obj = True
         
-    def get_dialogue_index(self, player, current_dialogue_index, world, selected_slot):
+    def get_dialogue_index(self, player, current_dialogue_index, world, sp_group, selected_slot):
         pass
     
     def display_interaction_prompt(self, dialogue_enable, player_rect, screen):
@@ -36,7 +36,7 @@ class read_only_obj(npc):
     #use a dictionary with list as a key, 
     #value will be another list as well, [current_index, plot_index_w_en, plot_index_value, target_character_index]
     #might not be possible... might have to implement some kind of iteraction for writing to plot index
-    def get_dialogue_index(self, player, current_dialogue_index, world, selected_slot):
+    def get_dialogue_index(self, player, current_dialogue_index, world, sp_group, selected_slot):
         plot_index = world.plot_index_dict[self.name]
         if plot_index != -1:
             self.current_dialogue_index = self.plot_index_jumps_dict[plot_index]
@@ -54,8 +54,10 @@ class read_only_obj(npc):
                     self.current_dialogue_index = 5
             
             elif self.current_level == 4:
-                if self.order_id == 0:
+                if self.order_id == 1:
                     self.current_dialogue_index = 9
+                elif self.order_id == 0:
+                    self.current_dialogue_index = 10
                     
             elif self.current_level == 5:
                 if self.order_id == 1:

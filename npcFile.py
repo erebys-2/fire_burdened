@@ -6,7 +6,7 @@ from music_player import music_player #type: ignore
 import random
 #from textManager import text_manager
 from textfile_handler import textfile_formatter
-#from cfg_handler0 import cfg_handler
+from ItemFile import Item
 
 #NPC class used for sprites with access to text and player choice ui
 
@@ -95,6 +95,8 @@ class npc(pygame.sprite.Sprite):
 
         self.dialogue_dict = dialogue_dict
         self.plot_index_jumps_dict = self.dialogue_dict['plot_index_jumps']
+        
+        self.give_item_en = True
 
     #generally, current_dialogue_index will advance itself by following the next index in the dialogue array
     #self.get_dialogue_index() will only be triggered by specific conditions: level, plot index, current dialogue index and will be called right before
@@ -271,6 +273,13 @@ class npc(pygame.sprite.Sprite):
         #END OF ANIMATION FRAMES    
         if self.frame_index >= len(self.frame_dict[self.action]):#frame_list
             self.frame_index = 0
+            
+    def give_item(self, item_name, pos, sprite_group):
+        if self.give_item_en:
+            sprite_group.item_group.add(Item(item_name, pos[0], pos[1], 1, True))
+            self.give_item_en = False
+            
+        return not self.give_item_en
     
     #npc sub classes take plot index and current level to decide the dialogue index
     

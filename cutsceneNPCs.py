@@ -41,7 +41,7 @@ class opening_scene(npc):
             self.current_dialogue_index = self.plot_index_jumps_dict[world.plot_index_dict[self.name]]
             
 
-    def get_dialogue_index(self, player, current_dialogue_index, world, selected_slot):
+    def get_dialogue_index(self, player, current_dialogue_index, world, sp_group, selected_slot):
         
         if self.player_collision and self.get_dialogue_flag:
             #example of how to code using this system
@@ -62,11 +62,15 @@ class opening_scene(npc):
                 cutscene_autosave.save(selected_slot, self.current_level, world.plot_index_dict, world.lvl_completion_dict, world.onetime_spawn_dict, player)
                 self.autosaved = True
             elif self.current_dialogue_index == 20:
+                self.give_item_en = True
                 world.plot_index_dict[self.name] = 30
                 world.plot_index_dict['Mars'] = 20
                 world.check_onetime_spawn_dict(self.current_level)
                 cutscene_autosave.save(selected_slot, self.current_level, world.plot_index_dict, world.lvl_completion_dict, world.onetime_spawn_dict, player)
                 self.autosaved = True
+            elif self.current_dialogue_index == 36:
+                self.give_item('Worn Knee Socks', (player.rect.centerx, player.rect.centery), sp_group)
+                #need to reset self.give_item_en some pt after
             else:
                 self.current_dialogue_index = self.current_dialogue_index
             self.get_dialogue_flag = False

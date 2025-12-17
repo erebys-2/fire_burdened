@@ -89,6 +89,9 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.btn_click_counter = []
         self.joysticks = {}
         
+        # self.atk_en = False
+        # self.mvmt2_en = False
+        
     def reset_rtn_dict(self):
         rtn_dict = {
             'RG': True,

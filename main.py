@@ -314,6 +314,7 @@ def main():
 	window = pygame.display.set_mode((SCREEN_WIDTH*ws, SCREEN_HEIGHT*ws), flags)#, vsync=1)
 
 	show_cursor_signals = [level == 0, pause_game, not player0.Alive, inventory_opened, dialogue_enable, trade_ui_en, mh1.render_enable]
+	mvmt2_en = False
 	print('game is running')
 
 	while run:
@@ -322,7 +323,7 @@ def main():
 		temp_move_R = False
 		temp_move_L = False
 		player_enable_master = (level_dict[level]['player_en'] and not level_transitioning and not camera.set_ini_pos)
-
+		mvmt2_en = player0.inventory_handler.check_for_item('Worn Knee Socks') or sprint_bypass
 		
 		if player0_lvl_transition_data[0]:#test for player collision w/ level transition rects
 			next_level = player0_lvl_transition_data[1]['n_lvl']
@@ -499,6 +500,7 @@ def main():
 		
 
 		#=================================================================updating and drawing all sprites=====================================
+		player0.check_item_pickup(the_sprite_group)
 		if not level_transitioning and not player0.in_cutscene:
 			#dialogue trigger sent here
 			the_sprite_group.pause_game = pause_game or ui_manager0.saves_menu_enable
@@ -514,7 +516,6 @@ def main():
 			the_sprite_group.update_text_prompt_group(screen, dialogue_enable, next_dialogue, player0, world, selected_slot)#player and world
 			next_dialogue = False
 			player0.check_melee_hits(the_sprite_group)#seems to work, wasn't responsive at first
-			player0.check_item_pickup(the_sprite_group)
 			the_sprite_group.update_groups_behind_player(screen, player0, [tile for tile in world.solids if tile[1][0] > -160 and tile[1][0] < 800])
    
 			the_sprite_group.update_item_group(screen, player0.hitbox_rect)
@@ -820,7 +821,7 @@ def main():
 			
 		if player0.in_cutscene:#dialogue system will activate as soon as the player collides with a 'cutscene' npc
 			dialogue_enable = True #start signal for dialogue handler
-			atk_disable = world.plot_index_dict['Mars'] < 5
+			atk_disable = world.plot_index_dict['Mars'] < 10
 			if last_area_name != area_name_dict[level]:
 				area_name_time = pygame.time.get_ticks() #extend area name time on screen
 			
@@ -889,7 +890,15 @@ def main():
 
 			elif input_list[ctrls_list[4]] and not player0.atk1 and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_i
 				status_bars.warning = True
-	
+			
+			if (atk_disable or not mvmt2_en) and player_enable_master and not inventory_opened and not dialogue_enable and not mh1.render_enable and not pause_game:
+				if atk_disable and input_list[ctrls_list[4]]:
+					screen.blit(font.render("{Melee} Not Unlocked!", False, (255,255,255)), (8,8))
+				elif not mvmt2_en: 
+					if input_list[ctrls_list[5]]:
+						screen.blit(font.render("{Slide Kick} Not Unlocked!", False, (255,255,255)), (8,8))
+					elif input_list[ctrls_list[7]]:
+						screen.blit(font.render("{Sprint} Not Unlocked!", False, (255,255,255)), (8,8))
 	
 			if input_list[ctrls_list[0]] and not player0.hold_jump: #pygame.K_w 
 				player0.landing = False
@@ -974,7 +983,8 @@ def main():
 						# 	status_bars.warning = True
       
 						if event_trigger == ctrls_list[5] and player0.stamina_used + player0.atk1_stamina_cost <= player0.stamina and not player0.using_item: #pygame.K_o
-							player0.slide_kick = True
+							if mvmt2_en:
+								player0.slide_kick = True
 						elif event_trigger == ctrls_list[5] and player0.stamina_used + player0.atk1_stamina_cost > player0.stamina: #pygame.K_o
 							status_bars.warning = True
 
@@ -986,7 +996,7 @@ def main():
 							status_bars.warning = True
 		
 					if event_trigger == ctrls_list[7]: #pygame.K_RALT
-						if player0.inventory_handler.check_for_item('Worn Knee Socks') or sprint_bypass:
+						if mvmt2_en:
 							player0.sprint = True
 						inv_toggle = True
 					#press button and check if item selected can be used
@@ -1053,13 +1063,13 @@ def main():
         			level != 0 and 
            			not ui_manager0.options_menu_enable and 
               		not ui_manager0.saves_menu_enable and 
+					not dialogue_enable and
                 	not pause_game and 
                  	not inventory_opened):
 					mh1.render_enable = not mh1.render_enable
 
 				if (event.key == pygame.K_BACKSPACE or event.key == pygame.K_ESCAPE) and not ui_manager0.options_menu_enable and not ui_manager0.saves_menu_enable: 
 				#escape exits UI ONLY before the options sub menu is shown and any deeper into sub menus
-					mh1.render_enable = False
 					if level != 0:
 						ui_manager0.trigger_once = True
 
@@ -1073,15 +1083,15 @@ def main():
 							pygame.mixer.stop()
 							play_click_sound()
 
-						elif not dialogue_enable and not inventory_opened: #pause game, will trigger if player is not in dialogue
+						elif not dialogue_enable and not inventory_opened and not mh1.render_enable: #pause game, will trigger if player is not in dialogue
 							pause_game = not pause_game
 							pygame.mixer.pause()
 							play_click_sound()
 		
 						elif (not player0.in_cutscene and #cannot esc out of cutscene
-								not trade_ui.enabled and
-            					(dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list or 
-                  				the_sprite_group.textbox_output[6][0])
+								not trade_ui.enabled 
+            					# (dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list or 
+                  				# the_sprite_group.textbox_output[6][0])
                  				): #exits dialogue window if an NPC finishes speaking (is this way to avoid bugs)
 							dialogue_enable = False
 							p_choice_handler0.disable()
@@ -1092,6 +1102,8 @@ def main():
 
 						if trade_ui.enabled:
 							trade_ui.exit_to_dialogue()
+       
+						mh1.render_enable = False
 
 					else:#if on the main menu, the game will exit on button press
 						run = False
@@ -1106,6 +1118,7 @@ def main():
 					
 					if dialogue_trigger_ready or player0.in_cutscene:
 						dialogue_enable = True
+						mh1.render_enable = False
 					if dialogue_enable and not the_sprite_group.textbox_output[6][0]:
 						if dialogue_box0.str_list_rebuilt != dialogue_box0.current_str_list:
 							text_speed = 0
@@ -1204,7 +1217,7 @@ def main():
 		window.blit(pygame.transform.scale(screen, (SCREEN_WIDTH*ws,SCREEN_HEIGHT*ws)), (0,0))#pygame.transform.scale(screen, (SCREEN_WIDTH*1.5,SCREEN_HEIGHT*1.5))
 		pygame.display.update(screen_l_edge*ws, world.rect.y*ws, (SCREEN_WIDTH - screen_r_edge)*ws, (SCREEN_HEIGHT-2*world.rect.y)*ws)
 		
-		pygame.display.set_caption(f"Fire Burdened 0.723 @ {clock.get_fps():.1f} FPS")
+		pygame.display.set_caption(f"Fire Burdened 0.733 @ {clock.get_fps():.1f} FPS")
   
 		#frame_tex.release()
 		clock.tick(FPS)
