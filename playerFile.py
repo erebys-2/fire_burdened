@@ -225,6 +225,7 @@ class player(pygame.sprite.Sprite):
         self.current_npc_enabled = False
         
         self.slide_kick = False
+        self.lvls_visited = set([0,1])
        
     #methods
     def cancel_shoot(self):

@@ -341,6 +341,7 @@ def main():
 
 		#----------------------------------------------------------------------level changing-------------------------------------------------
 		if level != next_level:
+			player0.lvls_visited.add(level)
 			mh1.render_enable = False
 			atk_disable = world.plot_index_dict['Mars'] < 10
    
@@ -553,7 +554,7 @@ def main():
 					last_area_name = area_name_dict[level]
      
 			#draw map
-			mh1.render_map(screen, level)
+			mh1.render_map(screen, level, p_visit_set=player0.lvls_visited)
 
 		elif level_transitioning:
 			player0.in_cutscene = False
@@ -664,16 +665,19 @@ def main():
 			next_level = ui_output_dict['NL']
 			fill_player_inv(ui_manager0.rtn_dict['PNI'])
 			#set player stats
-			for stat in ui_manager0.rtn_dict['PS']:
-				if ui_manager0.rtn_dict['PS'][stat] != -1:
+			player_stats = ui_manager0.rtn_dict['PS']
+			for stat in player_stats:
+				if player_stats[stat] != -1:
 					if stat == 'hits_tanked':
-						player0.hits_tanked = ui_manager0.rtn_dict['PS'][stat]
+						player0.hits_tanked = player_stats[stat]
 					elif stat == 'st_cap':
-						anmt = ui_manager0.rtn_dict['PS'][stat]
+						anmt = player_stats[stat]
 						player0.stamina_usage_cap = anmt
 						player0.stamina_used = anmt
 					elif stat == 'char':
-						player0.char_level = ui_manager0.rtn_dict['PS'][stat]
+						player0.char_level = player_stats[stat]
+					elif stat == 'lvls_visited':
+						player0.lvls_visited = player_stats[stat]
 	
 			if not run:
 				pygame.time.wait(100)   

@@ -172,24 +172,26 @@ class map_handler():
         self.offsety = self.map_pos[1]
         
     
-    def draw_map(self, level, p_visit_list=None):
+    def draw_map(self, level, p_visit_set=None):
         self.map_surf = pygame.surface.Surface(self.screen_sz, flags=pygame.SRCALPHA)
         for y in range(len(self.map_arr)):
             for x in range(len(self.map_arr[0])):
-                if p_visit_list == None and self.map_arr[y][x] != -1:
+                if p_visit_set == None and self.map_arr[y][x] != -1:
                     pygame.draw.rect(self.map_surf, (58, 58, 78), pygame.rect.Rect(x,y,1,1))
-                elif self.map_arr[y][x] != -1 and self.map_arr[y][x] in p_visit_list:#only render visited levels if p_visit_list != None
-                    pygame.draw.rect(self.map_surf, (58, 58, 78), pygame.rect.Rect(x,y,1,1))
-                    
+                elif p_visit_set != None and self.map_arr[y][x] != -1:#only render visited levels if p_visit_set != None
+                    if self.map_arr[y][x] in p_visit_set:
+                        pygame.draw.rect(self.map_surf, (58, 58, 78), pygame.rect.Rect(x,y,1,1))
+                    else:
+                        pygame.draw.rect(self.map_surf, (38, 38, 58), pygame.rect.Rect(x,y,1,1))
                 if self.map_arr[y][x] == level:
                     pygame.draw.rect(self.map_surf, (244, 67, 54), pygame.rect.Rect(x,y,1,1))
         self.map_surf = pygame.transform.scale_by(self.map_surf, self.scale_xy)
         self.map_surf.convert_alpha()
         
-    def render_map(self, screen, level, p_visit_list=None):
+    def render_map(self, screen, level, p_visit_set=None):
         if self.render_enable:
             if self.enable_once:
-                self.draw_map(level, p_visit_list)
+                self.draw_map(level, p_visit_set)
                 self.center_map(level)
                 self.enable_once = False
             screen.blit(self.bg, (0,0))

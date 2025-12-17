@@ -1,0 +1,35 @@
+player_state:
+    level: 1
+    player_x: 32
+    player_y: 128
+    hits_tanked: -1
+    st_cap: -1
+    char: 0
+    lvls_visited: !!set
+        0: null
+        1: null
+plot_index_dict: empty
+player_inventory:
+-   - empty
+    - 0
+-   - empty
+    - 0
+-   - empty
+    - 0
+-   - empty
+    - 0
+-   - empty
+    - 0
+-   - empty
+    - 0
+-   - empty
+    - 0
+-   - empty
+    - 0
+-   - empty
+    - 0
+-   - empty
+    - 0
+onetime_spawn_dict: empty
+lvl_completion_dict:
+    0: 0

@@ -309,7 +309,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
                 self.kbd_new_game = False
                 
                 if self.btn_click_counter[index] > 0:  
-                    self.save_handler.reset_specific_save(index)
+                    self.save_handler.reset_specific_save2(index)
                     self.selected_slot = index
                     
                     #set the new level

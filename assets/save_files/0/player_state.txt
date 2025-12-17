@@ -1,6 +1,0 @@
-level: 1
-player_x: 32
-player_y: 128
-hits_tanked: -1
-st_cap: -1
-char: 0

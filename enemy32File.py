@@ -216,7 +216,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         
     def move(self, player, world_solids, scrollx, sp_group_list):
         player_rect = player.hitbox_rect
-        p_rect_shifted_centerx = player.rect.centerx + player.direction*2*self.width
+        p_rect_shifted_centerx = player.rect.centerx + player.direction*2.2*self.width
         player_atk_rect = player.atk_rect_scaled
         player_action = player.action
         player_direction = player.direction
@@ -871,9 +871,9 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 sp_group_list[5].sprite.add_particle('enemy_bullet_explosion', self.rect.centerx, self.rect.bottom+4, -self.direction, self.scale, False, random.randrange(0,2))
                 for i in range(7):
                     sp_group_list[5].sprite.add_particle('enemy_bullet_explosion', self.rect.centerx+random.randrange(-16,16), self.rect.bottom+random.randrange(-16,16), -self.direction, 0.3*self.scale, False, random.randrange(0,2))
-                enemy_bullet = bullet_(self.rect.centerx, self.rect.bottom+16, 4, self.direction, 1.5, '8x8_red', self.ini_vol, angle=self.theta, dmg=1)
-                enemy_bullet1 = bullet_(self.rect.centerx, self.rect.bottom+16, 4, self.direction, 1.5, '8x8_red', self.ini_vol, angle=self.theta+0.3, dmg=1)
-                enemy_bullet2 = bullet_(self.rect.centerx, self.rect.bottom+16, 4, self.direction, 1.5, '8x8_red', self.ini_vol, angle=self.theta-0.3, dmg=1)
+                enemy_bullet = bullet_(self.rect.centerx, self.rect.bottom+16, 7, self.direction, 1.5, '8x8_red', self.ini_vol, angle=self.theta, dmg=1)
+                enemy_bullet1 = bullet_(self.rect.centerx, self.rect.bottom+16, 7, self.direction, 1.5, '8x8_red', self.ini_vol, angle=self.theta+0.3, dmg=1)
+                enemy_bullet2 = bullet_(self.rect.centerx, self.rect.bottom+16, 7, self.direction, 1.5, '8x8_red', self.ini_vol, angle=self.theta-0.3, dmg=1)
                 self.m_player.play_sound(self.m_player.sfx[5], (self.rect.centerx, self.rect.centery, None, None))
                 sp_group_list[1].add(enemy_bullet)
                 sp_group_list[1].add(enemy_bullet1)
