@@ -109,7 +109,7 @@ def main():
 	mh1 = map_handler(os.path.join("assets", "config_textfiles", "world_config"), SCREEN_WIDTH, SCREEN_HEIGHT)
 
 	#camera instance
-	camera_offset = int(0.75 * ts)
+	camera_offset = ts#int(0.75 * ts)
 	camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, 2*camera_offset)
  
 	#instantiate sprite groups=========
@@ -461,37 +461,29 @@ def main():
 		else:
 			scroll_x = 0
 		
-			
-	
 		#---------------------------------------screen shake------------------------------------------------------------------------
-		
-		if not level_transitioning:
+		if not level_transitioning:# and not pause_game:
 			if do_screenshake_master:
 				ss_output = camera.screen_shake(screenshake_profile, do_screenshake_master)
 				do_screenshake_master = ss_output[0]
-				player0.rect.x += ss_output[1][0]
-				scroll_x += ss_output[1][1]
+				if not pause_game:#fixes shifting p_ints when pausing during a screenshake
+					player0.rect.x += ss_output[1][0]
+					scroll_x += ss_output[1][1]
 				player0.vel_y += ss_output[1][2]*1.02
 				scroll_y = -ss_output[1][3]
-
-			if not do_screenshake_master and player0.do_screenshake:
-				screenshake_profile = player0.screenshake_profile #intensity x, intensity y, cycle count
-				player0.do_screenshake = False
-				#if not do_screenshake_master:
-				do_screenshake_master = True 
-    
-    
-			if not do_screenshake_master:
+			else:
+				if player0.do_screenshake:
+					screenshake_profile = player0.screenshake_profile #intensity x, intensity y, cycle count
+					player0.do_screenshake = False
+					do_screenshake_master = True 
+				
 				for p_int in [p_int for p_int in the_sprite_group.p_int_group if p_int.do_screenshake]: #the_sprite_group.p_int_group: 
 					p_int.do_screenshake = False
-					#if not do_screenshake_master:
 					do_screenshake_master = True
 					screenshake_profile = (4, 8, 3)
-
-			if not do_screenshake_master:
+     
 				for enemy in [enemy for enemy in the_sprite_group.enemy0_group if enemy.do_screenshake]: #the_sprite_group.enemy0_group:
 					enemy.do_screenshake = False
-					#if not do_screenshake_master:
 					do_screenshake_master = True
 					if player0.sprint:
 						screenshake_profile = (20, 6, 2)

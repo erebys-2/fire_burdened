@@ -5,7 +5,7 @@ from music_player import music_player
 from textManager import text_manager
 from textfile_handler import textfile_formatter
 from saveHandler import save_file_handler
-from cfg_handler0 import cfg_handler
+from cfg_handler0 import cfg_handler, yaml_handler
 
 #addon class for the subclass dialogue box under text manager
 #it will overlay buttons over a blank text box and return the next index
@@ -23,8 +23,10 @@ class player_choice_handler():
         self.t1 = textfile_formatter()
         base_path = os.path.join('assets', 'npc_dialogue_files', 'player_choice_config')
 
-        cfgp = cfg_handler()
-        self.player_choice_dict2 = cfgp.get_dict_from_cfg(os.path.join(base_path, 'player_choice.ini'))
+        y1 = yaml_handler()
+        self.player_choice_dict2 = y1.get_data(os.path.join(base_path, 'player_choice.yaml'))
+        # cfgp = cfg_handler()
+        # self.player_choice_dict2 = cfgp.get_dict_from_cfg(os.path.join(base_path, 'player_choice.ini'))
         
         for p_choice in self.player_choice_dict2:#format prompt string into string list
             for entry in self.player_choice_dict2[p_choice]:
@@ -76,7 +78,7 @@ class player_choice_handler():
         player_choices2 = [k for k in self.player_choice_dict2[key] if k != 'prompt']
 
         if self.trigger_once:#instantiate buttons
-            self.prompt = self.player_choice_dict2[key]['prompt']#get prmpt
+            self.prompt = self.player_choice_dict2[key]['prompt']#get prompt, ignoring outer quotes
             self.next_index = -3
             self.button_list *= 0
             btn_count = len(self.player_choice_dict2[key])-1

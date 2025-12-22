@@ -11,11 +11,24 @@ class bullet_(pygame.sprite.Sprite):
         self.Active = True
         self.scale = scale
         
+        x_weight = m.cos(angle)
+        self.x_weight_abs = abs(x_weight)
+        y_weight = m.sin(angle)
+        self.y_weight_abs = abs(y_weight)
+        
         if angle == 0:
             self.direction = direction
-        else:
+        elif x_weight > 0:
             self.direction = 1
-        self.v_direction = 1
+        elif x_weight < 0:
+            self.direction = -1
+            
+        if angle == 0:
+            self.v_direction = 0
+        elif y_weight > 0:
+            self.v_direction = 1
+        elif y_weight < 0:
+            self.v_direction = -1
         
         self.speed = speed
         self.bullet_type = type
@@ -61,6 +74,7 @@ class bullet_(pygame.sprite.Sprite):
         self.image = self.frame_list[self.action][self.frame_index]
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
+        self.deflection_rect = self.rect.scale_by(4,2)
         self.rect.topleft = (x,y)
         self.width = self.image.get_width()
         self.height = self.image.get_height()
@@ -80,6 +94,7 @@ class bullet_(pygame.sprite.Sprite):
         player_atk_rect = player.atk_rect_scaled
         player_action = player.action
         player_direction = player.direction
+        self.deflection_rect.center = self.rect.center
         
         dx = 0
         dy = 0
@@ -88,8 +103,8 @@ class bullet_(pygame.sprite.Sprite):
             if self.angle == 0:
                 dx = self.direction * self.speed
             else:
-                dx = self.direction * self.speed * m.cos(self.angle)
-                dy = self.v_direction * self.speed * m.sin(self.angle)
+                dx = self.direction * self.speed * self.x_weight_abs
+                dy = self.v_direction * self.speed * self.y_weight_abs
                 self.vel_x = dx
                 self.vel_y = dy
         else:
@@ -109,7 +124,7 @@ class bullet_(pygame.sprite.Sprite):
                     self.exploded = True
                     # self.Active = False
                     # #self.kill()
-            elif (self.rect.colliderect(player_atk_rect)
+            elif (player_atk_rect.colliderect(pygame.rect.Rect(self.deflection_rect.x + dx, self.deflection_rect.y + dy, self.deflection_rect.width, self.deflection_rect.height))
                 and player_direction != self.direction
                 and self.deflected == False
                 ):
@@ -245,6 +260,7 @@ class bullet_(pygame.sprite.Sprite):
         if self.vel_y == -1:
             img = pygame.transform.rotate(self.image, 180)
         
+        #pygame.draw.rect(screen, (255,0,255), self.deflection_rect)
         screen.blit(img, self.rect)
         #pygame.draw.rect(screen, (225,0,0), self.edge_rect)
         

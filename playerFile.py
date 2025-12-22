@@ -960,7 +960,7 @@ class player(pygame.sprite.Sprite):
                 self.rect.x += self.direction * self.speed
                 
             else:
-                self.dx = self.direction * (multiplier * 2)
+                self.dx = self.direction * ((multiplier * 2) + 1)
             #self.vel_y = 0
         
         # if self.action == 24:
@@ -1001,19 +1001,22 @@ class player(pygame.sprite.Sprite):
                         self.rect.x += self.direction
                     elif self.atk1_stamina_cost == self.atk1_default_stam:
                         if moveL or moveR:
-                            multiplier = 10
+                            multiplier = 9
                         else:
-                            multiplier = 4
+                            multiplier = 3
                             
                         # if self.rect.centerx in range(288, 352):
                         #     self.dx = self.direction * (multiplier * (2))
                         #     self.rect.x += self.direction * self.speed * 2
                         # else:
                         self.dx = self.direction * multiplier
-                        self.rect.x += self.direction * self.speed
+                        self.rect.x += self.direction * (self.speed + 1)
                         
                         if self.action == 24:#7:
-                            self.vel_y -= 0.7
+                            if self.vel_y > 0:
+                                self.vel_y = -5
+                            else:
+                                self.vel_y -= 0.7
                             
                         elif self.action == 8 and self.vel_y + 7 <= 28 and self.vel_y > 0 and self.in_air: #25 max 
                             self.vel_y *= 1.7
@@ -1261,9 +1264,13 @@ class player(pygame.sprite.Sprite):
         #update pos------------------------------------------------------------------------------------------------------------------------
 
         if self.draw_trail:
-            self.trail_coords.append([[self.rect.centerx - 2*self.direction, self.rect.centery], [self.rect.centerx + self.dx + 2*self.direction, self.rect.centery + self.dy]])
+            self.trail_coords.append([[self.rect.centerx - 3*self.direction, self.rect.centery], [self.rect.centerx + self.dx + 3*self.direction, self.rect.centery + self.dy]])
         else:
             self.trail_coords = []
+            
+        for trail_coord in self.trail_coords:
+            trail_coord[0][0] -= self.dx//6
+            trail_coord[1][0] -= self.dx//6
         
         self.rect.y += self.dy
         self.hitbox_rect.centery = self.rect.centery #don't delete, keeping hitbox rect on the player is used by the camera and enemies alike

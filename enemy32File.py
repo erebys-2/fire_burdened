@@ -9,6 +9,7 @@ from ItemFile import Item #type: ignore
 import random
 import math
 from geometry import geometry
+from healthbars import health_bar
 
 
 class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemies
@@ -78,6 +79,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         
         self.theta = 0
         self.g = geometry()
+        self.hp_bar = health_bar()
 
         #fill animation frames
         if self.id_ == 'dog':
@@ -216,7 +218,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
         
     def move(self, player, world_solids, scrollx, sp_group_list):
         player_rect = player.hitbox_rect
-        p_rect_shifted_centerx = player.rect.centerx + player.direction*2.2*self.width
+        p_rect_shifted_centerx = player.rect.centerx + player.direction*int(2.5*self.width) + 32
         player_atk_rect = player.atk_rect_scaled
         player_action = player.action
         player_direction = player.direction
@@ -946,7 +948,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                 self.shoot_done = False
                 if self.id_ == 'fly':
                     self.fly_atk_finished = True
-                    self.idle_counter -= 2
+                    self.idle_counter -= 3
                 
             elif self.action == 5:
                 self.jump_counter += 1
@@ -987,7 +989,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
             else:
                 screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
                 
-            
+            self.hp_bar.render_bar((self.rect.centerx, int(self.rect.y-8)), (self.hp-self.hits_tanked)/self.hp, screen)
                     
                 
             # if self.pos_list != []:

@@ -39,6 +39,8 @@ class npc(pygame.sprite.Sprite):
         self.m_player = music_player(['mc_anvil.mp3'], ini_vol)
         self.ini_vol = ini_vol
         
+        font_path = os.path.join('assets', 'FiraCode-Regular.ttf')
+        self.font = pygame.font.Font(font_path, 10)
         self.trigger_once = False
         
         self.frame_list = []
@@ -184,7 +186,8 @@ class npc(pygame.sprite.Sprite):
             self.player_collision = False
         if self.player_collision and self.name != 'invisible_prompt':
             if not dialogue_enable:
-                screen.blit(self.interaction_prompt, (self.rect.x, self.rect.y - 24, 32, 32))
+                screen.blit(self.interaction_prompt, (self.rect.centerx - 18, self.rect.y - 24, 32, 32))
+                screen.blit(self.font.render('[Enter]', False, (255,255,255)), (self.rect.centerx - 22, self.rect.y - 32))
                 
     def finish_action(self):
         self.direction_set.pop(0)
