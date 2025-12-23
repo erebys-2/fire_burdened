@@ -355,7 +355,7 @@ class enemy_32wide(pygame.sprite.Sprite): #Generic enemy class for simple enemie
                     if self.inundated == False: #cannot move towards player when inundated
                         #move if the player gets too close
                         chase_range = 3
-                        atk_range = 1.2
+                        atk_range = 2
                         
                         #move towards player until threshold
                         if p_rect_shifted_centerx + atk_range*self.width > self.rect.centerx - chase_range*self.width and p_rect_shifted_centerx + atk_range*self.width < self.rect.centerx:

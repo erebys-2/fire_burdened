@@ -429,7 +429,7 @@ def main():
 			camera.auto_correct(player0.rect, player0.direction, player0.x_coord, 
                        world.rect, 
                        SCREEN_WIDTH, SCREEN_HEIGHT)
-		world.draw(screen, scroll_x, scroll_y, player0.hitting_wall)#this draws the world and scrolls it 
+		world.draw(screen, scroll_x, scroll_y, False)#this draws the world and scrolls it , player0.hitting_wall
 		
 		#vertical screenshake correction
 		if world.rect.y != 0 and not do_screenshake_master:

@@ -683,7 +683,7 @@ class player(pygame.sprite.Sprite):
                 #self.dx collisions, tile walls
                 
                 #hitting wall while rolling
-                if self.action in (9, 21) and tile[1].colliderect(self.collision_rect.x + self.dx, self.collision_rect.y + self.half_h + self.dy, self.width, self.qrtr_h - 2):
+                if self.action in (9, 21) and tile[1].colliderect(self.collision_rect.x + self.dx, self.collision_rect.centery + self.dy, self.width, self.qrtr_h - 2):
                     self.dx = -self.direction 
                     self.dy /= 2
                     self.rolled_into_wall = True
@@ -718,21 +718,24 @@ class player(pygame.sprite.Sprite):
                 
                 #wall collisions while NOT rolling
                 elif (self.action not in (9, 21) #this line is important for consistency
+                    and self.dx != 0
                     and not self.disp_flag
                     and tile[1].colliderect(self.collision_rect.x + 2 + self.dx, self.collision_rect.y, self.width - 4, self.height - 16) 
                     ):
                     self.hitting_wall = True
                     self.hitting_wall_timer = pygame.time.get_ticks()
-                    
-                    #self.dx = -self.direction
-                    m = 1
+
+                    m = 2
                     if self.hurting:
                         m = 16
-                    if abs(self.direction + self.dx) < abs(self.dx):
-                        self.dx = m*self.direction
+                    if abs(self.direction + self.dx) < abs(self.dx) or self.hurting:
+                        self.rect.x += m*self.direction
+                        #self.dx += m*self.direction
+                        #print('oof1 ' + str(pygame.time.get_ticks()))
                     elif abs(self.direction + self.dx) > abs(self.dx):
-                        self.dx = -self.direction
-
+                        self.rect.x += -m*self.direction
+                        #print('oof2 ' + str(pygame.time.get_ticks()))
+                    self.dx = 0
                         
                 #self.dy collision stuff, sinking through tiles etc
                 
