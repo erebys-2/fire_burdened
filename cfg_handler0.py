@@ -95,8 +95,8 @@ class yaml_handler():
         return str_
     
 # def __main__():
-#     cfg0 = cfg_handler()
-#     test_dict = cfg0.get_dict_from_cfg('assets\\npc_dialogue_files\\npc_dialogue_txt_files\\Mars.ini')
-#     print(test_dict)
+#     y1 = yaml_handler()
+#     d = y1.get_data("assets/npc_dialogue_files/npc_dialogue_txt_files/opening_scene.yaml")
+#     y1.write_full_data(d, "assets/npc_dialogue_files/npc_dialogue_txt_files/opening_scene.yaml")
     
 # __main__()

@@ -9,7 +9,7 @@ class geometry():
         # self.tick_ct = pygame.time.get_ticks()
         # self.radians = 0
         
-        self.orbital_list = [
+        self.orbital_list = [#used for periodic things, default is 3, add more as necessary
             {'tick_ct': pygame.time.get_ticks(), 'deg': 0} for i in range(orbit_ct)
         ]
         
@@ -27,6 +27,9 @@ class geometry():
         for pt in pt_list:
             pt[0] += x
             pt[1] += y
+            
+    def get_dist(self, pt0, pt1):
+        return m.sqrt((pt1[0]-pt0[0])**2 + (pt1[1]-pt0[1])**2)
     
     def get_radial_pts(self, r, center, ct, phi=0, rand_disp=0):
         x = center[0]
@@ -39,7 +42,6 @@ class geometry():
             pt_list.append([x + r*m.cos(i*(theta+rand_disp)+phi), y + r*m.sin(i*(theta+rand_disp)+phi)])
             
         return pt_list
-    
     
     def get_periodic_radians(self, div, dt, orbit_index = 0):
         inc = m.pi/div

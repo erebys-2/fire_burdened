@@ -36,7 +36,8 @@ class particle_2(pygame.sprite.Sprite):
             'sparks': 40,
             'grass_cut': 90,
             'player_atk1_trail':150,
-            'char_yellow': 40
+            'char_yellow': 40,
+            'char_pink': 20
         }    
             
         #print(self.particle_img_dict)
@@ -129,7 +130,7 @@ class particle_2(pygame.sprite.Sprite):
                 particle0['y'] += random.randint(-r, r)
                 particle0['x'] += random.randint(-r, r)
                     
-            elif 'char' in basename:
+            elif 'char_yellow' in basename:
                 particle0['y'] += 0.5
             
             particle0['x'] -= scrollx

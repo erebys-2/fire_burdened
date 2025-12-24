@@ -247,8 +247,10 @@ def main():
 		('bloom', 'bloom_yellow_real', 60, 0.3, 0.5),
 		('bloom', 'bloom_blue', -160, 0.2, 0.2)
 	]
+	#add generated particles
 	particle_img_dict, centered_dict = world.sp_ini.add_hsl_particles(particle_img_dict, centered_dict, name_list)
 	particle_img_dict, centered_dict = world.sp_ini.add_text_particles(particle_img_dict, centered_dict, font_larger, 'char_yellow', (255, 254, 200), '☴◊⟱➡⌘‡⎈∞ὧᾷἐῖѪжϞλдδ▲«×')
+	particle_img_dict, centered_dict = world.sp_ini.add_text_particles(particle_img_dict, centered_dict, font_larger, 'char_pink', (255, 0, 86), '☴◊⟱➡⌘‡⎈∞ὧᾷἐῖѪжϞλдδ▲«×')
 
 	#add particle_2 objects into particle sprite groups
 	particle_2_ = particle_2(particle_img_dict, centered_dict)
@@ -316,6 +318,9 @@ def main():
 	show_cursor_signals = [level == 0, pause_game, not player0.Alive, inventory_opened, dialogue_enable, trade_ui_en, mh1.render_enable]
 	mvmt2_en = False
 	print('game is running')
+ 
+	# from magic_circle import magic_circle
+	# mag1 = magic_circle([320, 240], 60, (255,0,86))
 
 	while run:
 		
@@ -524,7 +529,11 @@ def main():
 			if world.plot_index_dict != {} and world.plot_index_dict['opening_scene'] <= 20:
 				status_bars.draw_tutorial_cues(screen, player0, player0.do_extended_hitbox_collisions(the_sprite_group), player0.check_for_breakable2(the_sprite_group), ui_manager0.controller_connected, ctrls_list, font_largerer)
 			player_inv_UI.show_selected_item(player0.inventory_handler.inventory, screen)
-   
+	
+			#temp magic circle
+			# mag1.draw(screen, the_sprite_group.sp_group_list, pause_game)
+			# mag1.move(scroll_x)
+
 			#passive items temp code
 			passive_effects_dict['salted_earth'] = player0.inventory_handler.check_for_item('Talisman of Salted Earth')
    
