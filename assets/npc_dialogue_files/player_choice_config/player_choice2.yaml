@@ -1,0 +1,24 @@
+test_greeting:
+    prompt: '* How are you feeling? *'
+    good: 2
+    not good: 0
+
+save_game:
+    prompt: '* Which file to save? *'
+    File 0: 0
+    File 1: 0
+    File 2: 0
+    File 3: 0
+
+mars_before_wall:
+    prompt: 'Mars: "Sup?"'
+    God: 1
+    Remgrist: 4
+    Flame Bearers: 6
+    Cursed Flesh: 8
+
+mars_1st_lvl:
+    prompt: 'Mars "Any questions?"'
+    Magic: 9
+    Rolling: 12
+    Where to go: 8
