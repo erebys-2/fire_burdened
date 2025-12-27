@@ -25,7 +25,7 @@ class read_only_obj(npc):
     def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, level, player_inventory):
         super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict)
         #get plot index 
-        self.plot_index = self.plot_index_dict[self.name]
+        #self.plot_index = self.plot_index_dict[self.name]
         self.current_level = level
         self.current_p_inv = player_inventory
         # if level == 1:
@@ -38,7 +38,7 @@ class read_only_obj(npc):
     #might not be possible... might have to implement some kind of iteraction for writing to plot index
     def get_dialogue_index(self, player, current_dialogue_index, world, sp_group, selected_slot):
         plot_index = world.plot_index_dict[self.name]
-        if plot_index != -1:
+        if plot_index > 0:
             self.current_dialogue_index = self.plot_index_jumps_dict[plot_index]
             self.is_initial_index = False
         
@@ -68,12 +68,12 @@ class read_only_obj(npc):
                     self.current_dialogue_index = 8
 
         if self.player_collision and self.get_dialogue_flag:
-            # if current_dialogue_index == 0 and self.current_level == 1 and plot_index == -1:
+            # if current_dialogue_index == 0 and self.current_level == 1 and plot_index == 0:
             #     self.current_dialogue_index = 0
   
                 
             # #example of how to code using this system
-            # # elif level == 1 and plot_index == -1 and current_dialogue_index == 3:
+            # # elif level == 1 and plot_index == 0 and current_dialogue_index == 3:
             # #     self.update_plot_index(1)
             # #     current_dialogue_index = 4
             # elif self.current_dialogue_index == 3:# and self.last_dialogue_index == 2:

@@ -816,8 +816,9 @@ def main():
 		if dialogue_enable:
 			player0.atk1 = False
 			player0.atk1_kill_hitbox()
-			player0.frame_index = 0
-			player0.action = 0
+			if player0.action != 0:
+				player0.action = 0
+				player0.frame_index = 0
 			player0.rolled_into_wall = True
 			inventory_opened = False
 		else:#important spaghetti code for making dialogue boxes work
@@ -1093,12 +1094,15 @@ def main():
 							pygame.mixer.pause()
 							play_click_sound()
 		
-						elif (not player0.in_cutscene and #cannot esc out of cutscene
+						if (dialogue_enable and not player0.in_cutscene and #cannot esc out of cutscene
 								not trade_ui.enabled 
             					# (dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list or 
                   				# the_sprite_group.textbox_output[6][0])
                  				): #exits dialogue window if an NPC finishes speaking (is this way to avoid bugs)
 							dialogue_enable = False
+							for npc in the_sprite_group.textprompt_group:
+								if npc.enabled:
+									npc.rst_dialogue_index(world)
 							p_choice_handler0.disable()
 
 						if inventory_opened:#exit inventory if opened
@@ -1121,10 +1125,10 @@ def main():
 						pause_game = False
 						pygame.mixer.unpause()
 					
-					if dialogue_trigger_ready or player0.in_cutscene:
+					if not dialogue_enable and (dialogue_trigger_ready or player0.in_cutscene):
 						dialogue_enable = True
 						mh1.render_enable = False
-					if dialogue_enable and not the_sprite_group.textbox_output[6][0]:
+					elif dialogue_enable and not the_sprite_group.textbox_output[6][0]:
 						if dialogue_box0.str_list_rebuilt != dialogue_box0.current_str_list:
 							text_speed = 0
 							play_click_sound()

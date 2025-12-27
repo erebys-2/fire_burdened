@@ -106,7 +106,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         
         plot_index_dict = {} #populate plot index for each npc
         for npc in os.listdir(os.path.join('assets', 'sprites', 'npcs')):#'assets/sprites/npcs'):
-            plot_index_dict[npc] = -1
+            plot_index_dict[npc] = 0
         rtn_dict['PID'] = plot_index_dict
         
         return rtn_dict  

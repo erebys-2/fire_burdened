@@ -1,183 +1,181 @@
-'0':
-    comment: ============================================================1st interaction==============================================
-    enabled_lvls: !!set
-        0: null
+'plot_index_jumps':
+    '0': 
+      'jump': 0
+      'en': !!set
         1: null
-    '0':
-        name: Mars
-        msg: mars_1st_lvl
-        next: -3
-        frame: 1
-        pid: 0    
-    '1':
-        name: Mars
-        msg: "I'll meet you there."
-        next: 0
-        frame: 0
-        pid: 0    
-    '2':
-        name: Mars
-        msg: filler
-        next: -1
-        frame: 0
-        pid: 0    
-    '3':
-        name: Mars
-        msg: "You're still here huh."
-        next: -1
-        frame: 0
-        pid: 0    
-    '4':
-        name: Mars
-        msg: "Talk about taking your time."
-        next: 3
-        frame: 1
-        pid: 0    
-    '5':
-        name: Mars
-        msg: "filler"
-        next: 6
-        frame: 1
-        pid: 0    
-    '6':
-        name: Mars
-        msg: "You saw the barrier huh?"
-        next: -1
-        frame: 1
-        pid: 0    
-    '7':
-        name: Mars
-        msg: "Unfortunately it's one-way. The only way from here is east."
-        next: 1
-        frame: 1
-        pid: 0    
-    '8':
-        name: Mars
-        msg: "You should start heading east."
-        next: 1
-        frame: 1
-        pid: 0    
-    '9':
-        name: Mars
-        msg: "You must've hit your head real hard if you forgot about magic."
-        next: -1
-        frame: 3
-        pid: 0    
-    '10':
-        name: Mars
-        msg: "Give me your hands... hmm... Looks like you need to take some time off before you try using it."
-        next: -1
-        frame: 0
-        pid: 0    
-    '11':
-        name: Mars
-        msg: "Not to worry though, the first part of the trial is a trial of agility! No magic needed."
-        next: 0
-        frame: 0
-        pid: 0    
-    '12':
-        name: Mars
-        msg: "Rolling is super useful! The trial ahead will delve into its deep intricacies and uh techniques."
-        next: -1
-        frame: 0
-        pid: 0    
-    '13':
-        name: Mars
-        msg: "Though I'd be careful about rolling into walls, cause you know."
-        next: 0
-        frame: 0
-        pid: 0    
-'10':
-    comment: =========================================2nd interaction==============================================
-    enabled_lvls: !!set
-        0: null
+    '10': 
+      'jump': 25
+      'en': !!set
         4: null
-    '25':
-        name: Mars
-        msg: filler
-        next: 26
-        frame: 0
-        pid: 10    
-    '0':
-        name: Mars
-        msg: "What could I do to improve the recipe next time...?"
-        next: -1
-        frame: 0
-        pid: 10    
-    '1':
-        name: Mars
-        msg: "Meeeeh, it tasted fine to me."
-        next: 0
-        frame: 1
-        pid: 10
-'20':
-    comment: =========================================2nd interaction==============================================
-    enabled_lvls: !!set
-        0: null
+    '20': 
+      'jump': 8
+      'en': !!set
         6: null
-    '0':
-        name: Mars
-        msg: mars_before_wall
-        next: -3
-        frame: 1
-        pid: 20    
-    '1':
-        name: Mars
-        msg: "Yeah, we're looking for the remains of this place's god to bring back home."
-        next: -1
-        frame: 0
-        pid: 20    
-    '2':
-        name: Mars
-        msg: "Where is the god? Well, we gotta look for it. Rumors say it lays deep within the heart of the city. Unfortunately there's more and more 'locals' the deeper you go."
-        next: -1
-        frame: 1
-        pid: 20    
-    '3':
-        name: Mars
-        msg: "By the way, we'll be splitting up looking around that way we cover more area."
-        next: 0
-        frame: 0
-        pid: 20    
-    '4':
-        name: Mars
-        msg: "This is the holy city of Remgrist. Once upon a time it was a utopia blessed by the local god. I guess the people must've done something horrible to recieve a calamity of this scale."
-        next: -1
-        frame: 0
-        pid: 20    
-    '5':
-        name: Mars
-        msg: "Readings of the local magical intensity have been steadily declining before the calamity event, and by now it's almost flat-lined."
-        next: 0
-        frame: 1
-        pid: 20    
-    '6':
-        name: Mars
-        msg: "We're from lands under the Flame Bearers' rule. You could say they're like a guild or nation we're all born into."
-        next: -1
-        frame: 1
-        pid: 20    
-    '7':
-        name: Mars
-        msg: "Nevertheless, they trusted us with a mission of great importance."
-        next: 0
-        frame: 0
-        pid: 20    
-    '8':
-        name: Mars
-        msg: "The stuff that enemies drop is strongly infused with magic. By itself it's not that useful, but in the right hands its magic can be extracted and repurposed. I can trade you some goods for it."
-        next: -1
-        frame: 0
-        pid: 20    
-    '9':
-        name: Mars
-        msg: trade_0
-        next: -3
-        frame: 0
-        pid: 20    
-    '10':
-        name: Mars
-        msg: "Thanks for your business!!"
-        next: 0
-        frame: 0
-        pid: 20    
+    
+'0':
+    name: Mars
+    msg: mars_1st_lvl
+    next: choice
+    frame: 1
+    
+'1':
+    name: Mars
+    msg: "I'll meet you there."
+    next: 0
+    frame: 0
+    
+'2':
+    name: Mars
+    msg: filler
+    next: 3
+    frame: 0
+    
+'3':
+    name: Mars
+    msg: "You're still here huh."
+    next: 4
+    frame: 0
+    
+'4':
+    name: Mars
+    msg: "Talk about taking your time."
+    next: 3
+    frame: 1
+    
+'5':
+    name: Mars
+    msg: "filler"
+    next: 6
+    frame: 1
+    
+'6':
+    name: Mars
+    msg: "You saw the barrier huh?"
+    next: 7
+    frame: 1
+    
+'7':
+    name: Mars
+    msg: "Unfortunately it's one-way. The only way from here is east."
+    next: 1
+    frame: 1
+    
+'8':
+    name: Mars
+    msg: mars_before_wall
+    next: choice
+    frame: 1
+    
+'9':
+    name: Mars
+    msg: "Yeah, we're looking for the remains of this place's god to bring back home."
+    next: 10
+    frame: 0
+    
+'10':
+    name: Mars
+    msg: "Where is the god? Well, we gotta look for it. Rumors say it lays deep within the heart of the city. Unfortunately there's more and more 'locals' the deeper you go."
+    next: 11
+    frame: 1
+    
+'11':
+    name: Mars
+    msg: "By the way, we'll be splitting up looking around that way we cover more area."
+    next: 8
+    frame: 0
+    
+'12':
+    name: Mars
+    msg: "This is the holy city of Remgrist. Once upon a time it was a utopia blessed by the local god. I guess the people must've done something horrible to recieve a calamity of this scale."
+    next: 13
+    frame: 0
+    
+'13':
+    name: Mars
+    msg: "Readings of the local magical intensity have been steadily declining before the calamity event, and by now it's almost flat-lined."
+    next: 8
+    frame: 1
+    
+'14':
+    name: Mars
+    msg: "We're from lands under the Flame Bearers' rule. You could say they're like a guild or nation we're all born into."
+    next: 15
+    frame: 1
+    
+'15':
+    name: Mars
+    msg: "Nevertheless, they trusted us with a mission of great importance."
+    next: 8
+    frame: 0
+    
+'16':
+    name: Mars
+    msg: "The stuff that enemies drop is strongly infused with magic. By itself it's not that useful, but in the right hands its magic can be extracted and repurposed. I can trade you some goods for it."
+    next: 17
+    frame: 0
+    
+'17':
+    name: Mars
+    msg: trade_0
+    next: choice
+    frame: 0
+    
+'18':
+    name: Mars
+    msg: "You should start heading east."
+    next: 1
+    frame: 1
+    
+'19':
+    name: Mars
+    msg: "You must've hit your head real hard if you forgot about magic."
+    next: 20
+    frame: 3
+    
+'20':
+    name: Mars
+    msg: "Give me your hands... hmm... Looks like you need to take some time off before you try using it."
+    next: 21
+    frame: 0
+    
+'21':
+    name: Mars
+    msg: "Not to worry though, the first part of the trial is a trial of agility! No magic needed."
+    next: 0
+    frame: 0
+    
+'22':
+    name: Mars
+    msg: "Rolling is super useful! The trial ahead will delve into its deep intricacies and uh techniques."
+    next: 23
+    frame: 0
+    
+'23':
+    name: Mars
+    msg: "Though I'd be careful about rolling into walls, cause you know."
+    next: 0
+    frame: 0
+    
+'24':
+    name: Mars
+    msg: "Thanks for your business!!"
+    next: 8
+    frame: 0
+    
+'25':
+    name: Mars
+    msg: filler
+    next: 26
+    frame: 0
+    
+'26':
+    name: Mars
+    msg: "What could I do to improve the recipe next time...?"
+    next: 27
+    frame: 0
+    
+'27':
+    name: Mars
+    msg: "Meeeeh, it tasted fine to me."
+    next: 26
+    frame: 1

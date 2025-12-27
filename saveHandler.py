@@ -52,7 +52,7 @@ class save_file_handler():
         #initial values
         plot_index_dict = {}
         for npc in os.listdir(os.path.join('assets', 'sprites', 'npcs')):
-            plot_index_dict[npc] = -1
+            plot_index_dict[npc] = 0
             
         lvl_completion_dict = {0: 0}
         onetime_spawn_dict = {}

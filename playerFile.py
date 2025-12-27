@@ -522,9 +522,9 @@ class player(pygame.sprite.Sprite):
         for obj in [obj for obj in the_sprite_group.textprompt_group 
                     if obj.rect.x > -32 and obj.rect.x < 640# and obj.enabled
                     ]:
-            obj_collision = obj.rect.colliderect(self.collision_rect.x + self.collision_rect.width//16, 
+            obj_collision = obj.rect.colliderect(self.collision_rect.x + self.collision_rect.width//6, 
                                                  self.collision_rect.y, 
-                                                 0.875*self.collision_rect.width, 
+                                                 24, 
                                                  self.collision_rect.height)
             if not obj.is_cutscene and obj_collision and self.action == 0 and self.dx == 0:
                 self.dialogue_trigger_ready = True

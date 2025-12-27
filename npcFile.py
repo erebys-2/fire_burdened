@@ -33,7 +33,7 @@ class npc(pygame.sprite.Sprite):
         self.old_plot_index = -1
         
         self.current_dialogue_index = 0
-        self.last_dialogue_index = 0
+        #self.last_dialogue_index = 0
         self.is_initial_index = True
         
         self.m_player = music_player(['mc_anvil.mp3'], ini_vol)
@@ -41,7 +41,7 @@ class npc(pygame.sprite.Sprite):
         
         font_path = os.path.join('assets', 'FiraCode-Regular.ttf')
         self.font = pygame.font.Font(font_path, 10)
-        self.trigger_once = False
+        #self.trigger_once = False
         
         self.frame_list = []
         self.frame_dict = {}
@@ -106,52 +106,32 @@ class npc(pygame.sprite.Sprite):
    
     def enable2(self, dialogue_enable, next_dialogue):
         #print(self.current_dialogue_index)
-        str_curr_dialogue_index = str(self.current_dialogue_index)
-        message = ''
+        str_curr_dialogue_index = str(self.current_dialogue_index) #keys in a the dictionary must be str
+        message = ('','')
         name = ''
         expression = 0
-        if self.enabled:
-            #dialogue_enable and next_dialogue are global booleans in the game window file
-  
-            if self.player_collision and dialogue_enable:
-                expression = int(self.dialogue_dict[str_curr_dialogue_index]['frame'])
-                name = self.dialogue_dict[str_curr_dialogue_index]['name']
-                
-                if not self.player_choice_flag:
-                    message = self.dialogue_dict[str_curr_dialogue_index]['msg'] #reformat here
-                else:
-                    message = ('','')
-                
-                if self.dialogue_dict[str_curr_dialogue_index]['next'] == -3 and not self.player_choice_flag: #impulse signal
-                    self.player_choice_flag = True
-                    self.player_choice_key = message[0]
-                    next_dialogue = True
-                    #print(message)
-                # else:
-                #     current_dialogue_list[self.npc_index_id] = dialogue[3]
-                
-                if next_dialogue:#convert continuous signal next_dialogue into an impulse
-                    if self.trigger_once != next_dialogue and not self.get_dialogue_flag:
 
-                        if self.dialogue_dict[str_curr_dialogue_index]['next'] == -3: #if the index is -3, then a player choice is in progress.
-                            #do not change variables and set player_choice_flag to true
-                            #self.current_dialogue_index = 0
-                            message = ('','')
-                            self.get_dialogue_flag = True
-                        elif not self.is_initial_index and self.dialogue_dict[str_curr_dialogue_index]['next'] != -3: #2nd condition is important!!!
-                            #updates to next dialogue index
-                            self.last_dialogue_index = self.current_dialogue_index
-                            self.current_dialogue_index = self.dialogue_dict[str_curr_dialogue_index]['next']
-                            self.get_dialogue_flag = True
-                            
-                        elif self.is_initial_index: #skips changing index for first dialogue box
-                            self.is_initial_index = False
+        if self.enabled and self.player_collision and dialogue_enable:
+            expression = int(self.dialogue_dict[str_curr_dialogue_index]['frame'])
+            name = self.dialogue_dict[str_curr_dialogue_index]['name']
+            next_index = self.dialogue_dict[str_curr_dialogue_index]['next'] #already an int
+            message = self.dialogue_dict[str_curr_dialogue_index]['msg'] #reformat here
 
-                    self.trigger_once = True
-                    message = (' ',' ')#prevents lingering text from previous textbox
-                else:
-                    self.trigger_once = False
-        else:
+            #handle player choice logic
+            if next_index == 'choice' and not self.player_choice_flag: #impulse signal
+                self.player_choice_flag = True
+                self.player_choice_key = message[0]
+                next_dialogue = True
+
+            #handle increment logic
+            if next_dialogue and not self.get_dialogue_flag:
+                if next_index == 'next': #auto increment
+                    self.current_dialogue_index += 1
+                elif next_index != 'choice': #not player choice event
+                    self.current_dialogue_index = next_index
+                self.get_dialogue_flag = True
+                
+        elif not self.enabled:
             dialogue_enable= False
             if self.rect.width > 0:#kills rect
                 self.rect = pygame.rect.Rect(0,0,0,0)
@@ -184,10 +164,9 @@ class npc(pygame.sprite.Sprite):
                 self.player_collision = self.rect.colliderect(player_rect.scale_by(2, 2))
         else:
             self.player_collision = False
-        if self.player_collision and self.name != 'invisible_prompt':
-            if not dialogue_enable:
-                screen.blit(self.interaction_prompt, (self.rect.centerx - 18, self.rect.y - 24, 32, 32))
-                screen.blit(self.font.render('[Enter]', False, (255,255,255)), (self.rect.centerx - 22, self.rect.y - 32))
+        if self.player_collision and self.name != 'invisible_prompt' and not dialogue_enable:
+            screen.blit(self.interaction_prompt, (self.rect.centerx - 18, self.rect.y - 24, 32, 32))
+            screen.blit(self.font.render('[Enter]', False, (255,255,255)), (self.rect.centerx - 22, self.rect.y - 32))
                 
     def finish_action(self):
         self.direction_set.pop(0)
@@ -284,7 +263,5 @@ class npc(pygame.sprite.Sprite):
             
         return not self.give_item_en
     
-    #npc sub classes take plot index and current level to decide the dialogue index
-    
-#each level, NPC's dialogue indexes are reset
-
+    def rst_dialogue_index(self, world):
+        self.current_dialogue_index = self.plot_index_jumps_dict[world.plot_index_dict[self.name]]

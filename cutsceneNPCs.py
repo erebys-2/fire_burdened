@@ -36,9 +36,7 @@ class opening_scene(npc):
         
         self.is_cutscene = True
         self.is_initial_index = False #IMPORTANT IF YOU DON'T WANT THE FIRST MESSAGE REPEATED
-        if world.plot_index_dict[self.name] != -1:
-            #print(self.plot_index_jumps_dict[world.plot_index_dict[self.name]])
-            self.current_dialogue_index = self.plot_index_jumps_dict[world.plot_index_dict[self.name]]
+        self.current_dialogue_index = self.plot_index_jumps_dict[world.plot_index_dict[self.name]]
             
 
     def get_dialogue_index(self, player, current_dialogue_index, world, sp_group, selected_slot):

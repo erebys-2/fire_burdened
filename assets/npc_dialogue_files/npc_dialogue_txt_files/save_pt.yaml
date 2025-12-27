@@ -1,9 +1,10 @@
+'plot_index_jumps':
+    '0': 
+      'jump': 0
+      'en': None
+    
 '0':
-  '0':
-    comment: ==========================================================================================================
-    enabled_lvls: None
-    name: save_game
-    msg: save_game
-    next: -3
-    frame: 0
-    pid: 0
+  name: save_game
+  msg: save_game
+  next: choice
+  frame: 0

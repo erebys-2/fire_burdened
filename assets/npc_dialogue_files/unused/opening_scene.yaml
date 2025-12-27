@@ -1,0 +1,263 @@
+'0':
+    comment: ============================================================1st cutscene==============================================
+    enabled_lvls: !!set
+        0: null
+        1: null
+    '0':
+        name: ???
+        msg: Ah, you're awake.
+        next: -1
+        frame: 0
+        pid: 0
+    '1':
+        name: ???
+        msg: I found you lying here last night, out cold. You probably wouldn't have
+            made it out here if I didn't find you.
+        next: -1
+        frame: 0
+        pid: 0
+    '2':
+        name: ???
+        msg: I could tell by your arms you're a newbie. Your skin is still tender,
+            uncharred by magic.
+        next: -1
+        frame: 1
+        pid: 0
+    '3':
+        name: Aria
+        msg: '*pspspspspss*'
+        next: -1
+        frame: 2
+        pid: 0
+    '4':
+        name: ???
+        msg: What do you mean 'where am I'? This is Remgrist. You're here on mission
+            to-
+        next: -1
+        frame: 4
+        pid: 0
+    '5':
+        name: Aria
+        msg: '...'
+        next: -1
+        frame: 3
+        pid: 0
+    '6':
+        name: ???
+        msg: -You don't remember... anything?
+        next: -1
+        frame: 2
+        pid: 0
+    '7':
+        name: Aria
+        msg: '*pspspspspss*'
+        next: -1
+        frame: 2
+        pid: 0
+    '8':
+        name: ???
+        msg: What- you rolled into a wall too hard, hit your head, and forgot EVERYTHING??
+        next: -1
+        frame: 4
+        pid: 0
+    '9':
+        name: ???
+        msg: Oh no... How about this, I will appoint you a mission, an easy one. Think
+            of it like a- a darwinian trial!
+        next: -1
+        frame: 5
+        pid: 0
+    '10':
+        name: ???
+        msg: Meet me at the eastern wall.
+        next: -1
+        frame: 6
+        pid: 0
+    '11':
+        name: ???
+        msg: I promise to tell you the real mission if you can make it there.
+        next: -1
+        frame: 6
+        pid: 0
+    '12':
+        name: Mars
+        msg: Oh yeah, one more thing. You can call me Mars.
+        next: -1
+        frame: 6
+        pid: 0
+    '13':
+        name: AUTOSAVE
+        msg: Progress saved in current file.
+        next: 13
+        frame: 11
+        pid: 10
+'10':
+    comment: =====================================================2nd cutscene============================================================
+    enabled_lvls: !!set
+        0: null
+        4: null
+    '0':
+        name: Mars
+        msg: Well done! You've passed the trial of rolling and jumping.
+        next: -1
+        frame: 7
+        pid: 10
+    '1':
+        name: Mars
+        msg: The rest of trial will be fraught with danger. So now I think it's a
+            good time for you to get your magic back.
+        next: -1
+        frame: 10
+        pid: 10
+    '2':
+        name: _
+        msg: Mars rummages around and quickly produces a glass tube filled with bright
+            fluid.
+        next: -1
+        frame: 12
+        pid: 10
+    '3':
+        name: Mars
+        msg: Here, I've brewed an elixir of healing- drinking it will restore your
+            flow of magic. It's strawberry flavor by the way, my favorite!
+        next: -1
+        frame: 13
+        pid: 10
+    '4':
+        name: _
+        msg: You drink half of the wonder elixir in one gulp. Its taste is indescribable
+            though it is not strawberry for sure.
+        next: -1
+        frame: 15
+        pid: 10
+    '5':
+        name: _
+        msg: You feel the universe shrink and expand around you, calm and slow, as
+            if it were breathing. It reminds you of laying your head on the chest
+            of a loved one. n_l You get lost in the moment.
+        next: -1
+        frame: 11
+        pid: 10
+    '6':
+        name: Mars
+        msg: '*Incoherent*'
+        next: -1
+        frame: 16
+        pid: 10
+    '7':
+        name: Mars
+        msg: Hey.. n_l n_l Are you good there?
+        next: -1
+        frame: 9
+        pid: 10
+    '8':
+        name: Mars
+        msg: Look if you're not gonna finish it, I will. n_l *glug glug glug*
+        next: -1
+        frame: 14
+        pid: 10
+    '9':
+        name: Mars
+        msg: Well it looks like your magic has returned to you. I'll meet you at the
+            end.
+        next: -1
+        frame: 7
+        pid: 10
+    '10':
+        name: ADVANCEMENT
+        msg: Melee attack unlocked, check controls menu.
+        next: -1
+        frame: 11
+        pid: 10
+    '11':
+        name: AUTOSAVE
+        msg: Progress saved in current file.
+        next: 11
+        frame: 11
+        pid: 20
+'20':
+    comment: ===============================================================cutscene3===================================================
+    enabled_lvls: !!set
+        0: null
+        6: null
+    '0':
+        name: Mars
+        msg: You actu- I mean, of course you made it.
+        next: -1
+        frame: 9
+        pid: 0
+    '1':
+        name: Mars
+        msg: I always knew you could. <3
+        next: -1
+        frame: 7
+        pid: 0
+    '2':
+        name: Mars
+        msg: Here, uh- have this gift I've prepared for you!
+        next: -1
+        frame: 12
+        pid: 0
+    '3':
+        name: _
+        msg: Mars hands you Worn Knee Socks.
+        next: -1
+        frame: 11
+        pid: 0
+    '4':
+        name: Mars
+        msg: HEY- wait don't toss it! Those Knee Socks are deeply imbued with magic.
+            They allow the wearer to kick through walls, slide through enemies, and
+            traverse great distances!
+        next: -1
+        frame: 9
+        pid: 0
+    '5':
+        name: ADVANCEMENT
+        msg: Sprint and Slide Kick unlocked, check controls menu.
+        next: -1
+        frame: 11
+        pid: 0
+    '6':
+        name: Mars
+        msg: Anyways- n_l What do you mean 'did you place those purple guys there'??
+        next: -1
+        frame: 8
+        pid: 0
+    '7':
+        name: Mars
+        msg: Those were the... locals. Yeah, locals that lived here. At some point
+            they used to be human until a great calamity befell them, and transformed
+            them into abominations.
+        next: -1
+        frame: 7
+        pid: 0
+    '8':
+        name: Mars
+        msg: Indeed, it was a calamity brought forth by the wrath of a dying god!
+        next: -1
+        frame: 10
+        pid: 0
+    '9':
+        name: Mars
+        msg: The Flame Bearers' association sent us here pick up the valuable bits
+            of said god, that's presumably dead by now.
+        next: -1
+        frame: 7
+        pid: 0
+    '10':
+        name: AUTOSAVE
+        msg: Progress saved in current file.
+        next: 10
+        frame: 11
+        pid: 0
+'30':
+    comment: =====================================================cutscene 4============================================================
+    enabled_lvls: !!set
+        0: null
+    '1':
+        name: _
+        msg: ' '
+        next: 30
+        frame: 11
+        pid: 0
