@@ -19,79 +19,79 @@
 '0':
     name: ???
     msg: "Ah, you're awake."
-    next: 1
+    next: n
     frame: 0
     
 '1':
     name: ???
     msg: "I found you lying here last night, out cold. You probably wouldn't have made it out here if I didn't find you."
-    next: 2
+    next: n
     frame: 0
     
 '2':
     name: ???
     msg: "I could tell by your arms you're a newbie. Your skin is still tender, uncharred by magic."
-    next: 3
+    next: n
     frame: 1
     
 '3':
     name: Aria
     msg: "*pspspspspss*"
-    next: 4
+    next: n
     frame: 2
     
 '4':
     name: ???
     msg: "What do you mean 'where am I'? This is Remgrist. You're here on mission to-"
-    next: 5
+    next: n
     frame: 4
     
 '5':
     name: Aria
     msg: "..."
-    next: 6
+    next: n
     frame: 3
     
 '6':
     name: ???
     msg: "-You don't remember... anything?"
-    next: 7
+    next: n
     frame: 2
     
 '7':
     name: Aria
     msg: "*pspspspspss*"
-    next: 8
+    next: n
     frame: 2
     
 '8':
     name: ???
     msg: "What- you rolled into a wall too hard, hit your head, and forgot EVERYTHING??"
-    next: 9
+    next: n
     frame: 4
     
 '9':
     name: ???
     msg: "Oh no... How about this, I will appoint you a mission, an easy one. Think of it like a- a darwinian trial!"
-    next: 10
+    next: n
     frame: 5
     
 '10':
     name: ???
     msg: "Meet me at the eastern wall."
-    next: 11
+    next: n
     frame: 6
     
 '11':
     name: ???
     msg: "I promise to tell you the real mission if you can make it there."
-    next: 12
+    next: n
     frame: 6
     
 '12':
     name: Mars
     msg: "Oh yeah, one more thing. You can call me Mars."
-    next: 13
+    next: n
     frame: 6
     
 '13':
@@ -103,7 +103,7 @@
 '14':
     name: Mars
     msg: "You actu- I mean, of course you made it."
-    next: 15
+    next: n
     frame: 9
     
 '15':
@@ -115,25 +115,25 @@
 '16':
     name: Mars
     msg: "Anyways- n_l What do you mean 'did you place those purple guys there'??"
-    next: 17
+    next: n
     frame: 8
     
 '17':
     name: Mars
     msg: "Those were the... locals. Yeah, locals that lived here. At some point they used to be human until a great calamity befell them, and transformed them into abominations."
-    next: 18
+    next: n
     frame: 7
     
 '18':
     name: Mars
     msg: "Indeed, it was a calamity brought forth by the wrath of a dying god!"
-    next: 19
+    next: n
     frame: 10
     
 '19':
     name: Mars
     msg: "The Flame Bearers' association sent us here pick up the valuable bits of said god, that's presumably dead by now."
-    next: 20
+    next: n
     frame: 7
     
 '20':
@@ -151,73 +151,73 @@
 '22': 
     name: Mars
     msg: "Well done! You've passed the trial of rolling and jumping." 
-    next: 23
+    next: n
     frame: 7
     
 '23': 
     name: Mars
     msg: "The rest of trial will be fraught with danger. So now I think it's a good time for you to get your magic back." 
-    next: 24
+    next: n
     frame: 10
     
 '24':
     name: _
     msg: Mars rummages around and quickly produces a glass tube filled with bright fluid.
-    next: 25
+    next: n
     frame: 12
     
 '25':
     name: Mars
     msg: "Here, I've brewed an elixir of healing- drinking it will restore your flow of magic. It's strawberry flavor by the way, my favorite!"
-    next: 26
+    next: n
     frame: 13
     
 '26':
     name: _
     msg: You drink half of the wonder elixir in one gulp. Its taste is indescribable though it is not strawberry for sure.
-    next: 27
+    next: n
     frame: 15
     
 '27':
     name: _
     msg: You feel the universe shrink and expand around you, calm and slow, as if it were breathing. It reminds you of laying your head on the chest of a loved one. n_l You get lost in the moment.
-    next: 28
+    next: n
     frame: 11
     
 '28':
     name: Mars
-    msg: *Incoherent*
-    next: 29
+    msg: '*Incoherent*'
+    next: n
     frame: 16
     
 '29':
     name: Mars
     msg: "Hey.. n_l n_l Are you good there?"
-    next: 30
+    next: n
     frame: 9
     
 '30':
     name: Mars
     msg: "Look if you're not gonna finish it, I will. n_l *glug glug glug*"
-    next: 31
+    next: n
     frame: 14
     
 '31':
     name: Mars
     msg: "Well it looks like your magic has returned to you. I'll meet you at the end."
-    next: 32
+    next: n
     frame: 7
     
 '32':
     name: ADVANCEMENT
     msg:  Melee attack unlocked, check controls menu.
-    next: 33
+    next: n
     frame: 11
     
 '33':
     name: AUTOSAVE
     msg: Progress saved in current file.
-    next: 33
+    next: n
     frame: 11
     
 '34':
@@ -229,19 +229,19 @@
 '35':
     name: Mars
     msg: "Here, uh- have this gift I've prepared for you!"
-    next: 36
+    next: n
     frame: 12
     
 '36':
     name: _
     msg: Mars hands you Worn Knee Socks.
-    next: 37
+    next: n
     frame: 11
     
 '37':
     name: Mars
     msg: "HEY- wait don't toss it! Those Knee Socks are deeply imbued with magic. They allow the wearer to kick through walls, slide through enemies, and traverse great distances!"
-    next: 38
+    next: n
     frame: 9
     
 '38':

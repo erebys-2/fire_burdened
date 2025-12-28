@@ -110,6 +110,8 @@ class ms_enemy(pygame.sprite.Sprite):
         self.dying = False
         self.death_phase = 0
         
+        self.shielded = False
+        
         
     def check_if_onscreen(self):
         self.is_on_screen = (self.rect.x > -320 and self.rect.x < 640 + 320)

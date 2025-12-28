@@ -3,10 +3,12 @@
       'jump': 0
       'en': !!set
         1: null
+        4: null
     '10': 
-      'jump': 25
+      'jump': 26
       'en': !!set
         4: null
+        6: null
     '20': 
       'jump': 8
       'en': !!set
@@ -15,7 +17,7 @@
 '0':
     name: Mars
     msg: mars_1st_lvl
-    next: choice
+    next: c
     frame: 1
     
 '1':
@@ -26,7 +28,7 @@
     
 '2':
     name: Mars
-    msg: filler
+    msg: no longer used
     next: 3
     frame: 0
     
@@ -44,14 +46,14 @@
     
 '5':
     name: Mars
-    msg: "filler"
-    next: 6
+    msg: no longer used
+    next: n
     frame: 1
     
 '6':
     name: Mars
     msg: "You saw the barrier huh?"
-    next: 7
+    next: n
     frame: 1
     
 '7':
@@ -63,19 +65,19 @@
 '8':
     name: Mars
     msg: mars_before_wall
-    next: choice
+    next: c
     frame: 1
     
 '9':
     name: Mars
     msg: "Yeah, we're looking for the remains of this place's god to bring back home."
-    next: 10
+    next: n
     frame: 0
     
 '10':
     name: Mars
     msg: "Where is the god? Well, we gotta look for it. Rumors say it lays deep within the heart of the city. Unfortunately there's more and more 'locals' the deeper you go."
-    next: 11
+    next: n
     frame: 1
     
 '11':
@@ -87,7 +89,7 @@
 '12':
     name: Mars
     msg: "This is the holy city of Remgrist. Once upon a time it was a utopia blessed by the local god. I guess the people must've done something horrible to recieve a calamity of this scale."
-    next: 13
+    next: n
     frame: 0
     
 '13':
@@ -99,7 +101,7 @@
 '14':
     name: Mars
     msg: "We're from lands under the Flame Bearers' rule. You could say they're like a guild or nation we're all born into."
-    next: 15
+    next: n
     frame: 1
     
 '15':
@@ -111,13 +113,13 @@
 '16':
     name: Mars
     msg: "The stuff that enemies drop is strongly infused with magic. By itself it's not that useful, but in the right hands its magic can be extracted and repurposed. I can trade you some goods for it."
-    next: 17
+    next: n
     frame: 0
     
 '17':
     name: Mars
     msg: trade_0
-    next: choice
+    next: c
     frame: 0
     
 '18':
@@ -129,13 +131,13 @@
 '19':
     name: Mars
     msg: "You must've hit your head real hard if you forgot about magic."
-    next: 20
+    next: n
     frame: 3
     
 '20':
     name: Mars
     msg: "Give me your hands... hmm... Looks like you need to take some time off before you try using it."
-    next: 21
+    next: n
     frame: 0
     
 '21':
@@ -147,7 +149,7 @@
 '22':
     name: Mars
     msg: "Rolling is super useful! The trial ahead will delve into its deep intricacies and uh techniques."
-    next: 23
+    next: n
     frame: 0
     
 '23':
@@ -164,14 +166,14 @@
     
 '25':
     name: Mars
-    msg: filler
-    next: 26
+    msg: no lonegr used
+    next: n
     frame: 0
     
 '26':
     name: Mars
     msg: "What could I do to improve the recipe next time...?"
-    next: 27
+    next: n
     frame: 0
     
 '27':

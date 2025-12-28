@@ -1,10 +1,10 @@
 'plot_index_jumps':
     '0': 
-      'jump': 0
-      'en': None
+      'jump': ~
+      'en': ~
     
 '0':
   name: save_game
   msg: save_game
-  next: choice
+  next: c
   frame: 0

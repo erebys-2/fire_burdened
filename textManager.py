@@ -39,6 +39,7 @@ class text_manager():
         self.str_list_rebuilt = []
         self.disp_text_box_quit = False
         
+        
         # self.m_player_sfx_list = ['roblox_oof.mp3', 'hat.mp3']
         # self.m_player = music_player(self.m_player_sfx_list)
         self.finished_typing = False

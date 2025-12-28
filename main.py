@@ -1089,6 +1089,8 @@ def main():
 								if npc.enabled:
 									npc.rst_dialogue_index(world)
 							p_choice_handler0.disable()
+							dialogue_box0.reset_internals()
+							text_speed = default_text_speed
 
 						if inventory_opened:#exit inventory if opened
 							inventory_opened = False
@@ -1111,12 +1113,13 @@ def main():
 						pygame.mixer.unpause()
 					
 					if not dialogue_enable and (dialogue_trigger_ready or player0.in_cutscene):
+						play_click_sound()
 						dialogue_enable = True
 						mh1.render_enable = False
 					elif dialogue_enable and not the_sprite_group.textbox_output['p_choice']['flag']:
+						play_click_sound()
 						if dialogue_box0.str_list_rebuilt != dialogue_box0.current_str_list:
 							text_speed = 0
-							play_click_sound()
 						else:
 							text_speed = default_text_speed
 							next_dialogue = True

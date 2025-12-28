@@ -12,7 +12,7 @@ from ItemFile import Item
 
 class npc(pygame.sprite.Sprite):
     #constructor
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict):#plot index is passed from game_window, to world, then here
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, frame_dict):#plot index is passed from game_window, to world, then here
         pygame.sprite.Sprite.__init__(self)
         self.direction = direction
         self.enabled = enabled
@@ -27,10 +27,9 @@ class npc(pygame.sprite.Sprite):
         self.flip = False
 
         self.base_path = os.path.join('assets', 'sprites', 'npcs')
-        self.npc_index_id = (os.listdir(self.base_path)).index(name)
 
         self.plot_index_dict = world.plot_index_dict
-        self.old_plot_index = -1
+        self.old_plot_index = 0
         
         self.current_dialogue_index = 0
         #self.last_dialogue_index = 0
@@ -49,18 +48,21 @@ class npc(pygame.sprite.Sprite):
         self.action = 0
         self.update_time = pygame.time.get_ticks()
         
-        #action_types = ('idle', 'wave', 'sit', 'shock')
-        for action in range(len(os.listdir(os.path.join(self.base_path, self.name)))):#f'assets/sprites/npcs/{self.name}'
-            temp_list = []
-            frames = len(os.listdir(os.path.join(self.base_path, self.name, str(action))))#f'assets/sprites/npcs/{self.name}/{action}'
+        if frame_dict == None:
+            #action_types = ('idle', 'wave', 'sit', 'shock')
+            for action in range(len(os.listdir(os.path.join(self.base_path, self.name)))):#f'assets/sprites/npcs/{self.name}'
+                temp_list = []
+                frames = len(os.listdir(os.path.join(self.base_path, self.name, str(action))))#f'assets/sprites/npcs/{self.name}/{action}'
 
-            for i in range(frames):
-                img = pygame.image.load(os.path.join(self.base_path, self.name, str(action), f'{i}.png')).convert_alpha()#f'assets/sprites/npcs/{self.name}/{action}/{i}.png'
-                img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-                temp_list.append(img)
-                
-            #self.frame_list.append(temp_list)
-            self.frame_dict[action] = temp_list
+                for i in range(frames):
+                    img = pygame.image.load(os.path.join(self.base_path, self.name, str(action), f'{i}.png')).convert_alpha()#f'assets/sprites/npcs/{self.name}/{action}/{i}.png'
+                    img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
+                    temp_list.append(img)
+                    
+                #self.frame_list.append(temp_list)
+                self.frame_dict[action] = temp_list
+        else:
+            self.frame_dict = frame_dict
         
 
         self.image = self.frame_dict[self.action][self.frame_index]#frame_list
@@ -96,7 +98,9 @@ class npc(pygame.sprite.Sprite):
         self.t1 = textfile_formatter()
 
         self.dialogue_dict = dialogue_dict
-        self.plot_index_jumps_dict = self.dialogue_dict['plot_index_jumps']
+        base_dict = self.dialogue_dict['plot_index_jumps']
+        self.plot_index_jumps_dict = {int(key):base_dict[key]['jump'] for key in base_dict}
+        self.enable_dict = {int(key):base_dict[key]['en'] for key in base_dict}
         
         self.give_item_en = True
 
@@ -118,16 +122,16 @@ class npc(pygame.sprite.Sprite):
             message = self.dialogue_dict[str_curr_dialogue_index]['msg'] #reformat here
 
             #handle player choice logic
-            if next_index == 'choice' and not self.player_choice_flag: #impulse signal
+            if next_index == 'c' and not self.player_choice_flag: #impulse signal
                 self.player_choice_flag = True
                 self.player_choice_key = message[0]
                 next_dialogue = True
 
             #handle increment logic
             if next_dialogue and not self.get_dialogue_flag:
-                if next_index == 'next': #auto increment
+                if next_index == 'n': #auto increment
                     self.current_dialogue_index += 1
-                elif next_index != 'choice': #not player choice event
+                elif next_index != 'c': #not player choice event
                     self.current_dialogue_index = next_index
                 self.get_dialogue_flag = True
                 
@@ -262,4 +266,5 @@ class npc(pygame.sprite.Sprite):
         return not self.give_item_en
     
     def rst_dialogue_index(self, world):
-        self.current_dialogue_index = self.plot_index_jumps_dict[world.plot_index_dict[self.name]]
+        if self.plot_index_jumps_dict[world.plot_index_dict[self.name]] != None:
+            self.current_dialogue_index = self.plot_index_jumps_dict[world.plot_index_dict[self.name]]

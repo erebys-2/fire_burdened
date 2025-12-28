@@ -3,12 +3,13 @@ from npcFile import npc
 #helper file containing object type NPCs for instantiation
 
 class save_pt(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict)
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, frame_dict, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, frame_dict)
         self.plot_index = 0
         self.current_level = level
         self.current_p_inv = player_inventory
         self.is_obj = True
+        enabled = self.enable_dict[world.plot_index_dict[self.name]] == None or level in self.enable_dict[world.plot_index_dict[self.name]]
         
     def get_dialogue_index(self, player, current_dialogue_index, world, sp_group, selected_slot):
         pass
@@ -22,23 +23,16 @@ class save_pt(npc):
                 
 
 class read_only_obj(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict)
-        #get plot index 
-        #self.plot_index = self.plot_index_dict[self.name]
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, frame_dict, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, frame_dict)
         self.current_level = level
         self.current_p_inv = player_inventory
-        # if level == 1:
-        #     self.current_dialogue_index = 0
         self.order_id = world.read_only_obj_id
+        enabled = self.enable_dict[world.plot_index_dict[self.name]] == None or level in self.enable_dict[world.plot_index_dict[self.name]]
 
-    #idea for turning these into textfiles:
-    #use a dictionary with list as a key, 
-    #value will be another list as well, [current_index, plot_index_w_en, plot_index_value, target_character_index]
-    #might not be possible... might have to implement some kind of iteraction for writing to plot index
     def get_dialogue_index(self, player, current_dialogue_index, world, sp_group, selected_slot):
         plot_index = world.plot_index_dict[self.name]
-        if plot_index > 0:
+        if plot_index > 0:#unused
             self.current_dialogue_index = self.plot_index_jumps_dict[plot_index]
             self.is_initial_index = False
         
@@ -68,18 +62,6 @@ class read_only_obj(npc):
                     self.current_dialogue_index = 8
 
         if self.player_collision and self.get_dialogue_flag:
-            # if current_dialogue_index == 0 and self.current_level == 1 and plot_index == 0:
-            #     self.current_dialogue_index = 0
-  
-                
-            # #example of how to code using this system
-            # # elif level == 1 and plot_index == 0 and current_dialogue_index == 3:
-            # #     self.update_plot_index(1)
-            # #     current_dialogue_index = 4
-            # elif self.current_dialogue_index == 3:# and self.last_dialogue_index == 2:
-            #     world.plot_index_dict[self.name] = -1
-
-            #else:
             self.current_dialogue_index = self.current_dialogue_index
             self.get_dialogue_flag = False
         else:

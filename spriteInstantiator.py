@@ -10,7 +10,7 @@ from objectNPCs import save_pt, read_only_obj
 from cutsceneNPCs import opening_scene
 from ItemFile import Item
 from music_player import music_player
-from cfg_handler0 import cfg_handler
+from cfg_handler0 import yaml_handler
 from textfile_handler import textfile_formatter
 
 #Helper class for world, for instantiating special tiles in game layer as sprites.
@@ -26,6 +26,8 @@ class sprite_instantiator():
         self.enemy_img_dict = self.load_img_dict2(os.path.join(base_path, 'enemies'), 2)
         self.enemy_img_dict_x1 = self.load_img_dict2(os.path.join(base_path, 'enemies'), 1)
         self.p_int_img_dict = self.load_img_dict2(os.path.join(base_path, 'player_interactable'), 1)
+        self.npc_img_dict = self.load_img_dict2(os.path.join(base_path, 'npcs'), 2)
+        self.npc_img_dict_small = self.load_img_dict2(os.path.join(base_path, 'npcs'), 1, dir_filter=('read_only_obj', 'save_pt', 'opening_scene'))
         
         sfx_path = os.path.join('assets', 'sfx')
         self.master_sfx_list = []
@@ -40,12 +42,20 @@ class sprite_instantiator():
         self.m_player = music_player(None, self.ini_vol)
         self.m_player.sfx = self.master_sfx_list
         
-        cfgp0 = cfg_handler()
+        #loading dialogue dicts
+        # cfgp0 = cfg_handler()
+        # self.all_dialogue_dict = {}
+        # npc_path = os.path.join('assets', 'npc_dialogue_files', 'npc_dialogue_txt_files')
+        # for file in os.listdir(npc_path):
+        #     if file[-4:] == '.ini':
+        #         self.all_dialogue_dict[file[:-4]] = cfgp0.get_dict_from_cfg(os.path.join(npc_path, file))
+                
+        yh1 = yaml_handler()
         self.all_dialogue_dict = {}
         npc_path = os.path.join('assets', 'npc_dialogue_files', 'npc_dialogue_txt_files')
         for file in os.listdir(npc_path):
-            if file[-4:] == '.ini':
-                self.all_dialogue_dict[file[:-4]] = cfgp0.get_dict_from_cfg(os.path.join(npc_path, file))
+            if file[-5:] == '.yaml':
+                self.all_dialogue_dict[file[:-5]] = yh1.get_data(os.path.join(npc_path, file))
                 
         #this is gonna be so slow... post processing npc dialogue to dialogue lists
         t1 = textfile_formatter()
@@ -64,9 +74,13 @@ class sprite_instantiator():
         print('sprite instantiator loaded!')
         
     
-    def load_img_dict2(self, asset_path, scale):#3 layers deep
+    def load_img_dict2(self, asset_path, scale, dir_filter=None):#3 layers deep
         img_dict = {}
-        for subdir in os.listdir(asset_path):
+        if dir_filter == None:
+            l = os.listdir(asset_path)
+        else:
+            l = [dir_ for dir_ in os.listdir(asset_path) if dir_ in dir_filter]
+        for subdir in l:
             frame_dict = {}
             #print(subdir)
             subdir_path = os.path.join(asset_path, subdir)#f'{asset_path}/{subdir}'
@@ -240,27 +254,27 @@ class sprite_instantiator():
             elif sprite_category == 'npc':
                 if sprite_subcategory == 'character':
                     if sprite_id == 'Test':
-                        Testnpc = Test(x * 32, y * 32, 2, 1, sprite_id, ini_vol, True, world, self.all_dialogue_dict[sprite_id], level, player_inventory= [])
+                        Testnpc = Test(x * 32, y * 32, 2, 1, sprite_id, ini_vol, True, world, self.all_dialogue_dict[sprite_id], self.npc_img_dict_s[sprite_id], level, player_inventory= [])
                         the_sprite_group.textprompt_group.add(Testnpc)
                     elif sprite_id == 'Test2':
-                        Testnpc2 = Test2(x * 32, y * 32, 2, 1, sprite_id, ini_vol, True, world, self.all_dialogue_dict[sprite_id], level, player_inventory= [])
+                        Testnpc2 = Test2(x * 32, y * 32, 2, 1, sprite_id, ini_vol, True, world, self.all_dialogue_dict[sprite_id], self.npc_img_dict[sprite_id], level, player_inventory= [])
                         the_sprite_group.textprompt_group.add(Testnpc2)
                     elif sprite_id == 'Mars':
-                        Mars_npc = Mars(x * 32 - 32, y * 32, 2, 1, sprite_id, ini_vol, True, world, self.all_dialogue_dict[sprite_id], level, player_inventory= [])
+                        Mars_npc = Mars(x * 32 - 32, y * 32, 2, 1, sprite_id, ini_vol, True, world, self.all_dialogue_dict[sprite_id], self.npc_img_dict[sprite_id], level, player_inventory= [])
                         the_sprite_group.textprompt_group.add(Mars_npc)
                         
                 elif sprite_subcategory == 'object':
                     if sprite_id == 'save_pt':
-                        save_pt_obj = save_pt(x * 32, y * 32, 1, 1, sprite_id, ini_vol, True, world, self.all_dialogue_dict[sprite_id], level, player_inventory= [])
+                        save_pt_obj = save_pt(x * 32, y * 32, 1, 1, sprite_id, ini_vol, True, world, self.all_dialogue_dict[sprite_id], self.npc_img_dict_small[sprite_id], level, player_inventory= [])
                         the_sprite_group.textprompt_group.add(save_pt_obj)
                     elif sprite_id == 'read_only_obj':
-                        read_only_obj_ = read_only_obj(x * 32, y * 32, 1, 1, sprite_id, ini_vol, True, world, self.all_dialogue_dict[sprite_id], level, player_inventory= [])
+                        read_only_obj_ = read_only_obj(x * 32, y * 32, 1, 1, sprite_id, ini_vol, True, world, self.all_dialogue_dict[sprite_id], self.npc_img_dict_small[sprite_id], level, player_inventory= [])
                         the_sprite_group.textprompt_group.add(read_only_obj_)
                         world.read_only_obj_id += 1
                         
                 elif sprite_subcategory == 'cutscene':
                     if sprite_id == 'opening_scene':
-                        opening_scene_ = opening_scene(x * 32, y * 32, 1, 1, sprite_id, ini_vol, True, world, self.all_dialogue_dict[sprite_id], level, player_inventory= [])
+                        opening_scene_ = opening_scene(x * 32, y * 32, 1, 1, sprite_id, ini_vol, True, world, self.all_dialogue_dict[sprite_id], self.npc_img_dict_small[sprite_id], level, player_inventory= [])
                         the_sprite_group.textprompt_group.add(opening_scene_)
                         
             

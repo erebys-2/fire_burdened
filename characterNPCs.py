@@ -4,8 +4,8 @@ from npcFile import npc
 #helper file containing character type NPCs for instantiation
     
 class Test(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict)
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, frame_dict, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, frame_dict)
         #get plot index
         self.plot_index = self.plot_index_dict[self.name]
 
@@ -51,8 +51,8 @@ class Test(npc):
             
 
 class Test2(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict)
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, frame_dict, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, frame_dict)
         #get plot index 
         self.plot_index = self.plot_index_dict[self.name]
         self.current_level = level
@@ -94,21 +94,25 @@ class Test2(npc):
             
 
 class Mars(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict)
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, frame_dict, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, frame_dict)
         #get plot index 
         self.current_level = level
         self.current_p_inv = player_inventory
         
-        self.rect = pygame.rect.Rect(self.rect.x + self.width//3, self.rect.y, self.width//3, self.height)
-        if world.plot_index_dict[self.name] == 0:
-            if level == 1 and world.get_death_count(1) not in (0,7) and world.get_death_count(2) != 1:
-                enabled = False
-        elif world.plot_index_dict[self.name] > 0 and level == 1:
-            enabled = False
-        elif world.plot_index_dict[self.name] > 10 and level == 4:
-            enabled = False
-            
+        
+        # if world.plot_index_dict[self.name] == 0:
+        #     if level == 1 and world.get_death_count(1) not in (0,7) and world.get_death_count(2) != 1:
+        #         enabled = False
+        # elif world.plot_index_dict[self.name] > 0 and level == 1:
+        #     enabled = False
+        # elif world.plot_index_dict[self.name] > 10 and level == 4:
+        #     enabled = False
+        enabled = level in self.enable_dict[world.plot_index_dict[self.name]]
+        if enabled:
+            self.rect = pygame.rect.Rect(self.rect.x + self.width//3, self.rect.y, self.width//3, self.height)
+        else:
+            self.rect = self.resize_rect((0, 0, 0, 0))
         self.enabled = enabled
         self.current_dialogue_index = self.plot_index_jumps_dict[world.plot_index_dict[self.name]]
         

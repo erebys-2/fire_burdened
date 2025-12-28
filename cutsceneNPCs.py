@@ -9,17 +9,18 @@ from textfile_handler import textfile_formatter
 cutscene_autosave = save_file_handler()
 
 class opening_scene(npc):
-    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, level, player_inventory):
-        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict)
+    def __init__(self, x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, frame_dict, level, player_inventory):
+        super().__init__(x, y, scale, direction, name, ini_vol, enabled, world, dialogue_dict, frame_dict)
         #get plot index
         #self.plot_index = self.plot_index_dict[self.name]
-        if level == 1 and world.plot_index_dict[self.name] >= 10:
-            enabled = False
-            #print("?")
-        elif level == 4 and world.plot_index_dict[self.name] >= 20:
-            enabled = False
-        elif level == 6 and world.plot_index_dict[self.name] >= 30:
-            enabled = False
+        # if level == 1 and world.plot_index_dict[self.name] >= 10:
+        #     enabled = False
+        #     #print("?")
+        # elif level == 4 and world.plot_index_dict[self.name] >= 20:
+        #     enabled = False
+        # elif level == 6 and world.plot_index_dict[self.name] >= 30:
+        #     enabled = False
+        enabled = level in self.enable_dict[world.plot_index_dict[self.name]]
 
         if enabled:
             self.rect = self.resize_rect((self.rect.x, -64, 640, 480))

@@ -1,7 +1,7 @@
 'plot_index_jumps':
     '0': 
-      'jump': 0
-      'en': None
+      'jump': ~
+      'en': ~
     
 '0':
     name: _

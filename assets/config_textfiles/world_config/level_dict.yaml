@@ -25,14 +25,14 @@
     -   h: 480
         n_lvl: 2
         new_x: 1408
-        new_y: None
-        pair: None
+        new_y: null
+        pair: null
         w: 2
         x: 0
         y: 0
     -   h: 2
         n_lvl: 3
-        new_x: None
+        new_x: null
         new_y: 384
         pair: 1
         w: 640
@@ -41,8 +41,8 @@
     -   h: 480
         n_lvl: 10
         new_x: 0
-        new_y: None
-        pair: None
+        new_y: null
+        pair: null
         w: 2
         x: 149
         y: 0
@@ -80,7 +80,7 @@
     trans_data:
     -   h: 2
         n_lvl: 4
-        new_x: None
+        new_x: null
         new_y: 384
         pair: 1
         w: 640
@@ -88,7 +88,7 @@
         y: 0
     -   h: 2
         n_lvl: 1
-        new_x: None
+        new_x: null
         new_y: 2
         pair: 1
         w: 640
@@ -100,7 +100,7 @@
     - 113
     - 108
     name: Outer City Ruins
-    notes: None
+    notes: null
     player_en: true
     size:
     - 15
@@ -109,14 +109,14 @@
     -   h: 480
         n_lvl: 5
         new_x: 0
-        new_y: None
-        pair: None
+        new_y: null
+        pair: null
         w: 2
         x: 149
         y: 0
     -   h: 2
         n_lvl: 3
-        new_x: None
+        new_x: null
         new_y: 2
         pair: 1
         w: 640
@@ -137,16 +137,16 @@
     -   h: 480
         n_lvl: 4
         new_x: 4768
-        new_y: None
-        pair: None
+        new_y: null
+        pair: null
         w: 2
         x: 0
         y: 0
     -   h: 480
         n_lvl: 6
         new_x: 0
-        new_y: None
-        pair: None
+        new_y: null
+        pair: null
         w: 2
         x: 149
         y: 0
@@ -165,16 +165,16 @@
     -   h: 480
         n_lvl: 5
         new_x: 4768
-        new_y: None
-        pair: None
+        new_y: null
+        pair: null
         w: 2
         x: 0
         y: 0
     -   h: 480
         n_lvl: 7
         new_x: 0
-        new_y: None
-        pair: None
+        new_y: null
+        pair: null
         w: 2
         x: 39
         y: 0
@@ -193,22 +193,22 @@
     -   h: 480
         n_lvl: 6
         new_x: 1248
-        new_y: None
-        pair: None
+        new_y: null
+        pair: null
         w: 2
         x: 0
         y: 0
     -   h: 480
         n_lvl: 9
         new_x: 0
-        new_y: None
-        pair: None
+        new_y: null
+        pair: null
         w: 2
         x: 243
         y: 0
     -   h: 2
         n_lvl: 8
-        new_x: None
+        new_x: null
         new_y: 2
         pair: 0
         w: 640
@@ -228,7 +228,7 @@
     trans_data:
     -   h: 2
         n_lvl: 7
-        new_x: None
+        new_x: null
         new_y: 384
         pair: 2
         w: 640
@@ -252,7 +252,7 @@
     - 113
     - 108
     name: Outer City Ruins, Underside
-    notes: None
+    notes: null
     player_en: true
     size:
     - 15
@@ -261,8 +261,8 @@
     -   h: 480
         n_lvl: 1
         new_x: 4768
-        new_y: None
-        pair: None
+        new_y: null
+        pair: null
         w: 2
         x: 0
         y: 0
@@ -272,7 +272,7 @@
     - 113
     - 108
     name: Outer City Ruins, Underside
-    notes: None
+    notes: null
     player_en: true
     size:
     - 15
@@ -281,14 +281,14 @@
     -   h: 480
         n_lvl: 1
         new_x: 4768
-        new_y: None
-        pair: None
+        new_y: null
+        pair: null
         w: 2
         x: 0
         y: 0
     -   h: 2
         n_lvl: 11
-        new_x: None
+        new_x: null
         new_y: 384
         pair: 1
         w: 640
