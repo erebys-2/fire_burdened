@@ -14,7 +14,6 @@ class player_choice_handler():
     def __init__(self, fontlist, m_player_sfx_list_main, ini_vol, SW, SH, TS):
 
         self.fontlist = fontlist
-        self.next_index = -3
         self.prompt = ('','')
         self.SH = SH
         self.SW = SW
@@ -53,7 +52,6 @@ class player_choice_handler():
         self.save_handler = save_file_handler()
         
     def disable(self):
-        self.next_index = -3
         self.button_list *= 0
         self.trigger_once = True
         
@@ -76,10 +74,11 @@ class player_choice_handler():
         #pygame.draw.rect(screen, (0,0,0), self.dialogue_box_rect)#draw box
         screen.blit(self.prompt_box_bg, self.dialogue_box_rect)
         player_choices2 = [k for k in self.player_choice_dict2[key] if k != 'prompt']
+        next_index = None
 
         if self.trigger_once:#instantiate buttons
             self.prompt = self.player_choice_dict2[key]['prompt']#get prompt, ignoring outer quotes
-            self.next_index = -3
+            
             self.button_list *= 0
             btn_count = len(self.player_choice_dict2[key])-1
             pos_list = self.get_button_locations(btn_count)
@@ -91,7 +90,8 @@ class player_choice_handler():
             
         for i in range(len(self.button_list)):#button behvior, the buttons should be aligned with the player_choices list
             if self.button_list[i].draw(screen):
-                self.next_index = self.player_choice_dict2[key][player_choices2[i]]#player_choices[i][1]
+                next_index = self.player_choice_dict2[key][player_choices2[i]]#player_choices[i][1]
+                self.m_player.play_sound(self.m_player.sfx[1], None)
                 #self.trigger_once = True
                 if key == 'save_game': # write to save file
                     #t1, slot, level, world, player
@@ -111,7 +111,6 @@ class player_choice_handler():
                     txt = f': {self.save_handler.get_save_time(i)}'
                 
             self.button_list[i].show_text(screen, self.fontlist[1], ('', player_choices2[i] + txt))
-            
         #draw text
         self.text_manager0.disp_text_box(screen, self.fontlist[1], self.prompt, (-1,-1,-1),  (200,200,200), (2*self.ts, 12, self.SW, self.SH//4), False, False, 'none')
         self.text_manager0.disp_text_box(screen, self.fontlist[1], ('Exit:(Escape)', ''), (-1,-1,-1),  (80,80,80), (0.8328125*self.SW, 0.95*self.SH, self.ts, self.ts), False, False, 'none')
@@ -120,9 +119,4 @@ class player_choice_handler():
         else:
             self.save_indicator = False
         
-        return (self.next_index, self.last_save_slot)
-    
-#next step is to modify the NPC file so that when the index is -3, a signal is sent to the text manager
-#to call functions from this class
-
-#in NPC file while the index is -3, current frame and index has to be frozen and the display string has to be set to ''
+        return (next_index, self.last_save_slot)

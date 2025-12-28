@@ -820,7 +820,7 @@ class trade_menu_ui():
             ['empty', 'none'],
             ['empty', 'none']
         ]
-        self.next_dialogue_index = -3
+        self.next_dialogue_index = None
         self.exit_index = 0
         self.enabled = False
         
@@ -1020,7 +1020,7 @@ class trade_menu_ui():
             self.button_list.append(Button(self.S_W//2 - 8, self.S_H//2 -160 - 28, self.invisible_img, 1))
             self.button_list.append(Button(self.S_W//2 - 64, self.S_H - 48, self.generic_img, 1))
             
-            self.next_dialogue_index = -3
+            self.next_dialogue_index = None
             
             self.trigger_once = False
             
@@ -1189,7 +1189,7 @@ class trade_menu_ui():
         self.temp_inventory *= 0
         self.trigger_once = True
         self.enabled = False
-        self.next_dialogue_index = -3
+        self.next_dialogue_index = None
         for btn_list in self.btn_list_list:
             btn_list *= 0
 

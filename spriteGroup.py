@@ -43,7 +43,7 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 		]
   
 		self.hostiles_group = (self.enemy0_group, self.enemy_bullet_group, self.enemy_bullet_group2, self.p_int_group2)
-		self.textbox_output = ('', False, False, '', 0, 0, (False, ''), False)
+		self.textbox_output = None
 	
 		self.scroll_x = 0
 		self.pause_game = False
@@ -62,7 +62,7 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 				group.sprite.empty_list()
    
 		self.enemy_death_count = 0
-		self.textbox_output = ('', False, False, '', 0, 0, (False, ''))
+		self.textbox_output = None
   
 	# def update_scroll_x(self, scroll_x):
 	# 	self.scroll_x = scroll_x
@@ -89,7 +89,7 @@ class sprite_group(): #Class that instantiates and contains sprite groups and up
 				obj.scroll_along(world.rect.x, self.scroll_x)
 				if obj.player_collision:
 					self.textbox_output = obj.enable2(dialogue_enable, next_dialogue)
-					
+
 					#print(obj.enable(dialogue_enable, next_dialogue, screen, player_hitbox_rect, scroll_x))
 		#annoying but necessary or else the indexing goes wrong
 		if update_all_ini_indexes and obj.player_collision:

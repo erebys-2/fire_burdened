@@ -140,49 +140,45 @@ class text_manager():
 class dialogue_box(text_manager):
     def __init__(self, ini_vol, SW, SH, TS):
         super().__init__(SW, SH, TS)
-        self.obj_directory_names  = tuple(os.listdir(os.path.join('assets', 'sprites', 'npcs'))) #inverse plot index dict
-        self.img_master_list = []
+        self.img_master_dict = {}
         
         self.m_player_sfx_list = ['hat.mp3']
         self.m_player = music_player(self.m_player_sfx_list, ini_vol)
         
         base_path = os.path.join('assets', 'sprites', 'npc_expressions')
-        obj_count = len(os.listdir(base_path))
-        for i in range(obj_count):
-            img_count = len(os.listdir(os.path.join(base_path, self.obj_directory_names[i])))#f'assets/sprites/npc_expressions/{self.obj_directory_names[i]}'
 
+        for real_name in os.listdir(base_path):
             temp_list = []
-            for j in range(img_count):
-                img = pygame.image.load(os.path.join(base_path, self.obj_directory_names[i], f'{j}.png')).convert_alpha()#f'assets/sprites/npc_expressions/{self.obj_directory_names[i]}/{j}.png'
+            for j in range(len(os.listdir(os.path.join(base_path, real_name)))):
+                img = pygame.image.load(os.path.join(base_path, real_name, f'{j}.png')).convert_alpha()
                 img = pygame.transform.scale(img, (int(img.get_width() * 1), int(img.get_height() * 1)))
                 temp_list.append(img)
-                
-            self.img_master_list.append(temp_list)
+            self.img_master_dict[real_name] = temp_list
             
         self.dialogue_box_rect = (0, 0.75*self.SH, self.SW, self.SH//4)
         self.character_art_rect = (0, 0, self.SW, self.SH)
         self.counter = 0
         
-        self.dialogue_box_bg = pygame.image.load(os.path.join('assets', 'sprites', 'dialogue_box.png')).convert_alpha()#'assets/sprites/dialogue_box.png'
+        self.dialogue_box_bg = pygame.image.load(os.path.join('assets', 'sprites', 'dialogue_box.png')).convert_alpha()
         
-    def draw_box_and_portrait(self, screen, image_index, name_index):
-        img = self.img_master_list[name_index][image_index]
+    def draw_box_and_portrait(self, screen, image_index, real_name):
+        img = self.img_master_dict[real_name][image_index]
         screen.blit(pygame.transform.flip(img, False, False), self.character_art_rect)
         #pygame.draw.rect(screen, (0,0,0), self.dialogue_box_rect)#can make a custom dialogue window later
         screen.blit(self.dialogue_box_bg, self.dialogue_box_rect)
         
-    def draw_text_box(self, textbox_output, font, screen, text_speed, in_cutscene):
-        name = textbox_output[3]
-        message = textbox_output[0]
-        image_index = textbox_output[4]
-        name_index = textbox_output[5]
+    def draw_text_box(self, textbox_data, font, screen, text_speed, in_cutscene):
+        name = textbox_data['name']
+        message = textbox_data['msg']
+        image_index = textbox_data['expression']
+        real_name = textbox_data['real_name']
         
         if name != '_':
             disp_name = name + ':'
         else:
             disp_name = ' '
    
-        self.draw_box_and_portrait(screen, image_index, name_index)
+        self.draw_box_and_portrait(screen, image_index, real_name)
         
         self.disp_text_box(screen, font, (disp_name, ' '), (-1,-1,-1),  (200,200,200), (self.ts//2, 0.775*self.SH, 0.175*self.SW, self.SH//4), False, False, 'none')
         if in_cutscene:
@@ -245,3 +241,32 @@ class dialogue_box(text_manager):
 #     else:
 #         break_ = True
 #     print(text_manager0.copy_by_char2(text_manager0.build_combined_str(str_list2, False), break_))
+
+# Example file showing a basic pygame "game loop"
+
+# # pygame setup
+# pygame.init()
+# screen = pygame.display.set_mode((10, 10))
+# clock = pygame.time.Clock()
+# running = True
+# d = dialogue_box(1,1,1,1)
+# print(d.img_master_dict)
+
+# while running:
+#     # poll for events
+#     # pygame.QUIT event means the user clicked X to close your window
+#     for event in pygame.event.get():
+#         if event.type == pygame.QUIT:
+#             running = False
+
+#     # fill the screen with a color to wipe away anything from last frame
+#     screen.fill("purple")
+
+#     # RENDER YOUR GAME HERE
+
+#     # flip() the display to put your work on screen
+#     pygame.display.flip()
+
+#     clock.tick(60)  # limits FPS to 60
+
+# pygame.quit()

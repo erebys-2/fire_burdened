@@ -136,14 +136,12 @@ class npc(pygame.sprite.Sprite):
             if self.rect.width > 0:#kills rect
                 self.rect = pygame.rect.Rect(0,0,0,0)
         
-        return (message, 
-                self.player_collision, 
-                dialogue_enable, 
-                name, 
-                expression, 
-                self.npc_index_id, 
-                (self.player_choice_flag, self.player_choice_key),
-                self.enabled)
+        return {
+            'data': {'name': name, 'real_name': self.name, 'msg': message, 'expression': expression},#, 'curr_index': self.current_dialogue_index},
+            'logic': {'npc_en': self.enabled, 'dialogue_en': dialogue_enable, 'colliding': self.player_collision},
+            'p_choice': {'flag': self.player_choice_flag, 'key': self.player_choice_key}
+        }
+
         
     def force_ini_position(self, scrollx):
         self.rect.x -= scrollx

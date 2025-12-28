@@ -591,44 +591,32 @@ def main():
 		#--------------------------------------------------------------------handling drawing text boxes------------------------------------------------------------------
 		#textboxes have a maximum of 240 characters
 		
-		if (the_sprite_group.textbox_output[0] != '' and 
-      		the_sprite_group.textbox_output[1] and 
-        	the_sprite_group.textbox_output[2] and not 
-         	the_sprite_group.textbox_output[6][0]
+		if (the_sprite_group.textbox_output != None and
+			the_sprite_group.textbox_output['logic']['colliding'] and
+			the_sprite_group.textbox_output['logic']['dialogue_en'] and not
+			the_sprite_group.textbox_output['p_choice']['flag']
           	):
-			#the_sprite_group.textbox_output = (
-			# name, (string)
-   			# player_collision, (boolean)
-			# dialogue_enable, (boolean)
-   			# message, (string)
-			# expression, (int)
-			# self.character_index_dict[self.name], (int)
-			# (player choice tuple)
-			# enable
-			# )
-			
-			dialogue_box0.draw_text_box(the_sprite_group.textbox_output, font_larger, screen, text_speed, player0.in_cutscene)
+			dialogue_box0.draw_text_box(the_sprite_group.textbox_output['data'], font_larger, screen, text_speed, player0.in_cutscene)
 		#handling player choice 
-		elif the_sprite_group.textbox_output[6][0] and the_sprite_group.textbox_output[2]: #(p choice flag, dialogue enable)
-			p_choice_key = the_sprite_group.textbox_output[6][1]
+		elif the_sprite_group.textbox_output != None and the_sprite_group.textbox_output['p_choice']['flag'] and the_sprite_group.textbox_output['logic']['dialogue_en']: 
+			p_choice_key = the_sprite_group.textbox_output['p_choice']['key']
 			if p_choice_key[0:5] == 'trade':
 				next_dialogue_index = trade_ui.open_trade_ui(player0.inventory_handler.inventory, p_choice_key, screen, ctrls_list)
 			else:
-				dialogue_box0.draw_box_and_portrait(screen, the_sprite_group.textbox_output[4], the_sprite_group.textbox_output[5])
+				dialogue_box0.draw_box_and_portrait(screen, the_sprite_group.textbox_output['data']['expression'], the_sprite_group.textbox_output['data']['real_name'])
 				#first input of deploy buttons is the key
 				p_choice_output = p_choice_handler0.deploy_buttons(p_choice_key, screen, player0, level, world)
 				next_dialogue_index = p_choice_output[0]
+				trade_ui.close_trade_ui()
    
-			if next_dialogue_index != -3:
-				for npc in the_sprite_group.textprompt_group: #look for npc in sprite group what has a player choice open
-					if npc.player_choice_flag:#force close it and move on to the next index
-						npc.force_dialogue_index(next_dialogue_index)
-						p_choice_handler0.trigger_once = True
-						trade_ui.close_trade_ui()
-						dialogue_box0.type_out = True
 
-
+			for npc in the_sprite_group.textprompt_group: #look for npc in sprite group what has a player choice open
+				if npc.player_choice_flag and next_dialogue_index != None:#force close it and move on to the next index
+					npc.force_dialogue_index(next_dialogue_index)
+					p_choice_handler0.trigger_once = True
+					dialogue_box0.type_out = True
 	
+ 
 		#----------black screen while transitioning---------------------------------------------------------
 		if level_transitioning or camera.set_ini_pos:
 			pygame.draw.rect(screen, (0,0,0), screen.get_rect())
@@ -850,8 +838,7 @@ def main():
 		else:
 			player0.update_action(6) #dead
 			player0.scrollx = 0
-		
-		#print(the_sprite_group.textbox_output)
+
 		#---------------------------------------------------------------------------------------------------------------------------------------------
 		#-------------------------------------------------------KBD inputs----------------------------------------------------------------------------
 		#---------------------------------------------------------------------------------------------------------------------------------------------
@@ -1096,8 +1083,6 @@ def main():
 		
 						if (dialogue_enable and not player0.in_cutscene and #cannot esc out of cutscene
 								not trade_ui.enabled 
-            					# (dialogue_box0.str_list_rebuilt == dialogue_box0.current_str_list or 
-                  				# the_sprite_group.textbox_output[6][0])
                  				): #exits dialogue window if an NPC finishes speaking (is this way to avoid bugs)
 							dialogue_enable = False
 							for npc in the_sprite_group.textprompt_group:
@@ -1128,7 +1113,7 @@ def main():
 					if not dialogue_enable and (dialogue_trigger_ready or player0.in_cutscene):
 						dialogue_enable = True
 						mh1.render_enable = False
-					elif dialogue_enable and not the_sprite_group.textbox_output[6][0]:
+					elif dialogue_enable and not the_sprite_group.textbox_output['p_choice']['flag']:
 						if dialogue_box0.str_list_rebuilt != dialogue_box0.current_str_list:
 							text_speed = 0
 							play_click_sound()
