@@ -82,6 +82,7 @@ def main():
 	gradient_type = 'none'
 	level_transitioning = False
 	lvl_transition_counter = 0
+	hold_jump_btn = False
 
 	ts = 32 #tile size
 
@@ -608,7 +609,6 @@ def main():
 				p_choice_output = p_choice_handler0.deploy_buttons(p_choice_key, screen, player0, level, world)
 				next_dialogue_index = p_choice_output[0]
 				trade_ui.close_trade_ui()
-   
 
 			for npc in the_sprite_group.textprompt_group: #look for npc in sprite group what has a player choice open
 				if npc.player_choice_flag and next_dialogue_index != None:#force close it and move on to the next index
@@ -833,7 +833,7 @@ def main():
 		#however they can still be interupted by the player getting damaged
 
 		if player0.Alive:
-			change_once = player0.execute_action_tree(move_R, move_L, debugger_sprint, change_once)
+			change_once = player0.execute_action_tree(move_R, move_L, hold_jump_btn, debugger_sprint, change_once)
 			dialogue_trigger_ready = player0.dialogue_trigger_ready
 		else:
 			player0.update_action(6) #dead
@@ -871,12 +871,17 @@ def main():
 				#dual input jump and attack for instant upstrike, main upstrike logic
 				elif input_list[ctrls_list[0]] and not player0.squat_done and player0.consecutive_upstrike < player0.upstrike_limit and atk_delay_ref_time + 10 > pygame.time.get_ticks(): #and not player0.in_air
 					#print(str(player0.hold_jump) + ' 2')
+					player0.landing = False
 					player0.upstrike = True
 					player0.in_air = True
 					if not player0.squat:
 						player0.squat_done = True
 					player0.jump_dampen = True
 					player0.consecutive_upstrike += 1
+				if input_list[ctrls_list[0]]:
+					player0.landing = False
+				# else:#if not input_list[ctrls_list[0]]:
+				# 	hold_jump_btn = False
      
 				# if player0.in_air and not player0.atk1:
 				# 	player0.consecutive_upstrike += 1
@@ -907,7 +912,11 @@ def main():
 
 				if player0.rolling and not player0.in_air:
 					player0.roll_count = player0.roll_limit
-					player0.squat = True
+					player0.squat_done = True
+			# if not input_list[ctrls_list[0]]:
+			# 	player0.hold_jump = False
+			# 	player0.jump_dampen = True
+				#print('worked')
      
 	
 		for event in pygame.event.get():

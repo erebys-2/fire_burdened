@@ -894,7 +894,8 @@ class player(pygame.sprite.Sprite):
             #print(self.direction)
             self.cancel_shoot()
             self.slide_kick = False
-            self.dx = -self.direction * 4
+            if not self.i_frames_en:
+                self.dx = -self.direction * 3
             if self.vel_y > 10:
                 self.vel_y -= self.vel_y - 10
 
@@ -1071,19 +1072,18 @@ class player(pygame.sprite.Sprite):
         #==========================================================================================================================================
         
         #jump
-        if self.squat_done and (not(self.atk1)):# or (self.atk1 and self.frame_index == 0)):
+        if (self.squat_done and not self.atk1):# or self.action == 3:# or (self.atk1 and self.frame_index == 0)):
             self.double_jump_en = True
             the_sprite_group.particle_group.sprite.add_particle('player_mvmt', self.rect.centerx, self.rect.centery, self.direction, self.scale, True, 1)
             self.squat_done = False
-            self.vel_y = -8 #-9.5
+            self.vel_y = -9.5 #-9.5
             self.in_air = True
             self.jump_counter += 1
 
-        elif self.in_air and not (moveL or moveR):
-            if self.action != 8 and self.action != 10 and self.action != 1 and self.action != 5:
-                self.landing = True
-            else:
-                self.landing = False
+        if (self.in_air or self.vel_y > 1) and not (moveL or moveR or self.i_frames_en):
+            self.in_air = True
+            self.landing = not self.hold_jump
+            #print(self.landing)
         
         # elif not self.in_air:
         #     # if self.vel_y > self.coyote_vel: #(self.coyote_time + 200 < pygame.time.get_ticks()):
@@ -1097,7 +1097,7 @@ class player(pygame.sprite.Sprite):
 
         if self.jump_dampen:
             if self.squat or (self.squat_done and self.in_air): #very small hold jump
-                self.vel_y *= 0.8
+                self.vel_y *= 0.7
                 
             elif self.vel_y <= -1: #minimum jump velocity, longer hold jump
                 self.vel_y *= 0.5
@@ -1107,8 +1107,8 @@ class player(pygame.sprite.Sprite):
             self.squat = False
             self.jump_dampen = False
             
-        if self.action == 3 or self.action == 1 or self.action == 0:
-            self.jump_dampen = False
+        # if self.action == 3 or self.action == 1 or self.action == 0:
+        #     self.jump_dampen = False
                     
         #land
         
@@ -1196,7 +1196,7 @@ class player(pygame.sprite.Sprite):
         # elif self.rolling and self.in_air and self.frame_index == 0:
         #     self.vel_y 
         elif self.vel_y <= 20:#25 = terminal velocity
-            self.vel_y += 0.4    
+            self.vel_y += 0.5    
         elif self.vel_y > 20:
             self.vel_y = 20
             
@@ -1604,8 +1604,8 @@ class player(pygame.sprite.Sprite):
         #     dispx = -1
         # outline_surf = pygame.surface.Surface((self.rect.width+2, self.rect.height+2), flags=pygame.SRCALPHA, depth=32)
         # for pix in self.mask.outline():
-        #     pygame.draw.rect(outline_surf, (255, 0, 0, 100), pygame.rect.Rect(pix[0]+dispx, pix[1]-2, 3, 3))
-        # outline_surf.blit(self.mask.to_surface(setcolor=(255, 0, 0, 100), unsetcolor=(0,0,0,0)))
+        #     pygame.draw.rect(outline_surf, (255, 255, 255, 10), pygame.rect.Rect(pix[0]+dispx, pix[1]-2, 3, 3))
+        # outline_surf.blit(self.mask.to_surface(setcolor=(255, 255, 255, 10), unsetcolor=(0,0,0,0)))
         # screen.blit(pygame.transform.flip(outline_surf, self.flip, False), self.rect)
         
         #pygame.draw.rect(screen, (0,0,255), self.collision_rect)
@@ -1633,7 +1633,7 @@ class player(pygame.sprite.Sprite):
         #                      )
         
 
-    def execute_action_tree(self, move_R, move_L, debugger_sprint, change_once):
+    def execute_action_tree(self, move_R, move_L, hold_jump_btn, debugger_sprint, change_once):
         if self.sprint and self.using_item:
             self.speed = 0
         elif self.sprint and not self.using_item:
@@ -1721,10 +1721,10 @@ class player(pygame.sprite.Sprite):
                     else:
                         self.update_action(2)#2: jump
 
-                elif ( not (move_L or move_R) and
-                    not self.in_air and
-                    self.vel_y >= 0 and
-                    self.landing
+                elif ( #True not in (move_L, move_R, hold_jump_btn) 
+                     not self.in_air 
+                    and self.vel_y >= 0 
+                    and self.landing
                     ):
                     self.update_action(3)#3: land
                     

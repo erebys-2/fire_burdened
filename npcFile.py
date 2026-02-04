@@ -109,11 +109,11 @@ class npc(pygame.sprite.Sprite):
     #and will force current_dialogue_index to some other value in that moment
    
     def enable2(self, dialogue_enable, next_dialogue):
-        #print(self.current_dialogue_index)
         str_curr_dialogue_index = str(self.current_dialogue_index) #keys in a the dictionary must be str
-        message = ('','')
-        name = ''
-        expression = 0
+        # message = ('','')
+        # name = ''
+        # expression = 0
+        rtn_dict = None
 
         if self.enabled and self.player_collision and dialogue_enable:
             expression = int(self.dialogue_dict[str_curr_dialogue_index]['frame'])
@@ -135,16 +135,18 @@ class npc(pygame.sprite.Sprite):
                     self.current_dialogue_index = next_index
                 self.get_dialogue_flag = True
                 
+            rtn_dict = {
+                'data': {'name': name, 'real_name': self.name, 'msg': message, 'expression': expression},#, 'curr_index': self.current_dialogue_index},
+                'logic': {'npc_en': self.enabled, 'dialogue_en': dialogue_enable, 'colliding': self.player_collision},
+                'p_choice': {'flag': self.player_choice_flag, 'key': self.player_choice_key}
+            }
+            
         elif not self.enabled:
             dialogue_enable= False
             if self.rect.width > 0:#kills rect
                 self.rect = pygame.rect.Rect(0,0,0,0)
         
-        return {
-            'data': {'name': name, 'real_name': self.name, 'msg': message, 'expression': expression},#, 'curr_index': self.current_dialogue_index},
-            'logic': {'npc_en': self.enabled, 'dialogue_en': dialogue_enable, 'colliding': self.player_collision},
-            'p_choice': {'flag': self.player_choice_flag, 'key': self.player_choice_key}
-        }
+        return rtn_dict
 
         
     def force_ini_position(self, scrollx):
@@ -166,7 +168,7 @@ class npc(pygame.sprite.Sprite):
                 self.player_collision = self.rect.colliderect(player_rect.scale_by(2, 2))
         else:
             self.player_collision = False
-        if self.player_collision and self.name != 'invisible_prompt' and not dialogue_enable:
+        if self.player_collision and not dialogue_enable:
             screen.blit(self.interaction_prompt, (self.rect.centerx - 18, self.rect.y - 24, 32, 32))
             screen.blit(self.font.render('[Enter]', False, (255,255,255)), (self.rect.centerx - 22, self.rect.y - 32))
                 
@@ -266,5 +268,5 @@ class npc(pygame.sprite.Sprite):
         return not self.give_item_en
     
     def rst_dialogue_index(self, world):
-        if self.plot_index_jumps_dict[world.plot_index_dict[self.name]] != None:
+        if self.plot_index_jumps_dict[world.plot_index_dict[self.name]] != None:# if the jump for the current plot index for an NPC is None, do not update index
             self.current_dialogue_index = self.plot_index_jumps_dict[world.plot_index_dict[self.name]]
