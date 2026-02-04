@@ -508,6 +508,7 @@ def main():
 
 			# c_ = pygame.transform.average_color(world.world_map_non_parallax, pygame.rect.Rect(0,0,SCREEN_WIDTH, SCREEN_HEIGHT))
 			# print(c_)
+			screen.blit(world.world_map_non_parallax, (world.rect.x, 0))#base layer, doesn't get affected by screenshake
 			screen.blit(world.world_map_non_parallax, (world.rect.x, world.rect.y))
 			#screen.blit(radial_filter_img, big_filter_rect)
 

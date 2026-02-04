@@ -226,6 +226,8 @@ class player(pygame.sprite.Sprite):
         
         self.slide_kick = False
         self.lvls_visited = set([0,1])
+        
+        self.after_img_list = []
        
     #methods
     def cancel_shoot(self):
@@ -809,8 +811,9 @@ class player(pygame.sprite.Sprite):
                         self.rolled_into_wall = False
                            
             elif(tile[2] == 10):#level transition tiles
-                    
+                
                 if tile[1].colliderect(self.collision_rect.x + self.dx, self.collision_rect.y + self.height*0.25 + self.dy, 4, 0.5*self.height):
+                    self.after_img_list = []
                     #this collision will be used to initiate a level change
                     #tile[3][0]: next_level, [1]: player new x, [2]: player new y
                     if tile[1].width < tile[1].height:
@@ -1597,6 +1600,28 @@ class player(pygame.sprite.Sprite):
         if self.shot_charging and self.action < 5:
             self.BP_animate()
             screen.blit(pygame.transform.flip(self.image2, self.flip, False), self.BP_rect)
+            
+        if self.action != 0: #abs(self.scrollx + self.dx) > 0:
+            if self.sprint:
+                img_ct = 3
+                img_alpha = 30
+                img_update = 50
+            else:
+                img_ct = 2
+                img_alpha = 30
+                img_update = 50
+                
+            if pygame.time.get_ticks() - self.update_time > img_update:
+                temp_img = self.image.copy()
+                temp_img.set_alpha(img_alpha)
+                self.after_img_list.append({'img': temp_img, 'flip': self.flip, 'rect': pygame.rect.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)})
+                if len(self.after_img_list) > img_ct:
+                    self.after_img_list.pop(0)
+            for img_data in self.after_img_list:
+                img_data['rect'].x -= self.scrollx
+                screen.blit(pygame.transform.flip(img_data['img'], img_data['flip'], False), img_data['rect'])
+        else:
+            self.after_img_list = []
 
         # if self.flip:
         #     dispx = 1
