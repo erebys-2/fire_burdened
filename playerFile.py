@@ -6,6 +6,7 @@ from ItemFile import inventory_handler
 from textfile_handler import textfile_formatter
 import math
 import random
+from gfx_effects import gfx_effects
 #print('directory: ' + os.getcwd())
 
 class player(pygame.sprite.Sprite):
@@ -227,6 +228,7 @@ class player(pygame.sprite.Sprite):
         self.slide_kick = False
         self.lvls_visited = set([0,1])
         
+        self.gfx_ = gfx_effects(after_img_ct=2)
         self.after_img_list = []
        
     #methods
@@ -813,7 +815,8 @@ class player(pygame.sprite.Sprite):
             elif(tile[2] == 10):#level transition tiles
                 
                 if tile[1].colliderect(self.collision_rect.x + self.dx, self.collision_rect.y + self.height*0.25 + self.dy, 4, 0.5*self.height):
-                    self.after_img_list = []
+                    #self.after_img_list = []
+                    self.gfx_.clear_after_imgs()
                     #this collision will be used to initiate a level change
                     #tile[3][0]: next_level, [1]: player new x, [2]: player new y
                     if tile[1].width < tile[1].height:
@@ -1602,26 +1605,23 @@ class player(pygame.sprite.Sprite):
             screen.blit(pygame.transform.flip(self.image2, self.flip, False), self.BP_rect)
             
         if self.action != 0: #abs(self.scrollx + self.dx) > 0:
-            if self.sprint:
+            if self.speed > self.default_speed and self.action not in (0,1):
                 img_ct = 3
-                img_alpha = 30
-                img_update = 50
+                img_update = 20
             else:
                 img_ct = 2
-                img_alpha = 30
-                img_update = 50
+                img_update = 30
                 
-            if pygame.time.get_ticks() - self.update_time > img_update:
-                temp_img = self.image.copy()
-                temp_img.set_alpha(img_alpha)
-                self.after_img_list.append({'img': temp_img, 'flip': self.flip, 'rect': pygame.rect.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)})
-                if len(self.after_img_list) > img_ct:
-                    self.after_img_list.pop(0)
-            for img_data in self.after_img_list:
-                img_data['rect'].x -= self.scrollx
-                screen.blit(pygame.transform.flip(img_data['img'], img_data['flip'], False), img_data['rect'])
+            if self.disp_states[self.action]:
+                img_alpha = 25
+                img_ct = 5
+            else:
+                img_alpha = 20
+                #img_ct = 2
+                
+            self.gfx_.draw_after_img(screen, self.scrollx, self.image, [self.rect.x, self.rect.y], self.flip, img_alpha, img_update, img_ct, hsl_en=self.disp_flag)
         else:
-            self.after_img_list = []
+            self.gfx_.clear_after_imgs(0)
 
         # if self.flip:
         #     dispx = 1
@@ -1646,7 +1646,10 @@ class player(pygame.sprite.Sprite):
         self.draw_with_flicker(self.image, self.rect, screen, self.i_frames_en)#drawing sprite
        
         if self.atk_show_sprite: #drawing melee sprite
+            self.gfx_.draw_after_img(screen, 5*self.direction, self.image3, [self.atk_rect.x, self.atk_rect.y], self.flip, 70, 10, 3, time_index=1)
             self.draw_with_flicker(self.image3, self.atk_rect, screen, self.atk1_stamina_cost > self.atk1_default_stam)
+        else:
+            self.gfx_.clear_after_imgs(1)
             
         # if self.vel_y > 1 and self.action == 1 and self.coyote_ratio > 0:# and pygame.time.get_ticks()%2 == 0:
         #     num = int(255*(1-self.coyote_ratio))

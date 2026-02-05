@@ -110,7 +110,7 @@ def main():
 	mh1 = map_handler(os.path.join("assets", "config_textfiles", "world_config"), SCREEN_WIDTH, SCREEN_HEIGHT)
 
 	#camera instance
-	camera_offset = ts#int(0.75 * ts)
+	camera_offset = int(0.75 * ts)
 	camera = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, 2*camera_offset)
  
 	#instantiate sprite groups=========
@@ -510,6 +510,8 @@ def main():
 			# print(c_)
 			screen.blit(world.world_map_non_parallax, (world.rect.x, 0))#base layer, doesn't get affected by screenshake
 			screen.blit(world.world_map_non_parallax, (world.rect.x, world.rect.y))
+			#if abs(player0.scrollx) > 2:
+			#world.gfx_.draw_after_img_static(screen, player0.scrollx, world.world_map_np_alpha, [world.rect.x, world.rect.y], 20, 3)
 			#screen.blit(radial_filter_img, big_filter_rect)
 
 			the_sprite_group.update_bg_sprite_group(screen, player0)

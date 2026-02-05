@@ -4,6 +4,7 @@ import random
 from spriteInstantiator import sprite_instantiator
 from cfg_handler0 import yaml_handler
 from textfile_handler import textfile_formatter
+from gfx_effects import gfx_effects
 
 import csv
 
@@ -126,6 +127,8 @@ class World():
         self.death_counters_dict = {} #player deaths per level
         self.lvl_completion_dict = {0:0} #if all enemies are killed in a level
         self.lvl_completed = False
+        
+        self.gfx_ = gfx_effects()
         print('world loaded!')
         
     def scale_tile(self, img, pos):
@@ -142,9 +145,11 @@ class World():
 
             #combine maps
             non_paralax_map = self.combine_surfaces([temp_dict[f'{name}.PNG'] for name in ('filtered_layers', 'filter_layer', 'non_filtered_layers')]).convert_alpha()
+            np_map_transparent = self.combine_surfaces([temp_dict[f'{name}.PNG'] for name in ('non_filtered_layers', )]).convert_alpha()
+            np_map_transparent.set_alpha(100)
             true_fg_map = temp_dict['true_fg.PNG']
 
-            surface_map_dict[lvl_subdir] = {'non_parallax': non_paralax_map, 'true_fg': true_fg_map}
+            surface_map_dict[lvl_subdir] = {'non_parallax': non_paralax_map, 'np_map_transparent': np_map_transparent, 'true_fg': true_fg_map}
 
         return surface_map_dict
             
@@ -391,6 +396,7 @@ class World():
         # layer_list2 = [self.fg,]
         # self.world_map_non_parallax_fg = self.create_map(lvl_size, layer_list2).convert_alpha() 
         self.world_map_non_parallax = self.surface_map_dict[f'level{level}_maps']['non_parallax'].convert_alpha()
+        self.world_map_np_alpha = self.surface_map_dict[f'level{level}_maps']['np_map_transparent'].convert_alpha()
         self.world_map_non_parallax_fg = self.surface_map_dict[f'level{level}_maps']['true_fg'].convert_alpha()
         #==========================================================================================================
 
