@@ -128,8 +128,40 @@ class World():
         self.lvl_completion_dict = {0:0} #if all enemies are killed in a level
         self.lvl_completed = False
         
-        self.gfx_ = gfx_effects()
+        self.gfx_ = gfx_effects(after_img_ct=2)
+        
+        self.anchor_pt_filtered_layers = [0,0]
+        self.anchor_pt_nonfiltered_layers = [0,0]
+        self.anchor_sign = 1
+        self.anchor_sign2 = 1
+        self.screenshake_en = False
         print('world loaded!')
+        
+    def force_align_anchor_pts(self):
+        self.anchor_pt_filtered_layers[0] = self.rect.x
+        self.anchor_pt_filtered_layers[1] = self.rect.y
+        self.anchor_pt_nonfiltered_layers[0] = self.rect.x
+        self.anchor_pt_nonfiltered_layers[1] = self.rect.y
+        
+    def slow_screenshake(self, anchor_pt, period):
+        if anchor_pt[0] != self.rect.x and pygame.time.get_ticks()%period == 0:
+            shift_dist = anchor_pt[0] - self.rect.x
+            abs_shift_dist = abs(shift_dist) - 1
+            anchor_pt[0] += self.anchor_sign*abs_shift_dist
+            self.anchor_sign *= -1
+        
+        if anchor_pt[1] != self.rect.y and pygame.time.get_ticks()%period == 0:
+            shift_dist = anchor_pt[1] - self.rect.y
+            abs_shift_dist = abs(shift_dist) - 1
+            anchor_pt[1] += self.anchor_sign2*abs_shift_dist
+            self.anchor_sign2 *= -1
+        
+        print(anchor_pt)
+        if abs(anchor_pt[1] - self.rect.y) < 2 and abs(anchor_pt[0] - self.rect.x) < 2:
+            self.screenshake_en = False
+            
+        return[anchor_pt[0], anchor_pt[1]]
+            
         
     def scale_tile(self, img, pos):
         return(pygame.transform.scale(img, (36, 36)), (pos[0]-2, pos[1]-2))
@@ -144,12 +176,17 @@ class World():
                 temp_dict[img_name] = pygame.image.load(os.path.join(map_subdir, img_name)).convert_alpha()
 
             #combine maps
+            #may be obsolete after changing screenshake logic
             non_paralax_map = self.combine_surfaces([temp_dict[f'{name}.PNG'] for name in ('filtered_layers', 'filter_layer', 'non_filtered_layers')]).convert_alpha()
             np_map_transparent = self.combine_surfaces([temp_dict[f'{name}.PNG'] for name in ('non_filtered_layers', )]).convert_alpha()
             np_map_transparent.set_alpha(100)
-            true_fg_map = temp_dict['true_fg.PNG']
 
-            surface_map_dict[lvl_subdir] = {'non_parallax': non_paralax_map, 'np_map_transparent': np_map_transparent, 'true_fg': true_fg_map}
+            surface_map_dict[lvl_subdir] = {'non_parallax': non_paralax_map, 
+                                            'np_map_transparent': np_map_transparent, 
+                                            'filtered_layers': temp_dict['filtered_layers.PNG'],
+                                            'filter_layer': temp_dict['filter_layer.PNG'],
+                                            'non_filtered_layers': temp_dict['non_filtered_layers.PNG'],
+                                            'true_fg': temp_dict['true_fg.PNG']}
 
         return surface_map_dict
             
@@ -291,6 +328,8 @@ class World():
     
     def process_data(self, level, the_sprite_group, screenW, screenH, lvl_data_trans_list, ini_vol):
         #clear old data
+        self.gfx_.clear_after_imgs()
+        self.force_align_anchor_pts()
         raw_lvl_data_dict = {}
         for lvl_data in self.detailed_lvl_data_dict:
             self.detailed_lvl_data_dict[lvl_data] *= 0
@@ -364,40 +403,14 @@ class World():
         self.y_scroll_en = False
         
         #===========================================================Loading Lvl maps=============================================
-        # #can clear lists by iterating through dictionary but cannot set lists
-        # self.bg1 = self.process_bg(raw_lvl_data_dict['bg1_data'], False)
-        # self.bg2 = self.process_bg(raw_lvl_data_dict['bg2_data'], True)
-        # self.bg2_1 = self.process_bg(raw_lvl_data_dict['bg2_1_data'], True)
-        # self.bg3 = self.process_bg(raw_lvl_data_dict['bg3_data'], False)
         self.bg4 = self.process_bg(raw_lvl_data_dict['bg4_data'], False)
         self.bg5 = self.process_bg(raw_lvl_data_dict['bg5_data'], False)
         self.bg6 = self.process_bg(raw_lvl_data_dict['bg6_data'], False)
         
-            
-        # #process filter layer
-        # #if self.bg3 != []:
-        # self.bg3 = self.post_process_filter_layer(self.bg3, lvl_size[1]*32)
-                
-        # #load fg and fg_1
-        # self.fg = self.process_bg(raw_lvl_data_dict['fg_data'], False)
-        # self.fg_1 = self.process_bg(raw_lvl_data_dict['fg_1_data'], False)
         
-        # #create maps
-        # # layer_list = [self.fg_1, self.solids, self.bg1, self.bg3, self.bg2, self.bg2_1]
-        # # self.world_map_non_parallax = self.create_map(lvl_size, layer_list).convert_alpha()
-        
-        # filtered_layers = self.create_map(lvl_size, [self.bg2, self.bg2_1])#.convert_alpha()
-        # filter_layer = self.create_map(lvl_size, [self.bg3,])#.convert_alpha()
-        # non_filtered_layers = self.create_map(lvl_size, [self.fg_1, self.solids, self.bg1])#.convert_alpha()
-        
-        # self.world_map_non_parallax = self.combine_surfaces((filtered_layers, filter_layer, non_filtered_layers)).convert_alpha()
-        
-        
-        # layer_list2 = [self.fg,]
-        # self.world_map_non_parallax_fg = self.create_map(lvl_size, layer_list2).convert_alpha() 
-        self.world_map_non_parallax = self.surface_map_dict[f'level{level}_maps']['non_parallax'].convert_alpha()
-        self.world_map_np_alpha = self.surface_map_dict[f'level{level}_maps']['np_map_transparent'].convert_alpha()
-        self.world_map_non_parallax_fg = self.surface_map_dict[f'level{level}_maps']['true_fg'].convert_alpha()
+        # self.world_map_non_parallax = self.surface_map_dict[f'level{level}_maps']['non_parallax'].convert_alpha()
+        # self.world_map_np_alpha = self.surface_map_dict[f'level{level}_maps']['np_map_transparent'].convert_alpha()
+        # self.world_map_non_parallax_fg = self.surface_map_dict[f'level{level}_maps']['true_fg'].convert_alpha()
         #==========================================================================================================
 
         #add another death counter

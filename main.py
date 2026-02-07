@@ -41,7 +41,7 @@ def main():
 	HALF_SCREEN_W = SCREEN_WIDTH//2
 	SCREEN_HEIGHT = 480
 	standard_size = (SCREEN_WIDTH, SCREEN_HEIGHT)
-	flags = pygame.DOUBLEBUF|pygame.SHOWN #|pygame.RESIZABLE #|pygame.OPENGL #windowed mode
+	flags = pygame.DOUBLEBUF|pygame.SHOWN|pygame.SCALED #|pygame.RESIZABLE #|pygame.OPENGL #windowed mode
 
 	window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags)#, vsync=1)
 	screen = pygame.Surface(standard_size)
@@ -477,7 +477,9 @@ def main():
 					scroll_x += ss_output[1][1]
 				player0.vel_y += ss_output[1][2]*1.02
 				scroll_y = -ss_output[1][3]
+				#print('redo screenshake code, trace to when the screen is drawn to the display')
 			else:
+				world.gfx_.clear_after_imgs()
 				if player0.do_screenshake:
 					screenshake_profile = player0.screenshake_profile #intensity x, intensity y, cycle count
 					player0.do_screenshake = False
@@ -495,8 +497,22 @@ def main():
 						screenshake_profile = (20, 6, 2)
 					else:
 						screenshake_profile = (12, 4, 1)
+      
+			# if do_screenshake_master and not world.screenshake_en:
+			# 	world.screenshake_en = True
+			# 	world.anchor_pt_filtered_layers[0] -= 2
+			# 	world.anchor_pt_nonfiltered_layers[0] -= 2
+			# 	world.anchor_pt_filtered_layers[1] += 8
+			# 	world.anchor_pt_nonfiltered_layers[1] += 8
+			# 	print('ran')
+			# elif world.screenshake_en:
+			# 	print('ran2')
+			# 	world.anchor_pt_filtered_layers = world.slow_screenshake(world.anchor_pt_filtered_layers, 40)
+			# 	world.anchor_pt_nonfiltered_layers = world.slow_screenshake(world.anchor_pt_nonfiltered_layers, 40)
+			# elif not world.screenshake_en:
+			# 	world.force_align_anchor_pts()
+			# 	print('stopped')
 
-		
 
 		#=================================================================updating and drawing all sprites=====================================
 		player0.check_item_pickup(the_sprite_group)
@@ -508,10 +524,20 @@ def main():
 
 			# c_ = pygame.transform.average_color(world.world_map_non_parallax, pygame.rect.Rect(0,0,SCREEN_WIDTH, SCREEN_HEIGHT))
 			# print(c_)
-			screen.blit(world.world_map_non_parallax, (world.rect.x, 0))#base layer, doesn't get affected by screenshake
-			screen.blit(world.world_map_non_parallax, (world.rect.x, world.rect.y))
-			#if abs(player0.scrollx) > 2:
-			#world.gfx_.draw_after_img_static(screen, player0.scrollx, world.world_map_np_alpha, [world.rect.x, world.rect.y], 20, 3)
+   
+			# screen.blit(world.world_map_non_parallax, (world.rect.x, 0))#base layer, doesn't get affected by screenshake
+			# screen.blit(world.world_map_np_alpha, (world.rect.x, world.rect.y))
+			screen.blit(world.surface_map_dict[f'level{level}_maps']['filtered_layers'], (world.rect.x, 0))
+			screen.blit(world.surface_map_dict[f'level{level}_maps']['filtered_layers'], (world.rect.x, world.rect.y))#(world.rect.x, world.rect.y)
+			if do_screenshake_master:
+				world.gfx_.draw_after_img_static(screen, player0.scrollx,world.surface_map_dict[f'level{level}_maps']['filtered_layers'], [world.rect.x, world.rect.y], 40, 3, time_index=0)
+			#screen.blit(radial_filter_img, big_filter_rect)
+			screen.blit(world.surface_map_dict[f'level{level}_maps']['filter_layer'], (0, 0))
+			screen.blit(world.surface_map_dict[f'level{level}_maps']['non_filtered_layers'], (world.rect.x, 0))
+			screen.blit(world.surface_map_dict[f'level{level}_maps']['non_filtered_layers'], (world.rect.x, world.rect.y))
+   
+			if do_screenshake_master:
+				world.gfx_.draw_after_img_static(screen, player0.scrollx,world.surface_map_dict[f'level{level}_maps']['non_filtered_layers'], [world.rect.x, world.rect.y], 20, 3, time_index=1)
 			#screen.blit(radial_filter_img, big_filter_rect)
 
 			the_sprite_group.update_bg_sprite_group(screen, player0)
@@ -523,7 +549,10 @@ def main():
 			the_sprite_group.update_item_group(screen, player0.hitbox_rect)
 			player0.draw(screen)
 			   
-			screen.blit(world.world_map_non_parallax_fg,  (world.rect.x, world.rect.y))
+
+			#screen.blit(world.world_map_non_parallax_fg,  (world.rect.x, world.rect.y))
+			screen.blit(world.surface_map_dict[f'level{level}_maps']['true_fg'], (world.rect.x, world.rect.y))
+   
 			the_sprite_group.update_groups_infront_player(screen, player0, world.solids)
 		
 			status_bars.very_charred = player0.char_level/player0.char_dict['max_char'] > 0.9

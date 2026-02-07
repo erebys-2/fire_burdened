@@ -1612,8 +1612,13 @@ class player(pygame.sprite.Sprite):
                 img_ct = 2
                 img_update = 30
                 
-            if self.disp_states[self.action]:
-                img_alpha = 25
+            if self.frame_index >= len(self.frame_list[self.action])-2:
+                img_alpha = 2
+            elif self.disp_states[self.action]:
+                if self.frame_index == 0:
+                    img_alpha = 45
+                else:
+                    img_alpha = 30
                 img_ct = 5
             else:
                 img_alpha = 20
@@ -1646,7 +1651,7 @@ class player(pygame.sprite.Sprite):
         self.draw_with_flicker(self.image, self.rect, screen, self.i_frames_en)#drawing sprite
        
         if self.atk_show_sprite: #drawing melee sprite
-            self.gfx_.draw_after_img(screen, 5*self.direction, self.image3, [self.atk_rect.x, self.atk_rect.y], self.flip, 70, 10, 3, time_index=1)
+            self.gfx_.draw_after_img(screen, 3*self.direction, self.image3, [self.atk_rect.x, self.atk_rect.y], self.flip, 70, 10, 3, time_index=1)
             self.draw_with_flicker(self.image3, self.atk_rect, screen, self.atk1_stamina_cost > self.atk1_default_stam)
         else:
             self.gfx_.clear_after_imgs(1)
@@ -1793,7 +1798,7 @@ class player(pygame.sprite.Sprite):
                     self.crit = True
                     if self.check_if_in_ss_range():
                         self.do_screenshake = True
-                        self.screenshake_profile = (16, 6, 3)
+                        self.screenshake_profile = (8, 6, 3)
                     self.m_player.play_sound(self.m_player.sfx[4], None)
                     self.char_level += self.char_dict['crit']
             elif self.action != 9 and new_action in (7,8,24):

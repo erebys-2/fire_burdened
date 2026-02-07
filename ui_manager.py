@@ -48,7 +48,7 @@ class ui_manager(): #Helper class for displaying and operating non-game UI (menu
         self.fontlist = fontlist
         self.button_list = []
         
-        self.disp_flags = pygame.DOUBLEBUF|pygame.SHOWN
+        self.disp_flags = pygame.DOUBLEBUF|pygame.SHOWN|pygame.SCALED
 
         self.stop = False
         self.btn_selected = 0
